@@ -28,14 +28,14 @@ class PdfService {
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
           return pw.Column(
-            cross: pw.CrossAxisAlignment.start,
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               // Header
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Column(
-                    cross: pw.CrossAxisAlignment.start,
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
                         clinicName,
@@ -86,10 +86,10 @@ class PdfService {
                 ),
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  cross: pw.CrossAxisAlignment.start,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Column(
-                      cross: pw.CrossAxisAlignment.start,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text('PATIENT DETAILS', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: textMuted)),
                         pw.SizedBox(height: 4),
@@ -100,7 +100,7 @@ class PdfService {
                       ],
                     ),
                     pw.Column(
-                      cross: pw.CrossAxisAlignment.end,
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
                         pw.Text('MEMO INFO', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: textMuted)),
                         pw.SizedBox(height: 4),
@@ -171,7 +171,7 @@ class PdfService {
               pw.Center(
                 child: pw.Column(
                   children: [
-                    pw.Text('Thank you for visiting ${clinicName}!', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                    pw.Text('Thank you for visiting $clinicName!', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: primaryColor)),
                     pw.SizedBox(height: 4),
                     pw.Text('For follow-up appointments, please call ${patient.phone.isNotEmpty ? "clinic support" : ""}.', style: pw.TextStyle(fontSize: 10, color: textMuted)),
                   ],
