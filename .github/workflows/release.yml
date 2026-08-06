@@ -43,8 +43,9 @@ jobs:
       - name: Upload Release Asset to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v0.1.0
           files: build/app/outputs/flutter-apk/app-release.apk
-          name: ClinicPilot ${{ github.ref_name }}
+          name: ClinicPilot v0.1.0
           body: |
             ## ClinicPilot v0.1.0 Release 🚀
             *Tagline: Know. Grow. Repeat.*
