@@ -1,11 +1,5 @@
-import 'dart:io';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+import 'connection/connection.dart' as impl;
 
 import 'tables/clinics.dart';
 import 'tables/patients.dart';
@@ -14,10 +8,10 @@ import 'tables/expenses.dart';
 
 part 'app_database.g.dart';
 
-// Type-safe SQLite database powered by Drift ORM
+// Type-safe database powered by Drift ORM (Mobile, Desktop, and Web ready)
 @DriftDatabase(tables: [Clinics, Patients, CashMemos, Expenses])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
+  AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
   int get schemaVersion => 1;
@@ -36,20 +30,4 @@ class AppDatabase extends _$AppDatabase {
           );
         },
       );
-}
-
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    if (kIsWeb) {
-      return NativeDatabase.memory();
-    }
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'clinic_pilot.sqlite'));
-    if (Platform.isAndroid) {
-      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
-    }
-    final cachebase = await getTemporaryDirectory();
-    sqlite3.tempDirectory = cachebase.path;
-    return NativeDatabase.createInBackground(file);
-  });
 }
