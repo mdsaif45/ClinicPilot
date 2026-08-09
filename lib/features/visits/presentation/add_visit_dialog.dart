@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/database/app_database.dart';
+import '../../../core/widgets/custom_text_field.dart';
+import '../../clinics/providers/clinic_provider.dart';
+import '../providers/visit_provider.dart';
+
+class AddVisitDialog extends ConsumerStatefulWidget {
+  final Patient patient;
+
+  const AddVisitDialog({super.key, required this.patient});
+
+  @override
+  ConsumerState<AddVisitDialog> createState() => _AddVisitDialogState();
+}
+
+class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _diseaseController;
+  final _chiefComplaintController = TextEditingController();
+  final _notesController = TextEditingController();
+
+  String? _selectedClinicId;
+  String _consultationType = 'clinic';
+  String? _outcome;
+  DateTime _visitDate = DateTime.now();
+  DateTime? _nextFollowUpDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _diseaseController =
+        TextEditingController(text: widget.patient.primaryDisease ?? '');
+    _selectedClinicId = ref.read(activeClinicIdProvider);
+  }
+
+  @override
+  void dispose() {
+    _diseaseController.dispose();
+    _chiefComplaintController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final clinicsAsync = ref.watch(clinicsStreamProvider);
+    final clinics = clinicsAsync.value ?? [];
+
+    return AlertDialog(
+      title: Text('Add Visit: ${widget.patient.name}'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                value: _selectedClinicId,
+                decoration: const InputDecoration(
+                  labelText: 'Clinic',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.local_hospital),
+                ),
+                items: clinics
+                    .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedClinicId = val);
+                },
+                validator: (v) => v == null ? 'Select clinic' : null,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _diseaseController,
+                label: 'Disease / Condition',
+                prefixIcon: Icons.medical_services,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _chiefComplaintController,
+                label: 'Chief Complaint (Optional)',
+                prefixIcon: Icons.notes,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _consultationType,
+                decoration: const InputDecoration(
+                  labelText: 'Consultation Type',
+                  border: OutlineInputBorder(),
+                ),
+                items: ['clinic', 'online', 'camp']
+                    .map((t) => DropdownMenuItem(
+                        value: t, child: Text(t.toUpperCase())))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _consultationType = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _outcome,
+                decoration: const InputDecoration(
+                  labelText: 'Outcome (Optional)',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  'improved',
+                  'no_change',
+                  'worse',
+                  'recovered',
+                  'lost_followup'
+                ]
+                    .map((o) => DropdownMenuItem(
+                        value: o, child: Text(o.replaceAll('_', ' ').toUpperCase())))
+                    .toList(),
+                onChanged: (val) => setState(() => _outcome = val),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text('Save Visit'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedClinicId == null) return;
+
+    await ref.read(visitNotifierProvider.notifier).addVisit(
+          patientId: widget.patient.id,
+          clinicId: _selectedClinicId!,
+          disease: _diseaseController.text.trim(),
+          chiefComplaint: _chiefComplaintController.text.trim().isEmpty
+              ? null
+              : _chiefComplaintController.text.trim(),
+          consultationType: _consultationType,
+          outcome: _outcome,
+          visitDate: _visitDate,
+          nextFollowUpDate: _nextFollowUpDate,
+        );
+
+    if (mounted) Navigator.of(context).pop();
+  }
+}

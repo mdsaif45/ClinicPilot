@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../clinics/providers/clinic_provider.dart';
 import '../providers/expense_provider.dart';
 
 class AddExpenseDialog extends ConsumerStatefulWidget {
@@ -15,162 +14,150 @@ class AddExpenseDialog extends ConsumerStatefulWidget {
 class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _subcategoryController = TextEditingController();
   final _notesController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
 
-  String _category = 'Rent';
+  String? _selectedClinicId;
+  String _category = 'Medicine Purchase';
+  String _paymentMethod = 'Cash';
+  bool _isRecurring = false;
+  DateTime _date = DateTime.now();
+
   final List<String> _categories = [
     'Rent',
     'Electricity',
+    'Staff Salary',
     'Medicine Purchase',
+    'Furniture',
     'Marketing',
     'Camp',
-    'Other',
+    'Internet',
+    'Travel',
+    'Miscellaneous',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedClinicId = ref.read(activeClinicIdProvider);
+  }
 
   @override
   void dispose() {
     _amountController.dispose();
+    _subcategoryController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
-  void _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null) {
-      setState(() => _selectedDate = picked);
-    }
-  }
-
-  void _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final amount = double.tryParse(_amountController.text.trim()) ?? 0;
-    final notes = _notesController.text.trim();
-
-    final success = await ref.read(expenseNotifierProvider.notifier).addExpense(
-          clinicId: 'default_clinic',
-          category: _category,
-          amount: amount,
-          notes: notes.isNotEmpty ? notes : null,
-          date: _selectedDate,
-        );
-
-    if (mounted && success) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Expense of ₹${amount.toInt()} added under '$_category'"),
-          backgroundColor: const Color(0xFF0F5132),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(expenseNotifierProvider);
+    final clinicsAsync = ref.watch(clinicsStreamProvider);
+    final clinics = clinicsAsync.value ?? [];
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Add Expense Entry",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF212529)),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
+    return AlertDialog(
+      title: const Text('Add Expense Entry'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                value: _selectedClinicId,
+                decoration: const InputDecoration(
+                  labelText: 'Clinic',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.local_hospital),
                 ),
-                const Divider(),
-                const SizedBox(height: 12),
-                const Text("Expense Category", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  value: _category,
-                  decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
-                  items: _categories.map((cat) {
-                    return DropdownMenuItem(value: cat, child: Text(cat));
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _category = val);
-                  },
+                items: clinics
+                    .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedClinicId = val);
+                },
+                validator: (v) => v == null ? 'Select clinic' : null,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _category,
+                decoration: const InputDecoration(
+                  labelText: 'Expense Category',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.category),
                 ),
-                const SizedBox(height: 14),
-                CustomTextField(
-                  label: "Amount (₹)",
-                  hint: "5000",
-                  controller: _amountController,
-                  keyboardType: TextInputType.number,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return "Amount is required";
-                    if (double.tryParse(v.trim()) == null) return "Enter valid number";
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-                const Text("Date of Expense", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                InkWell(
-                  onTap: _pickDate,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(Formatters.formatDate(_selectedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                        const Icon(Icons.calendar_today, size: 20, color: Color(0xFF0F5132)),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                CustomTextField(
-                  label: "Notes (Optional)",
-                  hint: "e.g. Monthly clinic rent, electricity bill",
-                  controller: _notesController,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: state.isLoading ? null : _submit,
-                    icon: const Icon(Icons.check),
-                    label: state.isLoading
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Save Expense Entry"),
-                  ),
-                ),
-              ],
-            ),
+                items: _categories
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _category = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _subcategoryController,
+                label: 'Subcategory / Details (e.g. Camp Name)',
+                prefixIcon: Icons.subtitles,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _amountController,
+                label: 'Amount (Rs)',
+                prefixIcon: Icons.currency_rupee,
+                keyboardType: TextInputType.number,
+                validator: (v) =>
+                    v == null || double.tryParse(v) == null ? 'Valid amount' : null,
+              ),
+              const SizedBox(height: 12),
+              CheckboxListTile(
+                title: const Text('Recurring Fixed Cost (e.g. Rent)'),
+                value: _isRecurring,
+                onChanged: (val) => setState(() => _isRecurring = val ?? false),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _notesController,
+                label: 'Notes (Optional)',
+                prefixIcon: Icons.notes,
+              ),
+            ],
           ),
         ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text('Save Expense'),
+        ),
+      ],
     );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedClinicId == null) return;
+
+    final amount = double.parse(_amountController.text.trim());
+    final subcat = _subcategoryController.text.trim();
+    final notes = _notesController.text.trim();
+
+    await ref.read(expenseNotifierProvider.notifier).addExpense(
+          clinicId: _selectedClinicId!,
+          category: _category,
+          subcategory: subcat.isEmpty ? null : subcat,
+          amount: amount,
+          paymentMethod: _paymentMethod,
+          isRecurring: _isRecurring,
+          notes: notes.isEmpty ? null : notes,
+          date: _date,
+        );
+
+    if (mounted) Navigator.of(context).pop();
   }
 }

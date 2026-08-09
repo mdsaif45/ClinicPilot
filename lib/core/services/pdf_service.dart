@@ -96,7 +96,7 @@ class PdfService {
                         pw.Text(patient.name, style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: textDark)),
                         pw.Text('Phone: ${patient.phone}', style: const pw.TextStyle(fontSize: 12)),
                         pw.Text('Age/Gender: ${patient.age} yrs • ${patient.gender}', style: const pw.TextStyle(fontSize: 12)),
-                        pw.Text('Disease: ${patient.disease}', style: const pw.TextStyle(fontSize: 12)),
+                        pw.Text('Disease: ${patient.primaryDisease ?? "N/A"}', style: const pw.TextStyle(fontSize: 12)),
                       ],
                     ),
                     pw.Column(

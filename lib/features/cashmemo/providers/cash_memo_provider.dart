@@ -1,101 +1,142 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import 'package:intl/intl.dart';
-
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
 const _uuid = Uuid();
 
-// Combined Cash Memo + Patient item model
-class CashMemoWithPatient {
+class CashMemoWithDetails {
   final CashMemo memo;
   final Patient patient;
+  final Clinic clinic;
+  final Visit? visit;
 
-  CashMemoWithPatient({required this.memo, required this.patient});
+  const CashMemoWithDetails({
+    required this.memo,
+    required this.patient,
+    required this.clinic,
+    this.visit,
+  });
+
+  double get pendingAmount => memo.total - memo.paidAmount;
+  bool get isFullyPaid => pendingAmount <= 0;
 }
 
-// Stream provider for all Cash Memos joined with Patients
-final cashMemosStreamProvider = StreamProvider.autoDispose<List<CashMemoWithPatient>>((ref) {
+final cashMemosStreamProvider = StreamProvider<List<CashMemoWithDetails>>((ref) {
   final db = ref.watch(databaseProvider);
-
   final query = db.select(db.cashMemos).join([
     innerJoin(db.patients, db.patients.id.equalsExp(db.cashMemos.patientId)),
-  ])..orderBy([OrderingTerm.desc(db.cashMemos.createdAt)]);
+    innerJoin(db.clinics, db.clinics.id.equalsExp(db.cashMemos.clinicId)),
+    leftOuterJoin(db.visits, db.visits.id.equalsExp(db.cashMemos.visitId)),
+  ])
+    ..where(db.cashMemos.isDeleted.equals(false))
+    ..orderBy([OrderingTerm.desc(db.cashMemos.createdAt)]);
 
   return query.watch().map((rows) {
     return rows.map((row) {
-      return CashMemoWithPatient(
+      return CashMemoWithDetails(
         memo: row.readTable(db.cashMemos),
         patient: row.readTable(db.patients),
+        clinic: row.readTable(db.clinics),
+        visit: row.readTableOrNull(db.visits),
       );
     }).toList();
   });
 });
 
-// Notifier for adding Cash Memos
 class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
   final AppDatabase _db;
 
-  CashMemoNotifier(this._db) : super(const AsyncValue.data(null));
+  CashMemoNotifier(this._db) : super(const AsyncData(null));
 
-  Future<CashMemo?> createCashMemo({
+  Future<CashMemo> createCashMemo({
     required String patientId,
+    required String clinicId,
+    String? visitId,
     required double consultationFee,
     required double medicineFee,
     required double otherFee,
     required double discount,
+    required double paidAmount,
     required String paymentMethod,
+    String? notes,
   }) async {
-    state = const AsyncValue.loading();
-    try {
-      final total = (consultationFee + medicineFee + otherFee) - discount;
-      final count = await _db.customSelect('SELECT COUNT(*) AS c FROM cash_memos').getSingle();
-      final memoNumIndex = (count.data['c'] as int? ?? 0) + 1;
-      final memoNumber = "CM-${DateFormat('yyyy').format(DateTime.now())}-${memoNumIndex.toString().padLeft(5, '0')}";
+    state = const AsyncLoading();
 
-      final id = _uuid.v4();
-      final now = DateTime.now();
+    final total = (consultationFee + medicineFee + otherFee) - discount;
 
-      final entry = CashMemosCompanion.insert(
-        id: id,
-        memoNumber: memoNumber,
-        patientId: patientId,
-        consultationFee: Value(consultationFee),
-        medicineFee: Value(medicineFee),
-        otherFee: Value(otherFee),
-        discount: Value(discount),
-        total: total,
-        paymentMethod: paymentMethod,
-        createdAt: Value(now),
+    // Generate memo number CM-YYYY-NNNNN using count + 1
+    final year = DateTime.now().year;
+    final allMemos = await (_db.select(_db.cashMemos)).get();
+    final nextNum = (allMemos.length + 1).toString().padLeft(5, '0');
+    final memoNumber = 'CM-$year-$nextNum';
+
+    final memoId = _uuid.v4();
+    final companion = CashMemosCompanion.insert(
+      id: memoId,
+      memoNumber: memoNumber,
+      patientId: patientId,
+      clinicId: Value(clinicId),
+      visitId: Value(visitId),
+      consultationFee: Value(consultationFee),
+      medicineFee: Value(medicineFee),
+      otherFee: Value(otherFee),
+      discount: Value(discount),
+      total: total,
+      paidAmount: Value(paidAmount),
+      paymentMethod: paymentMethod,
+      notes: Value(notes),
+      createdAt: Value(DateTime.now()),
+    );
+
+    await _db.into(_db.cashMemos).insert(companion);
+
+    state = const AsyncData(null);
+    return await (_db.select(_db.cashMemos)
+          ..where((tbl) => tbl.id.equals(memoId)))
+        .getSingle();
+  }
+
+  Future<void> updateCashMemo({
+    required String id,
+    required double consultationFee,
+    required double medicineFee,
+    required double otherFee,
+    required double discount,
+    required double paidAmount,
+    required String paymentMethod,
+    String? notes,
+  }) async {
+    state = const AsyncLoading();
+    final total = (consultationFee + medicineFee + otherFee) - discount;
+    state = await AsyncValue.guard(() async {
+      await (_db.update(_db.cashMemos)..where((tbl) => tbl.id.equals(id))).write(
+        CashMemosCompanion(
+          consultationFee: Value(consultationFee),
+          medicineFee: Value(medicineFee),
+          otherFee: Value(otherFee),
+          discount: Value(discount),
+          total: Value(total),
+          paidAmount: Value(paidAmount),
+          paymentMethod: Value(paymentMethod),
+          notes: Value(notes),
+        ),
       );
+    });
+  }
 
-      await _db.into(_db.cashMemos).insert(entry);
-
-      final created = CashMemo(
-        id: id,
-        memoNumber: memoNumber,
-        patientId: patientId,
-        consultationFee: consultationFee,
-        medicineFee: medicineFee,
-        otherFee: otherFee,
-        discount: discount,
-        total: total,
-        paymentMethod: paymentMethod,
-        createdAt: now,
-      );
-
-      state = const AsyncValue.data(null);
-      return created;
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      return null;
-    }
+  Future<void> archiveCashMemo(String id) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await (_db.update(_db.cashMemos)..where((tbl) => tbl.id.equals(id)))
+          .write(const CashMemosCompanion(isDeleted: Value(true)));
+    });
   }
 }
 
-final cashMemoNotifierProvider = StateNotifierProvider.autoDispose<CashMemoNotifier, AsyncValue<void>>((ref) {
+final cashMemoNotifierProvider =
+    StateNotifierProvider<CashMemoNotifier, AsyncValue<void>>((ref) {
   final db = ref.watch(databaseProvider);
   return CashMemoNotifier(db);
 });
