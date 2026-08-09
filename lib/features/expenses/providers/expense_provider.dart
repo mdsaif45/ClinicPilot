@@ -1,70 +1,117 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
 const _uuid = Uuid();
 
-// Stream of all expenses from SQLite DB
-final expensesStreamProvider = StreamProvider.autoDispose<List<Expense>>((ref) {
+final expenseCategoryFilterProvider = StateProvider<String?>((ref) => null);
+
+class ExpenseWithClinic {
+  final Expense expense;
+  final Clinic clinic;
+
+  const ExpenseWithClinic({
+    required this.expense,
+    required this.clinic,
+  });
+}
+
+final expensesStreamProvider = StreamProvider<List<ExpenseWithClinic>>((ref) {
   final db = ref.watch(databaseProvider);
-  return (db.select(db.expenses)
-        ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
-      .watch();
-});
+  final categoryFilter = ref.watch(expenseCategoryFilterProvider);
 
-// Category filter state provider
-final selectedExpenseCategoryProvider = StateProvider.autoDispose<String>((ref) => 'All');
+  var query = db.select(db.expenses).join([
+    innerJoin(db.clinics, db.clinics.id.equalsExp(db.expenses.clinicId)),
+  ])..where(db.expenses.isDeleted.equals(false));
 
-// Filtered expenses list provider
-final filteredExpensesProvider = Provider.autoDispose<AsyncValue<List<Expense>>>((ref) {
-  final expensesAsync = ref.watch(expensesStreamProvider);
-  final category = ref.watch(selectedExpenseCategoryProvider);
+  if (categoryFilter != null && categoryFilter.isNotEmpty) {
+    query = query..where(db.expenses.category.equals(categoryFilter));
+  }
 
-  return expensesAsync.whenData((expenses) {
-    if (category == 'All') return expenses;
-    return expenses.where((e) => e.category == category).toList();
+  return (query..orderBy([OrderingTerm.desc(db.expenses.date)]))
+      .watch()
+      .map((rows) {
+    return rows.map((row) {
+      return ExpenseWithClinic(
+        expense: row.readTable(db.expenses),
+        clinic: row.readTable(db.clinics),
+      );
+    }).toList();
   });
 });
 
-// Expense Notifier
 class ExpenseNotifier extends StateNotifier<AsyncValue<void>> {
   final AppDatabase _db;
 
-  ExpenseNotifier(this._db) : super(const AsyncValue.data(null));
+  ExpenseNotifier(this._db) : super(const AsyncData(null));
 
-  Future<bool> addExpense({
+  Future<void> addExpense({
     required String clinicId,
     required String category,
+    String? subcategory,
     required double amount,
+    String paymentMethod = 'Cash',
+    bool isRecurring = false,
     String? notes,
     required DateTime date,
   }) async {
-    state = const AsyncValue.loading();
-    try {
-      final id = _uuid.v4();
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
       await _db.into(_db.expenses).insert(
             ExpensesCompanion.insert(
-              id: id,
+              id: _uuid.v4(),
               clinicId: clinicId,
               category: category,
+              subcategory: Value(subcategory),
               amount: amount,
+              paymentMethod: Value(paymentMethod),
+              isRecurring: Value(isRecurring),
               notes: Value(notes),
               date: date,
             ),
           );
-      state = const AsyncValue.data(null);
-      return true;
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      return false;
-    }
+    });
+  }
+
+  Future<void> updateExpense({
+    required String id,
+    required String category,
+    String? subcategory,
+    required double amount,
+    String paymentMethod = 'Cash',
+    bool isRecurring = false,
+    String? notes,
+    required DateTime date,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await (_db.update(_db.expenses)..where((tbl) => tbl.id.equals(id))).write(
+        ExpensesCompanion(
+          category: Value(category),
+          subcategory: Value(subcategory),
+          amount: Value(amount),
+          paymentMethod: Value(paymentMethod),
+          isRecurring: Value(isRecurring),
+          notes: Value(notes),
+          date: Value(date),
+        ),
+      );
+    });
+  }
+
+  Future<void> archiveExpense(String id) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await (_db.update(_db.expenses)..where((tbl) => tbl.id.equals(id)))
+          .write(const ExpensesCompanion(isDeleted: Value(true)));
+    });
   }
 }
 
-final expenseNotifierProvider = StateNotifierProvider.autoDispose<ExpenseNotifier, AsyncValue<void>>((ref) {
+final expenseNotifierProvider =
+    StateNotifierProvider<ExpenseNotifier, AsyncValue<void>>((ref) {
   final db = ref.watch(databaseProvider);
   return ExpenseNotifier(db);
 });

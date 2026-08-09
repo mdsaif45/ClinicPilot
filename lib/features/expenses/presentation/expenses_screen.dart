@@ -6,6 +6,7 @@ import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/stat_card.dart';
 import '../providers/expense_provider.dart';
 import 'add_expense_dialog.dart';
+import 'edit_expense_dialog.dart';
 
 class ExpensesScreen extends ConsumerWidget {
   const ExpensesScreen({super.key});
@@ -20,10 +21,21 @@ class ExpensesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesAsync = ref.watch(expensesStreamProvider);
-    final filteredExpensesAsync = ref.watch(filteredExpensesProvider);
-    final selectedCategory = ref.watch(selectedExpenseCategoryProvider);
+    final selectedCategory = ref.watch(expenseCategoryFilterProvider);
 
-    final categories = ['All', 'Rent', 'Electricity', 'Medicine Purchase', 'Marketing', 'Camp', 'Other'];
+    final categories = [
+      'All',
+      'Rent',
+      'Electricity',
+      'Staff Salary',
+      'Medicine Purchase',
+      'Furniture',
+      'Marketing',
+      'Camp',
+      'Internet',
+      'Travel',
+      'Miscellaneous'
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -40,7 +52,8 @@ class ExpensesScreen extends ConsumerWidget {
         onPressed: () => _openAddExpense(context),
         backgroundColor: Colors.redAccent.shade700,
         icon: const Icon(Icons.remove_circle_outline, color: Colors.white),
-        label: const Text("Add Expense", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text("Add Expense",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -50,17 +63,18 @@ class ExpensesScreen extends ConsumerWidget {
             expensesAsync.when(
               loading: () => const SizedBox.shrink(),
               error: (_, __) => const SizedBox.shrink(),
-              data: (expenses) {
-                final totalExp = expenses.fold<double>(0, (sum, e) => sum + e.amount);
+              data: (items) {
+                final totalExp =
+                    items.fold<double>(0, (sum, item) => sum + item.expense.amount);
                 return Row(
                   children: [
                     Expanded(
                       child: StatCard(
                         title: "Total Expenses Recorded",
                         value: Formatters.formatCurrency(totalExp),
-                        subtitle: "${expenses.length} Expense Items",
+                        subtitle: "${items.length} Expense Items",
                         icon: Icons.account_balance_wallet_outlined,
-                        iconColor: Colors.redAccent.shade700,
+                        color: Colors.red,
                       ),
                     ),
                   ],
@@ -78,17 +92,20 @@ class ExpensesScreen extends ConsumerWidget {
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final cat = categories[index];
-                  final isSelected = selectedCategory == cat;
+                  final isSelected = (selectedCategory == null && cat == 'All') ||
+                      selectedCategory == cat;
                   return ChoiceChip(
                     label: Text(cat),
                     selected: isSelected,
                     selectedColor: const Color(0xFF0F5132),
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : Colors.black87,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                     onSelected: (val) {
-                      if (val) ref.read(selectedExpenseCategoryProvider.notifier).state = cat;
+                      ref.read(expenseCategoryFilterProvider.notifier).state =
+                          (cat == 'All') ? null : cat;
                     },
                   );
                 },
@@ -98,20 +115,25 @@ class ExpensesScreen extends ConsumerWidget {
 
             // Expense Items List
             Expanded(
-              child: filteredExpensesAsync.when(
+              child: expensesAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text("Error loading expenses: $err")),
-                data: (expenses) {
-                  if (expenses.isEmpty) {
+                error: (err, stack) =>
+                    Center(child: Text("Error loading expenses: $err")),
+                data: (items) {
+                  if (items.isEmpty) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.money_off, size: 64, color: Colors.grey.shade400),
+                          Icon(Icons.money_off,
+                              size: 64, color: Colors.grey.shade400),
                           const SizedBox(height: 12),
                           Text(
-                            "No expenses recorded for '$selectedCategory'",
-                            style: TextStyle(fontSize: 16, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                            "No expenses recorded for '${selectedCategory ?? 'All'}'",
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w500),
                           ),
                           const SizedBox(height: 8),
                           ElevatedButton.icon(
@@ -125,47 +147,78 @@ class ExpensesScreen extends ConsumerWidget {
                   }
 
                   return ListView.separated(
-                    itemCount: expenses.length,
+                    itemCount: items.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
-                      final expense = expenses[index];
+                      final item = items[index];
+                      final exp = item.expense;
 
                       return Card(
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           leading: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.redAccent.withOpacity(0.1),
+                              color: Colors.redAccent.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.arrow_downward, color: Colors.redAccent),
+                            child: const Icon(Icons.arrow_downward,
+                                color: Colors.redAccent),
                           ),
                           title: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              CustomBadge(label: expense.category, color: Colors.redAccent.shade700),
+                              CustomBadge(
+                                  label: exp.category,
+                                  color: Colors.redAccent.shade700),
                               Text(
-                                Formatters.formatCurrency(expense.amount),
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.redAccent.shade700),
+                                Formatters.formatCurrency(exp.amount),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.redAccent.shade700),
                               ),
                             ],
                           ),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 6.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Text('Clinic: ${item.clinic.name}'),
+                                if (exp.subcategory != null)
+                                  Text('Details: ${exp.subcategory}'),
                                 Text(
-                                  expense.notes ?? expense.category,
-                                  style: TextStyle(fontSize: 14, color: Colors.grey.shade800, fontWeight: FontWeight.w500),
-                                ),
-                                Text(
-                                  Formatters.formatDate(expense.date),
-                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                  Formatters.formatDate(exp.date),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade500),
                                 ),
                               ],
                             ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, color: Colors.teal),
+                                tooltip: "Edit Expense",
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => EditExpenseDialog(expense: exp),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline,
+                                    color: Colors.red),
+                                tooltip: "Archive Expense",
+                                onPressed: () =>
+                                    _confirmDelete(context, ref, exp.id),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -176,6 +229,31 @@ class ExpensesScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref, String id) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Archive Expense'),
+        content: const Text('Are you sure you want to archive this expense entry?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              await ref
+                  .read(expenseNotifierProvider.notifier)
+                  .archiveExpense(id);
+              if (ctx.mounted) Navigator.of(ctx).pop();
+            },
+            child: const Text('Archive', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }

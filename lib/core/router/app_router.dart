@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:go_router/go_router.dart';
+import '../providers/period_provider.dart';
+import '../../features/clinics/providers/clinic_provider.dart';
+import '../../features/clinics/presentation/clinics_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/patients/presentation/patients_screen.dart';
 import '../../features/cashmemo/presentation/cash_memo_screen.dart';
 import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/growth/presentation/growth_screen.dart';
+import '../../features/growth/presentation/clinic_comparison_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-
-// Router Riverpod Provider
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    navigatorKey: _rootNavigatorKey,
     initialLocation: '/dashboard',
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return ScaffoldWithBottomNavBar(navigationShell: navigationShell);
+          return ScaffoldWithNavBar(navigationShell: navigationShell);
         },
         branches: [
           StatefulShellBranch(
@@ -40,7 +40,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/cash-memo',
+                path: '/cashmemo',
                 builder: (context, state) => const CashMemoScreen(),
               ),
             ],
@@ -63,55 +63,168 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      GoRoute(
+        path: '/clinics',
+        builder: (context, state) => const ClinicsScreen(),
+      ),
+      GoRoute(
+        path: '/comparison',
+        builder: (context, state) => const ClinicComparisonScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
     ],
   );
 });
 
-// Shell container providing the bottom navigation bar
-class ScaffoldWithBottomNavBar extends StatelessWidget {
+class ScaffoldWithNavBar extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
-  const ScaffoldWithBottomNavBar({
-    super.key,
+  const ScaffoldWithNavBar({
     required this.navigationShell,
+    super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeClinic = ref.watch(activeClinicProvider);
+    final periodState = ref.watch(periodProvider);
+    final clinicsAsync = ref.watch(clinicsStreamProvider);
+    final clinics = clinicsAsync.value ?? [];
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Scaffold(
+      appBar: AppBar(
+        elevation: 2,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButton<String>(
+              value: activeClinic?.id,
+              underline: const SizedBox(),
+              icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+              dropdownColor: primaryColor,
+              items: clinics.map((c) {
+                final isSelected = c.id == activeClinic?.id;
+                Color clinicColor;
+                try {
+                  clinicColor = Color(int.parse(c.colorHex.replaceAll('#', '0xFF')));
+                } catch (_) {
+                  clinicColor = Colors.teal;
+                }
+
+                return DropdownMenuItem<String>(
+                  value: c.id,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: clinicColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        c.name,
+                        style: TextStyle(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: Colors.white,
+                        ),
+                      ),
+                      if (isSelected) ...[
+                        const SizedBox(width: 8),
+                        const Icon(Icons.check_circle, color: Colors.amber, size: 16),
+                      ],
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  ref.read(activeClinicIdProvider.notifier).setClinicId(val);
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          // Period Filter Dropdown
+          DropdownButton<PeriodFilter>(
+            value: periodState.filter,
+            underline: const SizedBox(),
+            icon: const Icon(Icons.calendar_today, color: Colors.white, size: 18),
+            dropdownColor: primaryColor,
+            items: PeriodFilter.values
+                .map((pf) => DropdownMenuItem(
+                      value: pf,
+                      child: Text(
+                        pf.label,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: pf == periodState.filter ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ))
+                .toList(),
+            onChanged: (val) {
+              if (val != null) {
+                ref.read(periodProvider.notifier).setFilter(val);
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.compare_arrows),
+            tooltip: 'Clinic Comparison',
+            onPressed: () => context.push('/comparison'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
+      ),
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
+        indicatorColor: primaryColor.withValues(alpha: 0.2),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
           navigationShell.goBranch(
             index,
             initialLocation: index == navigationShell.currentIndex,
           );
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(Icons.dashboard, color: primaryColor),
             label: 'Dashboard',
           ),
           NavigationDestination(
-            icon: Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.people_outline),
+            selectedIcon: Icon(Icons.people, color: primaryColor),
             label: 'Patients',
           ),
           NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long, color: primaryColor),
             label: 'Cash Memo',
           ),
           NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet, color: primaryColor),
             label: 'Expenses',
           ),
           NavigationDestination(
-            icon: Icon(Icons.trending_up_outlined),
-            selectedIcon: Icon(Icons.trending_up, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.trending_up_outlined),
+            selectedIcon: Icon(Icons.trending_up, color: primaryColor),
             label: 'Growth',
           ),
         ],

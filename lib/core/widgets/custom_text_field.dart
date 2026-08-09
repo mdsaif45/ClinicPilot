@@ -7,10 +7,11 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
-  final Widget? prefixIcon;
+  final dynamic prefixIcon;
   final Widget? suffixIcon;
   final bool readOnly;
   final VoidCallback? onTap;
+  final ValueChanged<String>? onChanged;
 
   const CustomTextField({
     super.key,
@@ -23,7 +24,17 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.readOnly = false,
     this.onTap,
+    this.onChanged,
   });
+
+  Widget? _buildPrefixIcon() {
+    if (prefixIcon is IconData) {
+      return Icon(prefixIcon as IconData);
+    } else if (prefixIcon is Widget) {
+      return prefixIcon as Widget;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +56,10 @@ class CustomTextField extends StatelessWidget {
           validator: validator,
           readOnly: readOnly,
           onTap: onTap,
+          onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: prefixIcon,
+            prefixIcon: _buildPrefixIcon(),
             suffixIcon: suffixIcon,
           ),
         ),

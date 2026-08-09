@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../cashmemo/providers/cash_memo_provider.dart';
-import '../../expenses/providers/expense_provider.dart';
-import '../../patients/providers/patient_provider.dart';
+import '../../../core/database/database_provider.dart';
+import '../../clinics/providers/clinic_provider.dart';
 
 class DashboardStats {
   final double todayRevenue;
@@ -12,10 +10,11 @@ class DashboardStats {
   final double monthlyRevenue;
   final double monthlyExpense;
   final double monthlyNetProfit;
-  final int monthlyPatients;
-  final double monthlyGoal;
+  final double monthlyRevenueGoal;
+  final int monthlyNewPatients;
+  final int monthlyNewPatientGoal;
 
-  DashboardStats({
+  const DashboardStats({
     required this.todayRevenue,
     required this.todayExpense,
     required this.todayNetProfit,
@@ -23,57 +22,94 @@ class DashboardStats {
     required this.monthlyRevenue,
     required this.monthlyExpense,
     required this.monthlyNetProfit,
-    required this.monthlyPatients,
-    required this.monthlyGoal,
+    required this.monthlyRevenueGoal,
+    required this.monthlyNewPatients,
+    required this.monthlyNewPatientGoal,
   });
+
+  double get revenueGoalProgress =>
+      monthlyRevenueGoal > 0 ? (monthlyRevenue / monthlyRevenueGoal).clamp(0.0, 1.0) : 0.0;
+
+  double get newPatientGoalProgress =>
+      monthlyNewPatientGoal > 0 ? (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0) : 0.0;
 }
 
-// Provider computing real-time dashboard analytics
-final dashboardStatsProvider = Provider.autoDispose<DashboardStats>((ref) {
-  final cashMemosAsync = ref.watch(cashMemosStreamProvider);
-  final expensesAsync = ref.watch(expensesStreamProvider);
-  final patientsAsync = ref.watch(patientsStreamProvider);
+final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) async* {
+  final db = ref.watch(databaseProvider);
+  final activeClinic = ref.watch(activeClinicProvider);
 
   final now = DateTime.now();
+  final todayStart = DateTime(now.year, now.month, now.day, 0, 0, 0);
+  final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
-  bool isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
+  final monthStart = DateTime(now.year, now.month, 1, 0, 0, 0);
+  final monthEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+  final activeClinicId = activeClinic?.id;
+
+  // Read goals from settings
+  final goalSetting = await (db.select(db.settings)
+        ..where((tbl) => tbl.key.equals('monthly_revenue_goal')))
+      .getSingleOrNull();
+  final monthlyGoal = double.tryParse(goalSetting?.value ?? '50000') ?? 50000.0;
+
+  final newPatientGoalSetting = await (db.select(db.settings)
+        ..where((tbl) => tbl.key.equals('monthly_new_patient_goal')))
+      .getSingleOrNull();
+  final monthlyNewPatientGoal = int.tryParse(newPatientGoalSetting?.value ?? '10') ?? 10;
+
+  // Watch Cash Memos
+  var memoQuery = db.select(db.cashMemos)
+    ..where((tbl) => tbl.isDeleted.equals(false));
+  if (activeClinicId != null) {
+    memoQuery = memoQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
+  final allMemos = await memoQuery.get();
 
-  bool isSameMonth(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month;
+  final todayMemos = allMemos.where(
+      (m) => m.createdAt.isAfter(todayStart) && m.createdAt.isBefore(todayEnd));
+  final todayRevenue = todayMemos.fold<double>(0.0, (sum, m) => sum + m.total);
+
+  final monthMemos = allMemos.where(
+      (m) => m.createdAt.isAfter(monthStart) && m.createdAt.isBefore(monthEnd));
+  final monthlyRevenue = monthMemos.fold<double>(0.0, (sum, m) => sum + m.total);
+
+  // Watch Expenses
+  var expQuery = db.select(db.expenses)
+    ..where((tbl) => tbl.isDeleted.equals(false));
+  if (activeClinicId != null) {
+    expQuery = expQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
+  final allExpenses = await expQuery.get();
 
-  final memos = cashMemosAsync.asData?.value ?? [];
-  final expenses = expensesAsync.asData?.value ?? [];
-  final patients = patientsAsync.asData?.value ?? [];
+  final todayExpensesList = allExpenses
+      .where((e) => e.date.isAfter(todayStart) && e.date.isBefore(todayEnd));
+  final todayExpense = todayExpensesList.fold<double>(0.0, (sum, e) => sum + e.amount);
 
-  double todayRevenue = 0;
-  double monthlyRevenue = 0;
-  for (final m in memos) {
-    if (isSameDay(m.memo.createdAt, now)) {
-      todayRevenue += m.memo.total;
-    }
-    if (isSameMonth(m.memo.createdAt, now)) {
-      monthlyRevenue += m.memo.total;
-    }
+  final monthExpensesList = allExpenses
+      .where((e) => e.date.isAfter(monthStart) && e.date.isBefore(monthEnd));
+  final monthlyExpense = monthExpensesList.fold<double>(0.0, (sum, e) => sum + e.amount);
+
+  // Watch Visits
+  var visitQuery = db.select(db.visits)
+    ..where((tbl) => tbl.isDeleted.equals(false));
+  if (activeClinicId != null) {
+    visitQuery = visitQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
+  final allVisits = await visitQuery.get();
 
-  double todayExpense = 0;
-  double monthlyExpense = 0;
-  for (final e in expenses) {
-    if (isSameDay(e.date, now)) {
-      todayExpense += e.amount;
-    }
-    if (isSameMonth(e.date, now)) {
-      monthlyExpense += e.amount;
-    }
-  }
+  final todayPatients = allVisits
+      .where((v) => v.visitDate.isAfter(todayStart) && v.visitDate.isBefore(todayEnd))
+      .length;
 
-  int todayPatients = patients.where((p) => isSameDay(p.createdAt, now)).length;
-  int monthlyPatients = patients.where((p) => isSameMonth(p.createdAt, now)).length;
+  final monthlyNewPatients = allVisits
+      .where((v) =>
+          v.visitDate.isAfter(monthStart) &&
+          v.visitDate.isBefore(monthEnd) &&
+          v.visitType == 'new')
+      .length;
 
-  return DashboardStats(
+  yield DashboardStats(
     todayRevenue: todayRevenue,
     todayExpense: todayExpense,
     todayNetProfit: todayRevenue - todayExpense,
@@ -81,7 +117,8 @@ final dashboardStatsProvider = Provider.autoDispose<DashboardStats>((ref) {
     monthlyRevenue: monthlyRevenue,
     monthlyExpense: monthlyExpense,
     monthlyNetProfit: monthlyRevenue - monthlyExpense,
-    monthlyPatients: monthlyPatients,
-    monthlyGoal: 50000.0,
+    monthlyRevenueGoal: monthlyGoal,
+    monthlyNewPatients: monthlyNewPatients,
+    monthlyNewPatientGoal: monthlyNewPatientGoal,
   );
 });

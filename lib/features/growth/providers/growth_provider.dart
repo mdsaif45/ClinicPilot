@@ -1,93 +1,121 @@
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/database/database_provider.dart';
+import '../../../core/providers/period_provider.dart';
+import '../../clinics/providers/clinic_provider.dart';
 
-import '../../cashmemo/providers/cash_memo_provider.dart';
-import '../../expenses/providers/expense_provider.dart';
-import '../../patients/providers/patient_provider.dart';
-
-class GrowthAnalyticsData {
-  final Map<String, int> referralSources;
-  final Map<String, int> diseaseDistribution;
-  final Map<int, double> dailyRevenue;
-  final Map<int, double> dailyExpenses;
+class GrowthAnalytics {
+  final Map<int, double> dailyRevenueMap;
+  final Map<int, double> dailyExpenseMap;
+  final Map<String, int> referralSourceCount;
+  final Map<String, int> diseaseFrequency;
+  final int totalNewPatients;
+  final int totalRepeatPatients;
   final double totalRevenue;
   final double totalExpenses;
   final double netProfit;
-  final int totalPatients;
-  final String topReferralSource;
-  final String topDisease;
 
-  GrowthAnalyticsData({
-    required this.referralSources,
-    required this.diseaseDistribution,
-    required this.dailyRevenue,
-    required this.dailyExpenses,
+  const GrowthAnalytics({
+    required this.dailyRevenueMap,
+    required this.dailyExpenseMap,
+    required this.referralSourceCount,
+    required this.diseaseFrequency,
+    required this.totalNewPatients,
+    required this.totalRepeatPatients,
     required this.totalRevenue,
     required this.totalExpenses,
     required this.netProfit,
-    required this.totalPatients,
-    required this.topReferralSource,
-    required this.topDisease,
   });
 }
 
-// Provider computing Growth Analytics & fl_chart data
-final growthAnalyticsProvider = Provider.autoDispose<GrowthAnalyticsData>((ref) {
-  final cashMemosAsync = ref.watch(cashMemosStreamProvider);
-  final expensesAsync = ref.watch(expensesStreamProvider);
-  final patientsAsync = ref.watch(patientsStreamProvider);
+final growthAnalyticsProvider = StreamProvider<GrowthAnalytics>((ref) async* {
+  final db = ref.watch(databaseProvider);
+  final activeClinic = ref.watch(activeClinicProvider);
+  final periodState = ref.watch(periodProvider);
 
-  final memos = cashMemosAsync.asData?.value ?? [];
-  final expenses = expensesAsync.asData?.value ?? [];
-  final patients = patientsAsync.asData?.value ?? [];
+  final range = periodState.dateRange;
+  final activeClinicId = activeClinic?.id;
 
-  // Referral sources map
-  final Map<String, int> referralMap = {};
-  for (final p in patients) {
-    referralMap[p.referralSource] = (referralMap[p.referralSource] ?? 0) + 1;
+  // 1. Memos in period
+  var memoQuery = db.select(db.cashMemos)
+    ..where((tbl) => tbl.isDeleted.equals(false))
+    ..where((tbl) =>
+        tbl.createdAt.isBiggerOrEqual(Variable(range.start)) &
+        tbl.createdAt.isSmallerOrEqual(Variable(range.end)));
+  if (activeClinicId != null) {
+    memoQuery = memoQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
+  final memos = await memoQuery.get();
 
-  // Disease frequency map
-  final Map<String, int> diseaseMap = {};
-  for (final p in patients) {
-    diseaseMap[p.disease] = (diseaseMap[p.disease] ?? 0) + 1;
-  }
-
-  // Daily revenue & expense maps for current month days (1..31)
-  final Map<int, double> dailyRev = {};
-  final Map<int, double> dailyExp = {};
-
-  double totalRev = 0;
+  final dailyRevenueMap = <int, double>{};
+  double totalRevenue = 0.0;
   for (final m in memos) {
-    totalRev += m.memo.total;
-    final day = m.memo.createdAt.day;
-    dailyRev[day] = (dailyRev[day] ?? 0) + m.memo.total;
+    final day = m.createdAt.day;
+    dailyRevenueMap[day] = (dailyRevenueMap[day] ?? 0.0) + m.total;
+    totalRevenue += m.total;
   }
 
-  double totalExp = 0;
+  // 2. Expenses in period
+  var expQuery = db.select(db.expenses)
+    ..where((tbl) => tbl.isDeleted.equals(false))
+    ..where((tbl) =>
+        tbl.date.isBiggerOrEqual(Variable(range.start)) &
+        tbl.date.isSmallerOrEqual(Variable(range.end)));
+  if (activeClinicId != null) {
+    expQuery = expQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
+  }
+  final expenses = await expQuery.get();
+
+  final dailyExpenseMap = <int, double>{};
+  double totalExpenses = 0.0;
   for (final e in expenses) {
-    totalExp += e.amount;
     final day = e.date.day;
-    dailyExp[day] = (dailyExp[day] ?? 0) + e.amount;
+    dailyExpenseMap[day] = (dailyExpenseMap[day] ?? 0.0) + e.amount;
+    totalExpenses += e.amount;
   }
 
-  String topRef = referralMap.isNotEmpty
-      ? referralMap.entries.reduce((a, b) => a.value > b.value ? a : b).key
-      : "N/A";
+  // 3. Visits in period
+  var visitQuery = db.select(db.visits)
+    ..where((tbl) => tbl.isDeleted.equals(false))
+    ..where((tbl) =>
+        tbl.visitDate.isBiggerOrEqual(Variable(range.start)) &
+        tbl.visitDate.isSmallerOrEqual(Variable(range.end)));
+  if (activeClinicId != null) {
+    visitQuery = visitQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
+  }
+  final visits = await visitQuery.get();
 
-  String topDis = diseaseMap.isNotEmpty
-      ? diseaseMap.entries.reduce((a, b) => a.value > b.value ? a : b).key
-      : "N/A";
+  int totalNewPatients = 0;
+  int totalRepeatPatients = 0;
+  final referralSourceCount = <String, int>{};
+  final diseaseFrequency = <String, int>{};
 
-  return GrowthAnalyticsData(
-    referralSources: referralMap,
-    diseaseDistribution: diseaseMap,
-    dailyRevenue: dailyRev,
-    dailyExpenses: dailyExp,
-    totalRevenue: totalRev,
-    totalExpenses: totalExp,
-    netProfit: totalRev - totalExp,
-    totalPatients: patients.length,
-    topReferralSource: topRef,
-    topDisease: topDis,
+  for (final v in visits) {
+    if (v.visitType == 'new') {
+      totalNewPatients++;
+    } else {
+      totalRepeatPatients++;
+    }
+
+    if (v.referralSource != null && v.referralSource!.isNotEmpty) {
+      referralSourceCount[v.referralSource!] =
+          (referralSourceCount[v.referralSource!] ?? 0) + 1;
+    }
+
+    if (v.disease.isNotEmpty) {
+      diseaseFrequency[v.disease] = (diseaseFrequency[v.disease] ?? 0) + 1;
+    }
+  }
+
+  yield GrowthAnalytics(
+    dailyRevenueMap: dailyRevenueMap,
+    dailyExpenseMap: dailyExpenseMap,
+    referralSourceCount: referralSourceCount,
+    diseaseFrequency: diseaseFrequency,
+    totalNewPatients: totalNewPatients,
+    totalRepeatPatients: totalRepeatPatients,
+    totalRevenue: totalRevenue,
+    totalExpenses: totalExpenses,
+    netProfit: totalRevenue - totalExpenses,
   );
 });
