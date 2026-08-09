@@ -1,0 +1,10 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/mdsaif45/ClinicPilot/security/advisories/new
+    about: >
+      Please report security issues privately, never as a public issue. This app
+      stores patient health data.
+  - name: Contributing guide
+    url: https://github.com/mdsaif45/ClinicPilot/blob/main/CONTRIBUTING.md
+    about: Setup, conventions, and the rules for database migrations.

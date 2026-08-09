@@ -1,0 +1,51 @@
+name: Feature request
+description: Suggest something the app should do
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening this, please check the roadmap in the README.
+
+        Case taking, prescriptions, AI features and cloud sync are **deliberately out
+        of scope** for now. ClinicPilot is a decision tool, not a medical record
+        system.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve
+      description: >
+        Describe the situation you are actually in, not the solution. The clearer the
+        problem, the better the design that comes out of it.
+      placeholder: >
+        I cannot tell which referral source brings patients who actually come back,
+        so I do not know where to spend marketing time.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like it to do
+    validations:
+      required: true
+
+  - type: dropdown
+    id: question
+    attributes:
+      label: Which core question does this help answer
+      description: Features that serve one of these are prioritised
+      options:
+        - Money in, money out, money left
+        - Which patient or case was charged
+        - How the clinics compare
+        - None of these directly
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: How you handle it today
+      description: Workarounds, paper, or another app
