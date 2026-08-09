@@ -7,11 +7,13 @@ import '../../../core/services/pdf_service.dart';
 class ReceiptPreviewDialog extends StatelessWidget {
   final CashMemo cashMemo;
   final Patient patient;
+  final String? clinicName;
 
   const ReceiptPreviewDialog({
     super.key,
     required this.cashMemo,
     required this.patient,
+    this.clinicName,
   });
 
   @override
@@ -30,6 +32,7 @@ class ReceiptPreviewDialog extends StatelessWidget {
         build: (format) => PdfService.generateCashMemoPdf(
           cashMemo: cashMemo,
           patient: patient,
+          clinicName: clinicName ?? "Dr Zaid's Clinic",
         ),
         allowPrinting: true,
         allowSharing: true,

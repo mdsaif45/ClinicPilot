@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../core/widgets/custom_text_field.dart';
+import '../../clinics/providers/clinic_provider.dart';
 import '../providers/patient_provider.dart';
 
 class AddPatientDialog extends ConsumerStatefulWidget {
@@ -15,212 +15,191 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _whatsappController = TextEditingController();
   final _ageController = TextEditingController();
+  final _areaController = TextEditingController();
   final _diseaseController = TextEditingController();
 
   String _gender = 'Male';
+  String? _selectedClinicId;
   String _referralSource = 'Walk-in';
 
-  final List<String> _genderOptions = ['Male', 'Female', 'Other'];
-  final List<String> _referralOptions = [
+  final List<String> _referralSources = [
     'Walk-in',
     'Google Search',
     'Google Maps',
     'Instagram',
     'Friend/Family',
     'Camp',
-    'Others'
+    'Others',
   ];
 
-  final List<String> _commonDiseases = [
-    'Migraine',
-    'Diabetes',
-    'Thyroid',
-    'PCOS',
-    'Skin Disease',
-    'Arthritis',
-    'General Health'
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _selectedClinicId = ref.read(activeClinicIdProvider);
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _whatsappController.dispose();
     _ageController.dispose();
+    _areaController.dispose();
     _diseaseController.dispose();
     super.dispose();
   }
 
-  void _submit() async {
+  @override
+  Widget build(BuildContext context) {
+    final clinicsAsync = ref.watch(clinicsStreamProvider);
+    final clinics = clinicsAsync.value ?? [];
+
+    return AlertDialog(
+      title: const Text('Register New Patient'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CustomTextField(
+                controller: _nameController,
+                label: 'Patient Full Name',
+                prefixIcon: Icons.person,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _phoneController,
+                label: 'Phone Number',
+                prefixIcon: Icons.phone,
+                keyboardType: TextInputType.phone,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _whatsappController,
+                label: 'WhatsApp Number (Optional)',
+                prefixIcon: Icons.chat,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _ageController,
+                      label: 'Age',
+                      prefixIcon: Icons.calendar_today,
+                      keyboardType: TextInputType.number,
+                      validator: (v) =>
+                          v == null || int.tryParse(v) == null ? 'Valid age' : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _gender,
+                      decoration: const InputDecoration(
+                        labelText: 'Gender',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ['Male', 'Female', 'Other']
+                          .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _gender = val);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _areaController,
+                label: 'Locality / Area (e.g. Babu Bazar)',
+                prefixIcon: Icons.location_on,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _selectedClinicId,
+                decoration: const InputDecoration(
+                  labelText: 'Clinic',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.local_hospital),
+                ),
+                items: clinics
+                    .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedClinicId = val);
+                },
+                validator: (v) => v == null ? 'Select clinic' : null,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _diseaseController,
+                label: 'Disease / Chief Complaint',
+                prefixIcon: Icons.medical_services,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _referralSource,
+                decoration: const InputDecoration(
+                  labelText: 'Referral Source (New Patient)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.campaign),
+                ),
+                items: _referralSources
+                    .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _referralSource = val);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text('Register & Create Visit'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedClinicId == null) return;
 
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
-    final age = int.tryParse(_ageController.text.trim()) ?? 0;
-    final disease = _diseaseController.text.trim().isEmpty ? 'General' : _diseaseController.text.trim();
+    final whatsapp = _whatsappController.text.trim();
+    final age = int.parse(_ageController.text.trim());
+    final area = _areaController.text.trim();
+    final disease = _diseaseController.text.trim();
 
-    final success = await ref.read(patientNotifierProvider.notifier).registerPatient(
+    await ref.read(patientNotifierProvider.notifier).registerPatient(
           name: name,
           phone: phone,
+          whatsapp: whatsapp.isEmpty ? null : whatsapp,
           age: age,
           gender: _gender,
-          clinicId: 'default_clinic',
+          area: area.isEmpty ? null : area,
+          primaryClinicId: _selectedClinicId!,
           disease: disease,
           referralSource: _referralSource,
         );
 
-    if (mounted && success) {
-      Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Patient '$name' registered successfully!"),
-          backgroundColor: const Color(0xFF0F5132),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(patientNotifierProvider);
-
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Register Patient",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF212529),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-                const Divider(),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  label: "Patient Name",
-                  hint: "e.g. Mr. Rahul Sharma",
-                  controller: _nameController,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? "Name is required" : null,
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: CustomTextField(
-                        label: "Phone Number",
-                        hint: "9876543210",
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        validator: (v) => (v == null || v.trim().isEmpty) ? "Phone is required" : null,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 1,
-                      child: CustomTextField(
-                        label: "Age",
-                        hint: "29",
-                        controller: _ageController,
-                        keyboardType: TextInputType.number,
-                        validator: (v) => (v == null || v.trim().isEmpty) ? "Required" : null,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  "Gender",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  children: _genderOptions.map((g) {
-                    final selected = _gender == g;
-                    return ChoiceChip(
-                      label: Text(g),
-                      selected: selected,
-                      selectedColor: const Color(0xFF0F5132),
-                      labelStyle: TextStyle(
-                        color: selected ? Colors.white : Colors.black87,
-                        fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      onSelected: (val) {
-                        if (val) setState(() => _gender = g);
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 14),
-                CustomTextField(
-                  label: "Disease / Case",
-                  hint: "e.g. Migraine, PCOS",
-                  controller: _diseaseController,
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: _commonDiseases.map((d) {
-                    return ActionChip(
-                      label: Text(d, style: const TextStyle(fontSize: 12)),
-                      onPressed: () {
-                        setState(() => _diseaseController.text = d);
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  "Referral Source",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  value: _referralSource,
-                  decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
-                  items: _referralOptions.map((src) {
-                    return DropdownMenuItem(value: src, child: Text(src));
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _referralSource = val);
-                  },
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: state.isLoading ? null : _submit,
-                    child: state.isLoading
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Register Patient"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    if (mounted) Navigator.of(context).pop();
   }
 }
