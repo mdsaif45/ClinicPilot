@@ -1,0 +1,78 @@
+name: Bug report
+description: Something in the app behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+
+        **Do not include real patient data** — no names, phone numbers or medical
+        details. Use fabricated examples or redact screenshots.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, and what went wrong?
+      placeholder: |
+        1. Opened Clinic Comparison
+        2. Set the period filter to Today
+        3. Net profit showed a large negative number
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where in the app
+      options:
+        - Dashboard
+        - Patients
+        - Visits
+        - Cash Memo
+        - Expenses
+        - Growth / Analytics
+        - Clinic Comparison
+        - Settings
+        - Database migration / upgrade
+        - Build or install
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: From Settings, or the release you installed
+      placeholder: v0.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: Redmi Note 12, Android 14
+
+  - type: checkboxes
+    id: data-risk
+    attributes:
+      label: Data impact
+      options:
+        - label: This caused data loss or incorrect numbers in a report
+        - label: This happened after upgrading from a previous version
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots (redacted), or logs from `flutter run` if you built it yourself
