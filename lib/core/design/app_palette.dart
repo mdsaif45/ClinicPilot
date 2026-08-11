@@ -2,56 +2,99 @@ import 'package:flutter/material.dart';
 
 import 'tokens.dart';
 
-/// Colour palettes the user can choose between.
+/// Colour palettes offered in Settings.
 ///
-/// These are Material 3 *scheme variants*: each derives a full 26-role
-/// ColorScheme from the same seed using a different algorithm, so switching
-/// palette re-tints the whole app rather than swapping one accent colour.
-///
-/// Deliberately four rather than the full M3 set — seeded from a single brand
-/// colour, most variants land within a few degrees of each other, so extra
-/// entries would offer choice without visible difference.
+/// Each entry pairs a **seed colour** with a Material 3 **scheme variant**.
+/// Both matter: the variant decides how chroma is distributed across the 26
+/// colour roles, while the seed decides the hue. Varying only the variant from
+/// a single seed produces nine near-identical themes, which is exactly the
+/// mistake this enum previously made.
 enum AppPalette {
-  /// Brand emerald. The identity the clinic already prints on its signboard.
-  emerald,
+  /// Clinic brand. The colour already on the signboard, so it stays default.
+  emerald(
+    label: 'Emerald',
+    description: 'Clinic brand colour',
+    seed: BrandColors.emerald,
+    variant: DynamicSchemeVariant.tonalSpot,
+  ),
 
-  /// Almost greyscale with a faint brand tint. Calmest for long reading.
-  neutral,
+  tonalSpot(
+    label: 'TonalSpot',
+    description: 'Balanced slate blue',
+    seed: Color(0xFF4A5568),
+    variant: DynamicSchemeVariant.tonalSpot,
+  ),
 
-  /// High chroma. Strongest separation between profit/loss and chart series.
-  vibrant,
+  neutral(
+    label: 'Neutral',
+    description: 'Calm and muted',
+    seed: Color(0xFF5F5F5F),
+    variant: DynamicSchemeVariant.neutral,
+  ),
 
-  /// Pure greyscale. Maximum contrast, useful in bright evening clinic light.
-  monochrome;
+  vibrant(
+    label: 'Vibrant',
+    description: 'Bold and saturated',
+    seed: Color(0xFF3F4CD9),
+    variant: DynamicSchemeVariant.vibrant,
+  ),
 
-  String get label => switch (this) {
-        AppPalette.emerald => 'Emerald',
-        AppPalette.neutral => 'Neutral',
-        AppPalette.vibrant => 'Vibrant',
-        AppPalette.monochrome => 'Monochrome',
-      };
+  expressive(
+    label: 'Expressive',
+    description: 'Playful violet',
+    seed: Color(0xFF6750A4),
+    variant: DynamicSchemeVariant.expressive,
+  ),
 
-  String get description => switch (this) {
-        AppPalette.emerald => 'Clinic brand colour',
-        AppPalette.neutral => 'Calm and muted',
-        AppPalette.vibrant => 'Bold and high contrast',
-        AppPalette.monochrome => 'Greyscale',
-      };
+  rainbow(
+    label: 'Rainbow',
+    description: 'Bright blue violet',
+    seed: Color(0xFF4F5BD5),
+    variant: DynamicSchemeVariant.rainbow,
+  ),
 
-  /// Colour shown in the palette picker swatch.
-  Color get swatch => switch (this) {
-        AppPalette.emerald => BrandColors.emerald,
-        AppPalette.neutral => const Color(0xFF5F6B62),
-        AppPalette.vibrant => const Color(0xFF00A86B),
-        AppPalette.monochrome => const Color(0xFF3A3A3A),
-      };
+  fruitSalad(
+    label: 'FruitSalad',
+    description: 'Fresh cyan',
+    seed: Color(0xFF00A5C4),
+    variant: DynamicSchemeVariant.fruitSalad,
+  ),
 
-  DynamicSchemeVariant get variant => switch (this) {
-        AppPalette.emerald => DynamicSchemeVariant.tonalSpot,
-        AppPalette.neutral => DynamicSchemeVariant.neutral,
-        AppPalette.vibrant => DynamicSchemeVariant.vibrant,
-        AppPalette.monochrome => DynamicSchemeVariant.monochrome,
-      };
+  monochrome(
+    label: 'Monochrome',
+    description: 'Greyscale',
+    seed: Color(0xFF5C5C5C),
+    variant: DynamicSchemeVariant.monochrome,
+  ),
+
+  fidelity(
+    label: 'Fidelity',
+    description: 'True to the source colour',
+    seed: Color(0xFF4A52B8),
+    variant: DynamicSchemeVariant.fidelity,
+  ),
+
+  content(
+    label: 'Content',
+    description: 'Indigo, content aware',
+    seed: Color(0xFF5A5FCF),
+    variant: DynamicSchemeVariant.content,
+  );
+
+  const AppPalette({
+    required this.label,
+    required this.description,
+    required this.seed,
+    required this.variant,
+  });
+
+  final String label;
+  final String description;
+  final Color seed;
+  final DynamicSchemeVariant variant;
+
+  /// Colour shown in the picker swatch.
+  Color get swatch => seed;
 
   static AppPalette fromName(String? name) => AppPalette.values.firstWhere(
         (p) => p.name == name,
@@ -61,9 +104,9 @@ enum AppPalette {
 
 /// Brightness options offered in Settings.
 ///
-/// [black] is a true-black variant of dark mode. It is not a separate
-/// ThemeMode — it is dark mode with pure black surfaces, which saves power on
-/// OLED screens and reads better in a dim consulting room.
+/// The true-black option is not a separate mode: it is dark mode with pure
+/// black surfaces, which saves power on OLED screens and reads better in a dim
+/// consulting room.
 enum AppThemeMode {
   system,
   light,

@@ -1,11 +1,18 @@
+import 'dart:io' show File, Platform;
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
+import '../../../core/services/export_service.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_list_tile.dart';
@@ -138,7 +145,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               AppListTile(
                 icon: Icons.download_outlined,
                 title: 'Export backup',
-                subtitle: 'Patients, visits and memos as CSV',
+                subtitle: 'Choose where to save a CSV of all records',
                 onTap: _exportData,
               ),
             ],
@@ -243,9 +250,61 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _exportData() async {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data backup saved successfully!')),
+    final messenger = ScaffoldMessenger.of(context);
+    final service = ExportService(ref.read(databaseProvider));
+
+    try {
+      final rows = await service.countRows();
+      if (rows == 0) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Nothing to export yet.')),
+        );
+        return;
+      }
+
+      final csv = await service.buildCsv();
+      final bytes = Uint8List.fromList(ExportService.encode(csv));
+      final fileName = ExportService.suggestedFileName(DateTime.now());
+
+      // Let the doctor choose where the backup lands. saveFile writes the
+      // bytes directly on Android, and returns the chosen path elsewhere.
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save ClinicPilot backup',
+        fileName: fileName,
+        bytes: bytes,
+        type: FileType.custom,
+        allowedExtensions: const ['csv'],
+      );
+
+      if (path == null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Export cancelled.')),
+        );
+        return;
+      }
+
+      // On desktop saveFile only returns the location; the write is ours.
+      if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+        await File(path).writeAsBytes(bytes, flush: true);
+      }
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Exported $rows records to $fileName'),
+          action: SnackBarAction(
+            label: 'Share',
+            onPressed: () => Share.shareXFiles(
+              [XFile(path)],
+              text: 'ClinicPilot backup',
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      // Never claim success on failure - this backup is what protects the
+      // doctor's data through the release-signing reinstall.
+      messenger.showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
       );
     }
   }

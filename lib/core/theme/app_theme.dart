@@ -25,8 +25,10 @@ class AppTheme {
     AppPalette palette = AppPalette.emerald,
     bool blackVariant = false,
   }) {
+    // Seed AND variant both come from the palette. Using one fixed seed for
+    // every variant produces nine near-identical themes.
     var scheme = ColorScheme.fromSeed(
-      seedColor: BrandColors.emerald,
+      seedColor: palette.seed,
       brightness: brightness,
       dynamicSchemeVariant: palette.variant,
     );
