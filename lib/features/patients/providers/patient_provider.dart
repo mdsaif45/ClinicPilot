@@ -147,3 +147,63 @@ final patientNotifierProvider =
   final db = ref.watch(databaseProvider);
   return PatientNotifier(db);
 });
+
+/// A patient plus the fields needed to tell two same-named people apart.
+class PatientSearchResult {
+  final Patient patient;
+  final DateTime? lastVisitDate;
+  final int visitCount;
+
+  const PatientSearchResult({
+    required this.patient,
+    this.lastVisitDate,
+    this.visitCount = 0,
+  });
+}
+
+/// Searches patients for the picker.
+///
+/// An empty query returns the most recently seen patients, because the next
+/// memo is nearly always for someone just consulted. Filtering happens in SQL
+/// with a LIMIT so this stays constant-cost as the patient list grows — never
+/// load every patient into memory and filter in Dart.
+final patientSearchProvider =
+    FutureProvider.autoDispose.family<List<PatientSearchResult>, String>(
+        (ref, query) async {
+  final db = ref.watch(databaseProvider);
+  final q = query.trim().toLowerCase();
+  const limit = 50;
+
+  final rows = await db.customSelect(
+    '''
+    SELECT p.*,
+           MAX(v.visit_date) AS last_visit,
+           COUNT(v.id)       AS visit_count
+    FROM patients p
+    LEFT JOIN visits v ON v.patient_id = p.id AND v.is_deleted = 0
+    WHERE p.is_deleted = 0
+      AND (
+        ?1 = ''
+        OR LOWER(p.name)         LIKE '%' || ?1 || '%'
+        OR LOWER(p.phone)        LIKE '%' || ?1 || '%'
+        OR LOWER(p.patient_code) LIKE '%' || ?1 || '%'
+      )
+    GROUP BY p.id
+    ORDER BY last_visit DESC NULLS LAST, p.created_at DESC
+    LIMIT $limit
+    ''',
+    variables: [Variable<String>(q)],
+    readsFrom: {db.patients, db.visits},
+  ).get();
+
+  return rows.map((row) {
+    final lastVisitRaw = row.data['last_visit'] as int?;
+    return PatientSearchResult(
+      patient: db.patients.map(row.data),
+      lastVisitDate: lastVisitRaw == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(lastVisitRaw * 1000),
+      visitCount: (row.data['visit_count'] as int?) ?? 0,
+    );
+  }).toList();
+});

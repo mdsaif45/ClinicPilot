@@ -94,19 +94,58 @@ class ScaffoldWithNavBar extends ConsumerWidget {
     final periodState = ref.watch(periodProvider);
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final scheme = Theme.of(context).colorScheme;
+    final primaryColor = scheme.primary;
+    // Everything drawn on the AppBar must use this, never a hardcoded colour —
+    // the selected value of a DropdownButton otherwise inherits the default body
+    // text style and renders light-on-light.
+    final onBar = scheme.onPrimary;
 
     return Scaffold(
       appBar: AppBar(
         elevation: 2,
+        backgroundColor: primaryColor,
+        foregroundColor: onBar,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButton<String>(
               value: activeClinic?.id,
               underline: const SizedBox(),
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+              icon: Icon(Icons.arrow_drop_down, color: onBar),
               dropdownColor: primaryColor,
+              // Styles the collapsed in-bar label independently of the menu items.
+              selectedItemBuilder: (context) => clinics.map((c) {
+                Color clinicColor;
+                try {
+                  clinicColor = Color(int.parse(c.colorHex.replaceAll('#', '0xFF')));
+                } catch (_) {
+                  clinicColor = Colors.teal;
+                }
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: clinicColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: onBar, width: 1),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      c.name,
+                      style: TextStyle(
+                        color: onBar,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
               items: clinics.map((c) {
                 final isSelected = c.id == activeClinic?.id;
                 Color clinicColor;
@@ -134,7 +173,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                         c.name,
                         style: TextStyle(
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: Colors.white,
+                          color: onBar,
                         ),
                       ),
                       if (isSelected) ...[
@@ -158,15 +197,28 @@ class ScaffoldWithNavBar extends ConsumerWidget {
           DropdownButton<PeriodFilter>(
             value: periodState.filter,
             underline: const SizedBox(),
-            icon: const Icon(Icons.calendar_today, color: Colors.white, size: 18),
+            icon: Icon(Icons.calendar_today, color: onBar, size: 18),
             dropdownColor: primaryColor,
+            selectedItemBuilder: (context) => PeriodFilter.values
+                .map((pf) => Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        pf.label,
+                        style: TextStyle(
+                          color: onBar,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ))
+                .toList(),
             items: PeriodFilter.values
                 .map((pf) => DropdownMenuItem(
                       value: pf,
                       child: Text(
                         pf.label,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: onBar,
                           fontSize: 13,
                           fontWeight: pf == periodState.filter ? FontWeight.bold : FontWeight.normal,
                         ),
