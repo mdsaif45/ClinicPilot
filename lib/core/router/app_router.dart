@@ -9,6 +9,9 @@ import '../../features/patients/presentation/patients_screen.dart';
 import '../../features/cashmemo/presentation/cash_memo_screen.dart';
 import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/growth/presentation/growth_screen.dart';
+import '../../features/growth/presentation/growth_hub_screen.dart';
+import '../../features/growth/presentation/profit_summary_screen.dart';
+import '../../features/growth/presentation/referral_source_screen.dart';
 import '../../features/growth/presentation/clinic_comparison_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/settings/providers/update_provider.dart';
@@ -58,7 +61,21 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/growth',
-                builder: (context, state) => const GrowthScreen(),
+                builder: (context, state) => const GrowthHubScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'overview',
+                    builder: (context, state) => const GrowthScreen(),
+                  ),
+                  GoRoute(
+                    path: 'profit',
+                    builder: (context, state) => const ProfitSummaryScreen(),
+                  ),
+                  GoRoute(
+                    path: 'referral',
+                    builder: (context, state) => const ReferralSourceScreen(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -95,6 +112,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
   /// because the active clinic scopes its figures and it is the landing tab,
   /// which makes it the natural home for the settings entry point.
   static const _dashboardIndex = 0;
+  static const _growthIndex = 4;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -135,9 +153,14 @@ class ScaffoldWithNavBar extends ConsumerWidget {
         selectedIndex: navigationShell.currentIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
+          // Growth is a menu of sub-screens. A shell branch normally restores
+          // whichever sub-route was last open, which would mean that once a
+          // section had been visited the tab could never return to its menu.
+          final alwaysReset = index == _growthIndex;
           navigationShell.goBranch(
             index,
-            initialLocation: index == navigationShell.currentIndex,
+            initialLocation:
+                alwaysReset || index == navigationShell.currentIndex,
           );
         },
         destinations: [

@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/period_selector.dart';
@@ -16,6 +15,7 @@ class GrowthScreen extends ConsumerWidget {
     final analyticsAsync = ref.watch(growthAnalyticsProvider);
 
     return Scaffold(
+      appBar: AppBar(title: const Text('Growth Overview')),
       body: analyticsAsync.when(
         data: (analytics) {
           return SingleChildScrollView(
@@ -24,18 +24,6 @@ class GrowthScreen extends ConsumerWidget {
               children: [
                 // The period control sits with the figures it scopes.
                 const PeriodSelector(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                  child: OutlinedButton.icon(
-                    onPressed: () => context.push('/comparison'),
-                    icon: const Icon(Icons.compare_arrows),
-                    label: const Text('Compare both clinics'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(44),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: Spacing.lg),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
                   child: Column(
