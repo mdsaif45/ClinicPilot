@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/widgets/custom_dropdown_field.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/utils/validators.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/patient_provider.dart';
 
@@ -87,25 +90,25 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
               ),
               const SizedBox(height: 12),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: CustomTextField(
                       controller: _ageController,
                       label: 'Age',
-                      prefixIcon: Icons.calendar_today,
+                      // Not a date picker — age is typed, so avoid a calendar icon.
+                      prefixIcon: Icons.numbers,
                       keyboardType: TextInputType.number,
-                      validator: (v) =>
-                          v == null || int.tryParse(v) == null ? 'Valid age' : null,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      validator: Validators.age,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: DropdownButtonFormField<String>(
+                    child: CustomDropdownField<String>(
+                      label: 'Gender',
                       value: _gender,
-                      decoration: const InputDecoration(
-                        labelText: 'Gender',
-                        border: OutlineInputBorder(),
-                      ),
+                      prefixIcon: Icons.wc,
                       items: ['Male', 'Female', 'Other']
                           .map((g) => DropdownMenuItem(value: g, child: Text(g)))
                           .toList(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Reusable Custom Input Text Field component
 class CustomTextField extends StatelessWidget {
@@ -12,6 +13,7 @@ class CustomTextField extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextField({
     super.key,
@@ -25,6 +27,7 @@ class CustomTextField extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.onChanged,
+    this.inputFormatters,
   });
 
   Widget? _buildPrefixIcon() {
@@ -57,6 +60,7 @@ class CustomTextField extends StatelessWidget {
           readOnly: readOnly,
           onTap: onTap,
           onChanged: onChanged,
+          inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: _buildPrefixIcon(),
