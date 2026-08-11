@@ -124,7 +124,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                 try {
                   clinicColor = Color(int.parse(c.colorHex.replaceAll('#', '0xFF')));
                 } catch (_) {
-                  clinicColor = Colors.teal;
+                  clinicColor = Theme.of(context).colorScheme.primary;
                 }
                 return Row(
                   children: [
@@ -158,7 +158,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                 try {
                   clinicColor = Color(int.parse(c.colorHex.replaceAll('#', '0xFF')));
                 } catch (_) {
-                  clinicColor = Colors.teal;
+                  clinicColor = Theme.of(context).colorScheme.primary;
                 }
 
                 return DropdownMenuItem<String>(
@@ -174,7 +174,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Text(
                         c.name,
                         style: TextStyle(
@@ -184,7 +184,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                       ),
                       if (isSelected) ...[
                         const SizedBox(width: 8),
-                        const Icon(Icons.check_circle, color: Colors.amber, size: 16),
+                        Icon(Icons.check_circle, color: Theme.of(context).colorScheme.tertiary, size: 16),
                       ],
                     ],
                   ),
@@ -239,17 +239,18 @@ class ScaffoldWithNavBar extends ConsumerWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.compare_arrows),
+            icon: Icon(Icons.compare_arrows),
             tooltip: 'Clinic Comparison',
             onPressed: () => context.push('/comparison'),
           ),
           IconButton(
             icon: ref.watch(availableUpdateProvider).when(
                   data: (update) => (update != null && !ref.watch(updateBadgeDismissedProvider))
-                      ? const Badge(
+                      ? Badge(
                           smallSize: 8,
-                          backgroundColor: Colors.amber,
-                          child: Icon(Icons.settings),
+                          backgroundColor:
+                              Theme.of(context).colorScheme.tertiary,
+                          child: const Icon(Icons.settings),
                         )
                       : const Icon(Icons.settings),
                   loading: () => const Icon(Icons.settings),

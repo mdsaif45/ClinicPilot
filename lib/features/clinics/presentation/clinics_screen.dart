@@ -55,13 +55,13 @@ class ClinicsScreen extends ConsumerWidget {
                   contentPadding: const EdgeInsets.all(16),
                   leading: CircleAvatar(
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    child: const Icon(Icons.local_hospital, color: Colors.white),
+                    child: Icon(Icons.local_hospital, color: Theme.of(context).colorScheme.onPrimary),
                   ),
                   title: Row(
                     children: [
                       Text(
                         clinic.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),

@@ -115,7 +115,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                 }),
                 errorText: _patientError,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               CustomTextField(
                 controller: _consultationController,
                 label: 'Consultation Fee (Rs)',
@@ -164,7 +164,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Total Payable:',
+                    Text('Total Payable:',
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     Text(
                       Formatters.formatCurrency(currentTotal),

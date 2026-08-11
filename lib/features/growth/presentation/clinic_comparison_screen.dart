@@ -29,7 +29,7 @@ class ClinicComparisonScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Side-by-Side Performance',
                   style: TextStyle(
                     fontSize: 20,
@@ -54,16 +54,16 @@ class ClinicComparisonScreen extends ConsumerWidget {
                           ...metricsList.map((m) => DataColumn(
                                 label: Text(
                                   m.clinic.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.teal),
+                                      color: Theme.of(context).colorScheme.primary),
                                 ),
                               )),
                         ],
                         rows: [
                           // Headline Net Profit
                           DataRow(cells: [
-                            const DataCell(Text('Net Profit (Headline)',
+                            DataCell(Text('Net Profit (Headline)',
                                 style: TextStyle(fontWeight: FontWeight.bold))),
                             ...metricsList.map((m) => DataCell(
                                   Text(
@@ -72,14 +72,14 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                       color: m.netProfit >= 0
-                                          ? Colors.green[700]
-                                          : Colors.red[700],
+                                          ? Theme.of(context).colorScheme.primary
+                                          : Theme.of(context).colorScheme.error,
                                     ),
                                   ),
                                 )),
                           ]),
                           DataRow(cells: [
-                            const DataCell(Text('Total Revenue')),
+                            DataCell(Text('Total Revenue')),
                             ...metricsList.map((m) => DataCell(
                                   Text(Formatters.formatCurrency(m.revenue)),
                                 )),
@@ -141,8 +141,8 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                     '${m.growthPercentageVsPrev >= 0 ? "+" : ""}${m.growthPercentageVsPrev.toStringAsFixed(1)}%',
                                     style: TextStyle(
                                       color: m.growthPercentageVsPrev >= 0
-                                          ? Colors.green[700]
-                                          : Colors.red[700],
+                                          ? Theme.of(context).colorScheme.primary
+                                          : Theme.of(context).colorScheme.error,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),

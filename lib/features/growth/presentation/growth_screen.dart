@@ -23,7 +23,7 @@ class GrowthScreen extends ConsumerWidget {
               children: [
                 Text(
                   'Growth & Analytics (${periodState.filter.label})',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -33,16 +33,16 @@ class GrowthScreen extends ConsumerWidget {
                         title: 'New Patients',
                         value: '${analytics.totalNewPatients}',
                         icon: Icons.person_add,
-                        color: Colors.green,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: StatCard(
                         title: 'Repeat Patients',
                         value: '${analytics.totalRepeatPatients}',
                         icon: Icons.repeat,
-                        color: Colors.blue,
+                        color: Theme.of(context).colorScheme.tertiary,
                       ),
                     ),
                   ],
@@ -68,7 +68,7 @@ class GrowthScreen extends ConsumerWidget {
                         SizedBox(
                           height: 200,
                           child: LineChart(
-                            _buildLineChartData(
+                            _buildLineChartData(context,
                                 analytics.dailyRevenueMap, analytics.dailyExpenseMap),
                           ),
                         ),
@@ -115,8 +115,8 @@ class GrowthScreen extends ConsumerWidget {
                                       child: LinearProgressIndicator(
                                         value: pct,
                                         minHeight: 8,
-                                        backgroundColor: Colors.grey[200],
-                                        color: Colors.teal,
+                                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                        color: Theme.of(context).colorScheme.primary,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -140,7 +140,7 @@ class GrowthScreen extends ConsumerWidget {
     );
   }
 
-  LineChartData _buildLineChartData(
+  LineChartData _buildLineChartData(BuildContext context,
       Map<int, double> revenueMap, Map<int, double> expenseMap) {
     final revenueSpots = revenueMap.entries
         .map((e) => FlSpot(e.key.toDouble(), e.value))
@@ -153,7 +153,7 @@ class GrowthScreen extends ConsumerWidget {
       ..sort((a, b) => a.x.compareTo(b.x));
 
     return LineChartData(
-      gridData: const FlGridData(show: true),
+      gridData: FlGridData(show: true),
       titlesData: const FlTitlesData(
         topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -162,13 +162,13 @@ class GrowthScreen extends ConsumerWidget {
         LineChartBarData(
           spots: revenueSpots.isEmpty ? [const FlSpot(1, 0)] : revenueSpots,
           isCurved: true,
-          color: Colors.green,
+          color: Theme.of(context).colorScheme.primary,
           barWidth: 3,
         ),
         LineChartBarData(
-          spots: expenseSpots.isEmpty ? [const FlSpot(1, 0)] : expenseSpots,
+          spots: expenseSpots.isEmpty ? [FlSpot(1, 0)] : expenseSpots,
           isCurved: true,
-          color: Colors.red,
+          color: Theme.of(context).colorScheme.error,
           barWidth: 3,
         ),
       ],

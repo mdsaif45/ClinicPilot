@@ -131,8 +131,8 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.system_update, color: Colors.teal),
-                  const SizedBox(width: 12),
+                  Icon(Icons.system_update, color: Theme.of(context).colorScheme.primary),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +143,7 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                         ),
                         Text(
                           'v$_runningVersion · Checking for updates...',
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                         ),
                       ],
                     ),
@@ -169,8 +169,8 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.downloading, color: Colors.blue),
-                      const SizedBox(width: 12),
+                      Icon(Icons.downloading, color: Theme.of(context).colorScheme.tertiary),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Downloading Update v${release.version}',
@@ -180,30 +180,30 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                       ),
                       Text(
                         '$pct%',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.blue),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.tertiary),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   LinearProgressIndicator(
                     value: downloadState.progress > 0 ? downloadState.progress : null,
-                    backgroundColor: Colors.blue.shade50,
-                    color: Colors.blue,
+                    backgroundColor: Theme.of(context).colorScheme.tertiary,
+                    color: Theme.of(context).colorScheme.tertiary,
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         '$downloadedMb of $totalMb',
-                        style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                       ),
                       TextButton.icon(
                         onPressed: downloadNotifier.cancelDownload,
-                        icon: const Icon(Icons.cancel, size: 16, color: Colors.red),
-                        label: const Text('Cancel', style: TextStyle(color: Colors.red)),
+                        icon: Icon(Icons.cancel, size: 16, color: Theme.of(context).colorScheme.error),
+                        label: Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.error)),
                       ),
                     ],
                   ),
@@ -219,8 +219,8 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.check_circle, color: Colors.green),
-                      const SizedBox(width: 12),
+                      Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Update Ready: v${release.version}',
@@ -233,40 +233,40 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                   const SizedBox(height: 8),
                   Text(
                     'Downloaded. Tap Install, then confirm on the Android prompt.',
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.amber.shade50,
+                      color: Theme.of(context).colorScheme.tertiary,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.amber.shade300),
+                      border: Border.all(color: Theme.of(context).colorScheme.tertiary),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline, color: Colors.amber.shade900, size: 20),
-                        const SizedBox(width: 8),
+                        Icon(Icons.info_outline, color: Theme.of(context).colorScheme.tertiary, size: 20),
+                        SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Android will ask you to confirm this installation. Your clinic data will not be affected by the update.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.amber.shade900,
+                              color: Theme.of(context).colorScheme.tertiary,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   ElevatedButton.icon(
                     onPressed: () => _handleInstall(downloadState.downloadedFilePath!),
                     icon: const Icon(Icons.system_update),
                     label: const Text('Install Now'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       minimumSize: const Size.fromHeight(42),
                     ),
                   ),
@@ -281,8 +281,8 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.red),
-                      const SizedBox(width: 12),
+                      Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Download Failed',
@@ -295,7 +295,7 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                   const SizedBox(height: 8),
                   Text(
                     downloadState.errorMessage ?? 'An error occurred during download.',
-                    style: const TextStyle(color: Colors.red, fontSize: 13),
+                    style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -325,12 +325,12 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.teal.shade50,
+                        color: Theme.of(context).colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.system_update, color: Colors.teal),
+                      child: Icon(Icons.system_update, color: Theme.of(context).colorScheme.primary),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,19 +341,19 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.teal,
+                                  color: Theme.of(context).colorScheme.primary,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Update Available',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: Theme.of(context).colorScheme.onPrimary,
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Text(
                                 'v${release.version}',
                                 style: const TextStyle(
@@ -366,7 +366,7 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                           const SizedBox(height: 2),
                           Text(
                             '${_formatSize(release.apkSizeBytes)} · released ${_formatDaysAgo(release.publishedAt)}',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                           ),
                         ],
                       ),
@@ -387,8 +387,8 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                         children: [
                           Text(
                             _showNotes ? 'Hide Release Notes' : 'View Release Notes',
-                            style: const TextStyle(
-                              color: Colors.teal,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
@@ -397,7 +397,7 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                             _showNotes
                                 ? Icons.keyboard_arrow_up
                                 : Icons.keyboard_arrow_down,
-                            color: Colors.teal,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 18,
                           ),
                         ],
@@ -410,24 +410,24 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                       margin: const EdgeInsets.only(top: 4, bottom: 8),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         release.notes,
-                        style: TextStyle(color: Colors.grey.shade800, fontSize: 13),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                       ),
                     ),
                   ],
                 ],
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 ElevatedButton.icon(
                   onPressed: () => downloadNotifier.startDownload(release),
                   icon: const Icon(Icons.download),
                   label: const Text('Download & Install'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     minimumSize: const Size.fromHeight(42),
                   ),
                 ),
@@ -445,8 +445,8 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
       children: [
         Row(
           children: [
-            const Icon(Icons.system_update, color: Colors.teal),
-            const SizedBox(width: 12),
+            Icon(Icons.system_update, color: Theme.of(context).colorScheme.primary),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -457,7 +457,7 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                   ),
                   Text(
                     'v$_runningVersion · You are on the latest version',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                   ),
                 ],
               ),
