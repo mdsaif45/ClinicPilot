@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/period_provider.dart';
-import '../../features/clinics/providers/clinic_provider.dart';
+import '../design/tokens.dart';
+import '../widgets/clinic_switcher.dart';
 import '../../features/clinics/presentation/clinics_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/patients/presentation/patients_screen.dart';
@@ -90,171 +90,31 @@ class ScaffoldWithNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeClinic = ref.watch(activeClinicProvider);
-    final periodState = ref.watch(periodProvider);
-    final clinicsAsync = ref.watch(clinicsStreamProvider);
-    final clinics = clinicsAsync.value ?? [];
     final scheme = Theme.of(context).colorScheme;
-    final primaryColor = scheme.primary;
-    // Everything drawn on the AppBar must use this, never a hardcoded colour —
-    // the selected value of a DropdownButton otherwise inherits the default body
-    // text style and renders light-on-light.
-    final onBar = scheme.onPrimary;
 
     return Scaffold(
       appBar: AppBar(
         elevation: 2,
-        backgroundColor: primaryColor,
-        foregroundColor: onBar,
-        // titleSpacing 0 + Flexible: a long clinic name must ellipsize rather
-        // than run underneath the action icons.
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            Flexible(
-              child: DropdownButton<String>(
-              value: activeClinic?.id,
-              isExpanded: true,
-              underline: const SizedBox(),
-              icon: Icon(Icons.arrow_drop_down, color: onBar),
-              dropdownColor: primaryColor,
-              // Styles the collapsed in-bar label independently of the menu items.
-              selectedItemBuilder: (context) => clinics.map((c) {
-                Color clinicColor;
-                try {
-                  clinicColor = Color(int.parse(c.colorHex.replaceAll('#', '0xFF')));
-                } catch (_) {
-                  clinicColor = Theme.of(context).colorScheme.primary;
-                }
-                return Row(
-                  children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: clinicColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: onBar, width: 1),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        c.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: onBar,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
-              items: clinics.map((c) {
-                final isSelected = c.id == activeClinic?.id;
-                Color clinicColor;
-                try {
-                  clinicColor = Color(int.parse(c.colorHex.replaceAll('#', '0xFF')));
-                } catch (_) {
-                  clinicColor = Theme.of(context).colorScheme.primary;
-                }
-
-                return DropdownMenuItem<String>(
-                  value: c.id,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: clinicColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        c.name,
-                        style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: onBar,
-                        ),
-                      ),
-                      if (isSelected) ...[
-                        const SizedBox(width: 8),
-                        Icon(Icons.check_circle, color: Theme.of(context).colorScheme.tertiary, size: 16),
-                      ],
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) {
-                  ref.read(activeClinicIdProvider.notifier).setClinicId(val);
-                }
-              },
-              ),
-            ),
-          ],
-        ),
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        titleSpacing: Spacing.sm,
+        // Only the active clinic lives here now. The period filter moved onto
+        // the analytics screens it actually scopes, and clinic comparison sits
+        // with the other growth views.
+        title: const ClinicSwitcher(),
         actions: [
-          // Period Filter Dropdown
-          DropdownButton<PeriodFilter>(
-            value: periodState.filter,
-            underline: const SizedBox(),
-            icon: Icon(Icons.calendar_today, color: onBar, size: 18),
-            dropdownColor: primaryColor,
-            selectedItemBuilder: (context) => PeriodFilter.values
-                .map((pf) => Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        pf.label,
-                        style: TextStyle(
-                          color: onBar,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ))
-                .toList(),
-            items: PeriodFilter.values
-                .map((pf) => DropdownMenuItem(
-                      value: pf,
-                      child: Text(
-                        pf.label,
-                        style: TextStyle(
-                          color: onBar,
-                          fontSize: 13,
-                          fontWeight: pf == periodState.filter ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ))
-                .toList(),
-            onChanged: (val) {
-              if (val != null) {
-                ref.read(periodProvider.notifier).setFilter(val);
-              }
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.compare_arrows),
-            tooltip: 'Clinic Comparison',
-            onPressed: () => context.push('/comparison'),
-          ),
           IconButton(
             icon: ref.watch(availableUpdateProvider).when(
-                  data: (update) => (update != null && !ref.watch(updateBadgeDismissedProvider))
-                      ? Badge(
-                          smallSize: 8,
-                          backgroundColor:
-                              Theme.of(context).colorScheme.tertiary,
-                          child: const Icon(Icons.settings),
-                        )
-                      : const Icon(Icons.settings),
-                  loading: () => const Icon(Icons.settings),
-                  error: (_, __) => const Icon(Icons.settings),
+                  data: (update) =>
+                      (update != null && !ref.watch(updateBadgeDismissedProvider))
+                          ? Badge(
+                              smallSize: 8,
+                              backgroundColor: scheme.tertiary,
+                              child: const Icon(Icons.settings_outlined),
+                            )
+                          : const Icon(Icons.settings_outlined),
+                  loading: () => const Icon(Icons.settings_outlined),
+                  error: (_, __) => const Icon(Icons.settings_outlined),
                 ),
             tooltip: 'Settings',
             onPressed: () => context.push('/settings'),
@@ -264,7 +124,6 @@ class ScaffoldWithNavBar extends ConsumerWidget {
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
-        indicatorColor: primaryColor.withValues(alpha: 0.2),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
           navigationShell.goBranch(
@@ -275,27 +134,27 @@ class ScaffoldWithNavBar extends ConsumerWidget {
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard, color: primaryColor),
+            selectedIcon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
           NavigationDestination(
             icon: const Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people, color: primaryColor),
+            selectedIcon: Icon(Icons.people),
             label: 'Patients',
           ),
           NavigationDestination(
             icon: const Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long, color: primaryColor),
+            selectedIcon: Icon(Icons.receipt_long),
             label: 'Cash Memo',
           ),
           NavigationDestination(
             icon: const Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet, color: primaryColor),
+            selectedIcon: Icon(Icons.account_balance_wallet),
             label: 'Expenses',
           ),
           NavigationDestination(
             icon: const Icon(Icons.trending_up_outlined),
-            selectedIcon: Icon(Icons.trending_up, color: primaryColor),
+            selectedIcon: Icon(Icons.trending_up),
             label: 'Growth',
           ),
         ],

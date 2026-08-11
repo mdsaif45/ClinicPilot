@@ -1,8 +1,10 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/widgets/period_selector.dart';
 import '../../../core/widgets/stat_card.dart';
-import '../../../core/providers/period_provider.dart';
 import '../providers/growth_provider.dart';
 
 class GrowthScreen extends ConsumerWidget {
@@ -11,21 +13,33 @@ class GrowthScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final analyticsAsync = ref.watch(growthAnalyticsProvider);
-    final periodState = ref.watch(periodProvider);
 
     return Scaffold(
       body: analyticsAsync.when(
         data: (analytics) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Growth & Analytics (${periodState.filter.label})',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                // The period control sits with the figures it scopes.
+                const PeriodSelector(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push('/comparison'),
+                    icon: const Icon(Icons.compare_arrows),
+                    label: const Text('Compare both clinics'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(44),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: Spacing.lg),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                 Row(
                   children: [
                     Expanded(
@@ -128,6 +142,9 @@ class GrowthScreen extends ConsumerWidget {
                           ),
                       ],
                     ),
+                  ),
+                ),
+                    ],
                   ),
                 ),
               ],

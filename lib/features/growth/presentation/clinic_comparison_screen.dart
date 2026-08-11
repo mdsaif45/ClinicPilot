@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/providers/period_provider.dart';
+import '../../../core/widgets/period_selector.dart';
 import '../providers/clinic_comparison_provider.dart';
 
 class ClinicComparisonScreen extends ConsumerWidget {
@@ -19,16 +20,28 @@ class ClinicComparisonScreen extends ConsumerWidget {
       body: comparisonAsync.when(
         data: (metricsList) {
           if (metricsList.isEmpty) {
-            return const Center(
-              child: Text('No clinic metrics available for selected period.'),
+            return const Column(
+              children: [
+                PeriodSelector(),
+                Expanded(
+                  child: Center(
+                    child: Text('No clinic data for the selected period.'),
+                  ),
+                ),
+              ],
             );
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const PeriodSelector(),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                 Text(
                   'Side-by-Side Performance',
                   style: TextStyle(
@@ -151,6 +164,9 @@ class ClinicComparisonScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                  ),
+                ),
+                    ],
                   ),
                 ),
               ],
