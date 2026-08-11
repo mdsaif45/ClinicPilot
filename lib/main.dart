@@ -28,6 +28,8 @@ class ClinicPilotApp extends ConsumerWidget {
       title: 'ClinicPilot',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       routerConfig: router,
     );
   }

@@ -6,8 +6,8 @@ class StatCard extends StatelessWidget {
   final String value;
   final String? subtitle;
   final IconData icon;
-  final Color iconColor;
-  final Color backgroundColor;
+  final Color? iconColor;
+  final Color? backgroundColor;
   final VoidCallback? onTap;
 
   const StatCard({
@@ -17,17 +17,18 @@ class StatCard extends StatelessWidget {
     this.subtitle,
     required this.icon,
     Color? color,
-    Color iconColor = const Color(0xFF0F5132),
-    this.backgroundColor = Colors.white,
+    Color? iconColor,
+    this.backgroundColor,
     this.onTap,
   }) : iconColor = color ?? iconColor;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF1E1E1E) : backgroundColor;
-    final textColor = isDark ? Colors.white : const Color(0xFF212529);
-    final labelColor = isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+    final scheme = Theme.of(context).colorScheme;
+    final cardBg = backgroundColor ?? scheme.surfaceContainerLow;
+    final textColor = scheme.onSurface;
+    final labelColor = scheme.onSurfaceVariant;
+    final accent = iconColor ?? scheme.primary;
 
     return Card(
       elevation: 2,
@@ -37,15 +38,15 @@ class StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: onTap != null
-              ? iconColor.withValues(alpha: 0.3)
+              ? accent.withValues(alpha: 0.3)
               : Colors.transparent,
           width: 1,
         ),
       ),
       child: InkWell(
         onTap: onTap,
-        splashColor: iconColor.withValues(alpha: 0.15),
-        highlightColor: iconColor.withValues(alpha: 0.08),
+        splashColor: accent.withValues(alpha: 0.15),
+        highlightColor: accent.withValues(alpha: 0.08),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -53,10 +54,10 @@ class StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.15),
+                  color: accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: iconColor, size: 24),
+                child: Icon(icon, color: accent, size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -86,7 +87,7 @@ class StatCard extends StatelessWidget {
                         subtitle!,
                         style: TextStyle(
                           fontSize: 12,
-                          color: iconColor,
+                          color: accent,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/custom_badge.dart';
-import '../../cashmemo/providers/cash_memo_provider.dart';
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/chip_row.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/entity_header.dart';
+import '../../../core/widgets/info_row.dart';
+import '../../../core/widgets/metric_strip.dart';
+import '../../../core/widgets/money_text.dart';
+import '../../../core/widgets/section_header.dart';
+import '../../../core/widgets/segmented_tabs.dart';
 import '../../cashmemo/presentation/receipt_preview_dialog.dart';
-import '../../visits/providers/visit_provider.dart';
+import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../visits/presentation/add_visit_dialog.dart';
+import '../../visits/providers/visit_provider.dart';
 import 'edit_patient_dialog.dart';
 
+/// Everything known about one patient, on one page.
+///
+/// Uses segmented tabs rather than sub-navigation so identity, history, money
+/// and outcomes are each one tap away — the database already holds far more
+/// than the previous layout exposed.
 class PatientProfileScreen extends ConsumerWidget {
   final Patient patient;
 
@@ -24,242 +39,363 @@ class PatientProfileScreen extends ConsumerWidget {
         .toList();
 
     final lifetimeRevenue =
-        patientMemos.fold<double>(0.0, (sum, m) => sum + m.memo.total);
+        patientMemos.fold<double>(0.0, (s, m) => s + m.memo.total);
     final totalPending =
-        patientMemos.fold<double>(0.0, (sum, m) => sum + m.pendingAmount);
+        patientMemos.fold<double>(0.0, (s, m) => s + m.pendingAmount);
+    final visits = visitsAsync.value ?? [];
+    final totalVisits = visits.length;
+    final avgBill = totalVisits > 0 ? lifetimeRevenue / totalVisits : 0.0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${patient.patientCode} - ${patient.name}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Edit Patient',
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (_) => EditPatientDialog(patient: patient),
-              );
-            },
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 0,
+            title: Text(patient.name),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                tooltip: 'Edit patient',
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (_) => EditPatientDialog(patient: patient),
+                ),
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: EntityHeader(
+              title: patient.name,
+              subtitle: patient.patientCode,
+              avatarText: patient.name,
+              badges: [
+                if ((patient.area ?? '').isNotEmpty)
+                  _Badge(icon: Icons.place_outlined, label: patient.area!),
+                _Badge(
+                  icon: Icons.event_outlined,
+                  label: 'Since ${Formatters.formatDate(patient.createdAt)}',
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: Spacing.lg),
+              child: MetricStrip(
+                metrics: [
+                  Metric(label: 'Visits', value: '$totalVisits'),
+                  Metric(
+                    label: 'Lifetime',
+                    value: Formatters.formatCurrency(lifetimeRevenue),
+                  ),
+                  Metric(
+                    label: 'Avg bill',
+                    value: Formatters.formatCurrency(avgBill),
+                  ),
+                  Metric(
+                    label: 'Pending',
+                    value: Formatters.formatCurrency(totalPending),
+                    signedAmount: totalPending > 0 ? -totalPending : 0,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: ChipRow(labels: [
+              if ((patient.primaryDisease ?? '').isNotEmpty)
+                patient.primaryDisease!,
+              if ((patient.referralSource ?? '').isNotEmpty)
+                patient.referralSource!,
+            ]),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: Spacing.lg, bottom: Spacing.xxl),
+              child: SegmentedTabs(
+                tabs: [
+                  SegmentedTab(
+                    icon: Icons.info_outline,
+                    label: 'Information',
+                    builder: (_) => _InfoTab(patient: patient, visits: visits),
+                  ),
+                  SegmentedTab(
+                    icon: Icons.timeline,
+                    label: 'Visits',
+                    builder: (_) => _VisitsTab(visits: visits),
+                  ),
+                  SegmentedTab(
+                    icon: Icons.receipt_long_outlined,
+                    label: 'Payments',
+                    builder: (_) => _PaymentsTab(memos: patientMemos),
+                  ),
+                  SegmentedTab(
+                    icon: Icons.insights_outlined,
+                    label: 'Insights',
+                    builder: (_) => _InsightsTab(visits: visits),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => AddVisitDialog(patient: patient),
-          );
-        },
+        onPressed: () => showDialog(
+          context: context,
+          builder: (_) => AddVisitDialog(patient: patient),
+        ),
         icon: const Icon(Icons.add),
         label: const Text('Add Visit'),
       ),
-      body: visitsAsync.when(
-        data: (visitDetailsList) {
-          final totalVisits = visitDetailsList.length;
-          final avgBill = totalVisits > 0 ? lifetimeRevenue / totalVisits : 0.0;
+    );
+  }
+}
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+class _Badge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _Badge({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: theme.colorScheme.onSurfaceVariant),
+        const SizedBox(width: Spacing.xs),
+        Text(label, style: theme.textTheme.labelMedium),
+      ],
+    );
+  }
+}
+
+class _InfoTab extends StatelessWidget {
+  final Patient patient;
+  final List<VisitWithDetails> visits;
+
+  const _InfoTab({required this.patient, required this.visits});
+
+  @override
+  Widget build(BuildContext context) {
+    DateTime? lastVisit;
+    DateTime? nextFollowUp;
+    if (visits.isNotEmpty) {
+      lastVisit = visits.first.visit.visitDate;
+      for (final v in visits) {
+        final n = v.visit.nextFollowUpDate;
+        if (n != null && (nextFollowUp == null || n.isAfter(nextFollowUp))) {
+          nextFollowUp = n;
+        }
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InfoRow(label: 'Patient code', value: patient.patientCode),
+        InfoRow(label: 'Phone', value: patient.phone, icon: Icons.call_outlined),
+        InfoRow(label: 'WhatsApp', value: patient.whatsapp),
+        InfoRow(label: 'Age', value: '${patient.age}'),
+        InfoRow(label: 'Gender', value: patient.gender),
+        InfoRow(label: 'Area', value: patient.area),
+        InfoRow(label: 'Address', value: patient.address),
+        InfoRow(label: 'Occupation', value: patient.occupation),
+        InfoRow(
+          label: 'First seen',
+          value: Formatters.formatDate(patient.createdAt),
+        ),
+        InfoRow(
+          label: 'Last visit',
+          value: lastVisit == null ? null : Formatters.formatDate(lastVisit),
+        ),
+        InfoRow(
+          label: 'Next follow-up',
+          value:
+              nextFollowUp == null ? null : Formatters.formatDate(nextFollowUp),
+        ),
+        InfoRow(label: 'Notes', value: patient.notes),
+      ],
+    );
+  }
+}
+
+class _VisitsTab extends StatelessWidget {
+  final List<VisitWithDetails> visits;
+
+  const _VisitsTab({required this.visits});
+
+  @override
+  Widget build(BuildContext context) {
+    if (visits.isEmpty) {
+      return const EmptyState(
+        icon: Icons.timeline,
+        title: 'No visits recorded',
+        message: 'Use Add Visit to log this patient’s first consultation.',
+      );
+    }
+
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        for (final v in visits)
+          AppCard(
+            margin: const EdgeInsets.fromLTRB(
+              Spacing.lg,
+              0,
+              Spacing.lg,
+              Spacing.md,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Patient Overview Card
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              patient.name,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            CustomBadge(
-                              label: '${patient.age} yrs (${patient.gender})',
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text('Phone: ${patient.phone}'),
-                        if (patient.area != null) Text('Area: ${patient.area}'),
-                        if (patient.primaryDisease != null)
-                          Text('Primary Disease: ${patient.primaryDisease}'),
-                        if (patient.referralSource != null)
-                          Text('Referral Source: ${patient.referralSource}'),
-                        const Divider(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildStatItem('Total Visits', '$totalVisits'),
-                            _buildStatItem('Lifetime Revenue',
-                                Formatters.formatCurrency(lifetimeRevenue)),
-                            _buildStatItem('Avg Bill',
-                                Formatters.formatCurrency(avgBill)),
-                            _buildStatItem(
-                              'Pending Amount',
-                              Formatters.formatCurrency(totalPending),
-                              color: totalPending > 0
-                                  ? Colors.red[700]
-                                  : Colors.green[700],
-                            ),
-                          ],
-                        ),
-                      ],
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        Formatters.formatDate(v.visit.visitDate),
+                        style: theme.textTheme.titleSmall,
+                      ),
                     ),
-                  ),
+                    Chip(
+                      label: Text(v.visit.visitType == 'new' ? 'New' : 'Repeat'),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Visit History & Encounters',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const SizedBox(height: Spacing.sm),
+                Text(v.visit.disease, style: theme.textTheme.bodyMedium),
+                const SizedBox(height: Spacing.xs),
+                Text(
+                  '${v.clinic.name}'
+                  '${v.visit.outcome != null ? ' · ${v.visit.outcome}' : ''}',
+                  style: theme.textTheme.labelMedium,
                 ),
-                const SizedBox(height: 12),
-                if (visitDetailsList.isEmpty)
-                  const Center(child: Text('No visits recorded yet.'))
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: visitDetailsList.length,
-                    itemBuilder: (context, index) {
-                      final item = visitDetailsList[index];
-                      final v = item.visit;
-                      final memoItem = patientMemos.firstWhere(
-                        (m) => m.memo.visitId == v.id,
-                        orElse: () => patientMemos.isNotEmpty
-                            ? patientMemos.first
-                            : CashMemoWithDetails(
-                                memo: CashMemo(
-                                  id: '',
-                                  memoNumber: '',
-                                  patientId: patient.id,
-                                  clinicId: item.clinic.id,
-                                  consultationFee: 0,
-                                  medicineFee: 0,
-                                  otherFee: 0,
-                                  discount: 0,
-                                  total: 0,
-                                  paidAmount: 0,
-                                  paymentMethod: 'Cash',
-                                  isDeleted: false,
-                                  createdAt: v.visitDate,
-                                ),
-                                patient: patient,
-                                clinic: item.clinic,
-                              ),
-                      );
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(12),
-                          leading: CircleAvatar(
-                            backgroundColor: v.visitType == 'new'
-                                ? Colors.green[100]
-                                : Colors.blue[100],
-                            child: Icon(
-                              v.visitType == 'new'
-                                  ? Icons.person_add
-                                  : Icons.repeat,
-                              color: v.visitType == 'new'
-                                  ? Colors.green[800]
-                                  : Colors.blue[800],
-                            ),
-                          ),
-                          title: Row(
-                            children: [
-                              Text(
-                                Formatters.formatDate(v.visitDate),
-                                style:
-                                    const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(width: 8),
-                              CustomBadge(
-                                label: v.visitType.toUpperCase(),
-                                color: v.visitType == 'new'
-                                    ? Colors.green
-                                    : Colors.blue,
-                              ),
-                            ],
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Clinic: ${item.clinic.name}'),
-                                Text('Disease: ${v.disease}'),
-                                if (v.outcome != null)
-                                  Text(
-                                      'Outcome: ${v.outcome!.replaceAll('_', ' ').toUpperCase()}'),
-                                Text(
-                                  'Bill Total: ${Formatters.formatCurrency(memoItem.memo.total)} (${memoItem.memo.paymentMethod})',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                          trailing: memoItem.memo.id.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.receipt_long),
-                                  tooltip: 'Re-print Receipt PDF',
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) => ReceiptPreviewDialog(
-                                        cashMemo: memoItem.memo,
-                                        patient: patient,
-                                        clinicName: item.clinic.name,
-                                      ),
-                                    );
-                                  },
-                                )
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
               ],
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-      ),
+          ),
+      ],
     );
   }
+}
 
-  Widget _buildStatItem(String label, String value, {Color? color}) {
+class _PaymentsTab extends StatelessWidget {
+  final List<CashMemoWithDetails> memos;
+
+  const _PaymentsTab({required this.memos});
+
+  @override
+  Widget build(BuildContext context) {
+    if (memos.isEmpty) {
+      return const EmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: 'No payments yet',
+        message: 'Cash memos raised for this patient appear here.',
+      );
+    }
+
+    final theme = Theme.of(context);
+
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: color,
+        for (final m in memos)
+          AppCard(
+            margin: const EdgeInsets.fromLTRB(
+              Spacing.lg,
+              0,
+              Spacing.lg,
+              Spacing.md,
+            ),
+            onTap: () => showDialog(
+              context: context,
+              builder: (_) => ReceiptPreviewDialog(
+                cashMemo: m.memo,
+                patient: m.patient,
+                clinicName: m.clinic.name,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(m.memo.memoNumber, style: theme.textTheme.titleSmall),
+                      const SizedBox(height: Spacing.xs),
+                      Text(
+                        Formatters.formatDate(m.memo.createdAt),
+                        style: theme.textTheme.labelMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    MoneyText(
+                      amount: m.memo.total,
+                      style: theme.textTheme.titleSmall,
+                    ),
+                    if (m.pendingAmount > 0) ...[
+                      const SizedBox(height: Spacing.xs),
+                      Text(
+                        'Pending ${Formatters.formatCurrency(m.pendingAmount)}',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
-        ),
+      ],
+    );
+  }
+}
+
+class _InsightsTab extends StatelessWidget {
+  final List<VisitWithDetails> visits;
+
+  const _InsightsTab({required this.visits});
+
+  @override
+  Widget build(BuildContext context) {
+    if (visits.isEmpty) {
+      return const EmptyState(
+        icon: Icons.insights_outlined,
+        title: 'Not enough data',
+        message: 'Insights appear once visits are recorded.',
+      );
+    }
+
+    final outcomes = <String, int>{};
+    final clinicSplit = <String, int>{};
+    var newCount = 0;
+    for (final v in visits) {
+      final o = v.visit.outcome ?? 'Not recorded';
+      outcomes[o] = (outcomes[o] ?? 0) + 1;
+      clinicSplit[v.clinic.name] = (clinicSplit[v.clinic.name] ?? 0) + 1;
+      if (v.visit.visitType == 'new') newCount++;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader(title: 'Visit type'),
+        InfoRow(label: 'New', value: '$newCount'),
+        InfoRow(label: 'Repeat', value: '${visits.length - newCount}'),
+        const SectionHeader(title: 'Outcomes'),
+        for (final e in outcomes.entries)
+          InfoRow(label: e.key, value: '${e.value}'),
+        const SectionHeader(title: 'Clinics'),
+        for (final e in clinicSplit.entries)
+          InfoRow(label: e.key, value: '${e.value} visits'),
       ],
     );
   }
