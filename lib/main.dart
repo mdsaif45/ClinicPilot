@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/settings/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,13 +24,18 @@ class ClinicPilotApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final prefs = ref.watch(themeProvider);
 
     return MaterialApp.router(
       title: 'ClinicPilot',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      theme: AppTheme.build(Brightness.light, palette: prefs.palette),
+      darkTheme: AppTheme.build(
+        Brightness.dark,
+        palette: prefs.palette,
+        blackVariant: prefs.blackVariant,
+      ),
+      themeMode: prefs.mode.material,
       routerConfig: router,
     );
   }
