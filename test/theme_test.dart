@@ -10,9 +10,15 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = false;
 
   group('AppPalette', () {
-    test('every palette maps to a distinct scheme variant', () {
-      final variants = AppPalette.values.map((p) => p.variant).toSet();
-      expect(variants.length, AppPalette.values.length);
+    test('every palette has a distinct seed colour', () {
+      // Regression guard: an earlier version used one fixed seed for every
+      // variant, so all palettes rendered as shades of the same green.
+      final seeds = AppPalette.values.map((p) => p.seed).toSet();
+      expect(seeds.length, AppPalette.values.length);
+    });
+
+    test('all nine reference palettes plus the brand default exist', () {
+      expect(AppPalette.values.length, 10);
     });
 
     test('fromName round-trips and falls back to emerald', () {
@@ -45,12 +51,17 @@ void main() {
           Brightness.dark);
     });
 
-    testWidgets('different palettes produce different primaries', (tester) async {
-      final emerald =
-          AppTheme.build(Brightness.light, palette: AppPalette.emerald);
-      final mono =
-          AppTheme.build(Brightness.light, palette: AppPalette.monochrome);
-      expect(emerald.colorScheme.primary, isNot(mono.colorScheme.primary));
+    testWidgets('every palette yields a visually distinct primary',
+        (tester) async {
+      // Not just "two differ" - all of them must, otherwise the picker offers
+      // choices the user cannot tell apart.
+      final primaries = <Color>{};
+      for (final p in AppPalette.values) {
+        primaries.add(AppTheme.build(Brightness.light, palette: p)
+            .colorScheme
+            .primary);
+      }
+      expect(primaries.length, AppPalette.values.length);
     });
 
     testWidgets('black variant forces pure black surfaces in dark mode', (tester) async {
