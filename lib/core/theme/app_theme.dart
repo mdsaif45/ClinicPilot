@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../design/app_palette.dart';
 import '../design/tokens.dart';
 
 /// Application theme for ClinicPilot.
@@ -12,14 +13,34 @@ import '../design/tokens.dart';
 class AppTheme {
   const AppTheme._();
 
-  static ThemeData get lightTheme => _build(Brightness.light);
-  static ThemeData get darkTheme => _build(Brightness.dark);
+  static ThemeData get lightTheme => build(Brightness.light);
+  static ThemeData get darkTheme => build(Brightness.dark);
 
-  static ThemeData _build(Brightness brightness) {
-    final scheme = ColorScheme.fromSeed(
+  /// Builds a theme for a brightness, palette and optional true-black variant.
+  ///
+  /// [blackVariant] only applies to dark mode: it forces surfaces to pure black
+  /// for OLED screens, which the standard dark scheme deliberately avoids.
+  static ThemeData build(
+    Brightness brightness, {
+    AppPalette palette = AppPalette.emerald,
+    bool blackVariant = false,
+  }) {
+    var scheme = ColorScheme.fromSeed(
       seedColor: BrandColors.emerald,
       brightness: brightness,
+      dynamicSchemeVariant: palette.variant,
     );
+
+    if (brightness == Brightness.dark && blackVariant) {
+      scheme = scheme.copyWith(
+        surface: const Color(0xFF000000),
+        surfaceContainerLowest: const Color(0xFF000000),
+        surfaceContainerLow: const Color(0xFF0A0A0A),
+        surfaceContainer: const Color(0xFF121212),
+        surfaceContainerHigh: const Color(0xFF1A1A1A),
+        surfaceContainerHighest: const Color(0xFF242424),
+      );
+    }
 
     final base = brightness == Brightness.light
         ? ThemeData.light(useMaterial3: true)

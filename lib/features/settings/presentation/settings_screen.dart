@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
@@ -12,6 +14,7 @@ import '../../clinics/presentation/clinics_screen.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
 import 'app_update_card.dart';
+import 'appearance_section.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -24,10 +27,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _revenueGoalController = TextEditingController(text: '50000');
   final _patientGoalController = TextEditingController(text: '10');
 
+  String _version = '...';
+
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) {
+        setState(() => _version = 'v${info.version} (${info.buildNumber})');
+      }
+    } catch (_) {
+      if (mounted) setState(() => _version = 'Unknown');
+    }
+  }
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open $url')),
+        );
+      }
+    }
   }
 
   Future<void> _loadSettings() async {
@@ -59,6 +87,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: Spacing.xxl),
         children: [
+          const AppearanceSection(),
           SettingsGroup(
             title: 'Goals',
             children: [
@@ -114,9 +143,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ],
           ),
-          const SettingsGroup(
-            title: 'About',
-            children: [AppUpdateCard()],
+          SettingsGroup(
+            title: 'Information',
+            children: [
+              AppListTile(
+                icon: Icons.code,
+                title: 'GitHub repository',
+                subtitle: 'mdsaif45/ClinicPilot',
+                onTap: () => _openUrl(
+                  'https://github.com/mdsaif45/ClinicPilot',
+                ),
+              ),
+              AppListTile(
+                icon: Icons.info_outline,
+                title: 'Version',
+                subtitle: _version,
+              ),
+              const AppListTile(
+                icon: Icons.favorite_outline,
+                title: 'Developed by mdsaif45',
+                subtitle: 'Know. Grow. Repeat.',
+              ),
+              const AppUpdateCard(),
+            ],
           ),
         ],
       ),
