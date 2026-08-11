@@ -36,6 +36,33 @@ jobs:
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
 
+      # `secrets` is not available to `if:`, so promote it to `env` first.
+      # Passing the values through env also keeps passwords out of the script text,
+      # which would otherwise break on quotes or `$` characters.
+      - name: Decode keystore and write key.properties
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        if: env.KEYSTORE_BASE64 != ''
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/clinicpilot-release.jks
+          cat > android/key.properties <<EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=clinicpilot-release.jks
+          EOF
+
+      - name: Report signing mode
+        run: |
+          if [ -f android/key.properties ]; then
+            echo "Building RELEASE-SIGNED APK (keystore secrets present)"
+          else
+            echo "::warning::No keystore secrets found - APK will be DEBUG-SIGNED and cannot upgrade a release-signed install"
+          fi
+
       - name: Build Android APK
         run: flutter build apk --release
 
