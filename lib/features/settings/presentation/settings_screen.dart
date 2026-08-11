@@ -6,6 +6,8 @@ import '../../../core/database/database_provider.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../clinics/presentation/clinics_screen.dart';
 
+import 'app_update_card.dart';
+
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -110,6 +112,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onTap: _exportData,
             ),
           ),
+          const SizedBox(height: 16),
+          const AppUpdateCard(),
         ],
       ),
     );

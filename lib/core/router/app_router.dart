@@ -11,6 +11,7 @@ import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/growth/presentation/growth_screen.dart';
 import '../../features/growth/presentation/clinic_comparison_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/settings/providers/update_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -184,7 +185,17 @@ class ScaffoldWithNavBar extends ConsumerWidget {
             onPressed: () => context.push('/comparison'),
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: ref.watch(availableUpdateProvider).when(
+                  data: (update) => (update != null && !ref.watch(updateBadgeDismissedProvider))
+                      ? const Badge(
+                          smallSize: 8,
+                          backgroundColor: Colors.amber,
+                          child: Icon(Icons.settings),
+                        )
+                      : const Icon(Icons.settings),
+                  loading: () => const Icon(Icons.settings),
+                  error: (_, __) => const Icon(Icons.settings),
+                ),
             tooltip: 'Settings',
             onPressed: () => context.push('/settings'),
           ),
