@@ -4,7 +4,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
-import '../../patients/providers/patient_provider.dart';
+import '../../patients/presentation/patient_picker.dart';
 import '../providers/cash_memo_provider.dart';
 
 class NewCashMemoDialog extends ConsumerStatefulWidget {
@@ -20,6 +20,8 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
   final _formKey = GlobalKey<FormState>();
 
   Patient? _selectedPatient;
+  // PatientPickerField is not a FormField, so its error is tracked here.
+  String? _patientError;
   String? _selectedClinicId;
   final _consultationController = TextEditingController(text: '300');
   final _medicineController = TextEditingController(text: '0');
@@ -63,10 +65,8 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final patientsAsync = ref.watch(patientsStreamProvider);
     final clinicsAsync = ref.watch(clinicsStreamProvider);
 
-    final patients = patientsAsync.value ?? [];
     final clinics = clinicsAsync.value ?? [];
 
     final currentTotal = _total;
@@ -105,21 +105,15 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                 validator: (v) => v == null ? 'Select clinic' : null,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<Patient>(
-                value: _selectedPatient,
-                decoration: const InputDecoration(
-                  labelText: 'Select Patient',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-                items: patients
-                    .map((p) => DropdownMenuItem(
-                          value: p,
-                          child: Text('${p.patientCode} - ${p.name}'),
-                        ))
-                    .toList(),
-                onChanged: (val) => setState(() => _selectedPatient = val),
-                validator: (v) => v == null ? 'Select a patient' : null,
+              // Searchable picker rather than a dropdown: a flat list cannot
+              // scale, and cannot distinguish two patients with the same name.
+              PatientPickerField(
+                selected: _selectedPatient,
+                onSelected: (p) => setState(() {
+                  _selectedPatient = p;
+                  _patientError = null;
+                }),
+                errorText: _patientError,
               ),
               const SizedBox(height: 12),
               CustomTextField(
@@ -215,8 +209,14 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedPatient == null || _selectedClinicId == null) return;
+    final formOk = _formKey.currentState!.validate();
+
+    // Surface the missing patient instead of failing silently.
+    setState(() {
+      _patientError = _selectedPatient == null ? 'Select a patient' : null;
+    });
+
+    if (!formOk || _selectedPatient == null || _selectedClinicId == null) return;
 
     final consult = double.tryParse(_consultationController.text) ?? 0.0;
     final med = double.tryParse(_medicineController.text) ?? 0.0;
