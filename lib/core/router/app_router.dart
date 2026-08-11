@@ -88,45 +88,49 @@ class ScaffoldWithNavBar extends ConsumerWidget {
     super.key,
   });
 
-  /// Tabs whose figures are scoped to the active clinic.
+  /// Dashboard is the only tab with an app bar.
   ///
-  /// Patients, cash memos and expenses list every record regardless of clinic,
-  /// so showing a clinic switcher above them implies a filter that is not
-  /// applied.
-  static const _clinicScopedTabs = {0, 4}; // Dashboard, Growth
+  /// Every other tab names itself in the bottom navigation, so a bar on top
+  /// repeated that and cost a row of vertical space. Dashboard keeps one
+  /// because the active clinic scopes its figures and it is the landing tab,
+  /// which makes it the natural home for the settings entry point.
+  static const _dashboardIndex = 0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    final showClinic = _clinicScopedTabs.contains(navigationShell.currentIndex);
+    final isDashboard = navigationShell.currentIndex == _dashboardIndex;
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 2,
-        backgroundColor: scheme.primary,
-        foregroundColor: scheme.onPrimary,
-        titleSpacing: Spacing.sm,
-        title: showClinic ? const ClinicSwitcher() : const Text('ClinicPilot'),
-        actions: [
-          IconButton(
-            icon: ref.watch(availableUpdateProvider).when(
-                  data: (update) =>
-                      (update != null && !ref.watch(updateBadgeDismissedProvider))
-                          ? Badge(
-                              smallSize: 8,
-                              backgroundColor: scheme.tertiary,
-                              child: const Icon(Icons.settings_outlined),
-                            )
-                          : const Icon(Icons.settings_outlined),
-                  loading: () => const Icon(Icons.settings_outlined),
-                  error: (_, __) => const Icon(Icons.settings_outlined),
+      appBar: isDashboard
+          ? AppBar(
+              elevation: 2,
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              titleSpacing: Spacing.sm,
+              title: const ClinicSwitcher(),
+              actions: [
+                IconButton(
+                  icon: ref.watch(availableUpdateProvider).when(
+                        data: (update) => (update != null &&
+                                !ref.watch(updateBadgeDismissedProvider))
+                            ? Badge(
+                                smallSize: 8,
+                                backgroundColor: scheme.tertiary,
+                                child: const Icon(Icons.settings_outlined),
+                              )
+                            : const Icon(Icons.settings_outlined),
+                        loading: () => const Icon(Icons.settings_outlined),
+                        error: (_, __) => const Icon(Icons.settings_outlined),
+                      ),
+                  tooltip: 'Settings',
+                  onPressed: () => context.push('/settings'),
                 ),
-            tooltip: 'Settings',
-            onPressed: () => context.push('/settings'),
-          ),
-        ],
-      ),
-      body: navigationShell,
+              ],
+            )
+          : null,
+      // Tabs without an app bar would otherwise start under the status bar.
+      body: SafeArea(top: !isDashboard, bottom: false, child: navigationShell),
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
