@@ -88,18 +88,20 @@ class PatientsScreen extends ConsumerWidget {
                         ),
                         title: Row(
                           children: [
-                            Text(
-                              patient.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            // Long names must ellipsize instead of pushing the
+                            // code badge off the card.
+                            Flexible(
+                              child: Text(
+                                patient.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            CustomBadge(
-                              label: patient.patientCode,
-                              color: Colors.teal,
-                            ),
+                            CustomBadge(label: patient.patientCode),
                           ],
                         ),
                         subtitle: Padding(

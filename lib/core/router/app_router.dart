@@ -106,11 +106,15 @@ class ScaffoldWithNavBar extends ConsumerWidget {
         elevation: 2,
         backgroundColor: primaryColor,
         foregroundColor: onBar,
+        // titleSpacing 0 + Flexible: a long clinic name must ellipsize rather
+        // than run underneath the action icons.
+        titleSpacing: 0,
         title: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            DropdownButton<String>(
+            Flexible(
+              child: DropdownButton<String>(
               value: activeClinic?.id,
+              isExpanded: true,
               underline: const SizedBox(),
               icon: Icon(Icons.arrow_drop_down, color: onBar),
               dropdownColor: primaryColor,
@@ -123,7 +127,6 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                   clinicColor = Colors.teal;
                 }
                 return Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       width: 10,
@@ -135,12 +138,15 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      c.name,
-                      style: TextStyle(
-                        color: onBar,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                    Expanded(
+                      child: Text(
+                        c.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: onBar,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ],
@@ -189,6 +195,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                   ref.read(activeClinicIdProvider.notifier).setClinicId(val);
                 }
               },
+              ),
             ),
           ],
         ),
