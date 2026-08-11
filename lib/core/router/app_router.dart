@@ -122,9 +122,10 @@ class ScaffoldWithNavBar extends ConsumerWidget {
     return Scaffold(
       appBar: isDashboard
           ? AppBar(
-              elevation: 2,
-              backgroundColor: scheme.primary,
-              foregroundColor: scheme.onPrimary,
+              elevation: 0,
+              scrolledUnderElevation: 1,
+              backgroundColor: scheme.surface,
+              foregroundColor: scheme.onSurface,
               titleSpacing: Spacing.sm,
               title: const ClinicSwitcher(),
               actions: [

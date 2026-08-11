@@ -27,7 +27,9 @@ class ClinicSwitcher extends ConsumerWidget {
     final active = ref.watch(activeClinicProvider);
     final clinics = ref.watch(clinicsStreamProvider).value ?? [];
     final scheme = Theme.of(context).colorScheme;
-    final onBar = scheme.onPrimary;
+    // The app bar sits on the surface colour, so its contents must use
+    // onSurface. Using onPrimary here would paint white text on a white bar.
+    final onBar = scheme.onSurface;
 
     if (active == null) {
       return Text('ClinicPilot',

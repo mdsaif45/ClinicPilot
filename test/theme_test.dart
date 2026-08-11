@@ -78,13 +78,14 @@ void main() {
       expect(light.colorScheme.surface, isNot(const Color(0xFF000000)));
     });
 
-    testWidgets('app bar always pairs primary with onPrimary', (tester) async {
-      // This pairing is what stopped the app bar rendering light-on-light.
+    testWidgets('app bar background and foreground always match', (tester) async {
+      // The pair must stay consistent, whichever surface the bar sits on -
+      // a mismatch is what made the bar render light-on-light.
       for (final b in Brightness.values) {
         for (final p in AppPalette.values) {
           final t = AppTheme.build(b, palette: p);
-          expect(t.appBarTheme.backgroundColor, t.colorScheme.primary);
-          expect(t.appBarTheme.foregroundColor, t.colorScheme.onPrimary);
+          expect(t.appBarTheme.backgroundColor, t.colorScheme.surface);
+          expect(t.appBarTheme.foregroundColor, t.colorScheme.onSurface);
         }
       }
     });
