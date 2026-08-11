@@ -1,90 +1,198 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Application Theme configuration for ClinicPilot
+import '../design/tokens.dart';
+
+/// Application theme for ClinicPilot.
+///
+/// This is the ONLY file allowed to name a colour literal. Every widget must
+/// resolve colour through `Theme.of(context).colorScheme`, otherwise a screen
+/// silently stops following the theme — which is exactly how the app bar ended
+/// up rendering light-on-light.
 class AppTheme {
-  static const primaryColor = Color(0xFF0D6EFD); // Professional Pilot Blue
-  static const primaryEmerald = Color(0xFF0F5132); // Deep Clinic Emerald
-  static const accentTeal = Color(0xFF198754);
-  static const backgroundColor = Color(0xFFF8F9FA);
-  static const cardColor = Colors.white;
-  static const textPrimary = Color(0xFF212529);
-  static const textSecondary = Color(0xFF6C757D);
+  const AppTheme._();
 
-  static ThemeData get lightTheme {
-    final baseTextTheme = GoogleFonts.interTextTheme();
+  static ThemeData get lightTheme => _build(Brightness.light);
+  static ThemeData get darkTheme => _build(Brightness.dark);
 
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryEmerald,
-        primary: primaryEmerald,
-        secondary: accentTeal,
-        surface: backgroundColor,
-      ),
-      scaffoldBackgroundColor: backgroundColor,
+  static ThemeData _build(Brightness brightness) {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: BrandColors.emerald,
+      brightness: brightness,
+    );
+
+    final base = brightness == Brightness.light
+        ? ThemeData.light(useMaterial3: true)
+        : ThemeData.dark(useMaterial3: true);
+
+    final textTheme = _textTheme(base.textTheme, scheme);
+
+    return base.copyWith(
+      colorScheme: scheme,
+      scaffoldBackgroundColor: scheme.surface,
+      textTheme: textTheme,
+
       appBarTheme: AppBarTheme(
-        backgroundColor: cardColor,
+        // Explicit pair: the AppBar hosts dropdowns whose selected value would
+        // otherwise inherit body text colour and vanish against the bar.
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
         elevation: 0,
-        scrolledUnderElevation: 1,
+        scrolledUnderElevation: 2,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: textPrimary),
-        titleTextStyle: GoogleFonts.inter(
-          color: textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
+        iconTheme: IconThemeData(color: scheme.onPrimary),
+        titleTextStyle: textTheme.titleLarge?.copyWith(
+          color: scheme.onPrimary,
+          fontWeight: FontWeight.w600,
         ),
       ),
-      cardTheme: CardTheme(
-        color: cardColor,
+
+      cardTheme: CardThemeData(
+        color: scheme.surfaceContainerLow,
         elevation: 0,
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200, width: 1),
+          borderRadius: Radii.lgAll,
+          side: BorderSide(color: scheme.outlineVariant),
         ),
       ),
+
+      chipTheme: ChipThemeData(
+        side: BorderSide(color: scheme.outlineVariant),
+        shape: RoundedRectangleBorder(borderRadius: Radii.pillAll),
+        backgroundColor: Colors.transparent,
+        selectedColor: scheme.secondaryContainer,
+        labelStyle: textTheme.labelLarge,
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.md,
+          vertical: Spacing.sm,
+        ),
+      ),
+
+      listTileTheme: ListTileThemeData(
+        iconColor: scheme.onSurfaceVariant,
+        shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: Spacing.lg,
+          vertical: Spacing.xs,
+        ),
+      ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.grey.shade100,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: Spacing.lg,
+          vertical: Spacing.md,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderRadius: Radii.mdAll,
+          borderSide: BorderSide(color: scheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: Radii.mdAll,
+          borderSide: BorderSide(color: scheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryEmerald, width: 2),
+          borderRadius: Radii.mdAll,
+          borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.redAccent),
+          borderRadius: Radii.mdAll,
+          borderSide: BorderSide(color: scheme.error),
         ),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryEmerald,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+
+      dividerTheme: DividerThemeData(
+        color: scheme.outlineVariant,
+        thickness: 1,
+        space: 1,
+      ),
+
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: scheme.surfaceContainer,
+        indicatorColor: scheme.secondaryContainer,
+        elevation: 3,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return textTheme.labelMedium?.copyWith(
+            // Selected must be clearly stronger than unselected, not a faint tint.
+            color: selected ? scheme.onSecondaryContainer : scheme.onSurfaceVariant,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: selected ? scheme.onSecondaryContainer : scheme.onSurfaceVariant,
+          );
+        }),
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: scheme.surfaceContainerHigh,
+        shape: RoundedRectangleBorder(borderRadius: Radii.lgAll),
+      ),
+
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: scheme.surfaceContainerLow,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg)),
         ),
       ),
-      textTheme: baseTextTheme.copyWith(
-        titleLarge: GoogleFonts.inter(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 22),
-        titleMedium: GoogleFonts.inter(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 16),
-        bodyLarge: GoogleFonts.inter(color: textPrimary, fontSize: 16),
-        bodyMedium: GoogleFonts.inter(color: textSecondary, fontSize: 14),
+
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.xl,
+            vertical: Spacing.md,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.xl,
+            vertical: Spacing.md,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+        ),
+      ),
+
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
       ),
     );
+  }
+
+  static TextTheme _textTheme(TextTheme base, ColorScheme scheme) {
+    final t = GoogleFonts.interTextTheme(base);
+    return t.copyWith(
+      displaySmall: t.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+      headlineMedium: t.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+      headlineSmall: t.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+      titleLarge: t.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+      titleMedium: t.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      labelMedium: t.labelMedium?.copyWith(color: scheme.onSurfaceVariant),
+      labelSmall: t.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+    );
+  }
+
+  /// Digits that occupy equal width, so money columns line up when stacked.
+  static TextStyle tabularFigures(TextStyle? style) =>
+      (style ?? const TextStyle())
+          .copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+
+  /// Colour for a monetary value, by sign.
+  static Color moneyColor(BuildContext context, double value) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = scheme.brightness == Brightness.dark;
+    if (value < 0) {
+      return isDark ? BrandColors.negativeDark : BrandColors.negativeLight;
+    }
+    return isDark ? BrandColors.positiveDark : BrandColors.positiveLight;
   }
 }

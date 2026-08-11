@@ -91,7 +91,7 @@ class DashboardScreen extends ConsumerWidget {
                       title: "Today's Revenue",
                       value: Formatters.formatCurrency(stats.todayRevenue),
                       icon: Icons.payments,
-                      color: const Color(0xFF0F5132),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     StatCard(
                       title: "Today's Expenses",

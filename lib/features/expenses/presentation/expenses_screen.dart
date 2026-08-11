@@ -97,7 +97,7 @@ class ExpensesScreen extends ConsumerWidget {
                   return ChoiceChip(
                     label: Text(cat),
                     selected: isSelected,
-                    selectedColor: const Color(0xFF0F5132),
+                    selectedColor: Theme.of(context).colorScheme.primary,
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : Colors.black87,
                       fontWeight:
