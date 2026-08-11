@@ -49,26 +49,28 @@ class PatientProfileScreen extends ConsumerWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 0,
-            title: Text(patient.name),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Edit patient',
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (_) => EditPatientDialog(patient: patient),
-                ),
-              ),
-            ],
-          ),
+          // No app bar: it repeated the name the header already shows. Back
+          // and edit ride on top of the header instead.
           SliverToBoxAdapter(
             child: EntityHeader(
               title: patient.name,
               subtitle: patient.patientCode,
               avatarText: patient.name,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Back',
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'Edit patient',
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (_) => EditPatientDialog(patient: patient),
+                  ),
+                ),
+              ],
               badges: [
                 if ((patient.area ?? '').isNotEmpty)
                   _Badge(icon: Icons.place_outlined, label: patient.area!),

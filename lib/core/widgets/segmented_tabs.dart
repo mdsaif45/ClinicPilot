@@ -101,6 +101,8 @@ class _TabPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final animate = !MediaQuery.of(context).disableAnimations;
+    final duration = animate ? Motion.base : Duration.zero;
 
     return Tooltip(
       message: tab.label,
@@ -108,25 +110,39 @@ class _TabPill extends StatelessWidget {
         label: tab.label,
         selected: selected,
         button: true,
-        child: Material(
-          color: selected
-              ? scheme.secondaryContainer
-              : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: Radii.mdAll,
+        // The selected tab widens into a pill while the others stay as
+        // squircles, and the shape morphs between the two states rather than
+        // snapping - the movement is what makes the selection legible at a
+        // glance on a small icon.
+        child: AnimatedContainer(
+          duration: duration,
+          curve: Motion.curve,
+          height: 44,
+          width: selected ? 68 : 52,
+          decoration: BoxDecoration(
+            color: selected
+                ? scheme.secondaryContainer
+                : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(selected ? Radii.pill : Radii.md),
+          ),
           clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Spacing.xl,
-                vertical: Spacing.md,
-              ),
-              child: Icon(
-                tab.icon,
-                size: 20,
-                color: selected
-                    ? scheme.onSecondaryContainer
-                    : scheme.onSurfaceVariant,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              child: Center(
+                child: AnimatedScale(
+                  duration: duration,
+                  curve: Motion.curve,
+                  scale: selected ? 1.08 : 1.0,
+                  child: Icon(
+                    tab.icon,
+                    size: 20,
+                    color: selected
+                        ? scheme.onSecondaryContainer
+                        : scheme.onSurfaceVariant,
+                  ),
+                ),
               ),
             ),
           ),
