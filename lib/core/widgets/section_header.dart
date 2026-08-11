@@ -11,21 +11,26 @@ class SectionHeader extends StatelessWidget {
   final VoidCallback? onAction;
   final IconData actionIcon;
 
+  /// Drops the top padding for a header that is already the first thing in a
+  /// panel, so it does not sit lower than panels starting with other widgets.
+  final bool tightTop;
+
   const SectionHeader({
     super.key,
     required this.title,
     this.subtitle,
     this.onAction,
     this.actionIcon = Icons.arrow_forward,
+    this.tightTop = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         Spacing.lg,
-        Spacing.lg,
+        tightTop ? 0 : Spacing.lg,
         Spacing.sm,
         Spacing.sm,
       ),

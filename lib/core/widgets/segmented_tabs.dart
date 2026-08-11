@@ -42,9 +42,6 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
   Widget build(BuildContext context) {
     if (widget.tabs.isEmpty) return const SizedBox.shrink();
 
-    // Honour the OS "remove animations" accessibility setting.
-    final animate = !MediaQuery.of(context).disableAnimations;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -65,23 +62,17 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
             ],
           ),
         ),
+        // Fixed gap, and the body swaps instantly.
+        //
+        // The pill morph carries the feedback on its own. Animating the panel
+        // as well made each tab's content start from a different height and
+        // settle at a different moment, so the spacing under the selector
+        // looked inconsistent from tab to tab.
+        //
+        // The gap lives here rather than inside each tab so every panel begins
+        // at exactly the same offset, whatever widget it happens to start with.
         const SizedBox(height: Spacing.lg),
-        AnimatedSwitcher(
-          duration: animate ? Motion.base : Duration.zero,
-          switchInCurve: Motion.curve,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: SizeTransition(
-              sizeFactor: animation,
-              axisAlignment: -1,
-              child: child,
-            ),
-          ),
-          child: KeyedSubtree(
-            key: ValueKey(_index),
-            child: Builder(builder: widget.tabs[_index].builder),
-          ),
-        ),
+        Builder(builder: widget.tabs[_index].builder),
       ],
     );
   }

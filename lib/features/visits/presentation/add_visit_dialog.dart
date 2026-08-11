@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/formatters.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/widgets/custom_text_field.dart';
@@ -116,6 +117,40 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
                         value: o, child: Text(o.replaceAll('_', ' ').toUpperCase())))
                     .toList(),
                 onChanged: (val) => setState(() => _outcome = val),
+              ),
+              const SizedBox(height: 12),
+              // The column existed in the schema and was already being saved,
+              // but nothing ever set it - so no follow-up could be recorded.
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.event_repeat_outlined),
+                title: const Text('Next follow-up'),
+                subtitle: Text(
+                  _nextFollowUpDate == null
+                      ? 'Not scheduled'
+                      : Formatters.formatDate(_nextFollowUpDate!),
+                ),
+                trailing: _nextFollowUpDate == null
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        tooltip: 'Clear',
+                        onPressed: () =>
+                            setState(() => _nextFollowUpDate = null),
+                      ),
+                onTap: () async {
+                  final now = DateTime.now();
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate:
+                        _nextFollowUpDate ?? now.add(const Duration(days: 30)),
+                    firstDate: now,
+                    lastDate: now.add(const Duration(days: 730)),
+                  );
+                  if (picked != null) {
+                    setState(() => _nextFollowUpDate = picked);
+                  }
+                },
               ),
             ],
           ),
