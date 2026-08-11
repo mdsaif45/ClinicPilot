@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/period_selector.dart';
-import '../../../core/widgets/stat_card.dart';
 import '../providers/growth_provider.dart';
 
 class GrowthScreen extends ConsumerWidget {

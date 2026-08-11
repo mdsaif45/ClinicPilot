@@ -29,13 +29,15 @@ class ClinicPilotApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'ClinicPilot',
       debugShowCheckedModeBanner: false,
+      // Light only for now. The dark scheme and the palette machinery stay
+      // wired up so restoring the choice is a settings change, not a rewrite.
       theme: AppTheme.build(Brightness.light, palette: prefs.palette),
       darkTheme: AppTheme.build(
         Brightness.dark,
         palette: prefs.palette,
         blackVariant: prefs.blackVariant,
       ),
-      themeMode: prefs.mode.material,
+      themeMode: ThemeMode.light,
       routerConfig: router,
     );
   }
