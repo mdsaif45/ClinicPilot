@@ -88,9 +88,17 @@ class ScaffoldWithNavBar extends ConsumerWidget {
     super.key,
   });
 
+  /// Tabs whose figures are scoped to the active clinic.
+  ///
+  /// Patients, cash memos and expenses list every record regardless of clinic,
+  /// so showing a clinic switcher above them implies a filter that is not
+  /// applied.
+  static const _clinicScopedTabs = {0, 4}; // Dashboard, Growth
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final showClinic = _clinicScopedTabs.contains(navigationShell.currentIndex);
 
     return Scaffold(
       appBar: AppBar(
@@ -98,10 +106,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
         titleSpacing: Spacing.sm,
-        // Only the active clinic lives here now. The period filter moved onto
-        // the analytics screens it actually scopes, and clinic comparison sits
-        // with the other growth views.
-        title: const ClinicSwitcher(),
+        title: showClinic ? const ClinicSwitcher() : const Text('ClinicPilot'),
         actions: [
           IconButton(
             icon: ref.watch(availableUpdateProvider).when(

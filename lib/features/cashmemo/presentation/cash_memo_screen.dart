@@ -24,16 +24,6 @@ class CashMemoScreen extends ConsumerWidget {
     final cashMemosAsync = ref.watch(cashMemosStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Cash Memos & Billing"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: "New Cash Memo",
-            onPressed: () => _openNewCashMemo(context),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openNewCashMemo(context),
         icon: const Icon(Icons.receipt_long),

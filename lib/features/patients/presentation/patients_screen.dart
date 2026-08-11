@@ -14,9 +14,6 @@ class PatientsScreen extends ConsumerWidget {
     final patientsAsync = ref.watch(patientsStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Patient Directory'),
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           showDialog(

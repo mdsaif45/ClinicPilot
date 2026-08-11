@@ -38,16 +38,6 @@ class ExpensesScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Clinic Expense Tracker"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: "Add Expense",
-            onPressed: () => _openAddExpense(context),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddExpense(context),
         backgroundColor: Theme.of(context).colorScheme.error,
