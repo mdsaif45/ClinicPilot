@@ -6,7 +6,6 @@ import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/section_header.dart';
-import '../../clinics/providers/clinic_provider.dart';
 import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
 import '../../expenses/presentation/add_expense_dialog.dart';
 import '../../patients/presentation/add_patient_dialog.dart';
@@ -19,7 +18,6 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(dashboardStatsProvider);
-    final activeClinic = ref.watch(activeClinicProvider);
     final theme = Theme.of(context);
     final now = DateTime.now();
 
@@ -47,8 +45,9 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: Spacing.xs),
                         Text(
-                          '${Formatters.formatFullDate(now)}'
-                          '${activeClinic != null ? ' · ${activeClinic.name}' : ''}',
+                          // Clinic name lives in the app bar switcher directly
+                          // above; repeating it here said the same thing twice.
+                          Formatters.formatFullDate(now),
                           style: theme.textTheme.labelMedium,
                         ),
                       ],

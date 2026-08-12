@@ -47,16 +47,6 @@ class ClinicSwitcher extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: _colourOf(active.colorHex, scheme.tertiary),
-                shape: BoxShape.circle,
-                border: Border.all(color: onBar, width: 1),
-              ),
-            ),
-            const SizedBox(width: Spacing.sm),
             Flexible(
               child: Text(
                 active.name,
