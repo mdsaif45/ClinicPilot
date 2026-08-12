@@ -10,6 +10,7 @@ import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
 import '../../expenses/presentation/add_expense_dialog.dart';
 import '../../patients/presentation/add_patient_dialog.dart';
 import '../../patients/providers/recall_provider.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
 import '../providers/dashboard_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -40,7 +41,13 @@ class DashboardScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${Formatters.greeting(now)}, Dr. Zaid 👋',
+                          () {
+                            final name =
+                                ref.watch(doctorNameProvider).value ?? '';
+                            return name.isEmpty
+                                ? '${Formatters.greeting(now)} 👋'
+                                : '${Formatters.greeting(now)}, $name 👋';
+                          }(),
                           style: theme.textTheme.titleLarge,
                         ),
                         const SizedBox(height: Spacing.xs),

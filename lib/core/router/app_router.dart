@@ -15,15 +15,36 @@ import '../../features/growth/presentation/profit_summary_screen.dart';
 import '../../features/growth/presentation/referral_source_screen.dart';
 import '../../features/growth/presentation/clinic_comparison_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../features/settings/presentation/app_version_screen.dart';
 import '../../features/settings/providers/release_provider.dart';
 import '../../features/settings/providers/update_provider.dart';
 import '../services/update_service.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // The redirect reads onboardingCompleteProvider, which resolves
+  // asynchronously. Without this the first evaluation sees null, lets the
+  // dashboard through, and never re-runs.
+  ref.listen(onboardingCompleteProvider, (_, __) {});
+
   return GoRouter(
+    refreshListenable: _ProviderRefresh(ref, onboardingCompleteProvider),
     initialLocation: '/dashboard',
+    // First run has no clinic to attribute anything to, so the app cannot do
+    // its job until setup is finished.
+    redirect: (context, state) {
+      final done = ref.read(onboardingCompleteProvider).value;
+      if (done == null) return null; // still loading
+      if (!done && state.matchedLocation != '/onboarding') return '/onboarding';
+      if (done && state.matchedLocation == '/onboarding') return '/dashboard';
+      return null;
+    },
     routes: [
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNavBar(navigationShell: navigationShell);
@@ -269,5 +290,12 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         ],
       ),
     );
+  }
+}
+
+/// Rebuilds routes when a provider emits, so an async redirect re-evaluates.
+class _ProviderRefresh extends ChangeNotifier {
+  _ProviderRefresh(Ref ref, ProviderListenable<Object?> provider) {
+    ref.listen(provider, (_, __) => notifyListeners());
   }
 }

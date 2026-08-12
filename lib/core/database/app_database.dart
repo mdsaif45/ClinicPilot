@@ -22,7 +22,6 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) async {
           await m.createAll();
-          await _seedClinics();
           await _seedSettings();
           await _createIndices();
         },

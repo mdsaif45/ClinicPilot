@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'helpers/seed_clinics.dart';
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/services/export_service.dart';
 
@@ -8,8 +10,9 @@ void main() {
   late AppDatabase db;
   late ExportService service;
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await seedTestClinics(db);
     service = ExportService(db);
   });
 
