@@ -91,50 +91,66 @@ class _TabPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final animate = !MediaQuery.of(context).disableAnimations;
     final duration = animate ? Motion.base : Duration.zero;
 
-    return Tooltip(
-      message: tab.label,
-      child: Semantics(
-        label: tab.label,
-        selected: selected,
-        button: true,
-        // The selected tab widens into a pill while the others stay as
-        // squircles, and the shape morphs between the two states rather than
-        // snapping - the movement is what makes the selection legible at a
-        // glance on a small icon.
-        child: AnimatedContainer(
-          duration: duration,
-          curve: Motion.curve,
-          height: 44,
-          width: selected ? 68 : 52,
-          decoration: BoxDecoration(
-            color: selected
-                ? scheme.secondaryContainer
-                : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(selected ? Radii.pill : Radii.md),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              child: Center(
-                child: AnimatedScale(
+    return Semantics(
+      label: tab.label,
+      selected: selected,
+      button: true,
+      // The selected tab expands to show its name beside the icon, so the
+      // panel below never needs a separate heading repeating it. Unselected
+      // tabs stay icon-only, which keeps five of them on a phone width.
+      child: AnimatedContainer(
+        duration: duration,
+        curve: Motion.curve,
+        height: 44,
+        padding: EdgeInsets.symmetric(
+          horizontal: selected ? Spacing.lg : Spacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? scheme.secondaryContainer
+              : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius:
+              BorderRadius.circular(selected ? Radii.pill : Radii.md),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  tab.icon,
+                  size: 20,
+                  color: selected
+                      ? scheme.onSecondaryContainer
+                      : scheme.onSurfaceVariant,
+                ),
+                // Width animates from zero, so the label slides out of the
+                // icon rather than appearing beside it.
+                AnimatedSize(
                   duration: duration,
                   curve: Motion.curve,
-                  scale: selected ? 1.08 : 1.0,
-                  child: Icon(
-                    tab.icon,
-                    size: 20,
-                    color: selected
-                        ? scheme.onSecondaryContainer
-                        : scheme.onSurfaceVariant,
-                  ),
+                  child: selected
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: Spacing.sm),
+                          child: Text(
+                            tab.label,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: scheme.onSecondaryContainer,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
-              ),
+              ],
             ),
           ),
         ),
