@@ -61,24 +61,24 @@ class CashMemoScreen extends ConsumerWidget {
                         value: Formatters.formatCurrency(totalRev),
                         subtitle: "${memos.length} Billing Transactions",
                         icon: Icons.payments_outlined,
-                        color: Colors.green,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: StatCard(
                         title: "Total Pending Left",
                         value: Formatters.formatCurrency(totalPending),
                         subtitle: "Uncollected Balances",
                         icon: Icons.pending_actions,
-                        color: totalPending > 0 ? Colors.red : Colors.teal,
+                        color: totalPending > 0 ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],
                 );
               },
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Cash Memos List
             Expanded(
@@ -93,13 +93,13 @@ class CashMemoScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.receipt_long_outlined,
-                              size: 64, color: Colors.grey.shade400),
-                          const SizedBox(height: 12),
+                              size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          SizedBox(height: 12),
                           Text(
                             "No cash memos generated yet",
                             style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey.shade600,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w500),
                           ),
                           const SizedBox(height: 8),
@@ -129,7 +129,7 @@ class CashMemoScreen extends ConsumerWidget {
                           leading: CircleAvatar(
                             backgroundColor:
                                 Theme.of(context).colorScheme.primaryContainer,
-                            child: const Icon(Icons.receipt, color: Colors.teal),
+                            child: Icon(Icons.receipt, color: Theme.of(context).colorScheme.primary),
                           ),
                           title: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -137,11 +137,11 @@ class CashMemoScreen extends ConsumerWidget {
                               Text(
                                 '${memo.memoNumber} • ${patient.name}',
                                 style:
-                                    const TextStyle(fontWeight: FontWeight.bold),
+                                    TextStyle(fontWeight: FontWeight.bold),
                               ),
                               CustomBadge(
                                 label: memo.paymentMethod,
-                                color: Colors.teal,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ],
                           ),
@@ -153,14 +153,14 @@ class CashMemoScreen extends ConsumerWidget {
                                 Text('Clinic: ${clinic.name}'),
                                 Text(
                                   'Total: ${Formatters.formatCurrency(memo.total)} | Paid: ${Formatters.formatCurrency(memo.paidAmount)}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
                                 if (item.pendingAmount > 0)
                                   Text(
                                     'Pending Left: ${Formatters.formatCurrency(item.pendingAmount)}',
                                     style: TextStyle(
-                                      color: Colors.red[700],
+                                      color: Theme.of(context).colorScheme.error,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -168,7 +168,7 @@ class CashMemoScreen extends ConsumerWidget {
                                   Formatters.formatDate(memo.createdAt),
                                   style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey.shade500),
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                                 ),
                               ],
                             ),
@@ -177,7 +177,7 @@ class CashMemoScreen extends ConsumerWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.edit_outlined, color: Colors.teal),
+                                  icon: Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.primary),
                                   tooltip: "Edit Cash Memo",
                                   onPressed: () {
                                     showDialog(
@@ -201,8 +201,8 @@ class CashMemoScreen extends ConsumerWidget {
                                   },
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete_outline,
-                                      color: Colors.red),
+                                  icon: Icon(Icons.delete_outline,
+                                      color: Theme.of(context).colorScheme.error),
                                   tooltip: "Archive Cash Memo",
                                   onPressed: () =>
                                       _confirmDelete(context, ref, memo.id),
@@ -226,21 +226,21 @@ class CashMemoScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Archive Cash Memo'),
+        title: Text('Archive Cash Memo'),
         content: const Text('Are you sure you want to archive this cash memo?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
             onPressed: () async {
               await ref
                   .read(cashMemoNotifierProvider.notifier)
                   .archiveCashMemo(id);
               if (ctx.mounted) Navigator.of(ctx).pop();
             },
-            child: const Text('Archive', style: TextStyle(color: Colors.white)),
+            child: Text('Archive', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),

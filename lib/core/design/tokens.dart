@@ -56,3 +56,41 @@ abstract class BrandColors {
   static const Color positiveLight = Color(0xFF1B5E20);
   static const Color positiveDark = Color(0xFF7FD68B);
 }
+
+/// Semantic accents for data categories.
+///
+/// Charts and stat cards need several distinguishable colours, but they must
+/// still follow the active palette — hardcoding Colors.red/blue/teal makes a
+/// screen ignore the theme, which is how Monochrome ended up with teal icons.
+///
+/// These derive from the active ColorScheme so every palette keeps its own
+/// character while remaining internally consistent.
+abstract class SemanticColors {
+  static Color income(BuildContext context) =>
+      Theme.of(context).colorScheme.primary;
+
+  static Color expense(BuildContext context) =>
+      Theme.of(context).colorScheme.error;
+
+  static Color profit(BuildContext context, double value) =>
+      value < 0 ? expense(context) : Theme.of(context).colorScheme.primary;
+
+  static Color people(BuildContext context) =>
+      Theme.of(context).colorScheme.tertiary;
+
+  static Color muted(BuildContext context) =>
+      Theme.of(context).colorScheme.onSurfaceVariant;
+
+  /// Ordered palette for chart series, all drawn from the active scheme.
+  static List<Color> chartSeries(BuildContext context) {
+    final s = Theme.of(context).colorScheme;
+    return [
+      s.primary,
+      s.tertiary,
+      s.secondary,
+      s.error,
+      s.primaryContainer,
+      s.tertiaryContainer,
+    ];
+  }
+}

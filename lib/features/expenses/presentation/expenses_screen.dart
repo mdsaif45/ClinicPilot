@@ -39,7 +39,7 @@ class ExpensesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Clinic Expense Tracker"),
+        title: Text("Clinic Expense Tracker"),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -50,10 +50,10 @@ class ExpensesScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddExpense(context),
-        backgroundColor: Colors.redAccent.shade700,
-        icon: const Icon(Icons.remove_circle_outline, color: Colors.white),
-        label: const Text("Add Expense",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        icon: Icon(Icons.remove_circle_outline, color: Theme.of(context).colorScheme.onPrimary),
+        label: Text("Add Expense",
+            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.bold)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -74,7 +74,7 @@ class ExpensesScreen extends ConsumerWidget {
                         value: Formatters.formatCurrency(totalExp),
                         subtitle: "${items.length} Expense Items",
                         icon: Icons.account_balance_wallet_outlined,
-                        color: Colors.red,
+                        color: Theme.of(context).colorScheme.error,
                       ),
                     ),
                   ],
@@ -99,7 +99,9 @@ class ExpensesScreen extends ConsumerWidget {
                     selected: isSelected,
                     selectedColor: Theme.of(context).colorScheme.primary,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
@@ -111,7 +113,7 @@ class ExpensesScreen extends ConsumerWidget {
                 },
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // Expense Items List
             Expanded(
@@ -126,13 +128,13 @@ class ExpensesScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.money_off,
-                              size: 64, color: Colors.grey.shade400),
-                          const SizedBox(height: 12),
+                              size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          SizedBox(height: 12),
                           Text(
                             "No expenses recorded for '${selectedCategory ?? 'All'}'",
                             style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey.shade600,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w500),
                           ),
                           const SizedBox(height: 8),
@@ -160,24 +162,24 @@ class ExpensesScreen extends ConsumerWidget {
                           leading: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.redAccent.withValues(alpha: 0.1),
+                              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.arrow_downward,
-                                color: Colors.redAccent),
+                            child: Icon(Icons.arrow_downward,
+                                color: Theme.of(context).colorScheme.error),
                           ),
                           title: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               CustomBadge(
                                   label: exp.category,
-                                  color: Colors.redAccent.shade700),
+                                  color: Theme.of(context).colorScheme.error),
                               Text(
                                 Formatters.formatCurrency(exp.amount),
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color: Colors.redAccent.shade700),
+                                    color: Theme.of(context).colorScheme.error),
                               ),
                             ],
                           ),
@@ -193,7 +195,7 @@ class ExpensesScreen extends ConsumerWidget {
                                   Formatters.formatDate(exp.date),
                                   style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey.shade500),
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                                 ),
                               ],
                             ),
@@ -202,7 +204,7 @@ class ExpensesScreen extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit_outlined, color: Colors.teal),
+                                icon: Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.primary),
                                 tooltip: "Edit Expense",
                                 onPressed: () {
                                   showDialog(
@@ -212,8 +214,8 @@ class ExpensesScreen extends ConsumerWidget {
                                 },
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline,
-                                    color: Colors.red),
+                                icon: Icon(Icons.delete_outline,
+                                    color: Theme.of(context).colorScheme.error),
                                 tooltip: "Archive Expense",
                                 onPressed: () =>
                                     _confirmDelete(context, ref, exp.id),
@@ -237,21 +239,21 @@ class ExpensesScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Archive Expense'),
+        title: Text('Archive Expense'),
         content: const Text('Are you sure you want to archive this expense entry?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
             onPressed: () async {
               await ref
                   .read(expenseNotifierProvider.notifier)
                   .archiveExpense(id);
               if (ctx.mounted) Navigator.of(ctx).pop();
             },
-            child: const Text('Archive', style: TextStyle(color: Colors.white)),
+            child: Text('Archive', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),
