@@ -19,7 +19,9 @@ import '../../../core/widgets/custom_text_field.dart';
 import '../../clinics/presentation/clinics_screen.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
-import 'app_update_card.dart';
+import 'app_version_screen.dart';
+import '../providers/release_provider.dart';
+import '../providers/update_provider.dart';
 import 'appearance_section.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -155,7 +157,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 icon: Icons.favorite_outline,
                 title: 'Developed by mdsaif45',
               ),
-              const AppUpdateCard(),
+              Consumer(builder: (context, ref, _) {
+                final running =
+                    ref.watch(runningVersionProvider).value ?? '…';
+                final updateWaiting =
+                    ref.watch(availableUpdateProvider).value != null;
+                return AppListTile(
+                  icon: Icons.smartphone,
+                  title: 'App Version',
+                  subtitle: 'v$running',
+                  trailing: updateWaiting
+                      ? Icon(Icons.circle,
+                          size: 10, color: Theme.of(context).colorScheme.tertiary)
+                      : const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AppVersionScreen(),
+                    ),
+                  ),
+                );
+              }),
             ],
           ),
         ],

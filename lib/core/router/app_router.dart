@@ -15,7 +15,10 @@ import '../../features/growth/presentation/profit_summary_screen.dart';
 import '../../features/growth/presentation/referral_source_screen.dart';
 import '../../features/growth/presentation/clinic_comparison_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/settings/presentation/app_version_screen.dart';
+import '../../features/settings/providers/release_provider.dart';
 import '../../features/settings/providers/update_provider.dart';
+import '../services/update_service.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -98,6 +101,52 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+/// Offers the update once, with an explicit way to stop being asked.
+///
+/// "Later" records the version so it never prompts again; the release stays
+/// reachable from App Version whenever the doctor chooses. A prompt that
+/// returns every launch trains people to dismiss it without reading.
+Future<void> _showUpdatePrompt(
+  BuildContext context,
+  WidgetRef ref,
+  AppRelease release,
+) async {
+  final notifier = ref.read(updatePromptProvider.notifier);
+
+  final proceed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      icon: const Icon(Icons.system_update),
+      title: Text('Version ${release.version} available'),
+      content: Text(
+        'You are running v${ref.read(runningVersionProvider).value ?? ''}. '
+        'Updating does not affect your clinic data.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: const Text('Later'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: const Text('Continue'),
+        ),
+      ],
+    ),
+  );
+
+  if (proceed == true) {
+    notifier.dismiss();
+    if (context.mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const AppVersionScreen()),
+      );
+    }
+  } else {
+    await notifier.skip(release);
+  }
+}
+
 class _NavDestination {
   final int index;
   final IconData icon;
@@ -116,13 +165,30 @@ const _destinations = [
   _NavDestination(4, Icons.settings_outlined, Icons.settings, 'Settings'),
 ];
 
-class ScaffoldWithNavBar extends ConsumerWidget {
+class ScaffoldWithNavBar extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const ScaffoldWithNavBar({
     required this.navigationShell,
     super.key,
   });
+
+  @override
+  ConsumerState<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
+}
+
+class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
+  StatefulNavigationShell get navigationShell => widget.navigationShell;
+
+  @override
+  void initState() {
+    super.initState();
+    // Runs once per launch; the notifier itself decides whether this version
+    // has already been declined.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(updatePromptProvider.notifier).evaluate();
+    });
+  }
 
   /// Dashboard is the only tab with an app bar.
   ///
@@ -133,9 +199,19 @@ class ScaffoldWithNavBar extends ConsumerWidget {
   static const _growthIndex = 3;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDashboard = navigationShell.currentIndex == _dashboardIndex;
+
+    // Prompt once per new version, after the first frame so it never races
+    // the shell into existence.
+    ref.listen(updatePromptProvider, (previous, next) {
+      if (next != null && previous == null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) _showUpdatePrompt(context, ref, next);
+        });
+      }
+    });
 
     // Settings is a tab now, so the update badge rides on it rather than on an
     // app bar icon that only existed on one screen.
