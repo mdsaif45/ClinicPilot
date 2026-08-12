@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/stat_card.dart';
 import '../../clinics/providers/clinic_provider.dart';
@@ -48,7 +49,7 @@ class DashboardScreen extends ConsumerWidget {
                                     .onPrimaryContainer,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               'Active: ${activeClinic?.name ?? "Dr Zaid's Clinic"}',
                               style: TextStyle(
@@ -64,14 +65,17 @@ class DashboardScreen extends ConsumerWidget {
                         CircleAvatar(
                           radius: 28,
                           backgroundColor: Theme.of(context).colorScheme.primary,
-                          child: const Icon(Icons.medical_services,
-                              color: Colors.white, size: 28),
+                          child: Icon(Icons.medical_services,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary,
+                              size: 28),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
 
                 // Today's Performance Stat Grid
                 const Text(
@@ -97,25 +101,24 @@ class DashboardScreen extends ConsumerWidget {
                       title: "Today's Expenses",
                       value: Formatters.formatCurrency(stats.todayExpense),
                       icon: Icons.money_off,
-                      color: Colors.red,
+                      color: SemanticColors.expense(context),
                     ),
                     StatCard(
                       title: "Today's Net Profit",
                       value: Formatters.formatCurrency(stats.todayNetProfit),
                       icon: Icons.account_balance,
-                      color: stats.todayNetProfit >= 0
-                          ? Colors.teal
-                          : Colors.deepOrange,
+                      color: SemanticColors.profit(
+                          context, stats.todayNetProfit),
                     ),
                     StatCard(
                       title: "Today's Patients",
                       value: '${stats.todayPatients}',
                       icon: Icons.people,
-                      color: Colors.blue,
+                      color: SemanticColors.people(context),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
 
                 // Monthly Revenue Goal Target Card
                 Card(
@@ -136,28 +139,30 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                             Text(
                               '${(stats.revenueGoalProgress * 100).toStringAsFixed(0)}%',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.teal,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: LinearProgressIndicator(
                             value: stats.revenueGoalProgress,
                             minHeight: 12,
-                            backgroundColor: Colors.grey[200],
-                            color: Colors.teal,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surfaceContainerHighest,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           '${Formatters.formatCurrency(stats.monthlyRevenue)} earned of ${Formatters.formatCurrency(stats.monthlyRevenueGoal)} target',
-                          style:
-                              const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: SemanticColors.muted(context)),
                         ),
                       ],
                     ),

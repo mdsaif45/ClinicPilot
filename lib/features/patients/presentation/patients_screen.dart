@@ -94,7 +94,7 @@ class PatientsScreen extends ConsumerWidget {
                               child: Text(
                                 patient.name,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),
@@ -121,7 +121,7 @@ class PatientsScreen extends ConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.edit_outlined, color: Colors.teal),
+                              icon: Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.primary),
                               tooltip: 'Edit Patient',
                               onPressed: () {
                                 showDialog(
@@ -131,8 +131,8 @@ class PatientsScreen extends ConsumerWidget {
                               },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline,
-                                  color: Colors.red),
+                              icon: Icon(Icons.delete_outline,
+                                  color: Theme.of(context).colorScheme.error),
                               tooltip: 'Archive Patient',
                               onPressed: () => _confirmDelete(context, ref, patient),
                             ),
@@ -157,21 +157,21 @@ class PatientsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Archive Patient'),
+        title: Text('Archive Patient'),
         content: Text('Are you sure you want to archive ${patient.name}?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
             onPressed: () async {
               await ref
                   .read(patientNotifierProvider.notifier)
                   .archivePatient(patient.id);
               if (ctx.mounted) Navigator.of(ctx).pop();
             },
-            child: const Text('Archive', style: TextStyle(color: Colors.white)),
+            child: Text('Archive', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           ),
         ],
       ),

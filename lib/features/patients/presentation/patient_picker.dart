@@ -295,7 +295,7 @@ class PatientPickerField extends StatelessWidget {
           },
           child: InputDecorator(
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.person_search),
+              prefixIcon: Icon(Icons.person_search),
               suffixIcon: const Icon(Icons.arrow_drop_down),
               errorText: errorText,
             ),
