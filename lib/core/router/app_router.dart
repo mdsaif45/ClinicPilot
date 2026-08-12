@@ -6,6 +6,7 @@ import '../widgets/clinic_switcher.dart';
 import '../../features/clinics/presentation/clinics_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/patients/presentation/patients_screen.dart';
+import '../../features/patients/presentation/recall_screen.dart';
 import '../../features/cashmemo/presentation/cash_memo_screen.dart';
 import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/growth/presentation/growth_screen.dart';
@@ -88,6 +89,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/comparison',
         builder: (context, state) => const ClinicComparisonScreen(),
+      ),
+      GoRoute(
+        path: '/recall',
+        builder: (context, state) => const RecallScreen(),
       ),
       GoRoute(
         path: '/settings',

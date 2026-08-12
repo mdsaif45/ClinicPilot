@@ -19,6 +19,11 @@ class ProfitSummary {
   final DateTime? bestDay;
   final double bestDayProfit;
 
+  /// Collections split by how they were paid. Already captured on every memo
+  /// and previously unused; it tells him how much of the month is cash and
+  /// therefore still to be reconciled.
+  final Map<String, double> collectionByMethod;
+
   const ProfitSummary({
     required this.totalIncome,
     required this.totalExpenses,
@@ -27,6 +32,7 @@ class ProfitSummary {
     required this.daysWithActivity,
     this.bestDay,
     this.bestDayProfit = 0,
+    this.collectionByMethod = const {},
   });
 
   /// Averaged over days that actually had activity, not calendar days — the
@@ -67,11 +73,13 @@ final profitSummaryProvider = StreamProvider<ProfitSummary>((ref) async* {
   final expenses = await expenseQuery.get();
 
   final incomeByDay = <int, double>{};
+  final byMethod = <String, double>{};
   var totalIncome = 0.0;
   for (final m in memos) {
     incomeByDay[m.createdAt.day] =
         (incomeByDay[m.createdAt.day] ?? 0) + m.total;
     totalIncome += m.total;
+    byMethod[m.paymentMethod] = (byMethod[m.paymentMethod] ?? 0) + m.total;
   }
 
   final expenseByDay = <int, double>{};
@@ -106,5 +114,6 @@ final profitSummaryProvider = StreamProvider<ProfitSummary>((ref) async* {
         ? null
         : DateTime(range.start.year, range.start.month, bestDayNumber!),
     bestDayProfit: bestProfit,
+    collectionByMethod: byMethod,
   );
 });

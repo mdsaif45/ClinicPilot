@@ -10,6 +10,7 @@ import '../../clinics/providers/clinic_provider.dart';
 import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
 import '../../expenses/presentation/add_expense_dialog.dart';
 import '../../patients/presentation/add_patient_dialog.dart';
+import '../../patients/providers/recall_provider.dart';
 import '../providers/dashboard_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -174,6 +175,62 @@ class DashboardScreen extends ConsumerWidget {
                 ],
               ),
             ),
+
+            // Surfaced on the landing screen rather than buried: a recall
+            // list only works if it is seen without being sought.
+            Consumer(builder: (context, ref, _) {
+              final lists = ref.watch(recallListProvider).value;
+              final count = lists == null
+                  ? 0
+                  : lists.overdue.length + lists.lapsed.length;
+              if (count == 0) return const SizedBox.shrink();
+
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Spacing.lg,
+                  Spacing.lg,
+                  Spacing.lg,
+                  0,
+                ),
+                child: Material(
+                  color: theme.colorScheme.errorContainer
+                      .withValues(alpha: 0.35),
+                  borderRadius: Radii.mdAll,
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => context.push('/recall'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(Spacing.lg),
+                      child: Row(
+                        children: [
+                          Icon(Icons.notifications_active_outlined,
+                              color: theme.colorScheme.error),
+                          const SizedBox(width: Spacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  count == 1
+                                      ? '1 patient needs following up'
+                                      : '$count patients need following up',
+                                  style: theme.textTheme.titleSmall,
+                                ),
+                                Text(
+                                  'Overdue or not seen in a while',
+                                  style: theme.textTheme.labelSmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
 
             const SectionHeader(title: 'Quick Actions'),
             Padding(

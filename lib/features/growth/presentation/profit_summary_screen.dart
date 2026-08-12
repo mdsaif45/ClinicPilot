@@ -83,6 +83,45 @@ class ProfitSummaryScreen extends ConsumerWidget {
                 ),
               ),
 
+            if (s.collectionByMethod.isNotEmpty) ...[
+              const SectionHeader(title: 'Collection by Method'),
+              for (final e in (s.collectionByMethod.entries.toList()
+                    ..sort((a, b) => b.value.compareTo(a.value))))
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Spacing.lg,
+                    0,
+                    Spacing.lg,
+                    Spacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(_methodIcon(e.key),
+                          size: 18, color: scheme.onSurfaceVariant),
+                      const SizedBox(width: Spacing.md),
+                      Expanded(child: Text(e.key,
+                          style: theme.textTheme.bodyMedium)),
+                      Text(
+                        '${(e.value / s.totalIncome * 100).toStringAsFixed(0)}%',
+                        style: theme.textTheme.labelMedium,
+                      ),
+                      const SizedBox(width: Spacing.md),
+                      SizedBox(
+                        width: 84,
+                        child: Text(
+                          Formatters.formatCurrency(e.value),
+                          textAlign: TextAlign.right,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: scheme.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+
             const SectionHeader(title: 'Quick Summary'),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
@@ -145,6 +184,13 @@ class ProfitSummaryScreen extends ConsumerWidget {
       ),
     );
   }
+
+  IconData _methodIcon(String method) => switch (method.toLowerCase()) {
+        'cash' => Icons.payments_outlined,
+        'upi' => Icons.qr_code_2,
+        'card' => Icons.credit_card,
+        _ => Icons.account_balance_outlined,
+      };
 
   LineChartData _chart(BuildContext context, Map<int, double> daily) {
     final scheme = Theme.of(context).colorScheme;

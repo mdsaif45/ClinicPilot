@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -127,6 +127,19 @@ class AppDatabase extends _$AppDatabase {
             await customStatement('UPDATE clinics SET created_at = cast(strftime("%s", "now") as integer) WHERE created_at IS NULL');
 
             await _createIndices();
+          }
+
+          if (from < 3) {
+            // Google review tracking.
+            await _addColumnIfMissing(m, patients, patients.reviewAskedAt);
+            await _addColumnIfMissing(m, patients, patients.reviewGiven);
+
+            // A column default applies to rows inserted after the column
+            // exists, not to rows already in the table. Without this backfill
+            // every pre-existing patient reads back null on a non-nullable
+            // field and the mapper throws.
+            await customStatement(
+                'UPDATE patients SET review_given = 0 WHERE review_given IS NULL');
           }
         },
         beforeOpen: (details) async {
