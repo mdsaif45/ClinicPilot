@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
@@ -34,29 +33,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _revenueGoalController = TextEditingController(text: '50000');
   final _patientGoalController = TextEditingController(text: '10');
 
-  String _version = '...';
-
   @override
   void initState() {
     super.initState();
     _loadSettings();
-    _loadVersion();
-  }
-
-  Future<void> _loadVersion() async {
-    try {
-      final info = await PackageInfo.fromPlatform();
-      if (mounted) {
-        setState(() => _version = 'v${info.version} (${info.buildNumber})');
-      }
-    } catch (_) {
-      if (mounted) setState(() => _version = 'Unknown');
-    }
   }
 
   Future<void> _openUrl(String url) async {
     final uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+    if (!await launchUrl(
+      uri,
+      mode: kIsWeb
+          ? LaunchMode.platformDefault
+          : LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
+    )) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not open $url')),
@@ -160,11 +151,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onTap: () => _openUrl(
                   'https://github.com/mdsaif45/ClinicPilot',
                 ),
-              ),
-              AppListTile(
-                icon: Icons.info_outline,
-                title: 'Version',
-                subtitle: _version,
               ),
               const AppListTile(
                 icon: Icons.favorite_outline,
