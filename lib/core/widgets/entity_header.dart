@@ -14,6 +14,11 @@ class EntityHeader extends StatelessWidget {
   final List<Widget> badges;
   final List<Widget> actions;
 
+  /// Optional back button. When present the header also reserves room for the
+  /// status bar, since a screen using this instead of an AppBar has nothing
+  /// else holding that space.
+  final Widget? leading;
+
   const EntityHeader({
     super.key,
     required this.title,
@@ -22,6 +27,7 @@ class EntityHeader extends StatelessWidget {
     this.accent,
     this.badges = const [],
     this.actions = const [],
+    this.leading,
   });
 
   @override
@@ -30,11 +36,13 @@ class EntityHeader extends StatelessWidget {
     final scheme = theme.colorScheme;
     final tint = accent ?? scheme.primary;
 
+    final topInset = leading == null ? 0.0 : MediaQuery.of(context).padding.top;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         Spacing.lg,
-        Spacing.lg,
+        Spacing.lg + topInset,
         Spacing.lg,
         Spacing.xl,
       ),
@@ -48,7 +56,21 @@ class EntityHeader extends StatelessWidget {
           ],
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (leading != null || actions.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: Spacing.sm),
+              child: Row(
+                children: [
+                  if (leading != null) leading!,
+                  const Spacer(),
+                  ...actions,
+                ],
+              ),
+            ),
+          Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
@@ -78,7 +100,8 @@ class EntityHeader extends StatelessWidget {
               ],
             ),
           ),
-          ...actions,
+            ],
+          ),
         ],
       ),
     );

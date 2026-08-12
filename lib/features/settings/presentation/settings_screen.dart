@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
@@ -20,7 +19,9 @@ import '../../../core/widgets/custom_text_field.dart';
 import '../../clinics/presentation/clinics_screen.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
-import 'app_update_card.dart';
+import 'app_version_screen.dart';
+import '../providers/release_provider.dart';
+import '../providers/update_provider.dart';
 import 'appearance_section.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -34,29 +35,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _revenueGoalController = TextEditingController(text: '50000');
   final _patientGoalController = TextEditingController(text: '10');
 
-  String _version = '...';
-
   @override
   void initState() {
     super.initState();
     _loadSettings();
-    _loadVersion();
-  }
-
-  Future<void> _loadVersion() async {
-    try {
-      final info = await PackageInfo.fromPlatform();
-      if (mounted) {
-        setState(() => _version = 'v${info.version} (${info.buildNumber})');
-      }
-    } catch (_) {
-      if (mounted) setState(() => _version = 'Unknown');
-    }
   }
 
   Future<void> _openUrl(String url) async {
     final uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+    if (!await launchUrl(
+      uri,
+      mode: kIsWeb
+          ? LaunchMode.platformDefault
+          : LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
+    )) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not open $url')),
@@ -156,22 +149,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               AppListTile(
                 icon: Icons.code,
                 title: 'GitHub repository',
-                subtitle: 'mdsaif45/ClinicPilot',
                 onTap: () => _openUrl(
                   'https://github.com/mdsaif45/ClinicPilot',
                 ),
               ),
-              AppListTile(
-                icon: Icons.info_outline,
-                title: 'Version',
-                subtitle: _version,
-              ),
               const AppListTile(
                 icon: Icons.favorite_outline,
                 title: 'Developed by mdsaif45',
-                subtitle: 'Know. Grow. Repeat.',
               ),
-              const AppUpdateCard(),
+              Consumer(builder: (context, ref, _) {
+                final running =
+                    ref.watch(runningVersionProvider).value ?? '…';
+                final updateWaiting =
+                    ref.watch(availableUpdateProvider).value != null;
+                return AppListTile(
+                  icon: Icons.smartphone,
+                  title: 'App Version',
+                  subtitle: 'v$running',
+                  trailing: updateWaiting
+                      ? Icon(Icons.circle,
+                          size: 10, color: Theme.of(context).colorScheme.tertiary)
+                      : const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AppVersionScreen(),
+                    ),
+                  ),
+                );
+              }),
             ],
           ),
         ],

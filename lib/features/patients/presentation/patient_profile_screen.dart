@@ -49,26 +49,28 @@ class PatientProfileScreen extends ConsumerWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 0,
-            title: Text(patient.name),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Edit patient',
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (_) => EditPatientDialog(patient: patient),
-                ),
-              ),
-            ],
-          ),
+          // No app bar: it repeated the name the header already shows. Back
+          // and edit ride on top of the header instead.
           SliverToBoxAdapter(
             child: EntityHeader(
               title: patient.name,
               subtitle: patient.patientCode,
               avatarText: patient.name,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Back',
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'Edit patient',
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (_) => EditPatientDialog(patient: patient),
+                  ),
+                ),
+              ],
               badges: [
                 if ((patient.area ?? '').isNotEmpty)
                   _Badge(icon: Icons.place_outlined, label: patient.area!),
@@ -129,6 +131,11 @@ class PatientProfileScreen extends ConsumerWidget {
                     icon: Icons.receipt_long_outlined,
                     label: 'Payments',
                     builder: (_) => _PaymentsTab(memos: patientMemos),
+                  ),
+                  SegmentedTab(
+                    icon: Icons.event_repeat_outlined,
+                    label: 'Follow-ups',
+                    builder: (_) => _FollowUpsTab(visits: visits),
                   ),
                   SegmentedTab(
                     icon: Icons.insights_outlined,
@@ -242,6 +249,7 @@ class _VisitsTab extends StatelessWidget {
 
     return Column(
       children: [
+        const SizedBox(height: Spacing.md),
         for (final v in visits)
           AppCard(
             margin: const EdgeInsets.fromLTRB(
@@ -302,6 +310,7 @@ class _PaymentsTab extends StatelessWidget {
 
     return Column(
       children: [
+        const SizedBox(height: Spacing.md),
         for (final m in memos)
           AppCard(
             margin: const EdgeInsets.fromLTRB(
@@ -387,7 +396,8 @@ class _InsightsTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SectionHeader(title: 'Visit type'),
+        const SizedBox(height: Spacing.xs),
+        const SectionHeader(title: 'Visit type', tightTop: true),
         InfoRow(label: 'New', value: '$newCount'),
         InfoRow(label: 'Repeat', value: '${visits.length - newCount}'),
         const SectionHeader(title: 'Outcomes'),
@@ -396,6 +406,115 @@ class _InsightsTab extends StatelessWidget {
         const SectionHeader(title: 'Clinics'),
         for (final e in clinicSplit.entries)
           InfoRow(label: e.key, value: '${e.value} visits'),
+      ],
+    );
+  }
+}
+
+/// Scheduled and missed follow-ups.
+///
+/// visits.nextFollowUpDate has been in the schema since v2 with nowhere to
+/// show it, so an overdue patient was invisible unless the doctor happened to
+/// open the right visit.
+class _FollowUpsTab extends StatelessWidget {
+  final List<VisitWithDetails> visits;
+
+  const _FollowUpsTab({required this.visits});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final scheduled = visits
+        .where((v) => v.visit.nextFollowUpDate != null)
+        .toList()
+      ..sort((a, b) =>
+          a.visit.nextFollowUpDate!.compareTo(b.visit.nextFollowUpDate!));
+
+    if (scheduled.isEmpty) {
+      return const EmptyState(
+        icon: Icons.event_repeat_outlined,
+        title: 'No follow-ups scheduled',
+        message: 'Set a follow-up date when recording a visit and it '
+            'will appear here.',
+      );
+    }
+
+    final overdue = scheduled
+        .where((v) => v.visit.nextFollowUpDate!.isBefore(today))
+        .toList();
+    final upcoming = scheduled
+        .where((v) => !v.visit.nextFollowUpDate!.isBefore(today))
+        .toList();
+
+    Widget row(VisitWithDetails v, {required bool isOverdue}) {
+      final due = v.visit.nextFollowUpDate!;
+      final days = due.difference(today).inDays;
+      final label = isOverdue
+          ? '${-days} ${(-days) == 1 ? 'day' : 'days'} overdue'
+          : days == 0
+              ? 'Due today'
+              : 'In $days ${days == 1 ? 'day' : 'days'}';
+
+      return AppCard(
+        margin: const EdgeInsets.fromLTRB(
+          Spacing.lg,
+          0,
+          Spacing.lg,
+          Spacing.md,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isOverdue ? Icons.warning_amber_outlined : Icons.event_available,
+              color: isOverdue
+                  ? theme.colorScheme.error
+                  : theme.colorScheme.primary,
+            ),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(Formatters.formatDate(due),
+                      style: theme.textTheme.titleSmall),
+                  const SizedBox(height: Spacing.xs),
+                  Text(
+                    '${v.visit.disease} · ${v.clinic.name}',
+                    style: theme.textTheme.labelMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: isOverdue
+                    ? theme.colorScheme.error
+                    : theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: Spacing.xs),
+        if (overdue.isNotEmpty) ...[
+          const SectionHeader(title: 'Overdue', tightTop: true),
+          for (final v in overdue) row(v, isOverdue: true),
+        ],
+        if (upcoming.isNotEmpty) ...[
+          SectionHeader(title: 'Upcoming', tightTop: overdue.isEmpty),
+          for (final v in upcoming) row(v, isOverdue: false),
+        ],
       ],
     );
   }

@@ -10,28 +10,41 @@ import '../providers/theme_provider.dart';
 class AppearanceSection extends ConsumerWidget {
   const AppearanceSection({super.key});
 
+  /// Flip to true to expose theme mode, the black variant and the palette
+  /// picker again. Everything behind them is still wired up.
+  static const bool _showThemeControls = false;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(themeProvider);
     final notifier = ref.read(themeProvider.notifier);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // The app ships light only for now, so theme mode, the true-black variant
+    // and the palette picker are all hidden. Every picker and its persistence
+    // is left intact, so re-exposing them is a flag flip rather than a
+    // rebuild.
+    final showThemeControls = _showThemeControls;
+    final showPalette = _showThemeControls;
+    final isDark = showThemeControls &&
+        Theme.of(context).brightness == Brightness.dark;
 
     return SettingsGroup(
       title: 'Display',
       children: [
-        AppListTile(
-          icon: Icons.palette_outlined,
-          title: 'Theme',
-          subtitle: prefs.mode.label,
-          onTap: () => _pick<AppThemeMode>(
-            context: context,
+        if (showThemeControls)
+          AppListTile(
+            icon: Icons.palette_outlined,
             title: 'Theme',
-            values: AppThemeMode.values,
-            current: prefs.mode,
-            labelOf: (m) => m.label,
-            onSelected: notifier.setMode,
+            subtitle: prefs.mode.label,
+            onTap: () => _pick<AppThemeMode>(
+              context: context,
+              title: 'Theme',
+              values: AppThemeMode.values,
+              current: prefs.mode,
+              labelOf: (m) => m.label,
+              onSelected: notifier.setMode,
+            ),
           ),
-        ),
         // Only meaningful while a dark scheme is actually showing, so it is
         // hidden in light mode rather than shown as a dead toggle.
         if (isDark)
@@ -42,13 +55,14 @@ class AppearanceSection extends ConsumerWidget {
             value: prefs.blackVariant,
             onChanged: notifier.setBlackVariant,
           ),
-        AppListTile(
-          icon: Icons.format_paint_outlined,
-          title: 'Color palette',
-          subtitle: prefs.palette.label,
-          trailing: _Swatch(color: prefs.palette.swatch),
-          onTap: () => _pickPalette(context, prefs.palette, notifier),
-        ),
+        if (showPalette)
+          AppListTile(
+            icon: Icons.format_paint_outlined,
+            title: 'Color palette',
+            subtitle: prefs.palette.label,
+            trailing: _Swatch(color: prefs.palette.swatch),
+            onTap: () => _pickPalette(context, prefs.palette, notifier),
+          ),
         AppListTile(
           icon: Icons.language,
           title: 'Language',

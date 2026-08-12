@@ -823,6 +823,33 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _reviewAskedAtMeta = const VerificationMeta(
+    'reviewAskedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> reviewAskedAt =
+      GeneratedColumn<DateTime>(
+        'review_asked_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _reviewGivenMeta = const VerificationMeta(
+    'reviewGiven',
+  );
+  @override
+  late final GeneratedColumn<bool> reviewGiven = GeneratedColumn<bool>(
+    'review_given',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("review_given" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _isDeletedMeta = const VerificationMeta(
     'isDeleted',
   );
@@ -878,6 +905,8 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
     primaryDisease,
     referralSource,
     notes,
+    reviewAskedAt,
+    reviewGiven,
     isDeleted,
     createdAt,
     updatedAt,
@@ -997,6 +1026,24 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('review_asked_at')) {
+      context.handle(
+        _reviewAskedAtMeta,
+        reviewAskedAt.isAcceptableOrUnknown(
+          data['review_asked_at']!,
+          _reviewAskedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('review_given')) {
+      context.handle(
+        _reviewGivenMeta,
+        reviewGiven.isAcceptableOrUnknown(
+          data['review_given']!,
+          _reviewGivenMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_deleted')) {
       context.handle(
         _isDeletedMeta,
@@ -1087,6 +1134,15 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      reviewAskedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}review_asked_at'],
+      ),
+      reviewGiven:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}review_given'],
+          )!,
       isDeleted:
           attachedDatabase.typeMapping.read(
             DriftSqlType.bool,
@@ -1126,6 +1182,15 @@ class Patient extends DataClass implements Insertable<Patient> {
   final String? primaryDisease;
   final String? referralSource;
   final String? notes;
+
+  /// Google review tracking.
+  ///
+  /// The growth plan ranks Google reviews the single highest-impact local
+  /// marketing channel, with a target of 100 in the first year. The app can
+  /// only record that the ask happened and what the patient reported back — it
+  /// cannot verify a review was actually published.
+  final DateTime? reviewAskedAt;
+  final bool reviewGiven;
   final bool isDeleted;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -1144,6 +1209,8 @@ class Patient extends DataClass implements Insertable<Patient> {
     this.primaryDisease,
     this.referralSource,
     this.notes,
+    this.reviewAskedAt,
+    required this.reviewGiven,
     required this.isDeleted,
     required this.createdAt,
     required this.updatedAt,
@@ -1179,6 +1246,10 @@ class Patient extends DataClass implements Insertable<Patient> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
+    if (!nullToAbsent || reviewAskedAt != null) {
+      map['review_asked_at'] = Variable<DateTime>(reviewAskedAt);
+    }
+    map['review_given'] = Variable<bool>(reviewGiven);
     map['is_deleted'] = Variable<bool>(isDeleted);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1217,6 +1288,11 @@ class Patient extends DataClass implements Insertable<Patient> {
               : Value(referralSource),
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      reviewAskedAt:
+          reviewAskedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(reviewAskedAt),
+      reviewGiven: Value(reviewGiven),
       isDeleted: Value(isDeleted),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -1243,6 +1319,8 @@ class Patient extends DataClass implements Insertable<Patient> {
       primaryDisease: serializer.fromJson<String?>(json['primaryDisease']),
       referralSource: serializer.fromJson<String?>(json['referralSource']),
       notes: serializer.fromJson<String?>(json['notes']),
+      reviewAskedAt: serializer.fromJson<DateTime?>(json['reviewAskedAt']),
+      reviewGiven: serializer.fromJson<bool>(json['reviewGiven']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -1266,6 +1344,8 @@ class Patient extends DataClass implements Insertable<Patient> {
       'primaryDisease': serializer.toJson<String?>(primaryDisease),
       'referralSource': serializer.toJson<String?>(referralSource),
       'notes': serializer.toJson<String?>(notes),
+      'reviewAskedAt': serializer.toJson<DateTime?>(reviewAskedAt),
+      'reviewGiven': serializer.toJson<bool>(reviewGiven),
       'isDeleted': serializer.toJson<bool>(isDeleted),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -1287,6 +1367,8 @@ class Patient extends DataClass implements Insertable<Patient> {
     Value<String?> primaryDisease = const Value.absent(),
     Value<String?> referralSource = const Value.absent(),
     Value<String?> notes = const Value.absent(),
+    Value<DateTime?> reviewAskedAt = const Value.absent(),
+    bool? reviewGiven,
     bool? isDeleted,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -1307,6 +1389,9 @@ class Patient extends DataClass implements Insertable<Patient> {
     referralSource:
         referralSource.present ? referralSource.value : this.referralSource,
     notes: notes.present ? notes.value : this.notes,
+    reviewAskedAt:
+        reviewAskedAt.present ? reviewAskedAt.value : this.reviewAskedAt,
+    reviewGiven: reviewGiven ?? this.reviewGiven,
     isDeleted: isDeleted ?? this.isDeleted,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1338,6 +1423,12 @@ class Patient extends DataClass implements Insertable<Patient> {
               ? data.referralSource.value
               : this.referralSource,
       notes: data.notes.present ? data.notes.value : this.notes,
+      reviewAskedAt:
+          data.reviewAskedAt.present
+              ? data.reviewAskedAt.value
+              : this.reviewAskedAt,
+      reviewGiven:
+          data.reviewGiven.present ? data.reviewGiven.value : this.reviewGiven,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -1361,6 +1452,8 @@ class Patient extends DataClass implements Insertable<Patient> {
           ..write('primaryDisease: $primaryDisease, ')
           ..write('referralSource: $referralSource, ')
           ..write('notes: $notes, ')
+          ..write('reviewAskedAt: $reviewAskedAt, ')
+          ..write('reviewGiven: $reviewGiven, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -1384,6 +1477,8 @@ class Patient extends DataClass implements Insertable<Patient> {
     primaryDisease,
     referralSource,
     notes,
+    reviewAskedAt,
+    reviewGiven,
     isDeleted,
     createdAt,
     updatedAt,
@@ -1406,6 +1501,8 @@ class Patient extends DataClass implements Insertable<Patient> {
           other.primaryDisease == this.primaryDisease &&
           other.referralSource == this.referralSource &&
           other.notes == this.notes &&
+          other.reviewAskedAt == this.reviewAskedAt &&
+          other.reviewGiven == this.reviewGiven &&
           other.isDeleted == this.isDeleted &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -1426,6 +1523,8 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
   final Value<String?> primaryDisease;
   final Value<String?> referralSource;
   final Value<String?> notes;
+  final Value<DateTime?> reviewAskedAt;
+  final Value<bool> reviewGiven;
   final Value<bool> isDeleted;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -1445,6 +1544,8 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     this.primaryDisease = const Value.absent(),
     this.referralSource = const Value.absent(),
     this.notes = const Value.absent(),
+    this.reviewAskedAt = const Value.absent(),
+    this.reviewGiven = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1465,6 +1566,8 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     this.primaryDisease = const Value.absent(),
     this.referralSource = const Value.absent(),
     this.notes = const Value.absent(),
+    this.reviewAskedAt = const Value.absent(),
+    this.reviewGiven = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1489,6 +1592,8 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     Expression<String>? primaryDisease,
     Expression<String>? referralSource,
     Expression<String>? notes,
+    Expression<DateTime>? reviewAskedAt,
+    Expression<bool>? reviewGiven,
     Expression<bool>? isDeleted,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -1509,6 +1614,8 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
       if (primaryDisease != null) 'primary_disease': primaryDisease,
       if (referralSource != null) 'referral_source': referralSource,
       if (notes != null) 'notes': notes,
+      if (reviewAskedAt != null) 'review_asked_at': reviewAskedAt,
+      if (reviewGiven != null) 'review_given': reviewGiven,
       if (isDeleted != null) 'is_deleted': isDeleted,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1531,6 +1638,8 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     Value<String?>? primaryDisease,
     Value<String?>? referralSource,
     Value<String?>? notes,
+    Value<DateTime?>? reviewAskedAt,
+    Value<bool>? reviewGiven,
     Value<bool>? isDeleted,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -1551,6 +1660,8 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
       primaryDisease: primaryDisease ?? this.primaryDisease,
       referralSource: referralSource ?? this.referralSource,
       notes: notes ?? this.notes,
+      reviewAskedAt: reviewAskedAt ?? this.reviewAskedAt,
+      reviewGiven: reviewGiven ?? this.reviewGiven,
       isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1603,6 +1714,12 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (reviewAskedAt.present) {
+      map['review_asked_at'] = Variable<DateTime>(reviewAskedAt.value);
+    }
+    if (reviewGiven.present) {
+      map['review_given'] = Variable<bool>(reviewGiven.value);
+    }
     if (isDeleted.present) {
       map['is_deleted'] = Variable<bool>(isDeleted.value);
     }
@@ -1635,6 +1752,8 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
           ..write('primaryDisease: $primaryDisease, ')
           ..write('referralSource: $referralSource, ')
           ..write('notes: $notes, ')
+          ..write('reviewAskedAt: $reviewAskedAt, ')
+          ..write('reviewGiven: $reviewGiven, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -4952,6 +5071,8 @@ typedef $$PatientsTableCreateCompanionBuilder =
       Value<String?> primaryDisease,
       Value<String?> referralSource,
       Value<String?> notes,
+      Value<DateTime?> reviewAskedAt,
+      Value<bool> reviewGiven,
       Value<bool> isDeleted,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -4973,6 +5094,8 @@ typedef $$PatientsTableUpdateCompanionBuilder =
       Value<String?> primaryDisease,
       Value<String?> referralSource,
       Value<String?> notes,
+      Value<DateTime?> reviewAskedAt,
+      Value<bool> reviewGiven,
       Value<bool> isDeleted,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -5097,6 +5220,16 @@ class $$PatientsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get reviewAskedAt => $composableBuilder(
+    column: $table.reviewAskedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get reviewGiven => $composableBuilder(
+    column: $table.reviewGiven,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5245,6 +5378,16 @@ class $$PatientsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get reviewAskedAt => $composableBuilder(
+    column: $table.reviewAskedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get reviewGiven => $composableBuilder(
+    column: $table.reviewGiven,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isDeleted => $composableBuilder(
     column: $table.isDeleted,
     builder: (column) => ColumnOrderings(column),
@@ -5321,6 +5464,16 @@ class $$PatientsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get reviewAskedAt => $composableBuilder(
+    column: $table.reviewAskedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get reviewGiven => $composableBuilder(
+    column: $table.reviewGiven,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get isDeleted =>
       $composableBuilder(column: $table.isDeleted, builder: (column) => column);
@@ -5424,6 +5577,8 @@ class $$PatientsTableTableManager
                 Value<String?> primaryDisease = const Value.absent(),
                 Value<String?> referralSource = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<DateTime?> reviewAskedAt = const Value.absent(),
+                Value<bool> reviewGiven = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -5443,6 +5598,8 @@ class $$PatientsTableTableManager
                 primaryDisease: primaryDisease,
                 referralSource: referralSource,
                 notes: notes,
+                reviewAskedAt: reviewAskedAt,
+                reviewGiven: reviewGiven,
                 isDeleted: isDeleted,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -5464,6 +5621,8 @@ class $$PatientsTableTableManager
                 Value<String?> primaryDisease = const Value.absent(),
                 Value<String?> referralSource = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<DateTime?> reviewAskedAt = const Value.absent(),
+                Value<bool> reviewGiven = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -5483,6 +5642,8 @@ class $$PatientsTableTableManager
                 primaryDisease: primaryDisease,
                 referralSource: referralSource,
                 notes: notes,
+                reviewAskedAt: reviewAskedAt,
+                reviewGiven: reviewGiven,
                 isDeleted: isDeleted,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

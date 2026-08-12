@@ -13,7 +13,8 @@ class ThemePrefs {
   final bool blackVariant;
 
   const ThemePrefs({
-    this.mode = AppThemeMode.system,
+    // Light by default while the app ships a single theme.
+    this.mode = AppThemeMode.light,
     this.palette = AppPalette.emerald,
     this.blackVariant = false,
   });
@@ -63,10 +64,16 @@ class ThemeNotifier extends StateNotifier<ThemePrefs> {
     // A failure here must not stop the app from starting — fall back to
     // defaults and let the user re-pick.
     try {
+      final storedMode = await _read(_kMode);
       state = ThemePrefs(
-        mode: AppThemeMode.fromName(await _read(_kMode)),
-        palette: AppPalette.fromName(await _read(_kPalette)),
-        blackVariant: (await _read(_kBlack)) == 'true',
+        // Anyone who picked dark or a palette before these controls were
+        // hidden would otherwise be stuck with a look they can no longer
+        // change, so both fall back to the shipped defaults.
+        mode: storedMode == null
+            ? AppThemeMode.light
+            : AppThemeMode.fromName(storedMode),
+        palette: AppPalette.emerald,
+        blackVariant: false,
       );
     } catch (_) {
       state = const ThemePrefs();

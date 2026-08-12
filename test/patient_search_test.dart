@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'helpers/seed_clinics.dart';
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/features/patients/providers/patient_provider.dart';
@@ -26,6 +28,7 @@ void main() {
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await seedTestClinics(db);
     container = ProviderContainer(
       overrides: [databaseProvider.overrideWithValue(db)],
     );

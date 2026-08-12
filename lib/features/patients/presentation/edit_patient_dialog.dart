@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/picker_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../providers/patient_provider.dart';
@@ -57,11 +58,19 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Edit Patient (${widget.patient.patientCode})'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            // Without this the column centres its children. Text fields fill
+            // the width so they look correct either way, but anything
+            // narrower - chips, checkboxes - drifts to the middle.
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
                 controller: _nameController,
@@ -94,15 +103,17 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: ['Male', 'Female', 'Other'].contains(_gender) ? _gender : 'Male',
-                      decoration: const InputDecoration(labelText: 'Gender'),
-                      items: ['Male', 'Female', 'Other']
-                          .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _gender = val);
-                      },
+                    child: PickerField<String>(
+                      label: 'Gender',
+                      value: const ['Male', 'Female', 'Other'].contains(_gender)
+                          ? _gender
+                          : 'Male',
+                      options: const [
+                        PickerOption(value: 'Male', label: 'Male'),
+                        PickerOption(value: 'Female', label: 'Female'),
+                        PickerOption(value: 'Other', label: 'Other'),
+                      ],
+                      onChanged: (val) => setState(() => _gender = val),
                     ),
                   ),
                 ],
@@ -131,7 +142,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../providers/cash_memo_provider.dart';
@@ -51,11 +52,19 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Edit Cash Memo (${widget.memo.memoNumber})'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            // Without this the column centres its children. Text fields fill
+            // the width so they look correct either way, but anything
+            // narrower - chips, checkboxes - drifts to the middle.
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
                 controller: _consultationFeeController,
@@ -87,17 +96,17 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: ['Cash', 'UPI', 'Card', 'Bank Transfer'].contains(_paymentMethod)
+              ChoiceChipField<String>(
+                label: 'Payment Method',
+                options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
+                // Fall back to Cash if a memo carries a method no longer offered.
+                value: const ['Cash', 'UPI', 'Card', 'Bank Transfer']
+                        .contains(_paymentMethod)
                     ? _paymentMethod
                     : 'Cash',
-                decoration: const InputDecoration(labelText: 'Payment Method'),
-                items: ['Cash', 'UPI', 'Card', 'Bank Transfer']
-                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _paymentMethod = val);
-                },
+                labelOf: (m) => m,
+                iconOf: _paymentIcon,
+                onChanged: (m) => setState(() => _paymentMethod = m),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -108,7 +117,7 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -149,4 +158,11 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
       );
     }
   }
+
+  IconData _paymentIcon(String method) => switch (method) {
+        'Cash' => Icons.payments_outlined,
+        'UPI' => Icons.qr_code_2,
+        'Card' => Icons.credit_card,
+        _ => Icons.account_balance_outlined,
+      };
 }
