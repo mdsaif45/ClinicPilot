@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
@@ -87,27 +88,25 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButtonFormField<String>(
+              PickerField<String>(
+                label: 'Clinic',
+                prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
-                decoration: const InputDecoration(
-                  labelText: 'Clinic',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.local_hospital),
-                ),
-                items: clinics
-                    .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                options: clinics
+                    .map((c) => PickerOption(
+                          value: c.id,
+                          label: c.name,
+                          subtitle: c.address,
+                        ))
                     .toList(),
                 onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedClinicId = val;
-                      final cl = clinics.firstWhere((c) => c.id == val);
-                      _consultationController.text =
-                          cl.defaultConsultationFee.toStringAsFixed(0);
-                    });
-                  }
+                  setState(() {
+                    _selectedClinicId = val;
+                    final cl = clinics.firstWhere((c) => c.id == val);
+                    _consultationController.text =
+                        cl.defaultConsultationFee.toStringAsFixed(0);
+                  });
                 },
-                validator: (v) => v == null ? 'Select clinic' : null,
               ),
               const SizedBox(height: 12),
               // Searchable picker rather than a dropdown: a flat list cannot

@@ -54,6 +54,18 @@ class ChoiceChipField<T> extends StatelessWidget {
                     : Icon(iconOf!(o), size: 16),
                 selected: o == value,
                 showCheckmark: false,
+                // Rounded rectangle rather than the theme's pill: these sit in
+                // a form beside rounded-rectangle text fields, so a pill reads
+                // as a different kind of control.
+                shape: RoundedRectangleBorder(
+                  borderRadius: Radii.mdAll,
+                  side: BorderSide(
+                    color: o == value
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outlineVariant,
+                    width: o == value ? 1.5 : 1,
+                  ),
+                ),
                 onSelected: (_) => onChanged(o),
               ),
           ],

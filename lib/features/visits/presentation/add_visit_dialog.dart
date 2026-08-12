@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../../../core/utils/formatters.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
@@ -60,20 +61,18 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButtonFormField<String>(
+              PickerField<String>(
+                label: 'Clinic',
+                prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
-                decoration: const InputDecoration(
-                  labelText: 'Clinic',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.local_hospital),
-                ),
-                items: clinics
-                    .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                options: clinics
+                    .map((c) => PickerOption(
+                          value: c.id,
+                          label: c.name,
+                          subtitle: c.address,
+                        ))
                     .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedClinicId = val);
-                },
-                validator: (v) => v == null ? 'Select clinic' : null,
+                onChanged: (val) => setState(() => _selectedClinicId = val),
               ),
               const SizedBox(height: 12),
               CustomTextField(

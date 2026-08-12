@@ -180,43 +180,77 @@ class _PatientTile extends StatelessWidget {
     final p = result.patient;
     final theme = Theme.of(context);
 
-    // Everything needed to distinguish two patients with the same name.
-    final details = <String>[
-      p.phone,
-      '${p.age}${p.gender.isNotEmpty ? p.gender[0] : ''}',
-      if (p.area != null && p.area!.isNotEmpty) p.area!,
-      if (result.lastVisitDate != null)
-        'last ${Formatters.formatDate(result.lastVisitDate!)}',
-    ];
+    final scheme = theme.colorScheme;
+    final gender = p.gender.isNotEmpty ? p.gender[0].toUpperCase() : '';
 
     return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: CircleAvatar(
-        backgroundColor: theme.colorScheme.primaryContainer,
+        backgroundColor: scheme.primaryContainer,
         child: Text(
           p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
-          style: TextStyle(color: theme.colorScheme.onPrimaryContainer),
+          style: TextStyle(
+            color: scheme.onPrimaryContainer,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
+      // Same anatomy as the patient directory, so a name recognised on one
+      // screen is recognised the same way here.
       title: Row(
         children: [
           Expanded(
             child: Text(
               p.name,
-              style: const TextStyle(fontWeight: FontWeight.w600),
               overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            p.patientCode,
-            style: theme.textTheme.labelSmall?.copyWith(color: theme.hintColor),
-          ),
+          Text('${p.age}$gender', style: theme.textTheme.labelMedium),
         ],
       ),
-      subtitle: Text(
-        details.join(' · '),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Text(p.phone, style: theme.textTheme.labelMedium),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    p.patientCode,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall,
+                  ),
+                ),
+              ],
+            ),
+            if (p.primaryDisease != null && p.primaryDisease!.isNotEmpty ||
+                result.lastVisitDate != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  [
+                    if (p.primaryDisease != null &&
+                        p.primaryDisease!.isNotEmpty)
+                      p.primaryDisease!,
+                    if (p.area != null && p.area!.isNotEmpty) p.area!,
+                    if (result.lastVisitDate != null)
+                      'last ${Formatters.formatDate(result.lastVisitDate!)}',
+                  ].join(' · '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall,
+                ),
+              ),
+          ],
+        ),
       ),
       onTap: () => Navigator.of(context).pop(p),
     );
