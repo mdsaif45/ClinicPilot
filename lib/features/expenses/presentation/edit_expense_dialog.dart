@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
@@ -78,17 +79,17 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
             // narrower - chips, checkboxes - drifts to the middle.
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              DropdownButtonFormField<String>(
+              PickerField<String>(
+                label: 'Category',
+                prefixIcon: Icons.category,
                 value: _categories.contains(_categoryController.text)
                     ? _categoryController.text
                     : _categories.first,
-                decoration: const InputDecoration(labelText: 'Category *'),
-                items: _categories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                options: _categories
+                    .map((c) => PickerOption(value: c, label: c))
                     .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _categoryController.text = val);
-                },
+                onChanged: (val) =>
+                    setState(() => _categoryController.text = val),
               ),
               const SizedBox(height: 12),
               TextFormField(

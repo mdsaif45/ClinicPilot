@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/picker_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../providers/patient_provider.dart';
@@ -102,15 +103,17 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: ['Male', 'Female', 'Other'].contains(_gender) ? _gender : 'Male',
-                      decoration: const InputDecoration(labelText: 'Gender'),
-                      items: ['Male', 'Female', 'Other']
-                          .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _gender = val);
-                      },
+                    child: PickerField<String>(
+                      label: 'Gender',
+                      value: const ['Male', 'Female', 'Other'].contains(_gender)
+                          ? _gender
+                          : 'Male',
+                      options: const [
+                        PickerOption(value: 'Male', label: 'Male'),
+                        PickerOption(value: 'Female', label: 'Female'),
+                        PickerOption(value: 'Other', label: 'Other'),
+                      ],
+                      onChanged: (val) => setState(() => _gender = val),
                     ),
                   ),
                 ],

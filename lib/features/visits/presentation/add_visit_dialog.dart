@@ -92,38 +92,50 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
                 prefixIcon: Icons.notes,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
+              PickerField<String>(
+                label: 'Consultation Type',
+                prefixIcon: Icons.event_note_outlined,
                 value: _consultationType,
-                decoration: const InputDecoration(
-                  labelText: 'Consultation Type',
-                  border: OutlineInputBorder(),
-                ),
-                items: ['clinic', 'online', 'camp']
-                    .map((t) => DropdownMenuItem(
-                        value: t, child: Text(t.toUpperCase())))
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _consultationType = val);
-                },
+                options: const [
+                  PickerOption(
+                    value: 'clinic',
+                    label: 'Clinic',
+                    subtitle: 'Seen in person',
+                    icon: Icons.local_hospital_outlined,
+                  ),
+                  PickerOption(
+                    value: 'online',
+                    label: 'Online',
+                    subtitle: 'Video or phone consultation',
+                    icon: Icons.videocam_outlined,
+                  ),
+                  PickerOption(
+                    value: 'camp',
+                    label: 'Camp',
+                    subtitle: 'Seen at a medical camp',
+                    icon: Icons.festival_outlined,
+                  ),
+                ],
+                onChanged: (val) => setState(() => _consultationType = val),
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
+              PickerField<String>(
+                label: 'Outcome (Optional)',
+                prefixIcon: Icons.insights_outlined,
+                hint: 'Not recorded',
                 value: _outcome,
-                decoration: const InputDecoration(
-                  labelText: 'Outcome (Optional)',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  'improved',
-                  'no_change',
-                  'worse',
-                  'recovered',
-                  'lost_followup'
-                ]
-                    .map((o) => DropdownMenuItem(
-                        value: o, child: Text(o.replaceAll('_', ' ').toUpperCase())))
-                    .toList(),
-                onChanged: (val) => setState(() => _outcome = val),
+                options: const [
+                  // Empty string clears the field: the column is nullable, and
+                  // without this a mis-tap could never be undone.
+                  PickerOption(value: '', label: 'Not recorded'),
+                  PickerOption(value: 'improved', label: 'Improved'),
+                  PickerOption(value: 'no_change', label: 'No change'),
+                  PickerOption(value: 'worse', label: 'Worse'),
+                  PickerOption(value: 'recovered', label: 'Recovered'),
+                  PickerOption(value: 'lost_followup', label: 'Lost follow-up'),
+                ],
+                onChanged: (val) =>
+                    setState(() => _outcome = val.isEmpty ? null : val),
               ),
               const SizedBox(height: 12),
               // The column existed in the schema and was already being saved,
