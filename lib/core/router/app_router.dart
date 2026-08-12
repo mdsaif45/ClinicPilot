@@ -5,10 +5,9 @@ import '../design/tokens.dart';
 import '../widgets/clinic_switcher.dart';
 import '../../features/clinics/presentation/clinics_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/finances/presentation/finances_screen.dart';
 import '../../features/patients/presentation/patients_screen.dart';
 import '../../features/patients/presentation/recall_screen.dart';
-import '../../features/cashmemo/presentation/cash_memo_screen.dart';
-import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/growth/presentation/growth_screen.dart';
 import '../../features/growth/presentation/growth_hub_screen.dart';
 import '../../features/growth/presentation/profit_summary_screen.dart';
@@ -45,16 +44,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/cashmemo',
-                builder: (context, state) => const CashMemoScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/expenses',
-                builder: (context, state) => const ExpensesScreen(),
+                path: '/finances',
+                builder: (context, state) => const FinancesScreen(),
               ),
             ],
           ),
@@ -80,6 +71,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
         ],
       ),
       GoRoute(
@@ -93,10 +92,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/recall',
         builder: (context, state) => const RecallScreen(),
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );
@@ -114,15 +109,21 @@ class ScaffoldWithNavBar extends ConsumerWidget {
   ///
   /// Every other tab names itself in the bottom navigation, so a bar on top
   /// repeated that and cost a row of vertical space. Dashboard keeps one
-  /// because the active clinic scopes its figures and it is the landing tab,
-  /// which makes it the natural home for the settings entry point.
+  /// because the active clinic scopes its figures.
   static const _dashboardIndex = 0;
-  static const _growthIndex = 4;
+  static const _growthIndex = 3;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final isDashboard = navigationShell.currentIndex == _dashboardIndex;
+
+    // Settings is a tab now, so the update badge rides on it rather than on an
+    // app bar icon that only existed on one screen.
+    final updateWaiting = ref.watch(availableUpdateProvider).maybeWhen(
+          data: (u) => u != null && !ref.watch(updateBadgeDismissedProvider),
+          orElse: () => false,
+        );
 
     return Scaffold(
       appBar: isDashboard
@@ -133,27 +134,8 @@ class ScaffoldWithNavBar extends ConsumerWidget {
               foregroundColor: scheme.onSurface,
               titleSpacing: Spacing.sm,
               title: const ClinicSwitcher(),
-              actions: [
-                IconButton(
-                  icon: ref.watch(availableUpdateProvider).when(
-                        data: (update) => (update != null &&
-                                !ref.watch(updateBadgeDismissedProvider))
-                            ? Badge(
-                                smallSize: 8,
-                                backgroundColor: scheme.tertiary,
-                                child: const Icon(Icons.settings_outlined),
-                              )
-                            : const Icon(Icons.settings_outlined),
-                        loading: () => const Icon(Icons.settings_outlined),
-                        error: (_, __) => const Icon(Icons.settings_outlined),
-                      ),
-                  tooltip: 'Settings',
-                  onPressed: () => context.push('/settings'),
-                ),
-              ],
             )
           : null,
-      // Tabs without an app bar would otherwise start under the status bar.
       body: SafeArea(top: !isDashboard, bottom: false, child: navigationShell),
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
@@ -181,19 +163,25 @@ class ScaffoldWithNavBar extends ConsumerWidget {
             label: 'Patients',
           ),
           NavigationDestination(
-            icon: const Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'Cash Memo',
-          ),
-          NavigationDestination(
             icon: const Icon(Icons.account_balance_wallet_outlined),
             selectedIcon: Icon(Icons.account_balance_wallet),
-            label: 'Expenses',
+            label: 'Finances',
           ),
           NavigationDestination(
             icon: const Icon(Icons.trending_up_outlined),
             selectedIcon: Icon(Icons.trending_up),
             label: 'Growth',
+          ),
+          NavigationDestination(
+            icon: updateWaiting
+                ? Badge(
+                    smallSize: 8,
+                    backgroundColor: scheme.tertiary,
+                    child: const Icon(Icons.settings_outlined),
+                  )
+                : const Icon(Icons.settings_outlined),
+            selectedIcon: const Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
       ),
