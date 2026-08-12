@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../providers/expense_provider.dart';
@@ -34,6 +35,7 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
     'Camp',
     'Internet',
     'Travel',
+    'Personal',
     'Miscellaneous'
   ];
 
@@ -62,7 +64,11 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Edit Expense Entry'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
@@ -93,17 +99,17 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
                 validator: (val) => val == null || double.tryParse(val.trim()) == null ? 'Required' : null,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: ['Cash', 'UPI', 'Card', 'Bank Transfer'].contains(_paymentMethod)
+              ChoiceChipField<String>(
+                label: 'Payment Method',
+                options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
+                // Fall back to Cash if a memo carries a method no longer offered.
+                value: const ['Cash', 'UPI', 'Card', 'Bank Transfer']
+                        .contains(_paymentMethod)
                     ? _paymentMethod
                     : 'Cash',
-                decoration: const InputDecoration(labelText: 'Payment Method'),
-                items: ['Cash', 'UPI', 'Card', 'Bank Transfer']
-                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _paymentMethod = val);
-                },
+                labelOf: (m) => m,
+                iconOf: _paymentIcon,
+                onChanged: (m) => setState(() => _paymentMethod = m),
               ),
               const SizedBox(height: 12),
               CheckboxListTile(
@@ -122,7 +128,7 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -163,4 +169,11 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
       );
     }
   }
+
+  IconData _paymentIcon(String method) => switch (method) {
+        'Cash' => Icons.payments_outlined,
+        'UPI' => Icons.qr_code_2,
+        'Card' => Icons.credit_card,
+        _ => Icons.account_balance_outlined,
+      };
 }

@@ -50,7 +50,11 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
 
     return AlertDialog(
       title: Text('Add Visit: ${widget.patient.name}'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
@@ -155,7 +159,7 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

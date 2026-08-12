@@ -57,7 +57,11 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Edit Patient (${widget.patient.patientCode})'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
@@ -131,7 +135,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

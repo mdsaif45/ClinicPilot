@@ -61,7 +61,11 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
     return AlertDialog(
       title: const Text('Register New Patient'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
@@ -166,7 +170,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

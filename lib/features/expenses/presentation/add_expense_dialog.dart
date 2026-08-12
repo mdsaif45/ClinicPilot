@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
@@ -33,6 +34,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     'Camp',
     'Internet',
     'Travel',
+    'Personal',
     'Miscellaneous',
   ];
 
@@ -57,7 +59,11 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
 
     return AlertDialog(
       title: const Text('Add Expense Entry'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
@@ -109,6 +115,17 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                     v == null || double.tryParse(v) == null ? 'Valid amount' : null,
               ),
               const SizedBox(height: 12),
+              // The field was already being saved but had no control, so every
+              // expense recorded as Cash whatever it actually was.
+              ChoiceChipField<String>(
+                label: 'Payment Method',
+                options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
+                value: _paymentMethod,
+                labelOf: (m) => m,
+                iconOf: _paymentIcon,
+                onChanged: (m) => setState(() => _paymentMethod = m),
+              ),
+              const SizedBox(height: 12),
               CheckboxListTile(
                 title: const Text('Recurring Fixed Cost (e.g. Rent)'),
                 value: _isRecurring,
@@ -125,7 +142,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -160,4 +177,11 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
 
     if (mounted) Navigator.of(context).pop();
   }
+
+  IconData _paymentIcon(String method) => switch (method) {
+        'Cash' => Icons.payments_outlined,
+        'UPI' => Icons.qr_code_2,
+        'Card' => Icons.credit_card,
+        _ => Icons.account_balance_outlined,
+      };
 }

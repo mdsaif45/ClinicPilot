@@ -62,7 +62,11 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
 
     return AlertDialog(
       title: Text(isEditing ? 'Edit Clinic' : 'Add New Clinic'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
@@ -115,7 +119,7 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
