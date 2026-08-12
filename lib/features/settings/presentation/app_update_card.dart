@@ -14,6 +14,9 @@ class AppUpdateCard extends ConsumerStatefulWidget {
 
 class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
   bool _isCheckingManual = false;
+
+  /// Only after a check completes can the card claim the app is current.
+  bool _hasCheckedThisSession = false;
   bool _showNotes = false;
   String _runningVersion = '0.2.0';
 
@@ -47,6 +50,7 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
     if (mounted) {
       setState(() {
         _isCheckingManual = false;
+        _hasCheckedThisSession = true;
       });
 
       if (result == null) {
@@ -152,10 +156,16 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
               ),
             ],
           ),
-          error: (_, __) => _buildUpToDateState(),
+          error: (_, __) => _buildStatusState(
+            'Could not check for updates',
+          ),
           data: (AppRelease? release) {
             if (release == null) {
-              return _buildUpToDateState();
+              return _buildStatusState(
+                _hasCheckedThisSession
+                    ? 'You are on the latest version'
+                    : 'Tap to check for updates',
+              );
             }
 
             // Downloading state
@@ -439,7 +449,12 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
     );
   }
 
-  Widget _buildUpToDateState() {
+  /// Version row with whatever the app can honestly say about update state.
+  ///
+  /// It previously always read "You are on the latest version", including
+  /// before any check had run and when the check had failed - so an offline
+  /// phone was told it was current.
+  Widget _buildStatusState(String status) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -456,7 +471,7 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   Text(
-                    'v$_runningVersion · You are on the latest version',
+                    'v$_runningVersion · $status',
                     style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                   ),
                 ],

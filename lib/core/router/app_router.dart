@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../design/tokens.dart';
+import '../widgets/animated_nav_icon.dart';
 import '../widgets/clinic_switcher.dart';
 import '../../features/clinics/presentation/clinics_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
@@ -97,6 +98,24 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+class _NavDestination {
+  final int index;
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+
+  const _NavDestination(this.index, this.icon, this.selectedIcon, this.label);
+}
+
+const _destinations = [
+  _NavDestination(0, Icons.dashboard_outlined, Icons.dashboard, 'Dashboard'),
+  _NavDestination(1, Icons.people_outline, Icons.people, 'Patients'),
+  _NavDestination(2, Icons.account_balance_wallet_outlined,
+      Icons.account_balance_wallet, 'Finances'),
+  _NavDestination(3, Icons.trending_up_outlined, Icons.trending_up, 'Growth'),
+  _NavDestination(4, Icons.settings_outlined, Icons.settings, 'Settings'),
+];
+
 class ScaffoldWithNavBar extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
@@ -152,37 +171,25 @@ class ScaffoldWithNavBar extends ConsumerWidget {
           );
         },
         destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people),
-            label: 'Patients',
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
-            label: 'Finances',
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.trending_up_outlined),
-            selectedIcon: Icon(Icons.trending_up),
-            label: 'Growth',
-          ),
-          NavigationDestination(
-            icon: updateWaiting
-                ? Badge(
-                    smallSize: 8,
-                    backgroundColor: scheme.tertiary,
-                    child: const Icon(Icons.settings_outlined),
-                  )
-                : const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
-            label: 'Settings',
-          ),
+          for (final d in _destinations)
+            NavigationDestination(
+              icon: d.index == 4 && updateWaiting
+                  ? Badge(
+                      smallSize: 8,
+                      backgroundColor: scheme.tertiary,
+                      child: AnimatedNavIcon(
+                        icon: d.icon,
+                        selectedIcon: d.selectedIcon,
+                        selected: navigationShell.currentIndex == d.index,
+                      ),
+                    )
+                  : AnimatedNavIcon(
+                      icon: d.icon,
+                      selectedIcon: d.selectedIcon,
+                      selected: navigationShell.currentIndex == d.index,
+                    ),
+              label: d.label,
+            ),
         ],
       ),
     );

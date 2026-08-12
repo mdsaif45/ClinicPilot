@@ -147,7 +147,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               AppListTile(
                 icon: Icons.code,
                 title: 'GitHub repository',
-                subtitle: 'mdsaif45/ClinicPilot',
                 onTap: () => _openUrl(
                   'https://github.com/mdsaif45/ClinicPilot',
                 ),
@@ -155,7 +154,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const AppListTile(
                 icon: Icons.favorite_outline,
                 title: 'Developed by mdsaif45',
-                subtitle: 'Know. Grow. Repeat.',
               ),
               const AppUpdateCard(),
             ],

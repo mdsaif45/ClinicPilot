@@ -135,7 +135,9 @@ class AppTheme {
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surfaceContainer,
-        indicatorColor: scheme.secondaryContainer,
+        // AnimatedNavIcon draws its own filled pill, so the built-in indicator
+        // would sit behind it as a second, differently-shaped highlight.
+        indicatorColor: Colors.transparent,
         elevation: 3,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
