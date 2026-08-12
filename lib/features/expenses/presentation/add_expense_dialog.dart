@@ -69,6 +69,10 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            // Without this the column centres its children. Text fields fill
+            // the width so they look correct either way, but anything
+            // narrower - chips, checkboxes - drifts to the middle.
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PickerField<String>(
                 label: 'Clinic',

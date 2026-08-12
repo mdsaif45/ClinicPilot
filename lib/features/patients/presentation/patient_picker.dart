@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
-import '../../../core/utils/formatters.dart';
 import '../providers/patient_provider.dart';
 
 /// Searchable patient selector.
@@ -208,7 +207,7 @@ class _PatientTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text('${p.age}$gender', style: theme.textTheme.labelMedium),
+          Text('${p.age} $gender', style: theme.textTheme.labelMedium),
         ],
       ),
       subtitle: Padding(
@@ -231,24 +230,6 @@ class _PatientTile extends StatelessWidget {
                 ),
               ],
             ),
-            if (p.primaryDisease != null && p.primaryDisease!.isNotEmpty ||
-                result.lastVisitDate != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  [
-                    if (p.primaryDisease != null &&
-                        p.primaryDisease!.isNotEmpty)
-                      p.primaryDisease!,
-                    if (p.area != null && p.area!.isNotEmpty) p.area!,
-                    if (result.lastVisitDate != null)
-                      'last ${Formatters.formatDate(result.lastVisitDate!)}',
-                  ].join(' · '),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall,
-                ),
-              ),
           ],
         ),
       ),

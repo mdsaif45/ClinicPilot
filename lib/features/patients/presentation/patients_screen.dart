@@ -94,8 +94,8 @@ class _PatientRow extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    // "34F" reads faster than two labelled fields and costs a fraction of the
-    // width.
+    // "34 F" reads faster than two labelled fields and costs a fraction of
+    // the width.
     final gender =
         patient.gender.isNotEmpty ? patient.gender[0].toUpperCase() : '';
 
@@ -120,7 +120,7 @@ class _PatientRow extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: Spacing.sm),
-          Text('${patient.age}$gender', style: theme.textTheme.labelMedium),
+          Text('${patient.age} $gender', style: theme.textTheme.labelMedium),
         ],
       ),
       subtitle: Padding(

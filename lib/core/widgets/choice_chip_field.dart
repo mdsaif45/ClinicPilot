@@ -42,33 +42,43 @@ class ChoiceChipField<T> extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Spacing.sm),
-        Wrap(
-          spacing: Spacing.sm,
-          runSpacing: Spacing.sm,
-          children: [
-            for (final o in options)
-              ChoiceChip(
-                label: Text(labelOf(o)),
-                avatar: iconOf?.call(o) == null
-                    ? null
-                    : Icon(iconOf!(o), size: 16),
-                selected: o == value,
-                showCheckmark: false,
-                // Rounded rectangle rather than the theme's pill: these sit in
-                // a form beside rounded-rectangle text fields, so a pill reads
-                // as a different kind of control.
-                shape: RoundedRectangleBorder(
-                  borderRadius: Radii.mdAll,
-                  side: BorderSide(
-                    color: o == value
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.outlineVariant,
-                    width: o == value ? 1.5 : 1,
+        // Scrolls sideways rather than wrapping: a fixed set of short options
+        // reads as one row, and wrapping the last one onto its own line made
+        // the group look like two separate controls.
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final o in options)
+                Padding(
+                  padding: const EdgeInsets.only(right: Spacing.sm),
+                  child: ChoiceChip(
+                    label: Text(labelOf(o)),
+                    avatar: iconOf?.call(o) == null
+                        ? null
+                        : Icon(iconOf!(o), size: 16),
+                    selected: o == value,
+                    showCheckmark: false,
+                    visualDensity: VisualDensity.compact,
+                    labelPadding:
+                        const EdgeInsets.symmetric(horizontal: Spacing.xs),
+                    // Rounded rectangle rather than the theme's pill: these sit
+                    // beside rounded-rectangle text fields, where a pill reads
+                    // as a different kind of control.
+                    shape: RoundedRectangleBorder(
+                      borderRadius: Radii.mdAll,
+                      side: BorderSide(
+                        color: o == value
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outlineVariant,
+                        width: o == value ? 1.5 : 1,
+                      ),
+                    ),
+                    onSelected: (_) => onChanged(o),
                   ),
                 ),
-                onSelected: (_) => onChanged(o),
-              ),
-          ],
+            ],
+          ),
         ),
       ],
     );
