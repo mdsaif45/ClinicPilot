@@ -109,7 +109,7 @@ void main() {
 
       // 3. Open with AppDatabase and trigger migration onUpgrade
       final db = AppDatabase(executor);
-      await db.migration.onUpgrade(db.createMigrator(), 1, 2);
+      await db.migration.onUpgrade(db.createMigrator(), 1, db.schemaVersion);
 
       // 4. Assert Zero Row Loss & Data Integrity
       final patients = await db.select(db.patients).get();
@@ -144,7 +144,7 @@ void main() {
 
       // 5. Assert Idempotency: Running migration a 2nd time must be a no-op without crashing
       await expectLater(
-        db.migration.onUpgrade(db.createMigrator(), 1, 2),
+        db.migration.onUpgrade(db.createMigrator(), 1, db.schemaVersion),
         completes,
         reason: 'Running migration twice must be a no-op and not throw exceptions',
       );
@@ -154,6 +154,42 @@ void main() {
 
       final visitsAfter2ndRun = await db.select(db.visits).get();
       expect(visitsAfter2ndRun.length, equals(3));
+
+      await db.close();
+    });
+
+    test('v2 -> v3 adds review columns without touching existing rows',
+        () async {
+      final executor = NativeDatabase.memory();
+      final db = AppDatabase(executor);
+
+      // Force creation at the current schema, then re-run the v3 step to
+      // prove it is safe to apply against a database that already has it.
+      await db.customStatement('SELECT 1');
+      await db.into(db.patients).insert(PatientsCompanion.insert(
+            id: 'p-v3',
+            patientCode: const Value('P-2026-00009'),
+            name: 'Existing Patient',
+            phone: '9800000009',
+            age: 44,
+            gender: 'Male',
+            primaryClinicId: const Value('clinic_old'),
+          ));
+
+      await db.migration.onUpgrade(db.createMigrator(), 2, 3);
+
+      final rows = await db.select(db.patients).get();
+      expect(rows.length, 1, reason: 'the upgrade must not drop rows');
+      expect(rows.single.name, 'Existing Patient');
+      expect(rows.single.reviewGiven, isFalse,
+          reason: 'new column defaults rather than nulling the row');
+      expect(rows.single.reviewAskedAt, equals(null));
+
+      await expectLater(
+        db.migration.onUpgrade(db.createMigrator(), 2, 3),
+        completes,
+        reason: 'the v3 step must be safe to re-run',
+      );
 
       await db.close();
     });

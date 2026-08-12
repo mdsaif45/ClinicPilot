@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/picker_field.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/widgets/custom_dropdown_field.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/utils/validators.dart';
 import '../../clinics/providers/clinic_provider.dart';
@@ -61,11 +61,19 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
     return AlertDialog(
       title: const Text('Register New Patient'),
-      content: SingleChildScrollView(
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            // Without this the column centres its children. Text fields fill
+            // the width so they look correct either way, but anything
+            // narrower - chips, checkboxes - drifts to the middle.
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomTextField(
                 controller: _nameController,
@@ -105,16 +113,16 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: CustomDropdownField<String>(
+                    child: PickerField<String>(
                       label: 'Gender',
-                      value: _gender,
                       prefixIcon: Icons.wc,
-                      items: ['Male', 'Female', 'Other']
-                          .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _gender = val);
-                      },
+                      value: _gender,
+                      options: const [
+                        PickerOption(value: 'Male', label: 'Male'),
+                        PickerOption(value: 'Female', label: 'Female'),
+                        PickerOption(value: 'Other', label: 'Other'),
+                      ],
+                      onChanged: (val) => setState(() => _gender = val),
                     ),
                   ),
                 ],
@@ -126,20 +134,18 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 prefixIcon: Icons.location_on,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
+              PickerField<String>(
+                label: 'Clinic',
+                prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
-                decoration: const InputDecoration(
-                  labelText: 'Clinic',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.local_hospital),
-                ),
-                items: clinics
-                    .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                options: clinics
+                    .map((c) => PickerOption(
+                          value: c.id,
+                          label: c.name,
+                          subtitle: c.address,
+                        ))
                     .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedClinicId = val);
-                },
-                validator: (v) => v == null ? 'Select clinic' : null,
+                onChanged: (val) => setState(() => _selectedClinicId = val),
               ),
               const SizedBox(height: 12),
               CustomTextField(
@@ -149,24 +155,19 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 validator: (v) => v == null || v.isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
+              PickerField<String>(
+                label: 'Referral Source (New Patient)',
+                prefixIcon: Icons.campaign,
                 value: _referralSource,
-                decoration: const InputDecoration(
-                  labelText: 'Referral Source (New Patient)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.campaign),
-                ),
-                items: _referralSources
-                    .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                options: _referralSources
+                    .map((r) => PickerOption(value: r, label: r))
                     .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _referralSource = val);
-                },
+                onChanged: (val) => setState(() => _referralSource = val),
               ),
             ],
           ),
         ),
-      ),
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

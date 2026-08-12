@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'helpers/seed_clinics.dart';
 import 'package:drift/native.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:clinic_pilot/core/database/app_database.dart';
@@ -30,6 +32,7 @@ void main() {
 
     setUp(() async {
       db = AppDatabase(NativeDatabase.memory());
+    await seedTestClinics(db);
       // Seed test patient p1 for tests requiring valid Foreign Keys
       await db.into(db.patients).insert(
             PatientsCompanion.insert(

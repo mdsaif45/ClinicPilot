@@ -25,6 +25,15 @@ class Patients extends Table {
   TextColumn get referralSource => text().nullable()();
 
   TextColumn get notes => text().nullable()();
+
+  /// Google review tracking.
+  ///
+  /// The growth plan ranks Google reviews the single highest-impact local
+  /// marketing channel, with a target of 100 in the first year. The app can
+  /// only record that the ask happened and what the patient reported back — it
+  /// cannot verify a review was actually published.
+  DateTimeColumn get reviewAskedAt => dateTime().nullable()();
+  BoolColumn get reviewGiven => boolean().withDefault(const Constant(false))();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

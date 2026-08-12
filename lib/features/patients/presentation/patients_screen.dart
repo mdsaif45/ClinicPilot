@@ -1,151 +1,177 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/widgets/custom_badge.dart';
+
+import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../providers/patient_provider.dart';
 import 'add_patient_dialog.dart';
 import 'edit_patient_dialog.dart';
 import 'patient_profile_screen.dart';
 
+/// Patient directory.
+///
+/// Deliberately one compact row per patient rather than a card. The doctor
+/// scans this list to find somebody, so the job is fitting as many legible
+/// names on screen as possible; anything beyond identifying the right person
+/// belongs on the profile, one tap away.
 class PatientsScreen extends ConsumerWidget {
   const PatientsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final patientsAsync = ref.watch(patientsStreamProvider);
+    final query = ref.watch(patientSearchQueryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Patient Directory'),
-      ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => const AddPatientDialog(),
-          );
-        },
+        onPressed: () => showDialog(
+          context: context,
+          builder: (_) => const AddPatientDialog(),
+        ),
         icon: const Icon(Icons.person_add),
         label: const Text('New Patient'),
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.lg,
+              Spacing.md,
+              Spacing.lg,
+              Spacing.sm,
+            ),
             child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search patients by name, code, phone, disease...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: const InputDecoration(
+                hintText: 'Search name, code or phone',
+                prefixIcon: Icon(Icons.search),
               ),
-              onChanged: (val) {
-                ref.read(patientSearchQueryProvider.notifier).state = val;
-              },
+              onChanged: (val) =>
+                  ref.read(patientSearchQueryProvider.notifier).state = val,
             ),
           ),
           Expanded(
             child: patientsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
               data: (patients) {
                 if (patients.isEmpty) {
-                  return const Center(child: Text('No patients found.'));
+                  return EmptyState(
+                    icon: Icons.people_outline,
+                    title: query.isEmpty
+                        ? 'No patients yet'
+                        : 'No match for "$query"',
+                    message: query.isEmpty
+                        ? 'Register the first patient to get started.'
+                        : 'Try a name, patient code or phone number.',
+                  );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                return ListView.separated(
+                  padding: const EdgeInsets.only(bottom: 96),
                   itemCount: patients.length,
-                  itemBuilder: (context, index) {
-                    final patient = patients[index];
-
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  PatientProfileScreen(patient: patient),
-                            ),
-                          );
-                        },
-                        contentPadding: const EdgeInsets.all(12),
-                        leading: CircleAvatar(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primaryContainer,
-                          child: Text(
-                            patient.name.isNotEmpty ? patient.name[0] : 'P',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimaryContainer,
-                            ),
-                          ),
-                        ),
-                        title: Row(
-                          children: [
-                            // Long names must ellipsize instead of pushing the
-                            // code badge off the card.
-                            Flexible(
-                              child: Text(
-                                patient.name,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            CustomBadge(label: patient.patientCode),
-                          ],
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Phone: ${patient.phone}'),
-                              if (patient.primaryDisease != null)
-                                Text('Disease: ${patient.primaryDisease}'),
-                              if (patient.area != null)
-                                Text('Area: ${patient.area}'),
-                            ],
-                          ),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.primary),
-                              tooltip: 'Edit Patient',
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => EditPatientDialog(patient: patient),
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete_outline,
-                                  color: Theme.of(context).colorScheme.error),
-                              tooltip: 'Archive Patient',
-                              onPressed: () => _confirmDelete(context, ref, patient),
-                            ),
-                            const Icon(Icons.chevron_right),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 1, indent: Spacing.lg),
+                  itemBuilder: (context, index) =>
+                      _PatientRow(patient: patients[index]),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('Error: $err')),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PatientRow extends ConsumerWidget {
+  final Patient patient;
+
+  const _PatientRow({required this.patient});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    // "34 F" reads faster than two labelled fields and costs a fraction of
+    // the width.
+    final gender =
+        patient.gender.isNotEmpty ? patient.gender[0].toUpperCase() : '';
+
+    return ListTile(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => PatientProfileScreen(patient: patient),
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: Spacing.lg,
+        vertical: Spacing.xs,
+      ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              patient.name,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: Spacing.sm),
+          Text('${patient.age} $gender', style: theme.textTheme.labelMedium),
+        ],
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Row(
+          children: [
+            Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),
+            const SizedBox(width: Spacing.xs),
+            Text(patient.phone, style: theme.textTheme.labelMedium),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: Text(
+                patient.patientCode,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall,
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Edit and archive move into an overflow menu. As always-visible icon
+      // buttons they competed with the row itself for attention, and archive
+      // sat one mis-tap away from opening the patient.
+      trailing: PopupMenuButton<String>(
+        icon: Icon(Icons.more_vert, color: scheme.onSurfaceVariant),
+        onSelected: (value) {
+          switch (value) {
+            case 'edit':
+              showDialog(
+                context: context,
+                builder: (_) => EditPatientDialog(patient: patient),
+              );
+            case 'archive':
+              _confirmArchive(context, ref);
+          }
+        },
+        itemBuilder: (_) => const [
+          PopupMenuItem(
+            value: 'edit',
+            child: ListTile(
+              leading: Icon(Icons.edit_outlined),
+              title: Text('Edit'),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          PopupMenuItem(
+            value: 'archive',
+            child: ListTile(
+              leading: Icon(Icons.archive_outlined),
+              title: Text('Archive'),
+              contentPadding: EdgeInsets.zero,
             ),
           ),
         ],
@@ -153,25 +179,31 @@ class PatientsScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, patient) {
+  void _confirmArchive(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Archive Patient'),
-        content: Text('Are you sure you want to archive ${patient.name}?'),
+        title: const Text('Archive patient'),
+        content: Text(
+          'Archive ${patient.name}? Their records stay in the database and '
+          'stop appearing in lists and totals.',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
             onPressed: () async {
               await ref
                   .read(patientNotifierProvider.notifier)
                   .archivePatient(patient.id);
               if (ctx.mounted) Navigator.of(ctx).pop();
             },
-            child: Text('Archive', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+            child: const Text('Archive'),
           ),
         ],
       ),

@@ -132,6 +132,22 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     });
   }
 
+  /// Records that a Google review was requested, and whether the patient said
+  /// they left one. The app cannot verify publication - only that the ask
+  /// happened, which is the part the doctor controls.
+  Future<void> setReviewStatus({
+    required String patientId,
+    required bool asked,
+    required bool given,
+  }) async {
+    await (_db.update(_db.patients)..where((t) => t.id.equals(patientId)))
+        .write(PatientsCompanion(
+      reviewAskedAt: Value(asked ? DateTime.now() : null),
+      reviewGiven: Value(given),
+      updatedAt: Value(DateTime.now()),
+    ));
+  }
+
   Future<void> archivePatient(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {

@@ -42,9 +42,6 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
   Widget build(BuildContext context) {
     if (widget.tabs.isEmpty) return const SizedBox.shrink();
 
-    // Honour the OS "remove animations" accessibility setting.
-    final animate = !MediaQuery.of(context).disableAnimations;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -65,23 +62,17 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
             ],
           ),
         ),
+        // Fixed gap, and the body swaps instantly.
+        //
+        // The pill morph carries the feedback on its own. Animating the panel
+        // as well made each tab's content start from a different height and
+        // settle at a different moment, so the spacing under the selector
+        // looked inconsistent from tab to tab.
+        //
+        // The gap lives here rather than inside each tab so every panel begins
+        // at exactly the same offset, whatever widget it happens to start with.
         const SizedBox(height: Spacing.lg),
-        AnimatedSwitcher(
-          duration: animate ? Motion.base : Duration.zero,
-          switchInCurve: Motion.curve,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: SizeTransition(
-              sizeFactor: animation,
-              axisAlignment: -1,
-              child: child,
-            ),
-          ),
-          child: KeyedSubtree(
-            key: ValueKey(_index),
-            child: Builder(builder: widget.tabs[_index].builder),
-          ),
-        ),
+        Builder(builder: widget.tabs[_index].builder),
       ],
     );
   }
@@ -100,34 +91,66 @@ class _TabPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final animate = !MediaQuery.of(context).disableAnimations;
+    final duration = animate ? Motion.base : Duration.zero;
 
-    return Tooltip(
-      message: tab.label,
-      child: Semantics(
-        label: tab.label,
-        selected: selected,
-        button: true,
-        child: Material(
+    return Semantics(
+      label: tab.label,
+      selected: selected,
+      button: true,
+      // The selected tab expands to show its name beside the icon, so the
+      // panel below never needs a separate heading repeating it. Unselected
+      // tabs stay icon-only, which keeps five of them on a phone width.
+      child: AnimatedContainer(
+        duration: duration,
+        curve: Motion.curve,
+        height: 44,
+        padding: EdgeInsets.symmetric(
+          horizontal: selected ? Spacing.lg : Spacing.md,
+        ),
+        decoration: BoxDecoration(
           color: selected
               ? scheme.secondaryContainer
               : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: Radii.mdAll,
-          clipBehavior: Clip.antiAlias,
+          borderRadius:
+              BorderRadius.circular(selected ? Radii.pill : Radii.md),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Spacing.xl,
-                vertical: Spacing.md,
-              ),
-              child: Icon(
-                tab.icon,
-                size: 20,
-                color: selected
-                    ? scheme.onSecondaryContainer
-                    : scheme.onSurfaceVariant,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  tab.icon,
+                  size: 20,
+                  color: selected
+                      ? scheme.onSecondaryContainer
+                      : scheme.onSurfaceVariant,
+                ),
+                // Width animates from zero, so the label slides out of the
+                // icon rather than appearing beside it.
+                AnimatedSize(
+                  duration: duration,
+                  curve: Motion.curve,
+                  child: selected
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: Spacing.sm),
+                          child: Text(
+                            tab.label,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: scheme.onSecondaryContainer,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
             ),
           ),
         ),

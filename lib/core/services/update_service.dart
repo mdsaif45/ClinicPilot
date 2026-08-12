@@ -14,6 +14,10 @@ class AppRelease {
   final int apkSizeBytes;
   final DateTime publishedAt;
 
+  /// The payload this was parsed from, so a release can be cached and rebuilt
+  /// without a second network call.
+  final Map<String, dynamic> rawJson;
+
   const AppRelease({
     required this.version,
     required this.tagName,
@@ -21,6 +25,7 @@ class AppRelease {
     this.apkUrl,
     required this.apkSizeBytes,
     required this.publishedAt,
+    this.rawJson = const {},
   });
 
   factory AppRelease.fromGitHubJson(Map<String, dynamic> json) {
@@ -53,6 +58,7 @@ class AppRelease {
       notes: notes,
       apkUrl: apkUrl,
       apkSizeBytes: apkSizeBytes,
+      rawJson: json,
       publishedAt: publishedAt,
     );
   }
@@ -104,6 +110,25 @@ class UpdateService {
       cleaned = cleaned.split('+').first;
     }
     return cleaned;
+  }
+
+  /// Fetches the latest published release, whatever its version.
+  ///
+  /// [checkForUpdate] deliberately returns null when the app is current, which
+  /// is right for an update prompt but useless for a release-notes screen -
+  /// that needs the notes for the version already installed.
+  Future<AppRelease?> fetchLatestRelease() async {
+    try {
+      final response = await _client.get(
+        Uri.parse(_latestReleaseUrl),
+        headers: {'Accept': 'application/vnd.github+json'},
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) return null;
+      return AppRelease.fromGitHubJson(jsonDecode(response.body));
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Checks GitHub API for latest release. Returns [AppRelease] only if it is strictly

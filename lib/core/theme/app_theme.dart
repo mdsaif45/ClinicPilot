@@ -56,16 +56,17 @@ class AppTheme {
       textTheme: textTheme,
 
       appBarTheme: AppBarTheme(
-        // Explicit pair: the AppBar hosts dropdowns whose selected value would
-        // otherwise inherit body text colour and vanish against the bar.
-        backgroundColor: scheme.primary,
-        foregroundColor: scheme.onPrimary,
+        // Explicit pair. The bar sits on the surface, so anything drawn on it
+        // must resolve against onSurface - a control that assumes onPrimary
+        // renders white on white.
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
         elevation: 0,
-        scrolledUnderElevation: 2,
+        scrolledUnderElevation: 1,
         centerTitle: false,
-        iconTheme: IconThemeData(color: scheme.onPrimary),
+        iconTheme: IconThemeData(color: scheme.onSurface),
         titleTextStyle: textTheme.titleLarge?.copyWith(
-          color: scheme.onPrimary,
+          color: scheme.onSurface,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -134,7 +135,9 @@ class AppTheme {
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surfaceContainer,
-        indicatorColor: scheme.secondaryContainer,
+        // AnimatedNavIcon draws its own filled pill, so the built-in indicator
+        // would sit behind it as a second, differently-shaped highlight.
+        indicatorColor: Colors.transparent,
         elevation: 3,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
