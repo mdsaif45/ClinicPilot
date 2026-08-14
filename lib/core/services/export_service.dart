@@ -118,7 +118,7 @@ class ExportService {
       buffer.writeln(_row([
         m.memoNumber, m.patientId, m.clinicId, m.visitId,
         m.consultationFee, m.medicineFee, m.otherFee, m.discount,
-        m.total, m.paidAmount, m.paymentMethod, m.notes, _date(m.createdAt),
+        m.total, m.paidAmount, m.paymentMethod, m.notes, _date(m.memoDate),
       ]));
     }
 

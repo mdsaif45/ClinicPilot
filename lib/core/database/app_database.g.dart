@@ -2785,6 +2785,18 @@ class $CashMemosTable extends CashMemos
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _memoDateMeta = const VerificationMeta(
+    'memoDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> memoDate = GeneratedColumn<DateTime>(
+    'memo_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2813,6 +2825,7 @@ class $CashMemosTable extends CashMemos
     paymentMethod,
     notes,
     isDeleted,
+    memoDate,
     createdAt,
   ];
   @override
@@ -2927,6 +2940,12 @@ class $CashMemosTable extends CashMemos
         isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
       );
     }
+    if (data.containsKey('memo_date')) {
+      context.handle(
+        _memoDateMeta,
+        memoDate.isAcceptableOrUnknown(data['memo_date']!, _memoDateMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -3010,6 +3029,11 @@ class $CashMemosTable extends CashMemos
             DriftSqlType.bool,
             data['${effectivePrefix}is_deleted'],
           )!,
+      memoDate:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}memo_date'],
+          )!,
       createdAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -3039,6 +3063,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
   final String paymentMethod;
   final String? notes;
   final bool isDeleted;
+  final DateTime memoDate;
   final DateTime createdAt;
   const CashMemo({
     required this.id,
@@ -3055,6 +3080,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     required this.paymentMethod,
     this.notes,
     required this.isDeleted,
+    required this.memoDate,
     required this.createdAt,
   });
   @override
@@ -3078,6 +3104,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
       map['notes'] = Variable<String>(notes);
     }
     map['is_deleted'] = Variable<bool>(isDeleted);
+    map['memo_date'] = Variable<DateTime>(memoDate);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -3102,6 +3129,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       isDeleted: Value(isDeleted),
+      memoDate: Value(memoDate),
       createdAt: Value(createdAt),
     );
   }
@@ -3126,6 +3154,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
       paymentMethod: serializer.fromJson<String>(json['paymentMethod']),
       notes: serializer.fromJson<String?>(json['notes']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      memoDate: serializer.fromJson<DateTime>(json['memoDate']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -3147,6 +3176,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
       'paymentMethod': serializer.toJson<String>(paymentMethod),
       'notes': serializer.toJson<String?>(notes),
       'isDeleted': serializer.toJson<bool>(isDeleted),
+      'memoDate': serializer.toJson<DateTime>(memoDate),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -3166,6 +3196,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     String? paymentMethod,
     Value<String?> notes = const Value.absent(),
     bool? isDeleted,
+    DateTime? memoDate,
     DateTime? createdAt,
   }) => CashMemo(
     id: id ?? this.id,
@@ -3182,6 +3213,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     paymentMethod: paymentMethod ?? this.paymentMethod,
     notes: notes.present ? notes.value : this.notes,
     isDeleted: isDeleted ?? this.isDeleted,
+    memoDate: memoDate ?? this.memoDate,
     createdAt: createdAt ?? this.createdAt,
   );
   CashMemo copyWithCompanion(CashMemosCompanion data) {
@@ -3209,6 +3241,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
               : this.paymentMethod,
       notes: data.notes.present ? data.notes.value : this.notes,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      memoDate: data.memoDate.present ? data.memoDate.value : this.memoDate,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -3230,6 +3263,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
           ..write('paymentMethod: $paymentMethod, ')
           ..write('notes: $notes, ')
           ..write('isDeleted: $isDeleted, ')
+          ..write('memoDate: $memoDate, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -3251,6 +3285,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     paymentMethod,
     notes,
     isDeleted,
+    memoDate,
     createdAt,
   );
   @override
@@ -3271,6 +3306,7 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
           other.paymentMethod == this.paymentMethod &&
           other.notes == this.notes &&
           other.isDeleted == this.isDeleted &&
+          other.memoDate == this.memoDate &&
           other.createdAt == this.createdAt);
 }
 
@@ -3289,6 +3325,7 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
   final Value<String> paymentMethod;
   final Value<String?> notes;
   final Value<bool> isDeleted;
+  final Value<DateTime> memoDate;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const CashMemosCompanion({
@@ -3306,6 +3343,7 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     this.paymentMethod = const Value.absent(),
     this.notes = const Value.absent(),
     this.isDeleted = const Value.absent(),
+    this.memoDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -3324,6 +3362,7 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     required String paymentMethod,
     this.notes = const Value.absent(),
     this.isDeleted = const Value.absent(),
+    this.memoDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -3346,6 +3385,7 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     Expression<String>? paymentMethod,
     Expression<String>? notes,
     Expression<bool>? isDeleted,
+    Expression<DateTime>? memoDate,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -3364,6 +3404,7 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
       if (paymentMethod != null) 'payment_method': paymentMethod,
       if (notes != null) 'notes': notes,
       if (isDeleted != null) 'is_deleted': isDeleted,
+      if (memoDate != null) 'memo_date': memoDate,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -3384,6 +3425,7 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     Value<String>? paymentMethod,
     Value<String?>? notes,
     Value<bool>? isDeleted,
+    Value<DateTime>? memoDate,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
@@ -3402,6 +3444,7 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
       paymentMethod: paymentMethod ?? this.paymentMethod,
       notes: notes ?? this.notes,
       isDeleted: isDeleted ?? this.isDeleted,
+      memoDate: memoDate ?? this.memoDate,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -3452,6 +3495,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     if (isDeleted.present) {
       map['is_deleted'] = Variable<bool>(isDeleted.value);
     }
+    if (memoDate.present) {
+      map['memo_date'] = Variable<DateTime>(memoDate.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -3478,6 +3524,7 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
           ..write('paymentMethod: $paymentMethod, ')
           ..write('notes: $notes, ')
           ..write('isDeleted: $isDeleted, ')
+          ..write('memoDate: $memoDate, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -6427,6 +6474,7 @@ typedef $$CashMemosTableCreateCompanionBuilder =
       required String paymentMethod,
       Value<String?> notes,
       Value<bool> isDeleted,
+      Value<DateTime> memoDate,
       Value<DateTime> createdAt,
       Value<int> rowid,
     });
@@ -6446,6 +6494,7 @@ typedef $$CashMemosTableUpdateCompanionBuilder =
       Value<String> paymentMethod,
       Value<String?> notes,
       Value<bool> isDeleted,
+      Value<DateTime> memoDate,
       Value<DateTime> createdAt,
       Value<int> rowid,
     });
@@ -6570,6 +6619,11 @@ class $$CashMemosTableFilterComposer
 
   ColumnFilters<bool> get isDeleted => $composableBuilder(
     column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get memoDate => $composableBuilder(
+    column: $table.memoDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6712,6 +6766,11 @@ class $$CashMemosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get memoDate => $composableBuilder(
+    column: $table.memoDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -6839,6 +6898,9 @@ class $$CashMemosTableAnnotationComposer
   GeneratedColumn<bool> get isDeleted =>
       $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get memoDate =>
+      $composableBuilder(column: $table.memoDate, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -6954,6 +7016,7 @@ class $$CashMemosTableTableManager
                 Value<String> paymentMethod = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> memoDate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CashMemosCompanion(
@@ -6971,6 +7034,7 @@ class $$CashMemosTableTableManager
                 paymentMethod: paymentMethod,
                 notes: notes,
                 isDeleted: isDeleted,
+                memoDate: memoDate,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -6990,6 +7054,7 @@ class $$CashMemosTableTableManager
                 required String paymentMethod,
                 Value<String?> notes = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> memoDate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CashMemosCompanion.insert(
@@ -7007,6 +7072,7 @@ class $$CashMemosTableTableManager
                 paymentMethod: paymentMethod,
                 notes: notes,
                 isDeleted: isDeleted,
+                memoDate: memoDate,
                 createdAt: createdAt,
                 rowid: rowid,
               ),

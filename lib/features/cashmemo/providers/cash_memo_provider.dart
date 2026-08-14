@@ -31,7 +31,7 @@ final cashMemosStreamProvider = StreamProvider<List<CashMemoWithDetails>>((ref) 
     leftOuterJoin(db.visits, db.visits.id.equalsExp(db.cashMemos.visitId)),
   ])
     ..where(db.cashMemos.isDeleted.equals(false))
-    ..orderBy([OrderingTerm.desc(db.cashMemos.createdAt)]);
+    ..orderBy([OrderingTerm.desc(db.cashMemos.memoDate)]);
 
   return query.watch().map((rows) {
     return rows.map((row) {
@@ -61,13 +61,17 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
     required double paidAmount,
     required String paymentMethod,
     String? notes,
+    DateTime? memoDate,
   }) async {
     state = const AsyncLoading();
 
     final total = (consultationFee + medicineFee + otherFee) - discount;
 
-    // Generate memo number CM-YYYY-NNNNN using count + 1
-    final year = DateTime.now().year;
+    final date = memoDate ?? DateTime.now();
+
+    // Generate memo number CM-YYYY-NNNNN using count + 1. The year is the
+    // memo's own, so a backdated entry is not numbered into the wrong year.
+    final year = date.year;
     final allMemos = await (_db.select(_db.cashMemos)).get();
     final nextNum = (allMemos.length + 1).toString().padLeft(5, '0');
     final memoNumber = 'CM-$year-$nextNum';
@@ -87,6 +91,7 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
       paidAmount: Value(paidAmount),
       paymentMethod: paymentMethod,
       notes: Value(notes),
+      memoDate: Value(date),
       createdAt: Value(DateTime.now()),
     );
 
@@ -107,6 +112,7 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
     required double paidAmount,
     required String paymentMethod,
     String? notes,
+    DateTime? memoDate,
   }) async {
     state = const AsyncLoading();
     final total = (consultationFee + medicineFee + otherFee) - discount;
@@ -121,6 +127,9 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
           paidAmount: Value(paidAmount),
           paymentMethod: Value(paymentMethod),
           notes: Value(notes),
+          // Absent means "leave as it is" - a caller that does not offer a
+          // date field must not blank the one already stored.
+          memoDate: memoDate == null ? const Value.absent() : Value(memoDate),
         ),
       );
     });

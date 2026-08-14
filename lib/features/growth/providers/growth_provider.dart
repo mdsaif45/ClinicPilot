@@ -75,8 +75,8 @@ final growthAnalyticsProvider = StreamProvider<GrowthAnalytics>((ref) async* {
   var memoQuery = db.select(db.cashMemos)
     ..where((tbl) => tbl.isDeleted.equals(false))
     ..where((tbl) =>
-        tbl.createdAt.isBiggerOrEqual(Variable(range.start)) &
-        tbl.createdAt.isSmallerOrEqual(Variable(range.end)));
+        tbl.memoDate.isBiggerOrEqual(Variable(range.start)) &
+        tbl.memoDate.isSmallerOrEqual(Variable(range.end)));
   if (activeClinicId != null) {
     memoQuery = memoQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
@@ -85,7 +85,7 @@ final growthAnalyticsProvider = StreamProvider<GrowthAnalytics>((ref) async* {
   final dailyRevenueMap = <int, double>{};
   double totalRevenue = 0.0;
   for (final m in memos) {
-    final day = m.createdAt.day;
+    final day = m.memoDate.day;
     dailyRevenueMap[day] = (dailyRevenueMap[day] ?? 0.0) + m.total;
     totalRevenue += m.total;
   }

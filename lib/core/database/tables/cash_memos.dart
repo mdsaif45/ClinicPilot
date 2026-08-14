@@ -29,6 +29,16 @@ class CashMemos extends Table {
   TextColumn get paymentMethod => text()();            // Cash | UPI | Card | Bank Transfer
   TextColumn get notes => text().nullable()();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+
+  // When the money actually moved. Every revenue report reads this.
+  //
+  // Separate from createdAt because the two only agree when a memo is entered
+  // the moment it is paid. Memos written up after evening clinic - or the next
+  // morning - would otherwise book revenue to the wrong day, and around
+  // midnight on the 1st, the wrong month.
+  DateTimeColumn get memoDate => dateTime().withDefault(currentDateAndTime)();
+
+  // When the row was written. Audit trail, not a reporting date.
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
