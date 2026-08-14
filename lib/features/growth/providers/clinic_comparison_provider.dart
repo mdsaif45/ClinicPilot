@@ -55,8 +55,8 @@ final clinicComparisonProvider = StreamProvider<List<ClinicMetrics>>((ref) async
       ..where((tbl) => tbl.clinicId.equals(clinic.id))
       ..where((tbl) => tbl.isDeleted.equals(false))
       ..where((tbl) =>
-          tbl.createdAt.isBiggerOrEqual(Variable(range.start)) &
-          tbl.createdAt.isSmallerOrEqual(Variable(range.end)));
+          tbl.memoDate.isBiggerOrEqual(Variable(range.start)) &
+          tbl.memoDate.isSmallerOrEqual(Variable(range.end)));
     final memos = await memoQuery.get();
     final revenue = memos.fold<double>(0.0, (sum, m) => sum + m.total);
 
@@ -65,8 +65,8 @@ final clinicComparisonProvider = StreamProvider<List<ClinicMetrics>>((ref) async
       ..where((tbl) => tbl.clinicId.equals(clinic.id))
       ..where((tbl) => tbl.isDeleted.equals(false))
       ..where((tbl) =>
-          tbl.createdAt.isBiggerOrEqual(Variable(priorRange.start)) &
-          tbl.createdAt.isSmallerOrEqual(Variable(priorRange.end)));
+          tbl.memoDate.isBiggerOrEqual(Variable(priorRange.start)) &
+          tbl.memoDate.isSmallerOrEqual(Variable(priorRange.end)));
     final priorMemos = await priorMemoQuery.get();
     final priorRevenue = priorMemos.fold<double>(0.0, (sum, m) => sum + m.total);
 

@@ -105,7 +105,7 @@ class PdfService {
                         pw.Text('MEMO INFO', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: textMuted)),
                         pw.SizedBox(height: 4),
                         pw.Text('Memo #: ${cashMemo.memoNumber}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                        pw.Text('Date: ${_dateFormat.format(cashMemo.createdAt)}', style: const pw.TextStyle(fontSize: 12)),
+                        pw.Text('Date: ${_dateFormat.format(cashMemo.memoDate)}', style: const pw.TextStyle(fontSize: 12)),
                         pw.Text('Payment Method: ${cashMemo.paymentMethod}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: primaryColor)),
                       ],
                     ),

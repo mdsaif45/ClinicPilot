@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,6 +33,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
   final _paidAmountController = TextEditingController();
 
   String _paymentMethod = 'Cash';
+  DateTime _memoDate = DateTime.now();
   final List<String> _paymentMethods = ['Cash', 'UPI', 'Card', 'Bank Transfer'];
 
   @override
@@ -111,6 +113,12 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                         cl.defaultConsultationFee.toStringAsFixed(0);
                   });
                 },
+              ),
+              const SizedBox(height: 12),
+              DateField(
+                label: 'Date',
+                value: _memoDate,
+                onChanged: (d) => setState(() => _memoDate = d),
               ),
               const SizedBox(height: 12),
               // Searchable picker rather than a dropdown: a flat list cannot
@@ -236,6 +244,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
           discount: disc,
           paidAmount: paid,
           paymentMethod: _paymentMethod,
+          memoDate: _memoDate,
         );
 
     if (mounted) Navigator.of(context).pop();

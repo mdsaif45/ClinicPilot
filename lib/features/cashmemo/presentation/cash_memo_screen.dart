@@ -167,7 +167,7 @@ class _MemoRow extends ConsumerWidget {
           children: [
             Expanded(
               child: Text(
-                '${memo.memoNumber} · ${Formatters.formatDate(memo.createdAt)}',
+                '${memo.memoNumber} · ${Formatters.formatDate(memo.memoDate)}',
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelMedium,
               ),

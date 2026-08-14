@@ -55,8 +55,8 @@ final profitSummaryProvider = StreamProvider<ProfitSummary>((ref) async* {
   var memoQuery = db.select(db.cashMemos)
     ..where((t) => t.isDeleted.equals(false))
     ..where((t) =>
-        t.createdAt.isBiggerOrEqual(Variable(range.start)) &
-        t.createdAt.isSmallerOrEqual(Variable(range.end)));
+        t.memoDate.isBiggerOrEqual(Variable(range.start)) &
+        t.memoDate.isSmallerOrEqual(Variable(range.end)));
   if (activeClinicId != null) {
     memoQuery = memoQuery..where((t) => t.clinicId.equals(activeClinicId));
   }
@@ -76,8 +76,8 @@ final profitSummaryProvider = StreamProvider<ProfitSummary>((ref) async* {
   final byMethod = <String, double>{};
   var totalIncome = 0.0;
   for (final m in memos) {
-    incomeByDay[m.createdAt.day] =
-        (incomeByDay[m.createdAt.day] ?? 0) + m.total;
+    incomeByDay[m.memoDate.day] =
+        (incomeByDay[m.memoDate.day] ?? 0) + m.total;
     totalIncome += m.total;
     byMethod[m.paymentMethod] = (byMethod[m.paymentMethod] ?? 0) + m.total;
   }

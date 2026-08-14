@@ -83,8 +83,8 @@ final referralAnalyticsProvider =
   var memoQuery = db.select(db.cashMemos)
     ..where((t) => t.isDeleted.equals(false))
     ..where((t) =>
-        t.createdAt.isBiggerOrEqual(Variable(range.start)) &
-        t.createdAt.isSmallerOrEqual(Variable(range.end)));
+        t.memoDate.isBiggerOrEqual(Variable(range.start)) &
+        t.memoDate.isSmallerOrEqual(Variable(range.end)));
   if (activeClinicId != null) {
     memoQuery = memoQuery..where((t) => t.clinicId.equals(activeClinicId));
   }

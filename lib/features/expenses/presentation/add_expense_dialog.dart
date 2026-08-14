@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,6 +87,12 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                         ))
                     .toList(),
                 onChanged: (val) => setState(() => _selectedClinicId = val),
+              ),
+              const SizedBox(height: 12),
+              DateField(
+                label: 'Date',
+                value: _date,
+                onChanged: (d) => setState(() => _date = d),
               ),
               const SizedBox(height: 12),
               PickerField<String>(
