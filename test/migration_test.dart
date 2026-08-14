@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+
+import 'helpers/seed_clinics.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:clinic_pilot/core/database/app_database.dart';
@@ -189,6 +191,53 @@ void main() {
         db.migration.onUpgrade(db.createMigrator(), 2, 3),
         completes,
         reason: 'the v3 step must be safe to re-run',
+      );
+
+      await db.close();
+    });
+
+    test('v3 -> v4 backfills memo_date from created_at', () async {
+      final executor = NativeDatabase.memory();
+      final db = AppDatabase(executor);
+
+      await db.customStatement('SELECT 1');
+      await seedTestClinics(db);
+      await db.into(db.patients).insert(PatientsCompanion.insert(
+            id: 'p-v4',
+            patientCode: const Value('P-2026-00010'),
+            name: 'Memo Patient',
+            phone: '9800000010',
+            age: 31,
+            gender: 'Female',
+            primaryClinicId: const Value('clinic_old'),
+          ));
+
+      // A memo written before v4 existed: its date lives only in created_at.
+      final written = DateTime(2026, 3, 14, 19, 30);
+      await db.into(db.cashMemos).insert(CashMemosCompanion.insert(
+            id: 'm-v4',
+            memoNumber: 'CM-2026-00001',
+            patientId: 'p-v4',
+            clinicId: const Value('clinic_old'),
+            total: 500,
+            paymentMethod: 'Cash',
+            createdAt: Value(written),
+          ));
+
+      // Reproduce the pre-v4 shape: the column simply did not exist. Dropping
+      // it is closer to a real upgrade than nulling it, which the NOT NULL
+      // constraint on a freshly created table rejects anyway.
+      await db.customStatement('ALTER TABLE cash_memos DROP COLUMN memo_date');
+      await db.migration.onUpgrade(db.createMigrator(), 3, 4);
+
+      final row = await db.select(db.cashMemos).getSingle();
+      expect(row.memoDate, equals(written),
+          reason: 'an existing memo keeps the date it was always reported on');
+
+      await expectLater(
+        db.migration.onUpgrade(db.createMigrator(), 3, 4),
+        completes,
+        reason: 'the v4 step must be safe to re-run',
       );
 
       await db.close();

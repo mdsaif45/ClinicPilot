@@ -102,10 +102,10 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
     var todayRevenue = 0.0, monthRevenue = 0.0, prevMonthRevenue = 0.0;
     for (final m in memoRows) {
       if (!inClinic(m.clinicId)) continue;
-      if (within(m.createdAt, todayStart, todayEnd)) todayRevenue += m.total;
-      if (within(m.createdAt, monthStart, nextMonthStart)) {
+      if (within(m.memoDate, todayStart, todayEnd)) todayRevenue += m.total;
+      if (within(m.memoDate, monthStart, nextMonthStart)) {
         monthRevenue += m.total;
-      } else if (within(m.createdAt, prevMonthStart, monthStart)) {
+      } else if (within(m.memoDate, prevMonthStart, monthStart)) {
         prevMonthRevenue += m.total;
       }
     }

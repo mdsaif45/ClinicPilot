@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -139,6 +139,19 @@ class AppDatabase extends _$AppDatabase {
             // field and the mapper throws.
             await customStatement(
                 'UPDATE patients SET review_given = 0 WHERE review_given IS NULL');
+          }
+
+          if (from < 4) {
+            // Revenue now reports on when the money moved, not on when the row
+            // happened to be written.
+            await _addColumnIfMissing(m, cashMemos, cashMemos.memoDate);
+
+            // Existing memos were reported by created_at, so that is their
+            // date. Copying it keeps every historical figure identical across
+            // the upgrade; leaving it unset would date them to the epoch and
+            // drop them out of every range the dashboard asks for.
+            await customStatement(
+                'UPDATE cash_memos SET memo_date = created_at WHERE memo_date IS NULL');
           }
         },
         beforeOpen: (details) async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/choice_chip_field.dart';
+import '../../../core/widgets/date_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../providers/cash_memo_provider.dart';
@@ -24,6 +25,7 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
   late TextEditingController _notesController;
 
   late String _paymentMethod;
+  late DateTime _memoDate;
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
     _paidAmountController = TextEditingController(text: widget.memo.paidAmount.toString());
     _notesController = TextEditingController(text: widget.memo.notes ?? '');
     _paymentMethod = widget.memo.paymentMethod;
+    _memoDate = widget.memo.memoDate;
   }
 
   @override
@@ -66,6 +69,12 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
             // narrower - chips, checkboxes - drifts to the middle.
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              DateField(
+                label: 'Date',
+                value: _memoDate,
+                onChanged: (d) => setState(() => _memoDate = d),
+              ),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _consultationFeeController,
                 decoration: const InputDecoration(labelText: 'Consultation Fee (Rs)'),
@@ -148,6 +157,7 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
           discount: disc,
           paidAmount: paid,
           paymentMethod: _paymentMethod,
+          memoDate: _memoDate,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
         );
 
