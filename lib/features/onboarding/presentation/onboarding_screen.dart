@@ -227,16 +227,13 @@ class _NamePage extends StatelessWidget {
           'What should the app call you?',
           style: theme.textTheme.titleMedium,
         ),
-        const SizedBox(height: Spacing.sm),
-        Text(
-          'This appears on your dashboard and on printed receipts.',
-          style: theme.textTheme.labelMedium,
-        ),
         const SizedBox(height: Spacing.lg),
         CustomTextField(
           controller: controller,
           label: 'Your name',
-          hint: 'Dr. Zaid',
+          // A sample name reads as a real default and has to be cleared before
+          // typing. The label already says what goes here.
+          hint: '',
           prefixIcon: Icons.person_outline,
           onChanged: (_) => onChanged(),
         ),
@@ -296,7 +293,7 @@ class _ClinicsPage extends StatelessWidget {
                 child: CustomTextField(
                   controller: nameControllers[i],
                   label: 'Clinic ${i + 1}',
-                  hint: 'Babu Bazar Clinic',
+                  hint: '',
                   prefixIcon: Icons.local_hospital_outlined,
                   onChanged: (_) => onChanged(),
                 ),
@@ -316,7 +313,7 @@ class _ClinicsPage extends StatelessWidget {
           CustomTextField(
             controller: addressControllers[i],
             label: 'Area (optional)',
-            hint: 'Khidderpore',
+            hint: '',
             prefixIcon: Icons.place_outlined,
           ),
           const SizedBox(height: Spacing.lg),

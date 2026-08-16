@@ -130,7 +130,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
               const SizedBox(height: 12),
               CustomTextField(
                 controller: _areaController,
-                label: 'Locality / Area (e.g. Babu Bazar)',
+                label: 'Locality / Area',
                 prefixIcon: Icons.location_on,
               ),
               const SizedBox(height: 12),

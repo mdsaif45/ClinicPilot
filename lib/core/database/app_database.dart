@@ -176,17 +176,21 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  /// Creates the two clinic rows the v1 -> v2 migration attaches old data to.
+  ///
+  /// Only reachable from that migration, which assigns every pre-v2 memo and
+  /// visit to `clinic_old` - without the row the foreign key fails. A fresh
+  /// install gets its clinics from onboarding instead.
+  ///
+  /// Deliberately unnamed beyond "Clinic 1" and "Clinic 2": this app is not
+  /// specific to one practice, and the doctor renames them in Settings.
   Future<void> _seedClinics() async {
     final now = DateTime.now();
-    // Seed two real clinics for Dr. Zaid
     await into(clinics).insertOnConflictUpdate(
       ClinicsCompanion.insert(
         id: 'clinic_old',
-        name: "Old Clinic (Evening 1)",
-        address: const Value('Babu Bazar, Khidderpore'),
-        monthlyRent: const Value(3000.0),
-        defaultConsultationFee: const Value(300.0),
-        openDays: const Value('1,3,5'), // Mon, Wed, Fri
+        name: 'Clinic 1',
+        openDays: const Value('1,3,5'),
         colorHex: const Value('#0F5132'),
         createdAt: Value(now),
       ),
@@ -194,11 +198,8 @@ class AppDatabase extends _$AppDatabase {
     await into(clinics).insertOnConflictUpdate(
       ClinicsCompanion.insert(
         id: 'clinic_new',
-        name: "New Clinic (Evening 2)",
-        address: const Value('Main Road, Khidderpore'),
-        monthlyRent: const Value(8000.0),
-        defaultConsultationFee: const Value(400.0),
-        openDays: const Value('2,4,6'), // Tue, Thu, Sat
+        name: 'Clinic 2',
+        openDays: const Value('2,4,6'),
         colorHex: const Value('#1E88E5'),
         createdAt: Value(now),
       ),

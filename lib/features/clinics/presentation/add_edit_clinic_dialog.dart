@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/day_selector_field.dart';
 import '../providers/clinic_provider.dart';
 
 const _uuid = Uuid();
@@ -24,7 +25,7 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
   late TextEditingController _phoneController;
   late TextEditingController _rentController;
   late TextEditingController _feeController;
-  late TextEditingController _openDaysController;
+  late String _openDays;
 
   String _colorHex = '#0F5132';
 
@@ -40,8 +41,7 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
     _feeController = TextEditingController(
         text: (widget.clinic?.defaultConsultationFee ?? 300.0)
             .toStringAsFixed(0));
-    _openDaysController =
-        TextEditingController(text: widget.clinic?.openDays ?? '1,3,5');
+    _openDays = widget.clinic?.openDays ?? '1,3,5';
     _colorHex = widget.clinic?.colorHex ?? '#0F5132';
   }
 
@@ -52,7 +52,6 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
     _phoneController.dispose();
     _rentController.dispose();
     _feeController.dispose();
-    _openDaysController.dispose();
     super.dispose();
   }
 
@@ -114,11 +113,10 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
                     v == null || double.tryParse(v) == null ? 'Valid fee' : null,
               ),
               const SizedBox(height: 12),
-              CustomTextField(
-                controller: _openDaysController,
-                label: 'Open Days (e.g. 1,3,5 for Mon,Wed,Fri)',
-                prefixIcon: Icons.event,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              DaySelectorField(
+                label: 'Open Days',
+                value: _openDays,
+                onChanged: (v) => setState(() => _openDays = v),
               ),
             ],
           ),
@@ -145,7 +143,7 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
     final phone = _phoneController.text.trim();
     final rent = double.parse(_rentController.text.trim());
     final fee = double.parse(_feeController.text.trim());
-    final openDays = _openDaysController.text.trim();
+    final openDays = _openDays;
 
     final notifier = ref.read(clinicNotifierProvider.notifier);
 
