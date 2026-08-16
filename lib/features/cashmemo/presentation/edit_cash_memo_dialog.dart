@@ -27,6 +27,10 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
   late String _paymentMethod;
   late DateTime _memoDate;
 
+  // Guards against a queued tap re-running _saveChanges before the first
+  // write finishes and the dialog closes.
+  bool _submitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -133,15 +137,24 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _saveChanges,
-          child: const Text('Save Changes'),
+          onPressed: _submitting ? null : _saveChanges,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save Changes'),
         ),
       ],
     );
   }
 
   Future<void> _saveChanges() async {
+    if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _submitting = true);
 
     final consult = double.tryParse(_consultationFeeController.text.trim()) ?? 0.0;
     final med = double.tryParse(_medicineFeeController.text.trim()) ?? 0.0;
@@ -149,17 +162,27 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
     final disc = double.tryParse(_discountController.text.trim()) ?? 0.0;
     final paid = double.tryParse(_paidAmountController.text.trim()) ?? 0.0;
 
-    await ref.read(cashMemoNotifierProvider.notifier).updateCashMemo(
-          id: widget.memo.id,
-          consultationFee: consult,
-          medicineFee: med,
-          otherFee: other,
-          discount: disc,
-          paidAmount: paid,
-          paymentMethod: _paymentMethod,
-          memoDate: _memoDate,
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+    try {
+      await ref.read(cashMemoNotifierProvider.notifier).updateCashMemo(
+            id: widget.memo.id,
+            consultationFee: consult,
+            medicineFee: med,
+            otherFee: other,
+            discount: disc,
+            paidAmount: paid,
+            paymentMethod: _paymentMethod,
+            memoDate: _memoDate,
+            notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not update memo: \$e')),
         );
+      }
+      return;
+    }
 
     if (mounted) {
       Navigator.of(context).pop();

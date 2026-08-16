@@ -28,6 +28,10 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
   DateTime _visitDate = DateTime.now();
   DateTime? _nextFollowUpDate;
 
+  // Guards against a queued tap re-running _submit before the first write
+  // finishes and the dialog closes.
+  bool _submitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -181,29 +185,48 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Save Visit'),
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save Visit'),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
+    if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedClinicId == null) return;
 
-    await ref.read(visitNotifierProvider.notifier).addVisit(
-          patientId: widget.patient.id,
-          clinicId: _selectedClinicId!,
-          disease: _diseaseController.text.trim(),
-          chiefComplaint: _chiefComplaintController.text.trim().isEmpty
-              ? null
-              : _chiefComplaintController.text.trim(),
-          consultationType: _consultationType,
-          outcome: _outcome,
-          visitDate: _visitDate,
-          nextFollowUpDate: _nextFollowUpDate,
+    setState(() => _submitting = true);
+
+    try {
+      await ref.read(visitNotifierProvider.notifier).addVisit(
+            patientId: widget.patient.id,
+            clinicId: _selectedClinicId!,
+            disease: _diseaseController.text.trim(),
+            chiefComplaint: _chiefComplaintController.text.trim().isEmpty
+                ? null
+                : _chiefComplaintController.text.trim(),
+            consultationType: _consultationType,
+            outcome: _outcome,
+            visitDate: _visitDate,
+            nextFollowUpDate: _nextFollowUpDate,
+          );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save visit: \$e')),
         );
+      }
+      return;
+    }
 
     if (mounted) Navigator.of(context).pop();
   }

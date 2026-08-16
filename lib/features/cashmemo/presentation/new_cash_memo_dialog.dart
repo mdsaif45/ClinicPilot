@@ -34,6 +34,10 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
 
   String _paymentMethod = 'Cash';
   DateTime _memoDate = DateTime.now();
+
+  // Guards against a memo being created twice from taps queued while the
+  // first write is still in flight.
+  bool _submitting = false;
   final List<String> _paymentMethods = ['Cash', 'UPI', 'Card', 'Bank Transfer'];
 
   @override
@@ -212,14 +216,21 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Create Memo'),
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Create Memo'),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
+    if (_submitting) return;
     final formOk = _formKey.currentState!.validate();
 
     // Surface the missing patient instead of failing silently.
@@ -229,23 +240,35 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
 
     if (!formOk || _selectedPatient == null || _selectedClinicId == null) return;
 
+    setState(() => _submitting = true);
+
     final consult = double.tryParse(_consultationController.text) ?? 0.0;
     final med = double.tryParse(_medicineController.text) ?? 0.0;
     final other = double.tryParse(_otherController.text) ?? 0.0;
     final disc = double.tryParse(_discountController.text) ?? 0.0;
     final paid = double.tryParse(_paidAmountController.text) ?? _total;
 
-    await ref.read(cashMemoNotifierProvider.notifier).createCashMemo(
-          patientId: _selectedPatient!.id,
-          clinicId: _selectedClinicId!,
-          consultationFee: consult,
-          medicineFee: med,
-          otherFee: other,
-          discount: disc,
-          paidAmount: paid,
-          paymentMethod: _paymentMethod,
-          memoDate: _memoDate,
+    try {
+      await ref.read(cashMemoNotifierProvider.notifier).createCashMemo(
+            patientId: _selectedPatient!.id,
+            clinicId: _selectedClinicId!,
+            consultationFee: consult,
+            medicineFee: med,
+            otherFee: other,
+            discount: disc,
+            paidAmount: paid,
+            paymentMethod: _paymentMethod,
+            memoDate: _memoDate,
+          );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not create memo: \$e')),
         );
+      }
+      return;
+    }
 
     if (mounted) Navigator.of(context).pop();
   }

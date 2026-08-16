@@ -26,6 +26,10 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   bool _isRecurring = false;
   DateTime _date = DateTime.now();
 
+  // Guards against a queued tap re-running _submit before the first write
+  // finishes and the dialog closes.
+  bool _submitting = false;
+
   final List<String> _categories = [
     'Rent',
     'Electricity',
@@ -154,31 +158,50 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Save Expense'),
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save Expense'),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
+    if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedClinicId == null) return;
+
+    setState(() => _submitting = true);
 
     final amount = double.parse(_amountController.text.trim());
     final subcat = _subcategoryController.text.trim();
     final notes = _notesController.text.trim();
 
-    await ref.read(expenseNotifierProvider.notifier).addExpense(
-          clinicId: _selectedClinicId!,
-          category: _category,
-          subcategory: subcat.isEmpty ? null : subcat,
-          amount: amount,
-          paymentMethod: _paymentMethod,
-          isRecurring: _isRecurring,
-          notes: notes.isEmpty ? null : notes,
-          date: _date,
+    try {
+      await ref.read(expenseNotifierProvider.notifier).addExpense(
+            clinicId: _selectedClinicId!,
+            category: _category,
+            subcategory: subcat.isEmpty ? null : subcat,
+            amount: amount,
+            paymentMethod: _paymentMethod,
+            isRecurring: _isRecurring,
+            notes: notes.isEmpty ? null : notes,
+            date: _date,
+          );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save expense: \$e')),
         );
+      }
+      return;
+    }
 
     if (mounted) Navigator.of(context).pop();
   }

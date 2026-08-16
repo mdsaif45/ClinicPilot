@@ -27,6 +27,11 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   String? _selectedClinicId;
   String _referralSource = 'Walk-in';
 
+  // Registering awaits a database write. Without this, every tap before that
+  // finishes re-ran _submit and created another duplicate patient - the
+  // button gave no feedback that the first tap had already been taken.
+  bool _submitting = false;
+
   final List<String> _referralSources = [
     'Walk-in',
     'Google Search',
@@ -174,16 +179,25 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Register & Create Visit'),
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Register & Create Visit'),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
+    if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedClinicId == null) return;
+
+    setState(() => _submitting = true);
 
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
@@ -192,17 +206,29 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final area = _areaController.text.trim();
     final disease = _diseaseController.text.trim();
 
-    await ref.read(patientNotifierProvider.notifier).registerPatient(
-          name: name,
-          phone: phone,
-          whatsapp: whatsapp.isEmpty ? null : whatsapp,
-          age: age,
-          gender: _gender,
-          area: area.isEmpty ? null : area,
-          primaryClinicId: _selectedClinicId!,
-          disease: disease,
-          referralSource: _referralSource,
+    try {
+      await ref.read(patientNotifierProvider.notifier).registerPatient(
+            name: name,
+            phone: phone,
+            whatsapp: whatsapp.isEmpty ? null : whatsapp,
+            age: age,
+            gender: _gender,
+            area: area.isEmpty ? null : area,
+            primaryClinicId: _selectedClinicId!,
+            disease: disease,
+            referralSource: _referralSource,
+          );
+    } catch (e) {
+      // Re-enable the button rather than leave it stuck disabled with no way
+      // to retry - a failed write must not trap the doctor in the dialog.
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not register patient: $e')),
         );
+      }
+      return;
+    }
 
     if (mounted) Navigator.of(context).pop();
   }
