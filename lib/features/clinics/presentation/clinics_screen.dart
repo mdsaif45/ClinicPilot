@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/day_selector_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/formatters.dart';
 import '../providers/clinic_provider.dart';
@@ -94,7 +95,7 @@ class ClinicsScreen extends ConsumerWidget {
                         Text('Address: ${clinic.address ?? "N/A"}'),
                         Text('Monthly Rent: ${Formatters.formatCurrency(clinic.monthlyRent)}'),
                         Text('Default Fee: ${Formatters.formatCurrency(clinic.defaultConsultationFee)}'),
-                        Text('Open Days: ${clinic.openDays} (1=Mon..7=Sun)'),
+                        Text('Open: ${DaySelectorField.describe(clinic.openDays)}'),
                       ],
                     ),
                   ),
