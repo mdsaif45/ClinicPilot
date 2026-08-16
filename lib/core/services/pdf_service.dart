@@ -12,7 +12,9 @@ class PdfService {
   static Future<Uint8List> generateCashMemoPdf({
     required CashMemo cashMemo,
     required Patient patient,
-    String clinicName = "Dr Zaid's Clinic",
+    // No default: a receipt is a document the patient keeps, and a fallback
+    // here would print somebody else's clinic name on it.
+    required String clinicName,
     String clinicTagline = "Your Clinic. Measured.",
   }) async {
     final pdf = pw.Document();
