@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/widgets/date_field.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +23,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   final _notesController = TextEditingController();
 
   String? _selectedClinicId;
+  String? _clinicError;
   String _category = 'Medicine Purchase';
   String _paymentMethod = 'Cash';
   bool _isRecurring = false;
@@ -63,6 +66,30 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
 
+    // An expense has to belong to a clinic - without one the write can
+    // never succeed, so say so before the form is filled in.
+    if (clinicsAsync.hasValue && clinics.isEmpty) {
+      return AlertDialog(
+        title: const Text('Add Expense Entry'),
+        content: EmptyState(
+          icon: Icons.local_hospital_outlined,
+          title: 'No clinic yet',
+          message: 'Add a clinic before recording an expense.',
+          actionLabel: 'Add clinic',
+          onAction: () {
+            Navigator.of(context).pop();
+            context.push('/clinics');
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      );
+    }
+
     return AlertDialog(
       title: const Text('Add Expense Entry'),
       insetPadding:
@@ -83,6 +110,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                 label: 'Clinic',
                 prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
+                errorText: _clinicError,
                 options: clinics
                     .map((c) => PickerOption(
                           value: c.id,
@@ -90,7 +118,10 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                           subtitle: c.address,
                         ))
                     .toList(),
-                onChanged: (val) => setState(() => _selectedClinicId = val),
+                onChanged: (val) => setState(() {
+                  _selectedClinicId = val;
+                  _clinicError = null;
+                }),
               ),
               const SizedBox(height: 12),
               DateField(
@@ -173,8 +204,13 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
 
   Future<void> _submit() async {
     if (_submitting) return;
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedClinicId == null) return;
+    final formOk = _formKey.currentState!.validate();
+
+    setState(() {
+      _clinicError = _selectedClinicId == null ? 'Select a clinic' : null;
+    });
+
+    if (!formOk || _selectedClinicId == null) return;
 
     setState(() => _submitting = true);
 

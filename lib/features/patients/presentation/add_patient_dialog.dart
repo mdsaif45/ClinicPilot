@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/picker_field.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/utils/validators.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/patient_provider.dart';
@@ -25,6 +27,10 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
   String _gender = 'Male';
   String? _selectedClinicId;
+  // PickerField is not a FormField, so its error is tracked here - without
+  // it, leaving Clinic unset gave no feedback: submit silently did nothing,
+  // which read as the button not working rather than as a missing field.
+  String? _clinicError;
   String _referralSource = 'Walk-in';
 
   // Registering awaits a database write. Without this, every tap before that
@@ -63,6 +69,31 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   Widget build(BuildContext context) {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
+
+    // A patient has to belong to a clinic - filling in the rest of the form
+    // only to hit a foreign-key error at the end is worse than saying so
+    // up front, before anything is typed.
+    if (clinicsAsync.hasValue && clinics.isEmpty) {
+      return AlertDialog(
+        title: const Text('Register New Patient'),
+        content: EmptyState(
+          icon: Icons.local_hospital_outlined,
+          title: 'No clinic yet',
+          message: 'Add a clinic before registering a patient.',
+          actionLabel: 'Add clinic',
+          onAction: () {
+            Navigator.of(context).pop();
+            context.push('/clinics');
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      );
+    }
 
     return AlertDialog(
       title: const Text('Register New Patient'),
@@ -143,6 +174,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 label: 'Clinic',
                 prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
+                errorText: _clinicError,
                 options: clinics
                     .map((c) => PickerOption(
                           value: c.id,
@@ -150,7 +182,10 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                           subtitle: c.address,
                         ))
                     .toList(),
-                onChanged: (val) => setState(() => _selectedClinicId = val),
+                onChanged: (val) => setState(() {
+                  _selectedClinicId = val;
+                  _clinicError = null;
+                }),
               ),
               const SizedBox(height: 12),
               CustomTextField(
@@ -194,8 +229,13 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
   Future<void> _submit() async {
     if (_submitting) return;
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedClinicId == null) return;
+    final formOk = _formKey.currentState!.validate();
+
+    setState(() {
+      _clinicError = _selectedClinicId == null ? 'Select a clinic' : null;
+    });
+
+    if (!formOk || _selectedClinicId == null) return;
 
     setState(() => _submitting = true);
 

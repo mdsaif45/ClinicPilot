@@ -77,23 +77,28 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
       updatedAt: Value(now),
     );
 
-    await _db.into(_db.patients).insert(companion);
+    // One transaction: the patient row has no FK on clinic, only the visit
+    // row does, so without a transaction a bad clinic id let the patient
+    // save while the visit - and the whole registration - failed after it.
+    await _db.transaction(() async {
+      await _db.into(_db.patients).insert(companion);
 
-    // Register initial visit (visitType = 'new')
-    final visitId = _uuid.v4();
-    await _db.into(_db.visits).insert(
-          VisitsCompanion.insert(
-            id: visitId,
-            patientId: patientId,
-            clinicId: primaryClinicId,
-            visitType: 'new',
-            consultationType: const Value('clinic'),
-            disease: disease,
-            referralSource: Value(referralSource),
-            visitDate: now,
-            createdAt: Value(now),
-          ),
-        );
+      // Register initial visit (visitType = 'new')
+      final visitId = _uuid.v4();
+      await _db.into(_db.visits).insert(
+            VisitsCompanion.insert(
+              id: visitId,
+              patientId: patientId,
+              clinicId: primaryClinicId,
+              visitType: 'new',
+              consultationType: const Value('clinic'),
+              disease: disease,
+              referralSource: Value(referralSource),
+              visitDate: now,
+              createdAt: Value(now),
+            ),
+          );
+    });
 
     state = const AsyncData(null);
     return await (_db.select(_db.patients)
