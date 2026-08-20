@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/widgets/date_field.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +28,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
   // PatientPickerField is not a FormField, so its error is tracked here.
   String? _patientError;
   String? _selectedClinicId;
+  String? _clinicError;
   final _consultationController = TextEditingController(text: '300');
   final _medicineController = TextEditingController(text: '0');
   final _otherController = TextEditingController(text: '0');
@@ -34,6 +37,10 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
 
   String _paymentMethod = 'Cash';
   DateTime _memoDate = DateTime.now();
+
+  // Guards against a memo being created twice from taps queued while the
+  // first write is still in flight.
+  bool _submitting = false;
   final List<String> _paymentMethods = ['Cash', 'UPI', 'Card', 'Bank Transfer'];
 
   @override
@@ -73,6 +80,30 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
 
     final clinics = clinicsAsync.value ?? [];
 
+    // A memo has to belong to a clinic - without one, the fee fields below
+    // fill in for nothing, since the write can never succeed.
+    if (clinicsAsync.hasValue && clinics.isEmpty) {
+      return AlertDialog(
+        title: const Text('Create Cash Memo'),
+        content: EmptyState(
+          icon: Icons.local_hospital_outlined,
+          title: 'No clinic yet',
+          message: 'Add a clinic before recording a memo.',
+          actionLabel: 'Add clinic',
+          onAction: () {
+            Navigator.of(context).pop();
+            context.push('/clinics');
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      );
+    }
+
     final currentTotal = _total;
     if (_paidAmountController.text.isEmpty) {
       _paidAmountController.text = currentTotal.toStringAsFixed(0);
@@ -98,6 +129,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                 label: 'Clinic',
                 prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
+                errorText: _clinicError,
                 options: clinics
                     .map((c) => PickerOption(
                           value: c.id,
@@ -108,6 +140,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                 onChanged: (val) {
                   setState(() {
                     _selectedClinicId = val;
+                    _clinicError = null;
                     final cl = clinics.firstWhere((c) => c.id == val);
                     _consultationController.text =
                         cl.defaultConsultationFee.toStringAsFixed(0);
@@ -212,22 +245,32 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Create Memo'),
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Create Memo'),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
+    if (_submitting) return;
     final formOk = _formKey.currentState!.validate();
 
-    // Surface the missing patient instead of failing silently.
+    // Surface the missing patient and clinic instead of failing silently.
     setState(() {
       _patientError = _selectedPatient == null ? 'Select a patient' : null;
+      _clinicError = _selectedClinicId == null ? 'Select a clinic' : null;
     });
 
     if (!formOk || _selectedPatient == null || _selectedClinicId == null) return;
+
+    setState(() => _submitting = true);
 
     final consult = double.tryParse(_consultationController.text) ?? 0.0;
     final med = double.tryParse(_medicineController.text) ?? 0.0;
@@ -235,17 +278,27 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     final disc = double.tryParse(_discountController.text) ?? 0.0;
     final paid = double.tryParse(_paidAmountController.text) ?? _total;
 
-    await ref.read(cashMemoNotifierProvider.notifier).createCashMemo(
-          patientId: _selectedPatient!.id,
-          clinicId: _selectedClinicId!,
-          consultationFee: consult,
-          medicineFee: med,
-          otherFee: other,
-          discount: disc,
-          paidAmount: paid,
-          paymentMethod: _paymentMethod,
-          memoDate: _memoDate,
+    try {
+      await ref.read(cashMemoNotifierProvider.notifier).createCashMemo(
+            patientId: _selectedPatient!.id,
+            clinicId: _selectedClinicId!,
+            consultationFee: consult,
+            medicineFee: med,
+            otherFee: other,
+            discount: disc,
+            paidAmount: paid,
+            paymentMethod: _paymentMethod,
+            memoDate: _memoDate,
+          );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not create memo: \$e')),
         );
+      }
+      return;
+    }
 
     if (mounted) Navigator.of(context).pop();
   }

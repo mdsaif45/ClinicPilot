@@ -27,6 +27,10 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
 
   late String _gender;
 
+  // Guards against a queued tap re-running _saveChanges before the first
+  // write finishes and the dialog closes.
+  bool _submitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -92,13 +96,31 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
               ),
               const SizedBox(height: 12),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      controller: _ageController,
-                      decoration: const InputDecoration(labelText: 'Age *'),
-                      keyboardType: TextInputType.number,
-                      validator: (val) => val == null || int.tryParse(val.trim()) == null ? 'Invalid' : null,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // A fixed label above the field, matching Gender's
+                        // PickerField, rather than a floating labelText - the
+                        // two were built from different label styles, which is
+                        // why the row never lined up.
+                        Text(
+                          'Age *',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: _ageController,
+                          keyboardType: TextInputType.number,
+                          validator: (val) => val == null || int.tryParse(val.trim()) == null ? 'Invalid' : null,
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -149,28 +171,47 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _saveChanges,
-          child: const Text('Save Changes'),
+          onPressed: _submitting ? null : _saveChanges,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save Changes'),
         ),
       ],
     );
   }
 
   Future<void> _saveChanges() async {
+    if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
 
-    await ref.read(patientNotifierProvider.notifier).updatePatient(
-          id: widget.patient.id,
-          name: _nameController.text.trim(),
-          phone: _phoneController.text.trim(),
-          whatsapp: _whatsappController.text.trim().isEmpty ? null : _whatsappController.text.trim(),
-          age: int.parse(_ageController.text.trim()),
-          gender: _gender,
-          area: _areaController.text.trim().isEmpty ? null : _areaController.text.trim(),
-          address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
-          occupation: _occupationController.text.trim().isEmpty ? null : _occupationController.text.trim(),
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+    setState(() => _submitting = true);
+
+    try {
+      await ref.read(patientNotifierProvider.notifier).updatePatient(
+            id: widget.patient.id,
+            name: _nameController.text.trim(),
+            phone: _phoneController.text.trim(),
+            whatsapp: _whatsappController.text.trim().isEmpty ? null : _whatsappController.text.trim(),
+            age: int.parse(_ageController.text.trim()),
+            gender: _gender,
+            area: _areaController.text.trim().isEmpty ? null : _areaController.text.trim(),
+            address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+            occupation: _occupationController.text.trim().isEmpty ? null : _occupationController.text.trim(),
+            notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not update patient: \$e')),
         );
+      }
+      return;
+    }
 
     if (mounted) {
       Navigator.of(context).pop();

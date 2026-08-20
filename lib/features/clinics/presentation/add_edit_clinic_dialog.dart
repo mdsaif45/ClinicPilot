@@ -29,6 +29,10 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
 
   String _colorHex = '#0F5132';
 
+  // Guards against a queued tap re-running _submit before the first write
+  // finishes and the dialog closes.
+  bool _submitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -128,15 +132,24 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
-          child: Text(isEditing ? 'Save Changes' : 'Add Clinic'),
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(isEditing ? 'Save Changes' : 'Add Clinic'),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
+    if (_submitting) return;
     if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _submitting = true);
 
     final name = _nameController.text.trim();
     final address = _addressController.text.trim();
@@ -147,28 +160,38 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
 
     final notifier = ref.read(clinicNotifierProvider.notifier);
 
-    if (widget.clinic != null) {
-      await notifier.updateClinic(
-        id: widget.clinic!.id,
-        name: name,
-        address: address.isEmpty ? null : address,
-        phone: phone.isEmpty ? null : phone,
-        monthlyRent: rent,
-        defaultConsultationFee: fee,
-        openDays: openDays,
-        colorHex: _colorHex,
-      );
-    } else {
-      await notifier.addClinic(
-        id: _uuid.v4(),
-        name: name,
-        address: address.isEmpty ? null : address,
-        phone: phone.isEmpty ? null : phone,
-        monthlyRent: rent,
-        defaultConsultationFee: fee,
-        openDays: openDays,
-        colorHex: _colorHex,
-      );
+    try {
+      if (widget.clinic != null) {
+        await notifier.updateClinic(
+          id: widget.clinic!.id,
+          name: name,
+          address: address.isEmpty ? null : address,
+          phone: phone.isEmpty ? null : phone,
+          monthlyRent: rent,
+          defaultConsultationFee: fee,
+          openDays: openDays,
+          colorHex: _colorHex,
+        );
+      } else {
+        await notifier.addClinic(
+          id: _uuid.v4(),
+          name: name,
+          address: address.isEmpty ? null : address,
+          phone: phone.isEmpty ? null : phone,
+          monthlyRent: rent,
+          defaultConsultationFee: fee,
+          openDays: openDays,
+          colorHex: _colorHex,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save clinic: \$e')),
+        );
+      }
+      return;
     }
 
     if (mounted) Navigator.of(context).pop();

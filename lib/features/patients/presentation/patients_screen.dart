@@ -169,8 +169,8 @@ class _PatientRow extends ConsumerWidget {
           PopupMenuItem(
             value: 'archive',
             child: ListTile(
-              leading: Icon(Icons.archive_outlined),
-              title: Text('Archive'),
+              leading: Icon(Icons.delete_outline),
+              title: Text('Remove'),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -183,10 +183,10 @@ class _PatientRow extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Archive patient'),
+        title: const Text('Remove patient'),
         content: Text(
-          'Archive ${patient.name}? Their records stay in the database and '
-          'stop appearing in lists and totals.',
+          'Remove ${patient.name}? They will stop appearing in lists and '
+          'totals.',
         ),
         actions: [
           TextButton(
@@ -203,7 +203,7 @@ class _PatientRow extends ConsumerWidget {
                   .archivePatient(patient.id);
               if (ctx.mounted) Navigator.of(ctx).pop();
             },
-            child: const Text('Archive'),
+            child: const Text('Remove'),
           ),
         ],
       ),

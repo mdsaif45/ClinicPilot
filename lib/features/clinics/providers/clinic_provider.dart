@@ -11,10 +11,16 @@ final clinicsStreamProvider = StreamProvider<List<Clinic>>((ref) {
 });
 
 // Active Clinic ID notifier persisting selection to database settings
-class ActiveClinicIdNotifier extends StateNotifier<String> {
+class ActiveClinicIdNotifier extends StateNotifier<String?> {
   final AppDatabase _db;
 
-  ActiveClinicIdNotifier(this._db) : super('clinic_old') {
+  // No clinic is the honest starting state: 'clinic_old' only exists on an
+  // install that went through the v1 -> v2 migration. A fresh install now
+  // gets its clinics from onboarding with real ids, so defaulting to that
+  // literal string pointed every entry dialog at a row that was not there -
+  // every save failed the clinic_id foreign key with no clinic selectable to
+  // begin with, since PickerField had nothing matching to show either.
+  ActiveClinicIdNotifier(this._db) : super(null) {
     _loadFromSettings();
   }
 
@@ -40,7 +46,7 @@ class ActiveClinicIdNotifier extends StateNotifier<String> {
 }
 
 final activeClinicIdProvider =
-    StateNotifierProvider<ActiveClinicIdNotifier, String>((ref) {
+    StateNotifierProvider<ActiveClinicIdNotifier, String?>((ref) {
   final db = ref.watch(databaseProvider);
   return ActiveClinicIdNotifier(db);
 });
