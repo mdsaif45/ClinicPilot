@@ -22,6 +22,7 @@ void main() {
       final known = Patient(
         id: 'p1',
         patientCode: 'P-2026-00001',
+        serialNo: '14',
         name: 'Asha Rao',
         phone: '9800000001',
         whatsapp: null,
@@ -42,13 +43,16 @@ void main() {
       );
       final unknown = known.copyWith(
         id: 'p2',
+        serialNo: '1',
         primaryClinicId: 'ghost-clinic',
       );
 
       final csv = ListExportService.buildCsv([known, unknown], columns);
       final lines = csv.trim().split('\n');
 
+      expect(lines[0], contains('Serial No.'));
       expect(lines[0], contains('Clinic'));
+      expect(lines[1], contains('14'));
       expect(lines[1], contains('Downtown Clinic'));
       // Falls back to the raw id rather than blanking the cell, so a
       // dangling clinic reference is still visible in the file.
@@ -59,7 +63,7 @@ void main() {
   group('cashMemoExportColumns / cashMemoExportTotals', () {
     test('the totals row sums Total and Pending only', () {
       final patient = Patient(
-        id: 'p1', patientCode: 'P-1', name: 'A', phone: '1',
+        id: 'p1', patientCode: 'P-1', serialNo: '1', name: 'A', phone: '1',
         whatsapp: null, age: 30, gender: 'Male', area: null, address: null,
         occupation: null, primaryClinicId: 'c1', primaryDisease: null,
         referralSource: null, notes: null, reviewAskedAt: null,
