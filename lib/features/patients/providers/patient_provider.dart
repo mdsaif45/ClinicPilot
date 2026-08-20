@@ -8,6 +8,52 @@ const _uuid = Uuid();
 
 final patientSearchQueryProvider = StateProvider<String>((ref) => '');
 
+/// Whether a serial number is already used by another patient at the same
+/// clinic - the same question the (clinic, serial_no) unique index enforces
+/// at the database level, surfaced here so the form can say so before the
+/// doctor taps Save rather than after a thrown constraint error.
+///
+/// [excludingPatientId] lets Edit Patient check a serial against every OTHER
+/// patient at the clinic without the row being edited flagging itself.
+class SerialLookupArgs {
+  final String clinicId;
+  final String serialNo;
+  final String? excludingPatientId;
+
+  const SerialLookupArgs({
+    required this.clinicId,
+    required this.serialNo,
+    this.excludingPatientId,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      other is SerialLookupArgs &&
+      other.clinicId == clinicId &&
+      other.serialNo == serialNo &&
+      other.excludingPatientId == excludingPatientId;
+
+  @override
+  int get hashCode => Object.hash(clinicId, serialNo, excludingPatientId);
+}
+
+final serialNoInUseProvider =
+    FutureProvider.autoDispose.family<bool, SerialLookupArgs>((ref, args) async {
+  final db = ref.watch(databaseProvider);
+  final trimmed = args.serialNo.trim();
+  if (trimmed.isEmpty) return false;
+
+  var query = db.select(db.patients)
+    ..where((t) =>
+        t.primaryClinicId.equals(args.clinicId) & t.serialNo.equals(trimmed));
+  if (args.excludingPatientId != null) {
+    query = query..where((t) => t.id.equals(args.excludingPatientId!).not());
+  }
+
+  final match = await query.getSingleOrNull();
+  return match != null;
+});
+
 final patientsStreamProvider = StreamProvider<List<Patient>>((ref) {
   final db = ref.watch(databaseProvider);
   final query = ref.watch(patientSearchQueryProvider).trim().toLowerCase();
@@ -21,6 +67,7 @@ final patientsStreamProvider = StreamProvider<List<Patient>>((ref) {
           tbl.name.lower().contains(query) |
           tbl.phone.contains(query) |
           tbl.patientCode.lower().contains(query) |
+          tbl.serialNo.lower().contains(query) |
           tbl.primaryDisease.lower().contains(query) |
           tbl.referralSource.lower().contains(query));
   }
@@ -43,6 +90,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     String? address,
     String? occupation,
     required String primaryClinicId,
+    required String serialNo,
     required String disease,
     String? referralSource,
     String? notes,
@@ -61,6 +109,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     final companion = PatientsCompanion.insert(
       id: patientId,
       patientCode: Value(patientCode),
+      serialNo: Value(serialNo),
       name: name,
       phone: phone,
       whatsapp: Value(whatsapp),
@@ -117,9 +166,10 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     String? address,
     String? occupation,
     String? notes,
+    required String serialNo,
   }) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    final result = await AsyncValue.guard(() async {
       await (_db.update(_db.patients)..where((tbl) => tbl.id.equals(id))).write(
         PatientsCompanion(
           name: Value(name),
@@ -131,10 +181,21 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
           address: Value(address),
           occupation: Value(occupation),
           notes: Value(notes),
+          serialNo: Value(serialNo),
           updatedAt: Value(DateTime.now()),
         ),
       );
     });
+    state = result;
+
+    // AsyncValue.guard captures a thrown error into state rather than
+    // letting it propagate - correct for a screen just watching this
+    // notifier's state, but Edit Patient's own try/catch around this call
+    // needs the exception itself (e.g. a duplicate serial number rejected by
+    // the unique index) to show the right message and re-enable its button.
+    if (result.hasError) {
+      throw result.error!;
+    }
   }
 
   /// Records that a Google review was requested, and whether the patient said
@@ -208,6 +269,7 @@ final patientSearchProvider =
         OR LOWER(p.name)         LIKE '%' || ?1 || '%'
         OR LOWER(p.phone)        LIKE '%' || ?1 || '%'
         OR LOWER(p.patient_code) LIKE '%' || ?1 || '%'
+        OR LOWER(p.serial_no)    LIKE '%' || ?1 || '%'
       )
     GROUP BY p.id
     ORDER BY last_visit DESC NULLS LAST, p.created_at DESC

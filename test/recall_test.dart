@@ -21,6 +21,9 @@ void main() {
           age: 30,
           gender: 'Female',
           primaryClinicId: const Value('clinic_old'),
+          // Distinct per patient at this clinic - the unique index on
+          // (clinic, serial_no) rejects a second patient sharing one.
+          serialNo: Value(id),
         ));
   }
 

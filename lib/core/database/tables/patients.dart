@@ -6,6 +6,19 @@ class Patients extends Table {
   // Human-readable sequential code shown in the UI: "P-2026-00042"
   TextColumn get patientCode => text().withDefault(const Constant(''))();
 
+  // The number the doctor already writes in the physical register - typed by
+  // hand at registration, not generated. Independent of patientCode, which
+  // stays the app's own auto-generated id.
+  //
+  // Uniqueness (per clinic - two clinics can each have their own "1") is
+  // enforced by an explicit CREATE UNIQUE INDEX in app_database.dart rather
+  // than Table.uniqueKeys: SQLite refuses to DROP a column that a table-level
+  // UNIQUE constraint references, which breaks the "simulate the pre-upgrade
+  // shape" technique every migration test in this project relies on. An index
+  // gives the same guarantee and can be dropped and rebuilt independently of
+  // the column.
+  TextColumn get serialNo => text().withDefault(const Constant(''))();
+
   TextColumn get name => text()();
   TextColumn get phone => text()();
   TextColumn get whatsapp => text().nullable()();

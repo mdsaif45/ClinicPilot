@@ -44,6 +44,7 @@ void main() {
               gender: 'Male',
               primaryClinicId: const drift.Value('clinic_old'),
               primaryDisease: const drift.Value('Fever'),
+              serialNo: const drift.Value('p1'),
             ),
           );
     });
@@ -74,6 +75,7 @@ void main() {
               gender: 'Female',
               primaryClinicId: const drift.Value('clinic_old'),
               primaryDisease: const drift.Value('Cold'),
+              serialNo: const drift.Value('p_reg'),
             ),
           );
 
@@ -301,6 +303,7 @@ void main() {
               gender: 'Male',
               primaryClinicId: const drift.Value('clinic_old'),
               primaryDisease: const drift.Value('Gastritis'),
+              serialNo: const drift.Value('p_search'),
             ),
           );
 
@@ -438,6 +441,7 @@ void main() {
               age: 30,
               gender: 'Female',
               primaryClinicId: const drift.Value('clinic_old'),
+              serialNo: const drift.Value('p_to_delete'),
             ),
           );
 

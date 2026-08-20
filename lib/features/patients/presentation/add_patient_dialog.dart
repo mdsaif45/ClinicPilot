@@ -18,6 +18,7 @@ class AddPatientDialog extends ConsumerStatefulWidget {
 
 class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   final _formKey = GlobalKey<FormState>();
+  final _serialController = TextEditingController();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _whatsappController = TextEditingController();
@@ -56,6 +57,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
   @override
   void dispose() {
+    _serialController.dispose();
     _nameController.dispose();
     _phoneController.dispose();
     _whatsappController.dispose();
@@ -69,6 +71,23 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   Widget build(BuildContext context) {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
+
+    // Watched here, in build, rather than inside CustomTextField's
+    // validator: a FormField validator only re-runs when validate() is
+    // explicitly called, so it cannot react on its own to a Riverpod
+    // provider resolving a moment after the doctor stops typing. Watching
+    // in build means the error appears live, the same way it would for any
+    // other reactive state in this widget.
+    final serialText = _serialController.text.trim();
+    final liveSerialInUse = serialText.isEmpty || _selectedClinicId == null
+        ? false
+        : ref
+                .watch(serialNoInUseProvider(SerialLookupArgs(
+                  clinicId: _selectedClinicId!,
+                  serialNo: serialText,
+                )))
+                .value ==
+            true;
 
     // A patient has to belong to a clinic - filling in the rest of the form
     // only to hit a foreign-key error at the end is worse than saying so
@@ -111,6 +130,23 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             // narrower - chips, checkboxes - drifts to the middle.
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              CustomTextField(
+                controller: _serialController,
+                label: 'Serial No.',
+                hint: 'As in the register',
+                prefixIcon: Icons.tag,
+                // Rebuilds on every keystroke so the live duplicate check
+                // above re-evaluates without waiting for a form validate().
+                onChanged: (_) => setState(() {}),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Required';
+                  if (liveSerialInUse) {
+                    return 'Serial ${v.trim()} is already used at this clinic';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
               CustomTextField(
                 controller: _nameController,
                 label: 'Patient Full Name',
@@ -239,6 +275,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
     setState(() => _submitting = true);
 
+    final serialNo = _serialController.text.trim();
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
     final whatsapp = _whatsappController.text.trim();
@@ -255,6 +292,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             gender: _gender,
             area: area.isEmpty ? null : area,
             primaryClinicId: _selectedClinicId!,
+            serialNo: serialNo,
             disease: disease,
             referralSource: _referralSource,
           );

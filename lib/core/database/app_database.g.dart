@@ -702,6 +702,18 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _serialNoMeta = const VerificationMeta(
+    'serialNo',
+  );
+  @override
+  late final GeneratedColumn<String> serialNo = GeneratedColumn<String>(
+    'serial_no',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -893,6 +905,7 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
   List<GeneratedColumn> get $columns => [
     id,
     patientCode,
+    serialNo,
     name,
     phone,
     whatsapp,
@@ -935,6 +948,12 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
           data['patient_code']!,
           _patientCodeMeta,
         ),
+      );
+    }
+    if (data.containsKey('serial_no')) {
+      context.handle(
+        _serialNoMeta,
+        serialNo.isAcceptableOrUnknown(data['serial_no']!, _serialNoMeta),
       );
     }
     if (data.containsKey('name')) {
@@ -1081,6 +1100,11 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
             DriftSqlType.string,
             data['${effectivePrefix}patient_code'],
           )!,
+      serialNo:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}serial_no'],
+          )!,
       name:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -1170,6 +1194,7 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
 class Patient extends DataClass implements Insertable<Patient> {
   final String id;
   final String patientCode;
+  final String serialNo;
   final String name;
   final String phone;
   final String? whatsapp;
@@ -1197,6 +1222,7 @@ class Patient extends DataClass implements Insertable<Patient> {
   const Patient({
     required this.id,
     required this.patientCode,
+    required this.serialNo,
     required this.name,
     required this.phone,
     this.whatsapp,
@@ -1220,6 +1246,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['patient_code'] = Variable<String>(patientCode);
+    map['serial_no'] = Variable<String>(serialNo);
     map['name'] = Variable<String>(name);
     map['phone'] = Variable<String>(phone);
     if (!nullToAbsent || whatsapp != null) {
@@ -1260,6 +1287,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     return PatientsCompanion(
       id: Value(id),
       patientCode: Value(patientCode),
+      serialNo: Value(serialNo),
       name: Value(name),
       phone: Value(phone),
       whatsapp:
@@ -1307,6 +1335,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     return Patient(
       id: serializer.fromJson<String>(json['id']),
       patientCode: serializer.fromJson<String>(json['patientCode']),
+      serialNo: serializer.fromJson<String>(json['serialNo']),
       name: serializer.fromJson<String>(json['name']),
       phone: serializer.fromJson<String>(json['phone']),
       whatsapp: serializer.fromJson<String?>(json['whatsapp']),
@@ -1332,6 +1361,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'patientCode': serializer.toJson<String>(patientCode),
+      'serialNo': serializer.toJson<String>(serialNo),
       'name': serializer.toJson<String>(name),
       'phone': serializer.toJson<String>(phone),
       'whatsapp': serializer.toJson<String?>(whatsapp),
@@ -1355,6 +1385,7 @@ class Patient extends DataClass implements Insertable<Patient> {
   Patient copyWith({
     String? id,
     String? patientCode,
+    String? serialNo,
     String? name,
     String? phone,
     Value<String?> whatsapp = const Value.absent(),
@@ -1375,6 +1406,7 @@ class Patient extends DataClass implements Insertable<Patient> {
   }) => Patient(
     id: id ?? this.id,
     patientCode: patientCode ?? this.patientCode,
+    serialNo: serialNo ?? this.serialNo,
     name: name ?? this.name,
     phone: phone ?? this.phone,
     whatsapp: whatsapp.present ? whatsapp.value : this.whatsapp,
@@ -1401,6 +1433,7 @@ class Patient extends DataClass implements Insertable<Patient> {
       id: data.id.present ? data.id.value : this.id,
       patientCode:
           data.patientCode.present ? data.patientCode.value : this.patientCode,
+      serialNo: data.serialNo.present ? data.serialNo.value : this.serialNo,
       name: data.name.present ? data.name.value : this.name,
       phone: data.phone.present ? data.phone.value : this.phone,
       whatsapp: data.whatsapp.present ? data.whatsapp.value : this.whatsapp,
@@ -1440,6 +1473,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     return (StringBuffer('Patient(')
           ..write('id: $id, ')
           ..write('patientCode: $patientCode, ')
+          ..write('serialNo: $serialNo, ')
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('whatsapp: $whatsapp, ')
@@ -1465,6 +1499,7 @@ class Patient extends DataClass implements Insertable<Patient> {
   int get hashCode => Object.hash(
     id,
     patientCode,
+    serialNo,
     name,
     phone,
     whatsapp,
@@ -1489,6 +1524,7 @@ class Patient extends DataClass implements Insertable<Patient> {
       (other is Patient &&
           other.id == this.id &&
           other.patientCode == this.patientCode &&
+          other.serialNo == this.serialNo &&
           other.name == this.name &&
           other.phone == this.phone &&
           other.whatsapp == this.whatsapp &&
@@ -1511,6 +1547,7 @@ class Patient extends DataClass implements Insertable<Patient> {
 class PatientsCompanion extends UpdateCompanion<Patient> {
   final Value<String> id;
   final Value<String> patientCode;
+  final Value<String> serialNo;
   final Value<String> name;
   final Value<String> phone;
   final Value<String?> whatsapp;
@@ -1532,6 +1569,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
   const PatientsCompanion({
     this.id = const Value.absent(),
     this.patientCode = const Value.absent(),
+    this.serialNo = const Value.absent(),
     this.name = const Value.absent(),
     this.phone = const Value.absent(),
     this.whatsapp = const Value.absent(),
@@ -1554,6 +1592,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
   PatientsCompanion.insert({
     required String id,
     this.patientCode = const Value.absent(),
+    this.serialNo = const Value.absent(),
     required String name,
     required String phone,
     this.whatsapp = const Value.absent(),
@@ -1580,6 +1619,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
   static Insertable<Patient> custom({
     Expression<String>? id,
     Expression<String>? patientCode,
+    Expression<String>? serialNo,
     Expression<String>? name,
     Expression<String>? phone,
     Expression<String>? whatsapp,
@@ -1602,6 +1642,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (patientCode != null) 'patient_code': patientCode,
+      if (serialNo != null) 'serial_no': serialNo,
       if (name != null) 'name': name,
       if (phone != null) 'phone': phone,
       if (whatsapp != null) 'whatsapp': whatsapp,
@@ -1626,6 +1667,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
   PatientsCompanion copyWith({
     Value<String>? id,
     Value<String>? patientCode,
+    Value<String>? serialNo,
     Value<String>? name,
     Value<String>? phone,
     Value<String?>? whatsapp,
@@ -1648,6 +1690,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     return PatientsCompanion(
       id: id ?? this.id,
       patientCode: patientCode ?? this.patientCode,
+      serialNo: serialNo ?? this.serialNo,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       whatsapp: whatsapp ?? this.whatsapp,
@@ -1677,6 +1720,9 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     }
     if (patientCode.present) {
       map['patient_code'] = Variable<String>(patientCode.value);
+    }
+    if (serialNo.present) {
+      map['serial_no'] = Variable<String>(serialNo.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -1740,6 +1786,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     return (StringBuffer('PatientsCompanion(')
           ..write('id: $id, ')
           ..write('patientCode: $patientCode, ')
+          ..write('serialNo: $serialNo, ')
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('whatsapp: $whatsapp, ')
@@ -5106,6 +5153,7 @@ typedef $$PatientsTableCreateCompanionBuilder =
     PatientsCompanion Function({
       required String id,
       Value<String> patientCode,
+      Value<String> serialNo,
       required String name,
       required String phone,
       Value<String?> whatsapp,
@@ -5129,6 +5177,7 @@ typedef $$PatientsTableUpdateCompanionBuilder =
     PatientsCompanion Function({
       Value<String> id,
       Value<String> patientCode,
+      Value<String> serialNo,
       Value<String> name,
       Value<String> phone,
       Value<String?> whatsapp,
@@ -5207,6 +5256,11 @@ class $$PatientsTableFilterComposer
 
   ColumnFilters<String> get patientCode => $composableBuilder(
     column: $table.patientCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serialNo => $composableBuilder(
+    column: $table.serialNo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5365,6 +5419,11 @@ class $$PatientsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get serialNo => $composableBuilder(
+    column: $table.serialNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -5467,6 +5526,9 @@ class $$PatientsTableAnnotationComposer
     column: $table.patientCode,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get serialNo =>
+      $composableBuilder(column: $table.serialNo, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -5612,6 +5674,7 @@ class $$PatientsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> patientCode = const Value.absent(),
+                Value<String> serialNo = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> phone = const Value.absent(),
                 Value<String?> whatsapp = const Value.absent(),
@@ -5633,6 +5696,7 @@ class $$PatientsTableTableManager
               }) => PatientsCompanion(
                 id: id,
                 patientCode: patientCode,
+                serialNo: serialNo,
                 name: name,
                 phone: phone,
                 whatsapp: whatsapp,
@@ -5656,6 +5720,7 @@ class $$PatientsTableTableManager
               ({
                 required String id,
                 Value<String> patientCode = const Value.absent(),
+                Value<String> serialNo = const Value.absent(),
                 required String name,
                 required String phone,
                 Value<String?> whatsapp = const Value.absent(),
@@ -5677,6 +5742,7 @@ class $$PatientsTableTableManager
               }) => PatientsCompanion.insert(
                 id: id,
                 patientCode: patientCode,
+                serialNo: serialNo,
                 name: name,
                 phone: phone,
                 whatsapp: whatsapp,

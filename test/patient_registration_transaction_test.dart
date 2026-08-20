@@ -30,6 +30,7 @@ void main() {
         age: 30,
         gender: 'Male',
         primaryClinicId: 'no-such-clinic',
+        serialNo: '1',
         disease: 'Test',
       ),
       throwsA(anything),
