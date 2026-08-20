@@ -6,31 +6,32 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../services/list_export_service.dart';
+import 'export_format_sheet.dart';
 
-/// Writes CSV bytes to a doctor-chosen location and offers to share it.
+/// Writes export bytes to a doctor-chosen location and offers to share it.
 ///
-/// Shared by every export button in the app - the row-set export on
-/// Patients/Finances and the single-summary export on Growth both end here,
-/// so "where the file goes" only has one implementation to get right.
-Future<void> saveCsvExport(
+/// Format-agnostic - the row-set export on Patients/Finances and the
+/// single-summary export on Growth both end here regardless of whether they
+/// built CSV or XLSX bytes, so "where the file goes" only has one
+/// implementation to get right.
+Future<void> saveExportFile(
   BuildContext context, {
-  required String csv,
+  required List<int> bytes,
   required String fileName,
+  required String extension,
   required int rowCount,
 }) async {
   final messenger = ScaffoldMessenger.of(context);
 
   try {
-    final bytes = Uint8List.fromList(ListExportService.encodeCsv(csv));
-
     // Same saveFile flow as the Settings backup: writes directly on
     // Android, returns a location elsewhere that this then writes to.
     final path = await FilePicker.platform.saveFile(
       dialogTitle: 'Save export',
       fileName: fileName,
-      bytes: bytes,
+      bytes: Uint8List.fromList(bytes),
       type: FileType.custom,
-      allowedExtensions: const ['csv'],
+      allowedExtensions: [extension],
     );
 
     if (path == null) {
@@ -59,7 +60,8 @@ Future<void> saveCsvExport(
   }
 }
 
-/// Icon button that exports a screen's current row set to CSV.
+/// Icon button that exports a screen's current row set, in a format the
+/// doctor picks from a sheet.
 ///
 /// Deliberately per-screen rather than one export button for the whole app:
 /// the rows are whatever that screen is showing right now - a search filter
@@ -87,10 +89,32 @@ class ExportAction<T> extends StatelessWidget {
       return;
     }
 
-    await saveCsvExport(
+    final format = await pickExportFormat(context);
+    if (format == null || !context.mounted) return;
+
+    final now = DateTime.now();
+    final bytes = switch (format) {
+      ExportFormat.csv => ListExportService.encodeCsv(
+          ListExportService.buildCsv(rows, columns, totals: totals),
+        ),
+      ExportFormat.xlsx => ListExportService.buildXlsx(
+          rows,
+          columns,
+          totals: totals,
+          sheetName: screenSlug,
+        ),
+    };
+    final extension = format.name;
+
+    await saveExportFile(
       context,
-      csv: ListExportService.buildCsv(rows, columns, totals: totals),
-      fileName: ListExportService.suggestedFileName(screenSlug, DateTime.now()),
+      bytes: bytes,
+      fileName: ListExportService.suggestedFileName(
+        screenSlug,
+        now,
+        extension: extension,
+      ),
+      extension: extension,
       rowCount: rows.length,
     );
   }

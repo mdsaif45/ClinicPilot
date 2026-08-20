@@ -6,46 +6,48 @@ import '../../../core/providers/period_provider.dart';
 import '../../../core/services/list_export_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/export_action.dart';
+import '../../../core/widgets/export_format_sheet.dart';
 import '../../../core/widgets/period_selector.dart';
 import '../providers/growth_provider.dart';
 
 /// Growth has no row-level list to export - the provider already returns one
-/// aggregated summary per period - so this builds the same key/value CSV
-/// buildKeyValueCsv expects, as a plain function so the output can be pinned
-/// in a test without touching the widget tree.
-String growthExportCsv(GrowthAnalytics analytics, DateTimeRange range) {
+/// aggregated summary per period - so this is the same metric/value list
+/// buildKeyValueCsv and buildKeyValueXlsx both expect, built once as a plain
+/// function so the numbers are pinned in a test without touching the widget
+/// tree, and shared between whichever format the doctor picks.
+List<MapEntry<String, Object?>> growthExportEntries(GrowthAnalytics analytics) {
+  return [
+    MapEntry('New Patients', analytics.totalNewPatients),
+    MapEntry('Repeat Patients', analytics.totalRepeatPatients),
+    MapEntry('Total Patients', analytics.totalPatients),
+    MapEntry('Repeat Rate (%)', analytics.repeatRate.toStringAsFixed(1)),
+    MapEntry('Total Revenue', analytics.totalRevenue),
+    MapEntry('Total Expenses', analytics.totalExpenses),
+    MapEntry('Net Profit', analytics.netProfit),
+    MapEntry(
+      'Avg. Daily New Patients',
+      analytics.avgDailyNewPatients.toStringAsFixed(1),
+    ),
+    MapEntry(
+      'Avg. Daily Revenue',
+      analytics.avgDailyRevenue.toStringAsFixed(2),
+    ),
+    MapEntry(
+      'Avg. Revenue / Visit',
+      analytics.avgRevenuePerVisit.toStringAsFixed(2),
+    ),
+    for (final e in analytics.referralSourceCount.entries)
+      MapEntry('Referral: ${e.key}', e.value),
+    for (final e in analytics.diseaseFrequency.entries)
+      MapEntry('Disease: ${e.key}', e.value),
+  ];
+}
+
+String growthExportTitle(DateTimeRange range) {
   String fmt(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
-
-  return ListExportService.buildKeyValueCsv(
-    title: 'Growth summary: ${fmt(range.start)} to ${fmt(range.end)}',
-    [
-      MapEntry('New Patients', analytics.totalNewPatients),
-      MapEntry('Repeat Patients', analytics.totalRepeatPatients),
-      MapEntry('Total Patients', analytics.totalPatients),
-      MapEntry('Repeat Rate (%)', analytics.repeatRate.toStringAsFixed(1)),
-      MapEntry('Total Revenue', analytics.totalRevenue),
-      MapEntry('Total Expenses', analytics.totalExpenses),
-      MapEntry('Net Profit', analytics.netProfit),
-      MapEntry(
-        'Avg. Daily New Patients',
-        analytics.avgDailyNewPatients.toStringAsFixed(1),
-      ),
-      MapEntry(
-        'Avg. Daily Revenue',
-        analytics.avgDailyRevenue.toStringAsFixed(2),
-      ),
-      MapEntry(
-        'Avg. Revenue / Visit',
-        analytics.avgRevenuePerVisit.toStringAsFixed(2),
-      ),
-      for (final e in analytics.referralSourceCount.entries)
-        MapEntry('Referral: ${e.key}', e.value),
-      for (final e in analytics.diseaseFrequency.entries)
-        MapEntry('Disease: ${e.key}', e.value),
-    ],
-  );
+  return 'Growth summary: ${fmt(range.start)} to ${fmt(range.end)}';
 }
 
 class GrowthScreen extends ConsumerWidget {
@@ -56,10 +58,32 @@ class GrowthScreen extends ConsumerWidget {
     GrowthAnalytics analytics,
     DateTimeRange range,
   ) async {
-    await saveCsvExport(
+    final format = await pickExportFormat(context);
+    if (format == null || !context.mounted) return;
+
+    final entries = growthExportEntries(analytics);
+    final title = growthExportTitle(range);
+    final bytes = switch (format) {
+      ExportFormat.csv => ListExportService.encodeCsv(
+          ListExportService.buildKeyValueCsv(entries, title: title),
+        ),
+      ExportFormat.xlsx => ListExportService.buildKeyValueXlsx(
+          entries,
+          title: title,
+          sheetName: 'Growth',
+        ),
+    };
+    final extension = format.name;
+
+    await saveExportFile(
       context,
-      csv: growthExportCsv(analytics, range),
-      fileName: ListExportService.suggestedFileName('growth', DateTime.now()),
+      bytes: bytes,
+      fileName: ListExportService.suggestedFileName(
+        'growth',
+        DateTime.now(),
+        extension: extension,
+      ),
+      extension: extension,
       rowCount: 1,
     );
   }

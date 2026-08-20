@@ -132,28 +132,38 @@ void main() {
     });
   });
 
-  group('growthExportCsv', () {
-    test('includes the period in the title and every headline metric', () {
-      const analytics = GrowthAnalytics(
-        dailyRevenueMap: {},
-        dailyExpenseMap: {},
-        referralSourceCount: {'Walk-in': 5, 'Google': 2},
-        diseaseFrequency: {'Migraine': 3},
-        totalNewPatients: 10,
-        totalRepeatPatients: 20,
-        totalRevenue: 45000,
-        totalExpenses: 12000,
-        netProfit: 33000,
-        totalPatients: 120,
-        dailyPatientMap: {},
-        daysInPeriod: 30,
-      );
-      final range = DateTimeRange(
-        start: DateTime(2026, 8, 1),
-        end: DateTime(2026, 8, 31),
-      );
+  group('growthExportEntries / growthExportTitle', () {
+    const analytics = GrowthAnalytics(
+      dailyRevenueMap: {},
+      dailyExpenseMap: {},
+      referralSourceCount: {'Walk-in': 5, 'Google': 2},
+      diseaseFrequency: {'Migraine': 3},
+      totalNewPatients: 10,
+      totalRepeatPatients: 20,
+      totalRevenue: 45000,
+      totalExpenses: 12000,
+      netProfit: 33000,
+      totalPatients: 120,
+      dailyPatientMap: {},
+      daysInPeriod: 30,
+    );
+    final range = DateTimeRange(
+      start: DateTime(2026, 8, 1),
+      end: DateTime(2026, 8, 31),
+    );
 
-      final csv = growthExportCsv(analytics, range);
+    test('the title names the period', () {
+      expect(
+        growthExportTitle(range),
+        'Growth summary: 2026-08-01 to 2026-08-31',
+      );
+    });
+
+    test('the entries carry every headline metric', () {
+      final csv = ListExportService.buildKeyValueCsv(
+        growthExportEntries(analytics),
+        title: growthExportTitle(range),
+      );
 
       expect(csv, contains('Growth summary: 2026-08-01 to 2026-08-31'));
       expect(csv, contains('New Patients,10'));

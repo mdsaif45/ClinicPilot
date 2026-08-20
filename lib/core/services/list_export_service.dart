@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:excel/excel.dart' as xlsx;
+
 /// One column of a list export: how to label it and how to read it off a row.
 ///
 /// Generic over the row type so the same machinery serves Patients,
@@ -80,14 +82,115 @@ class ListExportService {
     return buffer.toString();
   }
 
+  /// XLSX equivalent of [buildKeyValueCsv].
+  static List<int> buildKeyValueXlsx(
+    List<MapEntry<String, Object?>> entries, {
+    String? title,
+    String sheetName = 'Sheet1',
+  }) {
+    final book = xlsx.Excel.createExcel();
+    if (sheetName != 'Sheet1') {
+      book.rename('Sheet1', sheetName);
+    }
+    final sheet = book[sheetName];
+
+    var row = 0;
+    if (title != null) {
+      sheet.appendRow([xlsx.TextCellValue(title)]);
+      sheet
+          .cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+          .cellStyle = xlsx.CellStyle(bold: true);
+      row += 1;
+    }
+
+    sheet.appendRow(
+      [xlsx.TextCellValue('Metric'), xlsx.TextCellValue('Value')],
+    );
+    for (var col = 0; col < 2; col++) {
+      sheet
+          .cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row))
+          .cellStyle = xlsx.CellStyle(bold: true);
+    }
+
+    for (final e in entries) {
+      sheet.appendRow([xlsx.TextCellValue(e.key), _cellValue(e.value)]);
+    }
+
+    return book.encode()!;
+  }
+
   static List<int> encodeCsv(String csv) => utf8.encode(csv);
+
+  /// Converts a raw column value into the CellValue subtype the excel
+  /// package needs. Numbers and dates keep their type - so a spreadsheet can
+  /// sort or sum them - rather than every column landing as text the way
+  /// CSV's plain strings do.
+  static xlsx.CellValue? _cellValue(Object? value) {
+    return switch (value) {
+      null => null,
+      int v => xlsx.IntCellValue(v),
+      double v => xlsx.DoubleCellValue(v),
+      DateTime v => xlsx.DateTimeCellValue.fromDateTime(v),
+      bool v => xlsx.BoolCellValue(v),
+      _ => xlsx.TextCellValue(value.toString()),
+    };
+  }
+
+  static List<int> buildXlsx<T>(
+    List<T> rows,
+    List<ExportColumn<T>> columns, {
+    ExportTotals<T>? totals,
+    String sheetName = 'Sheet1',
+  }) {
+    final book = xlsx.Excel.createExcel();
+    // createExcel() ships a default "Sheet1"; renaming rather than deleting
+    // and re-adding keeps exactly one sheet instead of leaving a stray blank
+    // one behind when sheetName differs from the default.
+    if (sheetName != 'Sheet1') {
+      book.rename('Sheet1', sheetName);
+    }
+    final sheet = book[sheetName];
+
+    sheet.appendRow(
+      columns.map((c) => xlsx.TextCellValue(c.header)).toList(),
+    );
+    for (var col = 0; col < columns.length; col++) {
+      sheet
+          .cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0))
+          .cellStyle = xlsx.CellStyle(bold: true);
+    }
+
+    for (final row in rows) {
+      sheet.appendRow(
+        columns.map((c) => _cellValue(c.value(row))).toList(),
+      );
+    }
+
+    if (totals != null && rows.isNotEmpty) {
+      final cells = totals.build(rows);
+      final totalsRowIndex = rows.length + 1;
+      sheet.appendRow(cells.map(_cellValue).toList());
+      for (var col = 0; col < cells.length; col++) {
+        sheet
+            .cell(xlsx.CellIndex.indexByColumnRow(
+                columnIndex: col, rowIndex: totalsRowIndex))
+            .cellStyle = xlsx.CellStyle(bold: true);
+      }
+    }
+
+    return book.encode()!;
+  }
 
   /// Suggested filename for a per-list export, stamped so exports of the
   /// same screen on different days do not collide.
-  static String suggestedFileName(String screenSlug, DateTime now) {
+  static String suggestedFileName(
+    String screenSlug,
+    DateTime now, {
+    String extension = 'csv',
+  }) {
     String two(int v) => v.toString().padLeft(2, '0');
     return 'clinicpilot-$screenSlug-'
         '${now.year}${two(now.month)}${two(now.day)}-'
-        '${two(now.hour)}${two(now.minute)}.csv';
+        '${two(now.hour)}${two(now.minute)}.$extension';
   }
 }
