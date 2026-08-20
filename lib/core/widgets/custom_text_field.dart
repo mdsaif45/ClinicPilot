@@ -14,6 +14,10 @@ class CustomTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
+  final FocusNode? focusNode;
+  final bool autofocus;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onFieldSubmitted;
 
   const CustomTextField({
     super.key,
@@ -28,6 +32,10 @@ class CustomTextField extends StatelessWidget {
     this.onTap,
     this.onChanged,
     this.inputFormatters,
+    this.focusNode,
+    this.autofocus = false,
+    this.textInputAction,
+    this.onFieldSubmitted,
   });
 
   Widget? _buildPrefixIcon() {
@@ -61,6 +69,10 @@ class CustomTextField extends StatelessWidget {
           onTap: onTap,
           onChanged: onChanged,
           inputFormatters: inputFormatters,
+          focusNode: focusNode,
+          autofocus: autofocus,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onFieldSubmitted,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: _buildPrefixIcon(),
