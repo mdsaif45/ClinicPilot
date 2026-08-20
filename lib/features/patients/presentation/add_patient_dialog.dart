@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/picker_field.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/utils/validators.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/patient_provider.dart';
@@ -25,7 +27,16 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
   String _gender = 'Male';
   String? _selectedClinicId;
+  // PickerField is not a FormField, so its error is tracked here - without
+  // it, leaving Clinic unset gave no feedback: submit silently did nothing,
+  // which read as the button not working rather than as a missing field.
+  String? _clinicError;
   String _referralSource = 'Walk-in';
+
+  // Registering awaits a database write. Without this, every tap before that
+  // finishes re-ran _submit and created another duplicate patient - the
+  // button gave no feedback that the first tap had already been taken.
+  bool _submitting = false;
 
   final List<String> _referralSources = [
     'Walk-in',
@@ -58,6 +69,31 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   Widget build(BuildContext context) {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
+
+    // A patient has to belong to a clinic - filling in the rest of the form
+    // only to hit a foreign-key error at the end is worse than saying so
+    // up front, before anything is typed.
+    if (clinicsAsync.hasValue && clinics.isEmpty) {
+      return AlertDialog(
+        title: const Text('Register New Patient'),
+        content: EmptyState(
+          icon: Icons.local_hospital_outlined,
+          title: 'No clinic yet',
+          message: 'Add a clinic before registering a patient.',
+          actionLabel: 'Add clinic',
+          onAction: () {
+            Navigator.of(context).pop();
+            context.push('/clinics');
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      );
+    }
 
     return AlertDialog(
       title: const Text('Register New Patient'),
@@ -138,6 +174,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 label: 'Clinic',
                 prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
+                errorText: _clinicError,
                 options: clinics
                     .map((c) => PickerOption(
                           value: c.id,
@@ -145,7 +182,10 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                           subtitle: c.address,
                         ))
                     .toList(),
-                onChanged: (val) => setState(() => _selectedClinicId = val),
+                onChanged: (val) => setState(() {
+                  _selectedClinicId = val;
+                  _clinicError = null;
+                }),
               ),
               const SizedBox(height: 12),
               CustomTextField(
@@ -174,16 +214,30 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Register & Create Visit'),
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Register & Create Visit'),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedClinicId == null) return;
+    if (_submitting) return;
+    final formOk = _formKey.currentState!.validate();
+
+    setState(() {
+      _clinicError = _selectedClinicId == null ? 'Select a clinic' : null;
+    });
+
+    if (!formOk || _selectedClinicId == null) return;
+
+    setState(() => _submitting = true);
 
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
@@ -192,17 +246,29 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final area = _areaController.text.trim();
     final disease = _diseaseController.text.trim();
 
-    await ref.read(patientNotifierProvider.notifier).registerPatient(
-          name: name,
-          phone: phone,
-          whatsapp: whatsapp.isEmpty ? null : whatsapp,
-          age: age,
-          gender: _gender,
-          area: area.isEmpty ? null : area,
-          primaryClinicId: _selectedClinicId!,
-          disease: disease,
-          referralSource: _referralSource,
+    try {
+      await ref.read(patientNotifierProvider.notifier).registerPatient(
+            name: name,
+            phone: phone,
+            whatsapp: whatsapp.isEmpty ? null : whatsapp,
+            age: age,
+            gender: _gender,
+            area: area.isEmpty ? null : area,
+            primaryClinicId: _selectedClinicId!,
+            disease: disease,
+            referralSource: _referralSource,
+          );
+    } catch (e) {
+      // Re-enable the button rather than leave it stuck disabled with no way
+      // to retry - a failed write must not trap the doctor in the dialog.
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not register patient: $e')),
         );
+      }
+      return;
+    }
 
     if (mounted) Navigator.of(context).pop();
   }

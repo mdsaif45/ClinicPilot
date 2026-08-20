@@ -18,14 +18,22 @@ import 'patient_profile_screen.dart';
 /// then stopped. This screen exists to make those people visible without the
 /// doctor having to remember them.
 class RecallScreen extends ConsumerWidget {
-  const RecallScreen({super.key});
+  /// Whether to draw its own app bar.
+  ///
+  /// False when embedded as a section of the Patients tab, which already has
+  /// a header — two stacked titles would say the same thing twice.
+  final bool showAppBar;
+
+  const RecallScreen({super.key, this.showAppBar = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final listsAsync = ref.watch(recallListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Follow-ups')),
+      appBar: showAppBar
+          ? AppBar(title: const Text('Follow-ups'))
+          : null,
       body: listsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Could not load: $e')),

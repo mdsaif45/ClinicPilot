@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/widgets/picker_field.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/utils/formatters.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
@@ -23,10 +25,15 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
   final _notesController = TextEditingController();
 
   String? _selectedClinicId;
+  String? _clinicError;
   String _consultationType = 'clinic';
   String? _outcome;
   DateTime _visitDate = DateTime.now();
   DateTime? _nextFollowUpDate;
+
+  // Guards against a queued tap re-running _submit before the first write
+  // finishes and the dialog closes.
+  bool _submitting = false;
 
   @override
   void initState() {
@@ -49,6 +56,28 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
 
+    if (clinicsAsync.hasValue && clinics.isEmpty) {
+      return AlertDialog(
+        title: Text('Add Visit: ${widget.patient.name}'),
+        content: EmptyState(
+          icon: Icons.local_hospital_outlined,
+          title: 'No clinic yet',
+          message: 'Add a clinic before recording a visit.',
+          actionLabel: 'Add clinic',
+          onAction: () {
+            Navigator.of(context).pop();
+            context.push('/clinics');
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      );
+    }
+
     return AlertDialog(
       title: Text('Add Visit: ${widget.patient.name}'),
       insetPadding:
@@ -69,6 +98,7 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
                 label: 'Clinic',
                 prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
+                errorText: _clinicError,
                 options: clinics
                     .map((c) => PickerOption(
                           value: c.id,
@@ -76,7 +106,10 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
                           subtitle: c.address,
                         ))
                     .toList(),
-                onChanged: (val) => setState(() => _selectedClinicId = val),
+                onChanged: (val) => setState(() {
+                  _selectedClinicId = val;
+                  _clinicError = null;
+                }),
               ),
               const SizedBox(height: 12),
               CustomTextField(
@@ -181,29 +214,53 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Save Visit'),
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save Visit'),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedClinicId == null) return;
+    if (_submitting) return;
+    final formOk = _formKey.currentState!.validate();
 
-    await ref.read(visitNotifierProvider.notifier).addVisit(
-          patientId: widget.patient.id,
-          clinicId: _selectedClinicId!,
-          disease: _diseaseController.text.trim(),
-          chiefComplaint: _chiefComplaintController.text.trim().isEmpty
-              ? null
-              : _chiefComplaintController.text.trim(),
-          consultationType: _consultationType,
-          outcome: _outcome,
-          visitDate: _visitDate,
-          nextFollowUpDate: _nextFollowUpDate,
+    setState(() {
+      _clinicError = _selectedClinicId == null ? 'Select a clinic' : null;
+    });
+
+    if (!formOk || _selectedClinicId == null) return;
+
+    setState(() => _submitting = true);
+
+    try {
+      await ref.read(visitNotifierProvider.notifier).addVisit(
+            patientId: widget.patient.id,
+            clinicId: _selectedClinicId!,
+            disease: _diseaseController.text.trim(),
+            chiefComplaint: _chiefComplaintController.text.trim().isEmpty
+                ? null
+                : _chiefComplaintController.text.trim(),
+            consultationType: _consultationType,
+            outcome: _outcome,
+            visitDate: _visitDate,
+            nextFollowUpDate: _nextFollowUpDate,
+          );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save visit: \$e')),
         );
+      }
+      return;
+    }
 
     if (mounted) Navigator.of(context).pop();
   }
