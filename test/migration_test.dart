@@ -242,6 +242,99 @@ void main() {
 
       await db.close();
     });
+
+    test(
+        'v4 -> v5 backfills serial_no with a distinct placeholder per '
+        'patient and enforces the unique index afterward', () async {
+      final executor = NativeDatabase.memory();
+      final db = AppDatabase(executor);
+
+      await db.customStatement('SELECT 1');
+      await seedTestClinics(db);
+
+      // Reproduce the pre-v5 shape FIRST: the column and its index did not
+      // exist at all, so these two inserts - both at the same clinic -
+      // succeed exactly as they did on a real pre-v5 database. Only after
+      // the column and unique index exist would a second blank serial
+      // collide; that collision is prevented by requiring a real serial_no
+      // at insert time everywhere the app itself creates a patient
+      // (registerPatient), not by a lenient schema default.
+      await db.customStatement(
+          'DROP INDEX IF EXISTS idx_patients_clinic_serial');
+      await db.customStatement('ALTER TABLE patients DROP COLUMN serial_no');
+
+      Future<void> insertPatient(String id, String code) {
+        return db.into(db.patients).insert(PatientsCompanion.insert(
+              id: id,
+              patientCode: Value(code),
+              name: 'Patient $id',
+              phone: '98000000$id',
+              age: 30,
+              gender: 'Male',
+              primaryClinicId: const Value('clinic_old'),
+            ));
+      }
+
+      // Same patient_code prefix on purpose: the v1 -> v2 migration derives
+      // patient_code from substr(id, 1, 8), which collides whenever two ids
+      // share their first 8 characters - exactly what short sequential v1
+      // ids did in practice. Backfilling serial_no from patient_code would
+      // have inherited that same collision; backfilling from id (the actual
+      // primary key, unique by definition) does not.
+      await insertPatient('pat-v1-001', 'P-MIG-pat-v1-0');
+      await insertPatient('pat-v1-002', 'P-MIG-pat-v1-0');
+
+      await db.migration.onUpgrade(db.createMigrator(), 4, 5);
+
+      final rows = await db.select(db.patients).get();
+      final serials = rows.map((p) => p.serialNo).toSet();
+      expect(serials.length, rows.length,
+          reason: 'each pre-existing patient must get its own placeholder, '
+              'not one shared value that immediately collides');
+      expect(serials, {'LEGACY-pat-v1-001', 'LEGACY-pat-v1-002'});
+
+      // The point of the migration: a real duplicate at the same clinic is
+      // now actually rejected by SQLite, not just by app-level validation.
+      await expectLater(
+        db.into(db.patients).insert(PatientsCompanion.insert(
+              id: 'p3',
+              patientCode: const Value('P-2026-00003'),
+              name: 'Patient p3',
+              phone: '9800000003',
+              age: 30,
+              gender: 'Male',
+              primaryClinicId: const Value('clinic_old'),
+              serialNo: const Value('LEGACY-pat-v1-001'),
+            )),
+        throwsA(anything),
+        reason: 'the unique index on (clinic, serial_no) must be enforced '
+            'by the database, not only by a form check the app could skip',
+      );
+
+      // The same serial IS allowed at a different clinic.
+      await expectLater(
+        db.into(db.patients).insert(PatientsCompanion.insert(
+              id: 'p4',
+              patientCode: const Value('P-2026-00004'),
+              name: 'Patient p4',
+              phone: '9800000004',
+              age: 30,
+              gender: 'Male',
+              primaryClinicId: const Value('clinic_new'),
+              serialNo: const Value('LEGACY-pat-v1-001'),
+            )),
+        completes,
+        reason: 'two clinics can each have their own serial 1',
+      );
+
+      await expectLater(
+        db.migration.onUpgrade(db.createMigrator(), 4, 5),
+        completes,
+        reason: 'the v5 step must be safe to re-run',
+      );
+
+      await db.close();
+    });
   });
 }
 

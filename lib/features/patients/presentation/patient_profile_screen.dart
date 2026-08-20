@@ -203,6 +203,7 @@ class _InfoTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        InfoRow(label: 'Serial No.', value: patient.serialNo),
         InfoRow(label: 'Patient code', value: patient.patientCode),
         InfoRow(label: 'Phone', value: patient.phone, icon: Icons.call_outlined),
         InfoRow(label: 'WhatsApp', value: patient.whatsapp),
