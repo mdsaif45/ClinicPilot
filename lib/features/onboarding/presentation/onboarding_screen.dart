@@ -24,6 +24,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   final _nameController = TextEditingController();
+  final _nameFocus = FocusNode();
 
   final _clinicNameControllers = <TextEditingController>[
     TextEditingController(),
@@ -31,6 +32,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _clinicAddressControllers = <TextEditingController>[
     TextEditingController(),
   ];
+  final _clinicNameFocus = FocusNode();
+  final _areaFocus = FocusNode();
+  final _revenueFocus = FocusNode();
+  final _patientFocus = FocusNode();
 
   double _revenueGoal = kDefaultRevenueGoal;
   int _patientGoal = kDefaultPatientGoal;
@@ -43,12 +48,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _page = 0;
   bool _saving = false;
 
+  // The clinics page is already built (PageView builds both up front), so
+  // autofocus:true on its field would fire before the page is ever shown.
+  // This flags "the doctor has just arrived here", set once on the page
+  // transition, and is not re-armed by Back so returning to page 1 and
+  // forward again does not steal focus a second time.
+  bool _focusClinicsPage = false;
+
   @override
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
+    _nameFocus.dispose();
     _revenueController.dispose();
     _patientController.dispose();
+    _clinicNameFocus.dispose();
+    _areaFocus.dispose();
+    _revenueFocus.dispose();
+    _patientFocus.dispose();
     for (final c in _clinicNameControllers) {
       c.dispose();
     }
@@ -99,6 +116,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Page 1 is visible immediately at build time, so this is safe as a
+    // direct request rather than needing the same post-transition dance as
+    // the clinics page below.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _nameFocus.requestFocus();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -133,12 +161,38 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (i) => setState(() => _page = i),
+                onPageChanged: (i) {
+                  setState(() => _page = i);
+                  if (i == 1 && !_focusClinicsPage) {
+                    _focusClinicsPage = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) _clinicNameFocus.requestFocus();
+                    });
+                  }
+                },
                 children: [
-                  _NamePage(controller: _nameController, onChanged: _refresh),
+                  _NamePage(
+                    controller: _nameController,
+                    focusNode: _nameFocus,
+                    onChanged: _refresh,
+                    onSubmitted: () {
+                      // Matches the Continue button's own guard - Enter must
+                      // not advance past an empty name any more than a tap
+                      // would.
+                      if (!_canContinue) return;
+                      _pageController.nextPage(
+                        duration: Motion.base,
+                        curve: Motion.curve,
+                      );
+                    },
+                  ),
                   _ClinicsPage(
                     nameControllers: _clinicNameControllers,
                     addressControllers: _clinicAddressControllers,
+                    firstNameFocus: _clinicNameFocus,
+                    firstAreaFocus: _areaFocus,
+                    revenueFocus: _revenueFocus,
+                    patientFocus: _patientFocus,
                     revenueGoal: _revenueGoal,
                     patientGoal: _patientGoal,
                     revenueController: _revenueController,
@@ -148,6 +202,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     onAddClinic: _addClinic,
                     onRemoveClinic: _removeClinic,
                     onChanged: _refresh,
+                    onSubmitted: () {
+                      if (_canContinue && !_saving) _finish();
+                    },
                   ),
                 ],
               ),
@@ -202,9 +259,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
 class _NamePage extends StatelessWidget {
   final TextEditingController controller;
+  final FocusNode focusNode;
   final VoidCallback onChanged;
+  final VoidCallback onSubmitted;
 
-  const _NamePage({required this.controller, required this.onChanged});
+  const _NamePage({
+    required this.controller,
+    required this.focusNode,
+    required this.onChanged,
+    required this.onSubmitted,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -236,6 +300,12 @@ class _NamePage extends StatelessWidget {
           hint: '',
           prefixIcon: Icons.person_outline,
           onChanged: (_) => onChanged(),
+          focusNode: focusNode,
+          autofocus: true,
+          textInputAction: TextInputAction.next,
+          // Matches what tapping Continue does, so the keyboard's own action
+          // key is not a dead end next to a button that works.
+          onFieldSubmitted: (_) => onSubmitted(),
         ),
       ],
     );
@@ -245,6 +315,10 @@ class _NamePage extends StatelessWidget {
 class _ClinicsPage extends StatelessWidget {
   final List<TextEditingController> nameControllers;
   final List<TextEditingController> addressControllers;
+  final FocusNode firstNameFocus;
+  final FocusNode firstAreaFocus;
+  final FocusNode revenueFocus;
+  final FocusNode patientFocus;
   final double revenueGoal;
   final int patientGoal;
   final TextEditingController revenueController;
@@ -254,10 +328,15 @@ class _ClinicsPage extends StatelessWidget {
   final VoidCallback onAddClinic;
   final ValueChanged<int> onRemoveClinic;
   final VoidCallback onChanged;
+  final VoidCallback onSubmitted;
 
   const _ClinicsPage({
     required this.nameControllers,
     required this.addressControllers,
+    required this.firstNameFocus,
+    required this.firstAreaFocus,
+    required this.revenueFocus,
+    required this.patientFocus,
     required this.revenueGoal,
     required this.patientGoal,
     required this.revenueController,
@@ -267,6 +346,7 @@ class _ClinicsPage extends StatelessWidget {
     required this.onAddClinic,
     required this.onRemoveClinic,
     required this.onChanged,
+    required this.onSubmitted,
   });
 
   @override
@@ -296,6 +376,14 @@ class _ClinicsPage extends StatelessWidget {
                   hint: '',
                   prefixIcon: Icons.local_hospital_outlined,
                   onChanged: (_) => onChanged(),
+                  // Only clinic 1 carries the node the page hands autofocus
+                  // to; clinic 2+ come from "Add another clinic" and are
+                  // never the page's first field.
+                  focusNode: i == 0 ? firstNameFocus : null,
+                  textInputAction: TextInputAction.next,
+                  onFieldSubmitted: i == 0
+                      ? (_) => firstAreaFocus.requestFocus()
+                      : null,
                 ),
               ),
               if (nameControllers.length > 1)
@@ -315,6 +403,11 @@ class _ClinicsPage extends StatelessWidget {
             label: 'Area (optional)',
             hint: '',
             prefixIcon: Icons.place_outlined,
+            focusNode: i == 0 ? firstAreaFocus : null,
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: i == 0
+                ? (_) => revenueFocus.requestFocus()
+                : null,
           ),
           const SizedBox(height: Spacing.lg),
         ],
@@ -347,6 +440,9 @@ class _ClinicsPage extends StatelessWidget {
           max: kRevenueGoalMax,
           divisions: 39,
           valueLabel: Formatters.formatCurrency(revenueGoal),
+          focusNode: revenueFocus,
+          textInputAction: TextInputAction.next,
+          onFieldSubmitted: () => patientFocus.requestFocus(),
           onChanged: (v) {
             revenueController.text = v.round().toString();
             onRevenueChanged(v);
@@ -367,6 +463,10 @@ class _ClinicsPage extends StatelessWidget {
           max: kPatientGoalMax.toDouble(),
           divisions: kPatientGoalMax - kPatientGoalMin,
           valueLabel: '$patientGoal per month',
+          focusNode: patientFocus,
+          // Last field on the page: Enter here does what "Get started" does.
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: onSubmitted,
           onChanged: (v) {
             patientController.text = v.round().toString();
             onPatientChanged(v.round());
@@ -398,6 +498,9 @@ class _GoalField extends StatelessWidget {
   final String valueLabel;
   final ValueChanged<double> onChanged;
   final ValueChanged<String> onTyped;
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final VoidCallback? onFieldSubmitted;
 
   const _GoalField({
     required this.label,
@@ -410,6 +513,9 @@ class _GoalField extends StatelessWidget {
     required this.valueLabel,
     required this.onChanged,
     required this.onTyped,
+    this.focusNode,
+    this.textInputAction,
+    this.onFieldSubmitted,
   });
 
   @override
@@ -426,6 +532,11 @@ class _GoalField extends StatelessWidget {
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           onChanged: onTyped,
+          focusNode: focusNode,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onFieldSubmitted == null
+              ? null
+              : (_) => onFieldSubmitted!(),
         ),
         Slider(
           value: value.clamp(min, max),
