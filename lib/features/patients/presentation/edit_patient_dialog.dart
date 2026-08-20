@@ -16,6 +16,7 @@ class EditPatientDialog extends ConsumerStatefulWidget {
 class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   final _formKey = GlobalKey<FormState>();
 
+  late TextEditingController _serialController;
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _whatsappController;
@@ -34,6 +35,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   @override
   void initState() {
     super.initState();
+    _serialController = TextEditingController(text: widget.patient.serialNo);
     _nameController = TextEditingController(text: widget.patient.name);
     _phoneController = TextEditingController(text: widget.patient.phone);
     _whatsappController = TextEditingController(text: widget.patient.whatsapp ?? '');
@@ -47,6 +49,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
 
   @override
   void dispose() {
+    _serialController.dispose();
     _nameController.dispose();
     _phoneController.dispose();
     _whatsappController.dispose();
@@ -60,6 +63,20 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // Same reasoning as Add Patient: watched in build so it reacts live to
+    // typing, rather than only when validate() is explicitly called.
+    final serialText = _serialController.text.trim();
+    final liveSerialInUse = serialText.isEmpty
+        ? false
+        : ref
+                .watch(serialNoInUseProvider(SerialLookupArgs(
+                  clinicId: widget.patient.primaryClinicId,
+                  serialNo: serialText,
+                  excludingPatientId: widget.patient.id,
+                )))
+                .value ==
+            true;
+
     return AlertDialog(
       title: Text('Edit Patient (${widget.patient.patientCode})'),
       insetPadding:
@@ -76,6 +93,20 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
             // narrower - chips, checkboxes - drifts to the middle.
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              TextFormField(
+                controller: _serialController,
+                decoration: const InputDecoration(labelText: 'Serial No. *'),
+                onChanged: (_) => setState(() {}),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) return 'Required';
+                  if (liveSerialInUse) {
+                    return 'Serial ${val.trim()} is already used at this '
+                        'clinic';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Full Name *'),
@@ -202,6 +233,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
             address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
             occupation: _occupationController.text.trim().isEmpty ? null : _occupationController.text.trim(),
             notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+            serialNo: _serialController.text.trim(),
           );
     } catch (e) {
       if (mounted) {

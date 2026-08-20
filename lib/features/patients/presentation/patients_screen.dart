@@ -43,7 +43,7 @@ class PatientsScreen extends ConsumerWidget {
             ),
             child: TextField(
               decoration: const InputDecoration(
-                hintText: 'Search name, code or phone',
+                hintText: 'Search name, code, serial or phone',
                 prefixIcon: Icon(Icons.search),
               ),
               onChanged: (val) =>
@@ -133,7 +133,9 @@ class _PatientRow extends ConsumerWidget {
             const SizedBox(width: Spacing.md),
             Expanded(
               child: Text(
-                patient.patientCode,
+                patient.serialNo.isEmpty
+                    ? patient.patientCode
+                    : 'Serial #${patient.serialNo} · ${patient.patientCode}',
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelSmall,
               ),

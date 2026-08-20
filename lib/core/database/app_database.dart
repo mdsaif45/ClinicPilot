@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -24,6 +24,7 @@ class AppDatabase extends _$AppDatabase {
           await m.createAll();
           await _seedSettings();
           await _createIndices();
+          await _createPatientSerialIndex();
         },
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 2) {
@@ -153,6 +154,35 @@ class AppDatabase extends _$AppDatabase {
             await customStatement(
                 'UPDATE cash_memos SET memo_date = created_at WHERE memo_date IS NULL');
           }
+
+          if (from < 5) {
+            // The manual per-clinic register number the doctor already
+            // writes on paper, separate from the app's own patientCode.
+            await _addColumnIfMissing(m, patients, patients.serialNo);
+
+            // Every existing patient currently reads serial_no = '' (the
+            // column default). A UNIQUE index over (clinic, serial_no)
+            // cannot go on top of that - SQLite treats two empty strings as
+            // equal, so the second existing patient at any clinic would
+            // collide with the first. Backfilling each to a distinct
+            // placeholder makes the index buildable, and the doctor
+            // corrects it to the real register number from Edit Patient at
+            // their own pace.
+            //
+            // Built from id, not patient_code: the v1 -> v2 backfill above
+            // derives patient_code from substr(id, 1, 8), which collides
+            // whenever two ids share an 8-character prefix (as they did on
+            // a real v1 database using short sequential ids) - a pre-
+            // existing gap this migration must not inherit. id is this
+            // table's actual primary key, so it is unique by definition.
+            await customStatement('''
+              UPDATE patients
+              SET serial_no = 'LEGACY-' || id
+              WHERE serial_no IS NULL OR serial_no = ''
+            ''');
+
+            await _createPatientSerialIndex();
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
@@ -251,5 +281,18 @@ class AppDatabase extends _$AppDatabase {
         'CREATE INDEX IF NOT EXISTS idx_expenses_clinic_date ON expenses (clinic_id, date)');
     await customStatement(
         'CREATE INDEX IF NOT EXISTS idx_patients_phone ON patients (phone)');
+  }
+
+  /// Separate from [_createIndices]: that function also runs mid-upgrade
+  /// inside the `from < 2` migration step, at a point where a database
+  /// coming from v1 does not have serial_no yet. This one is only ever
+  /// called once the column is guaranteed to exist - onCreate (a fresh
+  /// database has every column already) and the v5 migration step, after
+  /// its own backfill.
+  Future<void> _createPatientSerialIndex() async {
+    await customStatement('''
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_patients_clinic_serial
+      ON patients (primary_clinic_id, serial_no)
+    ''');
   }
 }
