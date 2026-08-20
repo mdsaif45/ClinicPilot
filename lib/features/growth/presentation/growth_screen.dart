@@ -2,19 +2,86 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/providers/period_provider.dart';
+import '../../../core/services/list_export_service.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/export_action.dart';
 import '../../../core/widgets/period_selector.dart';
 import '../providers/growth_provider.dart';
+
+/// Growth has no row-level list to export - the provider already returns one
+/// aggregated summary per period - so this builds the same key/value CSV
+/// buildKeyValueCsv expects, as a plain function so the output can be pinned
+/// in a test without touching the widget tree.
+String growthExportCsv(GrowthAnalytics analytics, DateTimeRange range) {
+  String fmt(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
+
+  return ListExportService.buildKeyValueCsv(
+    title: 'Growth summary: ${fmt(range.start)} to ${fmt(range.end)}',
+    [
+      MapEntry('New Patients', analytics.totalNewPatients),
+      MapEntry('Repeat Patients', analytics.totalRepeatPatients),
+      MapEntry('Total Patients', analytics.totalPatients),
+      MapEntry('Repeat Rate (%)', analytics.repeatRate.toStringAsFixed(1)),
+      MapEntry('Total Revenue', analytics.totalRevenue),
+      MapEntry('Total Expenses', analytics.totalExpenses),
+      MapEntry('Net Profit', analytics.netProfit),
+      MapEntry(
+        'Avg. Daily New Patients',
+        analytics.avgDailyNewPatients.toStringAsFixed(1),
+      ),
+      MapEntry(
+        'Avg. Daily Revenue',
+        analytics.avgDailyRevenue.toStringAsFixed(2),
+      ),
+      MapEntry(
+        'Avg. Revenue / Visit',
+        analytics.avgRevenuePerVisit.toStringAsFixed(2),
+      ),
+      for (final e in analytics.referralSourceCount.entries)
+        MapEntry('Referral: ${e.key}', e.value),
+      for (final e in analytics.diseaseFrequency.entries)
+        MapEntry('Disease: ${e.key}', e.value),
+    ],
+  );
+}
 
 class GrowthScreen extends ConsumerWidget {
   const GrowthScreen({super.key});
 
+  Future<void> _export(
+    BuildContext context,
+    GrowthAnalytics analytics,
+    DateTimeRange range,
+  ) async {
+    await saveCsvExport(
+      context,
+      csv: growthExportCsv(analytics, range),
+      fileName: ListExportService.suggestedFileName('growth', DateTime.now()),
+      rowCount: 1,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final analyticsAsync = ref.watch(growthAnalyticsProvider);
+    final range = ref.watch(periodProvider).dateRange;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Growth Overview')),
+      appBar: AppBar(
+        title: const Text('Growth Overview'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: 'Export',
+            onPressed: analyticsAsync.hasValue
+                ? () => _export(context, analyticsAsync.value!, range)
+                : null,
+          ),
+        ],
+      ),
       body: analyticsAsync.when(
         data: (analytics) {
           return SingleChildScrollView(

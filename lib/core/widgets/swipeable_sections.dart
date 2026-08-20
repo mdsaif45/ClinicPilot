@@ -16,10 +16,17 @@ class SwipeableSections extends StatefulWidget {
   final List<String> labels;
   final List<Widget> children;
 
+  /// Builds the trailing action for the currently selected section - a
+  /// builder rather than a fixed widget, since e.g. Finances exports memos
+  /// or expenses depending on which half is showing, not the same thing
+  /// either way.
+  final Widget? Function(int index)? trailingBuilder;
+
   const SwipeableSections({
     super.key,
     required this.labels,
     required this.children,
+    this.trailingBuilder,
   });
 
   @override
@@ -60,6 +67,7 @@ class _SwipeableSectionsState extends State<SwipeableSections> {
           labels: widget.labels,
           index: _index,
           onChanged: _goTo,
+          trailing: widget.trailingBuilder?.call(_index),
         ),
         Expanded(
           child: PageView(
