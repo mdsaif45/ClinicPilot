@@ -12,7 +12,13 @@ class ExportColumn<T> {
   final String header;
   final Object? Function(T row) value;
 
-  const ExportColumn(this.header, this.value);
+  /// How this column's value should print in a rendered PDF, if plain
+  /// toString() is wrong for it - e.g. a currency figure, since the PDF
+  /// font used here has no Rupee glyph and needs "Rs." instead. CSV and
+  /// XLSX ignore this: they write the raw value, not a rendering of it.
+  final String Function(Object? value)? pdfFormat;
+
+  const ExportColumn(this.header, this.value, {this.pdfFormat});
 }
 
 /// A totals row appended after the data - e.g. total revenue, total expense.

@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
 /// The file formats a per-list export can be saved as.
-///
-/// PDF is not implemented yet - a future phase adds it to this same enum,
-/// which is why the picker is already built to offer more than one choice
-/// rather than a single CSV button.
 enum ExportFormat {
   csv('CSV', 'Opens in any spreadsheet app.', Icons.table_chart_outlined),
   xlsx('Excel (XLSX)', 'Keeps numbers as numbers, not text.',
-      Icons.grid_on_outlined);
+      Icons.grid_on_outlined),
+  pdf('PDF', 'A printable report, not for re-importing.',
+      Icons.picture_as_pdf_outlined);
 
   final String label;
   final String description;

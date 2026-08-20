@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../services/list_export_service.dart';
+import '../services/list_pdf_export_service.dart';
 import 'export_format_sheet.dart';
 
 /// Writes export bytes to a doctor-chosen location and offers to share it.
@@ -69,6 +70,8 @@ Future<void> saveExportFile(
 /// doctor is actually looking at, not the entire table.
 class ExportAction<T> extends StatelessWidget {
   final String screenSlug;
+  final String title;
+  final String? subtitle;
   final List<T> rows;
   final List<ExportColumn<T>> columns;
   final ExportTotals<T>? totals;
@@ -76,6 +79,8 @@ class ExportAction<T> extends StatelessWidget {
   const ExportAction({
     super.key,
     required this.screenSlug,
+    required this.title,
+    this.subtitle,
     required this.rows,
     required this.columns,
     this.totals,
@@ -103,9 +108,17 @@ class ExportAction<T> extends StatelessWidget {
           totals: totals,
           sheetName: screenSlug,
         ),
+      ExportFormat.pdf => await ListPdfExportService.buildRowsPdf(
+          title: title,
+          subtitle: subtitle,
+          rows: rows,
+          columns: columns,
+          totals: totals,
+        ),
     };
     final extension = format.name;
 
+    if (!context.mounted) return;
     await saveExportFile(
       context,
       bytes: bytes,

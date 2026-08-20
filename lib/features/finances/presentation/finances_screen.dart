@@ -39,6 +39,21 @@ class FinancesScreen extends StatelessWidget {
   }
 }
 
+/// The PDF font has no Rupee glyph (a lesson from the cash memo receipt,
+/// pdf_service.dart), so a money column renders through this in that format
+/// only - CSV and XLSX keep the raw double, since a spreadsheet has its own
+/// currency formatting and should get a real number to work with.
+///
+/// Falls back to plain text for a non-numeric cell - the totals row's own
+/// label ('TOTAL') passes through columns that have no pdfFormat set, but a
+/// null total for a column that does (an untotalled money column) should
+/// still print blank rather than throw.
+String _pdfMoney(Object? value) {
+  if (value is num) return 'Rs. ${value.toStringAsFixed(2)}';
+  if (value == null) return '';
+  return value.toString();
+}
+
 /// Column spec for the Cash Memo export, pulled out as a plain function so
 /// its output - including the totals row - can be pinned in a test.
 List<ExportColumn<CashMemoWithDetails>> cashMemoExportColumns() {
@@ -47,13 +62,15 @@ List<ExportColumn<CashMemoWithDetails>> cashMemoExportColumns() {
     ExportColumn('Patient', (m) => m.patient.name),
     ExportColumn('Clinic', (m) => m.clinic.name),
     ExportColumn('Date', (m) => Formatters.formatDate(m.memo.memoDate)),
-    ExportColumn('Consultation Fee', (m) => m.memo.consultationFee),
-    ExportColumn('Medicine Fee', (m) => m.memo.medicineFee),
-    ExportColumn('Other Fee', (m) => m.memo.otherFee),
-    ExportColumn('Discount', (m) => m.memo.discount),
-    ExportColumn('Total', (m) => m.memo.total),
-    ExportColumn('Paid', (m) => m.memo.paidAmount),
-    ExportColumn('Pending', (m) => m.pendingAmount),
+    ExportColumn('Consultation Fee', (m) => m.memo.consultationFee,
+        pdfFormat: _pdfMoney),
+    ExportColumn('Medicine Fee', (m) => m.memo.medicineFee,
+        pdfFormat: _pdfMoney),
+    ExportColumn('Other Fee', (m) => m.memo.otherFee, pdfFormat: _pdfMoney),
+    ExportColumn('Discount', (m) => m.memo.discount, pdfFormat: _pdfMoney),
+    ExportColumn('Total', (m) => m.memo.total, pdfFormat: _pdfMoney),
+    ExportColumn('Paid', (m) => m.memo.paidAmount, pdfFormat: _pdfMoney),
+    ExportColumn('Pending', (m) => m.pendingAmount, pdfFormat: _pdfMoney),
     ExportColumn('Payment Method', (m) => m.memo.paymentMethod),
   ];
 }
@@ -80,6 +97,7 @@ class _CashMemoExportAction extends ConsumerWidget {
 
     return ExportAction<CashMemoWithDetails>(
       screenSlug: 'cash-memos',
+      title: 'Cash Memos',
       rows: memos,
       columns: cashMemoExportColumns(),
       totals: cashMemoExportTotals(),
@@ -94,7 +112,7 @@ List<ExportColumn<ExpenseWithClinic>> expensesExportColumns() {
     ExportColumn('Clinic', (e) => e.clinic.name),
     ExportColumn('Category', (e) => e.expense.category),
     ExportColumn('Subcategory', (e) => e.expense.subcategory),
-    ExportColumn('Amount', (e) => e.expense.amount),
+    ExportColumn('Amount', (e) => e.expense.amount, pdfFormat: _pdfMoney),
     ExportColumn('Payment Method', (e) => e.expense.paymentMethod),
   ];
 }
@@ -115,6 +133,7 @@ class _ExpensesExportAction extends ConsumerWidget {
 
     return ExportAction<ExpenseWithClinic>(
       screenSlug: 'expenses',
+      title: 'Expenses',
       rows: expenses,
       columns: expensesExportColumns(),
       totals: expensesExportTotals(),

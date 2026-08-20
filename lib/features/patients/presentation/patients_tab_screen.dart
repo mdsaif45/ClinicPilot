@@ -71,6 +71,7 @@ class _PatientsExportAction extends ConsumerWidget {
 
     return ExportAction<Patient>(
       screenSlug: 'patients',
+      title: 'Patient Directory',
       rows: patients,
       columns: patientsExportColumns(clinicNames),
     );

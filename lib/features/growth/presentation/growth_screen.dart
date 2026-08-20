@@ -5,6 +5,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/providers/period_provider.dart';
 import '../../../core/services/list_export_service.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/services/list_pdf_export_service.dart';
 import '../../../core/widgets/export_action.dart';
 import '../../../core/widgets/export_format_sheet.dart';
 import '../../../core/widgets/period_selector.dart';
@@ -50,6 +51,24 @@ String growthExportTitle(DateTimeRange range) {
   return 'Growth summary: ${fmt(range.start)} to ${fmt(range.end)}';
 }
 
+/// The same entries as [growthExportEntries], but with the three raw money
+/// figures rendered "Rs. 1234.00" for the PDF - the font used there has no
+/// Rupee glyph, and unlike CSV/XLSX a PDF is read, not recomputed in a
+/// spreadsheet, so there is no reason to keep it a bare double.
+List<MapEntry<String, Object?>> growthExportEntriesForPdf(
+  GrowthAnalytics analytics,
+) {
+  String money(double v) => 'Rs. ${v.toStringAsFixed(2)}';
+  return growthExportEntries(analytics).map((e) {
+    return switch (e.key) {
+      'Total Revenue' => MapEntry(e.key, money(analytics.totalRevenue)),
+      'Total Expenses' => MapEntry(e.key, money(analytics.totalExpenses)),
+      'Net Profit' => MapEntry(e.key, money(analytics.netProfit)),
+      _ => e,
+    };
+  }).toList();
+}
+
 class GrowthScreen extends ConsumerWidget {
   const GrowthScreen({super.key});
 
@@ -72,9 +91,14 @@ class GrowthScreen extends ConsumerWidget {
           title: title,
           sheetName: 'Growth',
         ),
+      ExportFormat.pdf => await ListPdfExportService.buildKeyValuePdf(
+          title: title,
+          entries: growthExportEntriesForPdf(analytics),
+        ),
     };
     final extension = format.name;
 
+    if (!context.mounted) return;
     await saveExportFile(
       context,
       bytes: bytes,
