@@ -43,6 +43,7 @@ class PatientsTabScreen extends StatelessWidget {
 /// the platform file-picker channel.
 List<ExportColumn<Patient>> patientsExportColumns(Map<String, String> clinicNames) {
   return [
+    ExportColumn('Serial No.', (p) => p.serialNo),
     ExportColumn('Patient Code', (p) => p.patientCode),
     ExportColumn('Name', (p) => p.name),
     ExportColumn('Phone', (p) => p.phone),
