@@ -19,11 +19,13 @@ void main() {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
 
       final path = entity.path.replaceAll(r'\', '/');
-      // The theme and design layers define the palette, and the PDF service
-      // renders to paper where the screen theme does not apply.
+      // The theme and design layers define the palette, and a PDF renderer
+      // draws to paper, not a screen - the active theme has no meaning
+      // there, so its own fixed colours are correct rather than a bug.
       if (path.contains('core/theme/') ||
           path.contains('core/design/') ||
-          path.contains('pdf_service')) {
+          path.contains('pdf_service') ||
+          path.contains('pdf_export_service')) {
         continue;
       }
 

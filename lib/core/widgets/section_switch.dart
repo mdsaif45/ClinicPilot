@@ -13,11 +13,17 @@ class SectionSwitch extends StatelessWidget {
   final int index;
   final ValueChanged<int> onChanged;
 
+  /// An action that belongs beside the switch rather than inside either
+  /// section - e.g. exporting whichever section is currently selected, where
+  /// the action itself does not change, only what it acts on.
+  final Widget? trailing;
+
   const SectionSwitch({
     super.key,
     required this.labels,
     required this.index,
     required this.onChanged,
+    this.trailing,
   });
 
   @override
@@ -84,6 +90,10 @@ class SectionSwitch extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
+            if (trailing != null) ...[
+              const Spacer(),
+              trailing!,
             ],
           ],
         ),

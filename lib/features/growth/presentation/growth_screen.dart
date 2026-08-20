@@ -2,19 +2,134 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/providers/period_provider.dart';
+import '../../../core/services/list_export_service.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/services/list_pdf_export_service.dart';
+import '../../../core/widgets/export_action.dart';
+import '../../../core/widgets/export_format_sheet.dart';
 import '../../../core/widgets/period_selector.dart';
 import '../providers/growth_provider.dart';
+
+/// Growth has no row-level list to export - the provider already returns one
+/// aggregated summary per period - so this is the same metric/value list
+/// buildKeyValueCsv and buildKeyValueXlsx both expect, built once as a plain
+/// function so the numbers are pinned in a test without touching the widget
+/// tree, and shared between whichever format the doctor picks.
+List<MapEntry<String, Object?>> growthExportEntries(GrowthAnalytics analytics) {
+  return [
+    MapEntry('New Patients', analytics.totalNewPatients),
+    MapEntry('Repeat Patients', analytics.totalRepeatPatients),
+    MapEntry('Total Patients', analytics.totalPatients),
+    MapEntry('Repeat Rate (%)', analytics.repeatRate.toStringAsFixed(1)),
+    MapEntry('Total Revenue', analytics.totalRevenue),
+    MapEntry('Total Expenses', analytics.totalExpenses),
+    MapEntry('Net Profit', analytics.netProfit),
+    MapEntry(
+      'Avg. Daily New Patients',
+      analytics.avgDailyNewPatients.toStringAsFixed(1),
+    ),
+    MapEntry(
+      'Avg. Daily Revenue',
+      analytics.avgDailyRevenue.toStringAsFixed(2),
+    ),
+    MapEntry(
+      'Avg. Revenue / Visit',
+      analytics.avgRevenuePerVisit.toStringAsFixed(2),
+    ),
+    for (final e in analytics.referralSourceCount.entries)
+      MapEntry('Referral: ${e.key}', e.value),
+    for (final e in analytics.diseaseFrequency.entries)
+      MapEntry('Disease: ${e.key}', e.value),
+  ];
+}
+
+String growthExportTitle(DateTimeRange range) {
+  String fmt(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
+  return 'Growth summary: ${fmt(range.start)} to ${fmt(range.end)}';
+}
+
+/// The same entries as [growthExportEntries], but with the three raw money
+/// figures rendered "Rs. 1234.00" for the PDF - the font used there has no
+/// Rupee glyph, and unlike CSV/XLSX a PDF is read, not recomputed in a
+/// spreadsheet, so there is no reason to keep it a bare double.
+List<MapEntry<String, Object?>> growthExportEntriesForPdf(
+  GrowthAnalytics analytics,
+) {
+  String money(double v) => 'Rs. ${v.toStringAsFixed(2)}';
+  return growthExportEntries(analytics).map((e) {
+    return switch (e.key) {
+      'Total Revenue' => MapEntry(e.key, money(analytics.totalRevenue)),
+      'Total Expenses' => MapEntry(e.key, money(analytics.totalExpenses)),
+      'Net Profit' => MapEntry(e.key, money(analytics.netProfit)),
+      _ => e,
+    };
+  }).toList();
+}
 
 class GrowthScreen extends ConsumerWidget {
   const GrowthScreen({super.key});
 
+  Future<void> _export(
+    BuildContext context,
+    GrowthAnalytics analytics,
+    DateTimeRange range,
+  ) async {
+    final format = await pickExportFormat(context);
+    if (format == null || !context.mounted) return;
+
+    final entries = growthExportEntries(analytics);
+    final title = growthExportTitle(range);
+    final bytes = switch (format) {
+      ExportFormat.csv => ListExportService.encodeCsv(
+          ListExportService.buildKeyValueCsv(entries, title: title),
+        ),
+      ExportFormat.xlsx => ListExportService.buildKeyValueXlsx(
+          entries,
+          title: title,
+          sheetName: 'Growth',
+        ),
+      ExportFormat.pdf => await ListPdfExportService.buildKeyValuePdf(
+          title: title,
+          entries: growthExportEntriesForPdf(analytics),
+        ),
+    };
+    final extension = format.name;
+
+    if (!context.mounted) return;
+    await saveExportFile(
+      context,
+      bytes: bytes,
+      fileName: ListExportService.suggestedFileName(
+        'growth',
+        DateTime.now(),
+        extension: extension,
+      ),
+      extension: extension,
+      rowCount: 1,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final analyticsAsync = ref.watch(growthAnalyticsProvider);
+    final range = ref.watch(periodProvider).dateRange;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Growth Overview')),
+      appBar: AppBar(
+        title: const Text('Growth Overview'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: 'Export',
+            onPressed: analyticsAsync.hasValue
+                ? () => _export(context, analyticsAsync.value!, range)
+                : null,
+          ),
+        ],
+      ),
       body: analyticsAsync.when(
         data: (analytics) {
           return SingleChildScrollView(
