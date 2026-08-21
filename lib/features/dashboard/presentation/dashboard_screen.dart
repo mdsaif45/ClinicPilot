@@ -6,7 +6,6 @@ import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/animated_counter.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
@@ -18,6 +17,7 @@ import '../../growth/providers/review_provider.dart';
 import '../providers/dashboard_provider.dart';
 import 'widgets/clinic_health_score_card.dart';
 import 'widgets/daily_insight_card.dart';
+import 'widgets/goal_tracker_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -170,102 +170,7 @@ class DashboardScreen extends ConsumerWidget {
 
             SectionHeader(
                 title: 'Goal Progress (${Formatters.formatMonthYear(now)})'),
-            AppCard(
-              child: Builder(builder: (context) {
-                final remaining =
-                    stats.monthlyRevenueGoal - stats.monthlyRevenue;
-                final pct = (stats.revenueGoalProgress * 100);
-
-                // Days left in the month, and what each remaining clinic day
-                // has to earn. "Rs 4,850 a day" is actionable in a way that
-                // "2% of goal" is not.
-                final lastDay =
-                    DateTime(now.year, now.month + 1, 0).day;
-                final daysLeft = (lastDay - now.day) + 1;
-                final perDay = daysLeft > 0 ? remaining / daysLeft : remaining;
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        // Earned leads. The target is context, not the headline.
-                        Text(
-                          Formatters.formatCurrency(stats.monthlyRevenue),
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: Spacing.xs),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 3),
-                          child: Text(
-                            'of ${Formatters.formatCurrency(stats.monthlyRevenueGoal)}',
-                            style: theme.textTheme.labelMedium,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '${pct.toStringAsFixed(0)}%',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: Spacing.md),
-                    ClipRRect(
-                      borderRadius: Radii.pillAll,
-                      child: LinearProgressIndicator(
-                        value: stats.revenueGoalProgress,
-                        minHeight: 12,
-                        backgroundColor:
-                            theme.colorScheme.surfaceContainerHighest,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: Spacing.md),
-                    if (remaining <= 0)
-                      Row(
-                        children: [
-                          Icon(Icons.check_circle,
-                              size: 16, color: theme.colorScheme.primary),
-                          const SizedBox(width: Spacing.xs),
-                          Text(
-                            'Target reached',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      )
-                    else
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _GoalFact(
-                              label: 'Still needed',
-                              value: Formatters.formatCurrency(remaining),
-                            ),
-                          ),
-                          Expanded(
-                            child: _GoalFact(
-                              label: '$daysLeft '
-                                  '${daysLeft == 1 ? 'day' : 'days'} left',
-                              value:
-                                  '${Formatters.formatCurrency(perDay)}/day',
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                );
-              }),
-            ),
+            GoalTrackerCard(stats: stats, now: now),
 
             const SectionHeader(title: 'Google Reviews'),
             Consumer(builder: (context, ref, _) {
@@ -560,31 +465,6 @@ class _GrowthTile extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// One label/value pair inside the goal card.
-class _GoalFact extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _GoalFact({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: theme.textTheme.labelSmall),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: theme.textTheme.titleSmall
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ],
     );
   }
 }
