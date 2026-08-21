@@ -23,6 +23,7 @@ import '../../visits/presentation/add_visit_dialog.dart';
 import '../../visits/providers/visit_provider.dart';
 import '../../growth/presentation/record_review_dialog.dart';
 import '../../clinical/presentation/master_case_taking_screen.dart';
+import '../../clinical/presentation/widgets/complaint_list_view.dart';
 import '../../clinical/providers/case_record_provider.dart';
 import 'edit_patient_dialog.dart';
 
@@ -152,6 +153,11 @@ class PatientProfileScreen extends ConsumerWidget {
                     icon: Icons.info_outline,
                     label: 'Information',
                     builder: (_) => _InfoTab(patient: patient, visits: visits),
+                  ),
+                  SegmentedTab(
+                    icon: Icons.healing_outlined,
+                    label: 'Complaints',
+                    builder: (_) => ComplaintListView(patient: patient),
                   ),
                   SegmentedTab(
                     icon: Icons.assignment_outlined,
