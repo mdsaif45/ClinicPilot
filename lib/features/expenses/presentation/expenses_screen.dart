@@ -183,7 +183,7 @@ class _ExpenseRow extends ConsumerWidget {
         ],
       ),
       subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.only(top: Spacing.xs),
         child: Row(
           children: [
             Expanded(

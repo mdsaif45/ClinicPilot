@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/choice_chip_field.dart';
 import '../../../core/widgets/date_field.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/database/app_database.dart';
 import '../providers/cash_memo_provider.dart';
 
 class EditCashMemoDialog extends ConsumerStatefulWidget {
@@ -57,80 +60,8 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Edit Cash Memo (${widget.memo.memoNumber})'),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // Without this the column centres its children. Text fields fill
-            // the width so they look correct either way, but anything
-            // narrower - chips, checkboxes - drifts to the middle.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DateField(
-                label: 'Date',
-                value: _memoDate,
-                onChanged: (d) => setState(() => _memoDate = d),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _consultationFeeController,
-                decoration: const InputDecoration(labelText: 'Consultation Fee (Rs)'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _medicineFeeController,
-                decoration: const InputDecoration(labelText: 'Medicine Fee (Rs)'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _otherFeeController,
-                decoration: const InputDecoration(labelText: 'Other Fee (Rs)'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _discountController,
-                decoration: const InputDecoration(labelText: 'Discount (Rs)'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _paidAmountController,
-                decoration: const InputDecoration(labelText: 'Paid Amount (Rs)'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              ChoiceChipField<String>(
-                label: 'Payment Method',
-                options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
-                // Fall back to Cash if a memo carries a method no longer offered.
-                value: const ['Cash', 'UPI', 'Card', 'Bank Transfer']
-                        .contains(_paymentMethod)
-                    ? _paymentMethod
-                    : 'Cash',
-                labelOf: (m) => m,
-                iconOf: _paymentIcon,
-                onChanged: (m) => setState(() => _paymentMethod = m),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(labelText: 'Notes'),
-                maxLines: 2,
-              ),
-            ],
-          ),
-        ),
-      )),
+    return AppFormDialog(
+      title: 'Edit Cash Memo (${widget.memo.memoNumber})',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -147,6 +78,69 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
               : const Text('Save Changes'),
         ),
       ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DateField(
+              label: 'Date',
+              value: _memoDate,
+              onChanged: (d) => setState(() => _memoDate = d),
+            ),
+            const SizedBox(height: Spacing.md),
+            TextFormField(
+              controller: _consultationFeeController,
+              decoration: const InputDecoration(labelText: 'Consultation Fee (Rs)'),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: Spacing.md),
+            TextFormField(
+              controller: _medicineFeeController,
+              decoration: const InputDecoration(labelText: 'Medicine Fee (Rs)'),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: Spacing.md),
+            TextFormField(
+              controller: _otherFeeController,
+              decoration: const InputDecoration(labelText: 'Other Fee (Rs)'),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: Spacing.md),
+            TextFormField(
+              controller: _discountController,
+              decoration: const InputDecoration(labelText: 'Discount (Rs)'),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: Spacing.md),
+            TextFormField(
+              controller: _paidAmountController,
+              decoration: const InputDecoration(labelText: 'Paid Amount (Rs)'),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: Spacing.md),
+            ChoiceChipField<String>(
+              label: 'Payment Method',
+              options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
+              // Fall back to Cash if a memo carries a method no longer offered.
+              value: const ['Cash', 'UPI', 'Card', 'Bank Transfer']
+                      .contains(_paymentMethod)
+                  ? _paymentMethod
+                  : 'Cash',
+              labelOf: (m) => m,
+              iconOf: PaymentIcons.forMethod,
+              onChanged: (m) => setState(() => _paymentMethod = m),
+            ),
+            const SizedBox(height: Spacing.md),
+            TextFormField(
+              controller: _notesController,
+              decoration: const InputDecoration(labelText: 'Notes'),
+              maxLines: 2,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -191,11 +185,4 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
       );
     }
   }
-
-  IconData _paymentIcon(String method) => switch (method) {
-        'Cash' => Icons.payments_outlined,
-        'UPI' => Icons.qr_code_2,
-        'Card' => Icons.credit_card,
-        _ => Icons.account_balance_outlined,
-      };
 }

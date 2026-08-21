@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../core/widgets/picker_field.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/design/tokens.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/utils/validators.dart';
+import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/empty_state.dart';
-import '../../../core/utils/validators.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/patient_provider.dart';
 
@@ -28,25 +32,19 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
   String _gender = 'Male';
   String? _selectedClinicId;
-  // PickerField is not a FormField, so its error is tracked here - without
-  // it, leaving Clinic unset gave no feedback: submit silently did nothing,
-  // which read as the button not working rather than as a missing field.
   String? _clinicError;
-  String _referralSource = 'Walk-in';
+  String _referralSource = 'Direct Walk-in';
 
-  // Registering awaits a database write. Without this, every tap before that
-  // finishes re-ran _submit and created another duplicate patient - the
-  // button gave no feedback that the first tap had already been taken.
   bool _submitting = false;
 
   final List<String> _referralSources = [
-    'Walk-in',
+    'Direct Walk-in',
+    'Patient Referral',
+    'Doctor Referral',
+    'Camp / Event',
     'Google Search',
-    'Google Maps',
-    'Instagram',
-    'Friend/Family',
-    'Camp',
-    'Others',
+    'Social Media',
+    'Other',
   ];
 
   @override
@@ -72,12 +70,6 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
 
-    // Watched here, in build, rather than inside CustomTextField's
-    // validator: a FormField validator only re-runs when validate() is
-    // explicitly called, so it cannot react on its own to a Riverpod
-    // provider resolving a moment after the doctor stops typing. Watching
-    // in build means the error appears live, the same way it would for any
-    // other reactive state in this widget.
     final serialText = _serialController.text.trim();
     final liveSerialInUse = serialText.isEmpty || _selectedClinicId == null
         ? false
@@ -89,13 +81,16 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 .value ==
             true;
 
-    // A patient has to belong to a clinic - filling in the rest of the form
-    // only to hit a foreign-key error at the end is worse than saying so
-    // up front, before anything is typed.
     if (clinicsAsync.hasValue && clinics.isEmpty) {
-      return AlertDialog(
-        title: const Text('Register New Patient'),
-        content: EmptyState(
+      return AppFormDialog(
+        title: 'Register New Patient',
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+        child: EmptyState(
           icon: Icons.local_hospital_outlined,
           title: 'No clinic yet',
           message: 'Add a clinic before registering a patient.',
@@ -105,145 +100,11 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             context.push('/clinics');
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
       );
     }
 
-    return AlertDialog(
-      title: const Text('Register New Patient'),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // Without this the column centres its children. Text fields fill
-            // the width so they look correct either way, but anything
-            // narrower - chips, checkboxes - drifts to the middle.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomTextField(
-                controller: _serialController,
-                label: 'Serial No.',
-                hint: 'As in the register',
-                prefixIcon: Icons.tag,
-                // Rebuilds on every keystroke so the live duplicate check
-                // above re-evaluates without waiting for a form validate().
-                onChanged: (_) => setState(() {}),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
-                  if (liveSerialInUse) {
-                    return 'Serial ${v.trim()} is already used at this clinic';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _nameController,
-                label: 'Patient Full Name',
-                prefixIcon: Icons.person,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _phoneController,
-                label: 'Phone Number',
-                prefixIcon: Icons.phone,
-                keyboardType: TextInputType.phone,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _whatsappController,
-                label: 'WhatsApp Number (Optional)',
-                prefixIcon: Icons.chat,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _ageController,
-                      label: 'Age',
-                      // Not a date picker — age is typed, so avoid a calendar icon.
-                      prefixIcon: Icons.numbers,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: Validators.age,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PickerField<String>(
-                      label: 'Gender',
-                      prefixIcon: Icons.wc,
-                      value: _gender,
-                      options: const [
-                        PickerOption(value: 'Male', label: 'Male'),
-                        PickerOption(value: 'Female', label: 'Female'),
-                        PickerOption(value: 'Other', label: 'Other'),
-                      ],
-                      onChanged: (val) => setState(() => _gender = val),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _areaController,
-                label: 'Locality / Area',
-                prefixIcon: Icons.location_on,
-              ),
-              const SizedBox(height: 12),
-              PickerField<String>(
-                label: 'Clinic',
-                prefixIcon: Icons.local_hospital,
-                value: _selectedClinicId,
-                errorText: _clinicError,
-                options: clinics
-                    .map((c) => PickerOption(
-                          value: c.id,
-                          label: c.name,
-                          subtitle: c.address,
-                        ))
-                    .toList(),
-                onChanged: (val) => setState(() {
-                  _selectedClinicId = val;
-                  _clinicError = null;
-                }),
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _diseaseController,
-                label: 'Disease / Chief Complaint',
-                prefixIcon: Icons.medical_services,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              PickerField<String>(
-                label: 'Referral Source (New Patient)',
-                prefixIcon: Icons.campaign,
-                value: _referralSource,
-                options: _referralSources
-                    .map((r) => PickerOption(value: r, label: r))
-                    .toList(),
-                onChanged: (val) => setState(() => _referralSource = val),
-              ),
-            ],
-          ),
-        ),
-      )),
+    return AppFormDialog(
+      title: 'Register New Patient',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -260,6 +121,122 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
               : const Text('Register & Create Visit'),
         ),
       ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomTextField(
+              controller: _serialController,
+              label: 'Serial No.',
+              hint: 'As in the register',
+              prefixIcon: Icons.tag,
+              onChanged: (_) => setState(() {}),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return 'Required';
+                if (liveSerialInUse) {
+                  return 'Serial ${v.trim()} is already used at this clinic';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _nameController,
+              label: 'Patient Full Name',
+              prefixIcon: Icons.person,
+              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _phoneController,
+              label: 'Phone Number',
+              prefixIcon: Icons.phone,
+              keyboardType: TextInputType.phone,
+              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _whatsappController,
+              label: 'WhatsApp Number (Optional)',
+              prefixIcon: Icons.chat,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: CustomTextField(
+                    controller: _ageController,
+                    label: 'Age',
+                    prefixIcon: Icons.numbers,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: Validators.age,
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Gender',
+                    prefixIcon: Icons.wc,
+                    value: _gender,
+                    options: const [
+                      PickerOption(value: 'Male', label: 'Male'),
+                      PickerOption(value: 'Female', label: 'Female'),
+                      PickerOption(value: 'Other', label: 'Other'),
+                    ],
+                    onChanged: (val) => setState(() => _gender = val),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _areaController,
+              label: 'Locality / Area',
+              prefixIcon: Icons.location_on,
+            ),
+            const SizedBox(height: Spacing.md),
+            PickerField<String>(
+              label: 'Clinic',
+              prefixIcon: Icons.local_hospital,
+              value: _selectedClinicId,
+              errorText: _clinicError,
+              options: clinics
+                  .map((c) => PickerOption(
+                        value: c.id,
+                        label: c.name,
+                        subtitle: c.address,
+                      ))
+                  .toList(),
+              onChanged: (val) => setState(() {
+                _selectedClinicId = val;
+                _clinicError = null;
+              }),
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _diseaseController,
+              label: 'Disease / Chief Complaint',
+              prefixIcon: Icons.medical_services,
+              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            PickerField<String>(
+              label: 'Referral Source (New Patient)',
+              prefixIcon: Icons.campaign,
+              value: _referralSource,
+              options: _referralSources
+                  .map((r) => PickerOption(value: r, label: r))
+                  .toList(),
+              onChanged: (val) => setState(() => _referralSource = val),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -281,7 +258,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final whatsapp = _whatsappController.text.trim();
     final age = int.parse(_ageController.text.trim());
     final area = _areaController.text.trim();
-    final disease = _diseaseController.text.trim();
+    final disease = Formatters.toTitleCase(_diseaseController.text);
 
     try {
       await ref.read(patientNotifierProvider.notifier).registerPatient(
@@ -297,8 +274,6 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             referralSource: _referralSource,
           );
     } catch (e) {
-      // Re-enable the button rather than leave it stuck disabled with no way
-      // to retry - a failed write must not trap the doctor in the dialog.
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(

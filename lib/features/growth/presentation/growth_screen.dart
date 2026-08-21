@@ -245,15 +245,15 @@ class GrowthScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: Spacing.xl),
 
                 // Financial Trend Line Chart Card
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: Radii.mdAll),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(Spacing.lg),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -262,7 +262,7 @@ class GrowthScreen extends ConsumerWidget {
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: Spacing.lg),
                         SizedBox(
                           height: 200,
                           child: LineChart(
@@ -274,15 +274,15 @@ class GrowthScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: Spacing.xl),
 
                 // Referral Sources Distribution
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: Radii.mdAll),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(Spacing.lg),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -291,17 +291,17 @@ class GrowthScreen extends ConsumerWidget {
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: Spacing.lg),
                         if (analytics.referralSourceCount.isEmpty)
                           const Center(child: Text('No referral data available.'))
                         else
                           Column(
                             children: analytics.referralSourceCount.entries.map((e) {
                               final total = analytics.referralSourceCount.values
-                                  .fold(0, (a, b) => a + b);
+                                   .fold(0, (a, b) => a + b);
                               final pct = total > 0 ? e.value / total : 0.0;
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.only(bottom: Spacing.sm),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -317,7 +317,7 @@ class GrowthScreen extends ConsumerWidget {
                                         color: Theme.of(context).colorScheme.primary,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: Spacing.sm),
                                     Text('${(pct * 100).toStringAsFixed(0)}%'),
                                   ],
                                 ),
