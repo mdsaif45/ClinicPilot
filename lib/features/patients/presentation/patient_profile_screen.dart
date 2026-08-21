@@ -64,6 +64,7 @@ class PatientProfileScreen extends ConsumerWidget {
               title: patient.name,
               subtitle: '${patient.patientCode} · #${patient.serialNo}',
               avatarText: patient.name,
+              heroTag: 'patient-avatar-${patient.id}',
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 tooltip: 'Back',

@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/animated_counter.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
 import '../../expenses/presentation/add_expense_dialog.dart';
 import '../../patients/presentation/add_patient_dialog.dart';
@@ -24,84 +27,99 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       body: statsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const DashboardShimmer(),
         error: (e, _) => Center(child: Text('Could not load dashboard: $e')),
-        data: (stats) => ListView(
-          padding: const EdgeInsets.only(bottom: Spacing.xxl),
-          children: [
-            // Greeting reflects the actual time of day; a fixed "Good Day"
-            // reads as an unfinished placeholder.
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  Spacing.lg, Spacing.lg, Spacing.lg, Spacing.xs),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          () {
-                            final name =
-                                ref.watch(doctorNameProvider).value ?? '';
-                            return name.isEmpty
-                                ? '${Formatters.greeting(now)} 👋'
-                                : '${Formatters.greeting(now)}, $name 👋';
-                          }(),
-                          style: theme.textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: Spacing.xs),
-                        Text(
-                          // Clinic name lives in the app bar switcher directly
-                          // above; repeating it here said the same thing twice.
-                          Formatters.formatFullDate(now),
-                          style: theme.textTheme.labelMedium,
-                        ),
-                      ],
+        data: (stats) => RefreshIndicator(
+          onRefresh: () async {
+            AppHaptics.selection();
+            ref.invalidate(dashboardStatsProvider);
+          },
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: Spacing.xxl),
+            children: [
+              // Greeting reflects the actual time of day; a fixed "Good Day"
+              // reads as an unfinished placeholder.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    Spacing.lg, Spacing.lg, Spacing.lg, Spacing.xs),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            () {
+                              final name =
+                                  ref.watch(doctorNameProvider).value ?? '';
+                              return name.isEmpty
+                                  ? '${Formatters.greeting(now)} 👋'
+                                  : '${Formatters.greeting(now)}, $name 👋';
+                            }(),
+                            style: theme.textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: Spacing.xs),
+                          Text(
+                            // Clinic name lives in the app bar switcher directly
+                            // above; repeating it here said the same thing twice.
+                            Formatters.formatFullDate(now),
+                            style: theme.textTheme.labelMedium,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            const SectionHeader(title: 'Today'),
-            _TileRow(children: [
-              _MiniTile(
-                label: "Today's Revenue",
-                value: Formatters.formatCurrency(stats.todayRevenue),
-                tone: _Tone.positive,
-              ),
-              _MiniTile(
-                label: "Today's Expenses",
-                value: Formatters.formatCurrency(stats.todayExpense),
-                tone: _Tone.negative,
-              ),
-              _MiniTile(
-                label: "Today's Profit",
-                value: Formatters.formatCurrency(stats.todayNetProfit),
-                tone: stats.todayNetProfit < 0 ? _Tone.negative : _Tone.positive,
-              ),
-            ]),
+              const SectionHeader(title: 'Today'),
+              _TileRow(children: [
+                _MiniTile(
+                  label: "Today's Revenue",
+                  value: Formatters.formatCurrency(stats.todayRevenue),
+                  numericValue: stats.todayRevenue,
+                  tone: _Tone.positive,
+                ),
+                _MiniTile(
+                  label: "Today's Expenses",
+                  value: Formatters.formatCurrency(stats.todayExpense),
+                  numericValue: stats.todayExpense,
+                  tone: _Tone.negative,
+                ),
+                _MiniTile(
+                  label: "Today's Profit",
+                  value: Formatters.formatCurrency(stats.todayNetProfit),
+                  numericValue: stats.todayNetProfit,
+                  tone: stats.todayNetProfit < 0
+                      ? _Tone.negative
+                      : _Tone.positive,
+                ),
+              ]),
 
-            SectionHeader(title: 'Monthly Overview (${Formatters.formatMonthYear(now)})'),
-            _TileRow(children: [
-              _MiniTile(
-                label: 'Revenue',
-                value: Formatters.formatCurrency(stats.monthlyRevenue),
-                tone: _Tone.positive,
-              ),
-              _MiniTile(
-                label: 'Expenses',
-                value: Formatters.formatCurrency(stats.monthlyExpense),
-                tone: _Tone.negative,
-              ),
-              _MiniTile(
-                label: 'Net Profit',
-                value: Formatters.formatCurrency(stats.monthlyNetProfit),
-                tone:
-                    stats.monthlyNetProfit < 0 ? _Tone.negative : _Tone.positive,
-              ),
-            ]),
+              SectionHeader(
+                  title: 'Monthly Overview (${Formatters.formatMonthYear(now)})'),
+              _TileRow(children: [
+                _MiniTile(
+                  label: 'Revenue',
+                  value: Formatters.formatCurrency(stats.monthlyRevenue),
+                  numericValue: stats.monthlyRevenue,
+                  tone: _Tone.positive,
+                ),
+                _MiniTile(
+                  label: 'Expenses',
+                  value: Formatters.formatCurrency(stats.monthlyExpense),
+                  numericValue: stats.monthlyExpense,
+                  tone: _Tone.negative,
+                ),
+                _MiniTile(
+                  label: 'Net Profit',
+                  value: Formatters.formatCurrency(stats.monthlyNetProfit),
+                  numericValue: stats.monthlyNetProfit,
+                  tone: stats.monthlyNetProfit < 0
+                      ? _Tone.negative
+                      : _Tone.positive,
+                ),
+              ]),
 
             const SectionHeader(title: 'Patients Overview'),
             _TileRow(children: [
@@ -358,6 +376,7 @@ class DashboardScreen extends ConsumerWidget {
           ],
         ),
       ),
+      ),
     );
   }
 }
@@ -392,11 +411,13 @@ class _TileRow extends StatelessWidget {
 class _MiniTile extends StatelessWidget {
   final String label;
   final String value;
+  final double? numericValue;
   final _Tone tone;
 
   const _MiniTile({
     required this.label,
     required this.value,
+    this.numericValue,
     required this.tone,
   });
 
@@ -410,6 +431,11 @@ class _MiniTile extends StatelessWidget {
       _Tone.negative => (scheme.error, scheme.errorContainer),
       _Tone.neutral => (scheme.onSurface, scheme.surfaceContainerHighest),
     };
+
+    final textStyle = theme.textTheme.titleMedium?.copyWith(
+      color: fg,
+      fontWeight: FontWeight.w700,
+    );
 
     return Container(
       padding: const EdgeInsets.all(Spacing.md),
@@ -431,11 +457,15 @@ class _MiniTile extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(color: fg, fontWeight: FontWeight.w700),
-            ),
+            child: numericValue != null
+                ? AnimatedCounter.currency(
+                    value: numericValue!,
+                    style: textStyle,
+                  )
+                : Text(
+                    value,
+                    style: textStyle,
+                  ),
           ),
         ],
       ),
