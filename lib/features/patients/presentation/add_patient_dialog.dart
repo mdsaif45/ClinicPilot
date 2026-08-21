@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_form_dialog.dart';
@@ -273,7 +274,9 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             disease: disease,
             referralSource: _referralSource,
           );
+      AppHaptics.success();
     } catch (e) {
+      AppHaptics.error();
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(

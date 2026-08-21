@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../providers/patient_provider.dart';
 import 'add_patient_dialog.dart';
 import 'edit_patient_dialog.dart';
@@ -52,7 +54,13 @@ class PatientsScreen extends ConsumerWidget {
           ),
           Expanded(
             child: patientsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => ListView.separated(
+                padding: const EdgeInsets.only(bottom: 96),
+                itemCount: 6,
+                separatorBuilder: (_, __) =>
+                    const Divider(height: 1, indent: Spacing.lg),
+                itemBuilder: (_, __) => const ListTileShimmer(),
+              ),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (patients) {
                 if (patients.isEmpty) {
@@ -102,14 +110,33 @@ class _PatientRow extends ConsumerWidget {
         patient.gender.isNotEmpty ? patient.gender[0].toUpperCase() : '';
 
     return ListTile(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => PatientProfileScreen(patient: patient),
-        ),
-      ),
+      onTap: () {
+        AppHaptics.light();
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PatientProfileScreen(patient: patient),
+          ),
+        );
+      },
       contentPadding: const EdgeInsets.symmetric(
         horizontal: Spacing.lg,
         vertical: Spacing.xs,
+      ),
+      leading: Hero(
+        tag: 'patient-avatar-${patient.id}',
+        child: CircleAvatar(
+          radius: 20,
+          backgroundColor: scheme.primary.withValues(alpha: 0.15),
+          child: Text(
+            patient.name.trim().isNotEmpty
+                ? patient.name.trim()[0].toUpperCase()
+                : '?',
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ),
       title: Row(
         children: [
@@ -202,10 +229,28 @@ class _PatientRow extends ConsumerWidget {
               backgroundColor: Theme.of(ctx).colorScheme.error,
             ),
             onPressed: () async {
+              AppHaptics.error();
               await ref
                   .read(patientNotifierProvider.notifier)
                   .archivePatient(patient.id);
               if (ctx.mounted) Navigator.of(ctx).pop();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${patient.name} removed'),
+                    behavior: SnackBarBehavior.floating,
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      onPressed: () {
+                        AppHaptics.medium();
+                        ref
+                            .read(patientNotifierProvider.notifier)
+                            .restorePatient(patient.id);
+                      },
+                    ),
+                  ),
+                );
+              }
             },
             child: const Text('Remove'),
           ),

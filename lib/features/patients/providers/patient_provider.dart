@@ -222,6 +222,15 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
       );
     });
   }
+
+  Future<void> restorePatient(String id) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await (_db.update(_db.patients)..where((tbl) => tbl.id.equals(id))).write(
+        const PatientsCompanion(isDeleted: Value(false)),
+      );
+    });
+  }
 }
 
 final patientNotifierProvider =
