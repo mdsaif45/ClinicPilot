@@ -15,6 +15,7 @@ import '../../../core/widgets/metric_strip.dart';
 import '../../../core/widgets/money_text.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/segmented_tabs.dart';
+import '../../../core/widgets/whatsapp_template_picker.dart';
 import '../../cashmemo/presentation/receipt_preview_dialog.dart';
 import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
@@ -71,6 +72,15 @@ class PatientProfileScreen extends ConsumerWidget {
                 onPressed: () => Navigator.of(context).maybePop(),
               ),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.chat_outlined),
+                  tooltip: 'WhatsApp message',
+                  onPressed: () => WhatsAppTemplatePickerSheet.show(
+                    context,
+                    patient: patient,
+                    clinicName: primaryClinic?.name ?? 'Clinic',
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
                   tooltip: 'Edit patient',
@@ -233,8 +243,11 @@ class _InfoTab extends StatelessWidget {
           label: 'WhatsApp',
           value: patient.whatsapp ?? patient.phone,
           icon: Icons.chat_outlined,
-          onTap: () => ContactService.openWhatsApp(
-            phone: patient.whatsapp ?? patient.phone,
+          onTap: () => WhatsAppTemplatePickerSheet.show(
+            context,
+            patient: patient,
+            clinicName: visits.isNotEmpty ? visits.first.clinic.name : 'Clinic',
+            dueDate: nextFollowUp,
           ),
         ),
         InfoRow(label: 'Age', value: '${patient.age}'),

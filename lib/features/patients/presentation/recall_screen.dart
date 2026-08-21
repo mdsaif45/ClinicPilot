@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/contact_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../core/widgets/whatsapp_template_picker.dart';
 import '../providers/recall_provider.dart';
 import 'patient_profile_screen.dart';
 
@@ -152,7 +152,12 @@ class _RecallCard extends StatelessWidget {
               const SizedBox(width: Spacing.md),
               Expanded(
                 child: FilledButton.tonalIcon(
-                  onPressed: () => _message(context, p, entry.clinic.name),
+                  onPressed: () => WhatsAppTemplatePickerSheet.show(
+                    context,
+                    patient: p,
+                    clinicName: entry.clinic.name,
+                    dueDate: entry.visit.nextFollowUpDate,
+                  ),
                   icon: const Icon(Icons.chat_outlined, size: 18),
                   label: const Text('WhatsApp'),
                 ),
@@ -162,25 +167,5 @@ class _RecallCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _message(
-    BuildContext context,
-    Patient p,
-    String clinicName,
-  ) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final ok = await ContactService.openWhatsApp(
-      phone: p.whatsapp?.isNotEmpty == true ? p.whatsapp! : p.phone,
-      message: ContactService.followUpMessage(
-        patientName: p.name,
-        clinicName: clinicName,
-      ),
-    );
-    if (!ok) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Could not open WhatsApp')),
-      );
-    }
   }
 }

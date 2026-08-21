@@ -29,19 +29,43 @@ class ContactService {
   static String followUpMessage({
     required String patientName,
     required String clinicName,
+    DateTime? dueDate,
   }) {
     return 'Hello $patientName, this is $clinicName. '
-        'It has been a while since your last visit. '
-        'How are you feeling? If you need a follow-up, we are happy to help.';
+        'Following up on your treatment. How are you feeling? '
+        'If you need a consultation or medicine refill, please let us know.';
+  }
+
+  /// General homeopathic health & wellness advice.
+  static String healthTipMessage({
+    required String patientName,
+    required String clinicName,
+  }) {
+    return 'Hello $patientName, a quick wellness reminder from $clinicName: '
+        'take your remedies on a clean tongue, avoid strong mint or raw onion around dose time, '
+        'and stay well-hydrated. Wishing you steady recovery!';
+  }
+
+  /// Special camp / free health checkup announcement.
+  static String campInviteMessage({
+    required String patientName,
+    required String clinicName,
+    String? campDetails,
+  }) {
+    final details = campDetails ?? 'our upcoming free homeopathic health check-up camp';
+    return 'Hello $patientName, $clinicName invites you and your family to $details. '
+        'Free consultations and personalized care available.';
   }
 
   static String reviewRequestMessage({
     required String patientName,
     required String clinicName,
+    String? reviewUrl,
   }) {
+    final link = reviewUrl != null ? ' here: $reviewUrl' : '';
     return 'Hello $patientName, thank you for visiting $clinicName. '
-        'If the treatment helped, would you mind leaving a short Google '
-        'review? It helps other patients find us.';
+        'If the treatment helped, would you mind leaving a short Google review$link? '
+        'It helps other patients find us.';
   }
 
   static Future<bool> openWhatsApp({
