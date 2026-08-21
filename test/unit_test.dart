@@ -431,6 +431,11 @@ void main() {
       expect(v.consultationType, equals('camp'));
     });
 
+    test('Schema v6 includes reviewRequests table', () async {
+      final reviews = await db.select(db.reviewRequests).get();
+      expect(reviews, isEmpty);
+    });
+
     test('Deleting a patient marks isDeleted = true without losing row', () async {
       await db.into(db.patients).insert(
             PatientsCompanion.insert(
