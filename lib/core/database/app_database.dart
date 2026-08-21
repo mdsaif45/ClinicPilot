@@ -7,16 +7,17 @@ import 'tables/visits.dart';
 import 'tables/cash_memos.dart';
 import 'tables/expenses.dart';
 import 'tables/settings.dart';
+import 'tables/review_requests.dart';
 
 part 'app_database.g.dart';
 
-// Type-safe database powered by Drift ORM (Schema Version 2)
-@DriftDatabase(tables: [Clinics, Patients, Visits, CashMemos, Expenses, Settings])
+// Type-safe database powered by Drift ORM (Schema Version 6)
+@DriftDatabase(tables: [Clinics, Patients, Visits, CashMemos, Expenses, Settings, ReviewRequests])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -182,6 +183,10 @@ class AppDatabase extends _$AppDatabase {
             ''');
 
             await _createPatientSerialIndex();
+          }
+
+          if (from < 6) {
+            await m.createTable(reviewRequests);
           }
         },
         beforeOpen: (details) async {

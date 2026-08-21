@@ -4516,6 +4516,626 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $ReviewRequestsTable extends ReviewRequests
+    with TableInfo<$ReviewRequestsTable, ReviewRequest> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReviewRequestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _patientIdMeta = const VerificationMeta(
+    'patientId',
+  );
+  @override
+  late final GeneratedColumn<String> patientId = GeneratedColumn<String>(
+    'patient_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES patients (id)',
+    ),
+  );
+  static const VerificationMeta _clinicIdMeta = const VerificationMeta(
+    'clinicId',
+  );
+  @override
+  late final GeneratedColumn<String> clinicId = GeneratedColumn<String>(
+    'clinic_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES clinics (id)',
+    ),
+  );
+  static const VerificationMeta _requestedAtMeta = const VerificationMeta(
+    'requestedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> requestedAt = GeneratedColumn<DateTime>(
+    'requested_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _reviewedAtMeta = const VerificationMeta(
+    'reviewedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> reviewedAt = GeneratedColumn<DateTime>(
+    'reviewed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ratingMeta = const VerificationMeta('rating');
+  @override
+  late final GeneratedColumn<int> rating = GeneratedColumn<int>(
+    'rating',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _platformMeta = const VerificationMeta(
+    'platform',
+  );
+  @override
+  late final GeneratedColumn<String> platform = GeneratedColumn<String>(
+    'platform',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('google'),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    patientId,
+    clinicId,
+    requestedAt,
+    reviewedAt,
+    rating,
+    platform,
+    notes,
+    isDeleted,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'review_requests';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReviewRequest> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('patient_id')) {
+      context.handle(
+        _patientIdMeta,
+        patientId.isAcceptableOrUnknown(data['patient_id']!, _patientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_patientIdMeta);
+    }
+    if (data.containsKey('clinic_id')) {
+      context.handle(
+        _clinicIdMeta,
+        clinicId.isAcceptableOrUnknown(data['clinic_id']!, _clinicIdMeta),
+      );
+    }
+    if (data.containsKey('requested_at')) {
+      context.handle(
+        _requestedAtMeta,
+        requestedAt.isAcceptableOrUnknown(
+          data['requested_at']!,
+          _requestedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reviewed_at')) {
+      context.handle(
+        _reviewedAtMeta,
+        reviewedAt.isAcceptableOrUnknown(data['reviewed_at']!, _reviewedAtMeta),
+      );
+    }
+    if (data.containsKey('rating')) {
+      context.handle(
+        _ratingMeta,
+        rating.isAcceptableOrUnknown(data['rating']!, _ratingMeta),
+      );
+    }
+    if (data.containsKey('platform')) {
+      context.handle(
+        _platformMeta,
+        platform.isAcceptableOrUnknown(data['platform']!, _platformMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ReviewRequest map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReviewRequest(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      patientId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}patient_id'],
+          )!,
+      clinicId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}clinic_id'],
+      ),
+      requestedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}requested_at'],
+          )!,
+      reviewedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}reviewed_at'],
+      ),
+      rating: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rating'],
+      ),
+      platform:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}platform'],
+          )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+    );
+  }
+
+  @override
+  $ReviewRequestsTable createAlias(String alias) {
+    return $ReviewRequestsTable(attachedDatabase, alias);
+  }
+}
+
+class ReviewRequest extends DataClass implements Insertable<ReviewRequest> {
+  final String id;
+  final String patientId;
+  final String? clinicId;
+  final DateTime requestedAt;
+  final DateTime? reviewedAt;
+  final int? rating;
+  final String platform;
+  final String? notes;
+  final bool isDeleted;
+  final DateTime createdAt;
+  const ReviewRequest({
+    required this.id,
+    required this.patientId,
+    this.clinicId,
+    required this.requestedAt,
+    this.reviewedAt,
+    this.rating,
+    required this.platform,
+    this.notes,
+    required this.isDeleted,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['patient_id'] = Variable<String>(patientId);
+    if (!nullToAbsent || clinicId != null) {
+      map['clinic_id'] = Variable<String>(clinicId);
+    }
+    map['requested_at'] = Variable<DateTime>(requestedAt);
+    if (!nullToAbsent || reviewedAt != null) {
+      map['reviewed_at'] = Variable<DateTime>(reviewedAt);
+    }
+    if (!nullToAbsent || rating != null) {
+      map['rating'] = Variable<int>(rating);
+    }
+    map['platform'] = Variable<String>(platform);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ReviewRequestsCompanion toCompanion(bool nullToAbsent) {
+    return ReviewRequestsCompanion(
+      id: Value(id),
+      patientId: Value(patientId),
+      clinicId:
+          clinicId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(clinicId),
+      requestedAt: Value(requestedAt),
+      reviewedAt:
+          reviewedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(reviewedAt),
+      rating:
+          rating == null && nullToAbsent ? const Value.absent() : Value(rating),
+      platform: Value(platform),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      isDeleted: Value(isDeleted),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ReviewRequest.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReviewRequest(
+      id: serializer.fromJson<String>(json['id']),
+      patientId: serializer.fromJson<String>(json['patientId']),
+      clinicId: serializer.fromJson<String?>(json['clinicId']),
+      requestedAt: serializer.fromJson<DateTime>(json['requestedAt']),
+      reviewedAt: serializer.fromJson<DateTime?>(json['reviewedAt']),
+      rating: serializer.fromJson<int?>(json['rating']),
+      platform: serializer.fromJson<String>(json['platform']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'patientId': serializer.toJson<String>(patientId),
+      'clinicId': serializer.toJson<String?>(clinicId),
+      'requestedAt': serializer.toJson<DateTime>(requestedAt),
+      'reviewedAt': serializer.toJson<DateTime?>(reviewedAt),
+      'rating': serializer.toJson<int?>(rating),
+      'platform': serializer.toJson<String>(platform),
+      'notes': serializer.toJson<String?>(notes),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ReviewRequest copyWith({
+    String? id,
+    String? patientId,
+    Value<String?> clinicId = const Value.absent(),
+    DateTime? requestedAt,
+    Value<DateTime?> reviewedAt = const Value.absent(),
+    Value<int?> rating = const Value.absent(),
+    String? platform,
+    Value<String?> notes = const Value.absent(),
+    bool? isDeleted,
+    DateTime? createdAt,
+  }) => ReviewRequest(
+    id: id ?? this.id,
+    patientId: patientId ?? this.patientId,
+    clinicId: clinicId.present ? clinicId.value : this.clinicId,
+    requestedAt: requestedAt ?? this.requestedAt,
+    reviewedAt: reviewedAt.present ? reviewedAt.value : this.reviewedAt,
+    rating: rating.present ? rating.value : this.rating,
+    platform: platform ?? this.platform,
+    notes: notes.present ? notes.value : this.notes,
+    isDeleted: isDeleted ?? this.isDeleted,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ReviewRequest copyWithCompanion(ReviewRequestsCompanion data) {
+    return ReviewRequest(
+      id: data.id.present ? data.id.value : this.id,
+      patientId: data.patientId.present ? data.patientId.value : this.patientId,
+      clinicId: data.clinicId.present ? data.clinicId.value : this.clinicId,
+      requestedAt:
+          data.requestedAt.present ? data.requestedAt.value : this.requestedAt,
+      reviewedAt:
+          data.reviewedAt.present ? data.reviewedAt.value : this.reviewedAt,
+      rating: data.rating.present ? data.rating.value : this.rating,
+      platform: data.platform.present ? data.platform.value : this.platform,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReviewRequest(')
+          ..write('id: $id, ')
+          ..write('patientId: $patientId, ')
+          ..write('clinicId: $clinicId, ')
+          ..write('requestedAt: $requestedAt, ')
+          ..write('reviewedAt: $reviewedAt, ')
+          ..write('rating: $rating, ')
+          ..write('platform: $platform, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    patientId,
+    clinicId,
+    requestedAt,
+    reviewedAt,
+    rating,
+    platform,
+    notes,
+    isDeleted,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReviewRequest &&
+          other.id == this.id &&
+          other.patientId == this.patientId &&
+          other.clinicId == this.clinicId &&
+          other.requestedAt == this.requestedAt &&
+          other.reviewedAt == this.reviewedAt &&
+          other.rating == this.rating &&
+          other.platform == this.platform &&
+          other.notes == this.notes &&
+          other.isDeleted == this.isDeleted &&
+          other.createdAt == this.createdAt);
+}
+
+class ReviewRequestsCompanion extends UpdateCompanion<ReviewRequest> {
+  final Value<String> id;
+  final Value<String> patientId;
+  final Value<String?> clinicId;
+  final Value<DateTime> requestedAt;
+  final Value<DateTime?> reviewedAt;
+  final Value<int?> rating;
+  final Value<String> platform;
+  final Value<String?> notes;
+  final Value<bool> isDeleted;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const ReviewRequestsCompanion({
+    this.id = const Value.absent(),
+    this.patientId = const Value.absent(),
+    this.clinicId = const Value.absent(),
+    this.requestedAt = const Value.absent(),
+    this.reviewedAt = const Value.absent(),
+    this.rating = const Value.absent(),
+    this.platform = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReviewRequestsCompanion.insert({
+    required String id,
+    required String patientId,
+    this.clinicId = const Value.absent(),
+    this.requestedAt = const Value.absent(),
+    this.reviewedAt = const Value.absent(),
+    this.rating = const Value.absent(),
+    this.platform = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       patientId = Value(patientId);
+  static Insertable<ReviewRequest> custom({
+    Expression<String>? id,
+    Expression<String>? patientId,
+    Expression<String>? clinicId,
+    Expression<DateTime>? requestedAt,
+    Expression<DateTime>? reviewedAt,
+    Expression<int>? rating,
+    Expression<String>? platform,
+    Expression<String>? notes,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (patientId != null) 'patient_id': patientId,
+      if (clinicId != null) 'clinic_id': clinicId,
+      if (requestedAt != null) 'requested_at': requestedAt,
+      if (reviewedAt != null) 'reviewed_at': reviewedAt,
+      if (rating != null) 'rating': rating,
+      if (platform != null) 'platform': platform,
+      if (notes != null) 'notes': notes,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReviewRequestsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? patientId,
+    Value<String?>? clinicId,
+    Value<DateTime>? requestedAt,
+    Value<DateTime?>? reviewedAt,
+    Value<int?>? rating,
+    Value<String>? platform,
+    Value<String?>? notes,
+    Value<bool>? isDeleted,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return ReviewRequestsCompanion(
+      id: id ?? this.id,
+      patientId: patientId ?? this.patientId,
+      clinicId: clinicId ?? this.clinicId,
+      requestedAt: requestedAt ?? this.requestedAt,
+      reviewedAt: reviewedAt ?? this.reviewedAt,
+      rating: rating ?? this.rating,
+      platform: platform ?? this.platform,
+      notes: notes ?? this.notes,
+      isDeleted: isDeleted ?? this.isDeleted,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (patientId.present) {
+      map['patient_id'] = Variable<String>(patientId.value);
+    }
+    if (clinicId.present) {
+      map['clinic_id'] = Variable<String>(clinicId.value);
+    }
+    if (requestedAt.present) {
+      map['requested_at'] = Variable<DateTime>(requestedAt.value);
+    }
+    if (reviewedAt.present) {
+      map['reviewed_at'] = Variable<DateTime>(reviewedAt.value);
+    }
+    if (rating.present) {
+      map['rating'] = Variable<int>(rating.value);
+    }
+    if (platform.present) {
+      map['platform'] = Variable<String>(platform.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReviewRequestsCompanion(')
+          ..write('id: $id, ')
+          ..write('patientId: $patientId, ')
+          ..write('clinicId: $clinicId, ')
+          ..write('requestedAt: $requestedAt, ')
+          ..write('reviewedAt: $reviewedAt, ')
+          ..write('rating: $rating, ')
+          ..write('platform: $platform, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4525,6 +5145,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CashMemosTable cashMemos = $CashMemosTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $ReviewRequestsTable reviewRequests = $ReviewRequestsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4536,6 +5157,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     cashMemos,
     expenses,
     settings,
+    reviewRequests,
   ];
 }
 
@@ -4625,6 +5247,24 @@ final class $$ClinicsTableReferences
     ).filter((f) => f.clinicId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_expensesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ReviewRequestsTable, List<ReviewRequest>>
+  _reviewRequestsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.reviewRequests,
+    aliasName: $_aliasNameGenerator(db.clinics.id, db.reviewRequests.clinicId),
+  );
+
+  $$ReviewRequestsTableProcessedTableManager get reviewRequestsRefs {
+    final manager = $$ReviewRequestsTableTableManager(
+      $_db,
+      $_db.reviewRequests,
+    ).filter((f) => f.clinicId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_reviewRequestsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -4761,6 +5401,31 @@ class $$ClinicsTableFilterComposer
           }) => $$ExpensesTableFilterComposer(
             $db: $db,
             $table: $db.expenses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> reviewRequestsRefs(
+    Expression<bool> Function($$ReviewRequestsTableFilterComposer f) f,
+  ) {
+    final $$ReviewRequestsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reviewRequests,
+      getReferencedColumn: (t) => t.clinicId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReviewRequestsTableFilterComposer(
+            $db: $db,
+            $table: $db.reviewRequests,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4956,6 +5621,31 @@ class $$ClinicsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> reviewRequestsRefs<T extends Object>(
+    Expression<T> Function($$ReviewRequestsTableAnnotationComposer a) f,
+  ) {
+    final $$ReviewRequestsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reviewRequests,
+      getReferencedColumn: (t) => t.clinicId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReviewRequestsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reviewRequests,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ClinicsTableTableManager
@@ -4975,6 +5665,7 @@ class $$ClinicsTableTableManager
             bool visitsRefs,
             bool cashMemosRefs,
             bool expensesRefs,
+            bool reviewRequestsRefs,
           })
         > {
   $$ClinicsTableTableManager(_$AppDatabase db, $ClinicsTable table)
@@ -5058,6 +5749,7 @@ class $$ClinicsTableTableManager
             visitsRefs = false,
             cashMemosRefs = false,
             expensesRefs = false,
+            reviewRequestsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -5065,6 +5757,7 @@ class $$ClinicsTableTableManager
                 if (visitsRefs) db.visits,
                 if (cashMemosRefs) db.cashMemos,
                 if (expensesRefs) db.expenses,
+                if (reviewRequestsRefs) db.reviewRequests,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -5123,6 +5816,28 @@ class $$ClinicsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (reviewRequestsRefs)
+                    await $_getPrefetchedData<
+                      Clinic,
+                      $ClinicsTable,
+                      ReviewRequest
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ClinicsTableReferences
+                          ._reviewRequestsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$ClinicsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reviewRequestsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.clinicId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -5147,6 +5862,7 @@ typedef $$ClinicsTableProcessedTableManager =
         bool visitsRefs,
         bool cashMemosRefs,
         bool expensesRefs,
+        bool reviewRequestsRefs,
       })
     >;
 typedef $$PatientsTableCreateCompanionBuilder =
@@ -5234,6 +5950,27 @@ final class $$PatientsTableReferences
     ).filter((f) => f.patientId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_cashMemosRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ReviewRequestsTable, List<ReviewRequest>>
+  _reviewRequestsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.reviewRequests,
+    aliasName: $_aliasNameGenerator(
+      db.patients.id,
+      db.reviewRequests.patientId,
+    ),
+  );
+
+  $$ReviewRequestsTableProcessedTableManager get reviewRequestsRefs {
+    final manager = $$ReviewRequestsTableTableManager(
+      $_db,
+      $_db.reviewRequests,
+    ).filter((f) => f.patientId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_reviewRequestsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5390,6 +6127,31 @@ class $$PatientsTableFilterComposer
           }) => $$CashMemosTableFilterComposer(
             $db: $db,
             $table: $db.cashMemos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> reviewRequestsRefs(
+    Expression<bool> Function($$ReviewRequestsTableFilterComposer f) f,
+  ) {
+    final $$ReviewRequestsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reviewRequests,
+      getReferencedColumn: (t) => t.patientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReviewRequestsTableFilterComposer(
+            $db: $db,
+            $table: $db.reviewRequests,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5642,6 +6404,31 @@ class $$PatientsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> reviewRequestsRefs<T extends Object>(
+    Expression<T> Function($$ReviewRequestsTableAnnotationComposer a) f,
+  ) {
+    final $$ReviewRequestsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reviewRequests,
+      getReferencedColumn: (t) => t.patientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReviewRequestsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reviewRequests,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PatientsTableTableManager
@@ -5657,7 +6444,11 @@ class $$PatientsTableTableManager
           $$PatientsTableUpdateCompanionBuilder,
           (Patient, $$PatientsTableReferences),
           Patient,
-          PrefetchHooks Function({bool visitsRefs, bool cashMemosRefs})
+          PrefetchHooks Function({
+            bool visitsRefs,
+            bool cashMemosRefs,
+            bool reviewRequestsRefs,
+          })
         > {
   $$PatientsTableTableManager(_$AppDatabase db, $PatientsTable table)
     : super(
@@ -5772,12 +6563,17 @@ class $$PatientsTableTableManager
                         ),
                       )
                       .toList(),
-          prefetchHooksCallback: ({visitsRefs = false, cashMemosRefs = false}) {
+          prefetchHooksCallback: ({
+            visitsRefs = false,
+            cashMemosRefs = false,
+            reviewRequestsRefs = false,
+          }) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (visitsRefs) db.visits,
                 if (cashMemosRefs) db.cashMemos,
+                if (reviewRequestsRefs) db.reviewRequests,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -5822,6 +6618,28 @@ class $$PatientsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (reviewRequestsRefs)
+                    await $_getPrefetchedData<
+                      Patient,
+                      $PatientsTable,
+                      ReviewRequest
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PatientsTableReferences
+                          ._reviewRequestsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$PatientsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reviewRequestsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.patientId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -5842,7 +6660,11 @@ typedef $$PatientsTableProcessedTableManager =
       $$PatientsTableUpdateCompanionBuilder,
       (Patient, $$PatientsTableReferences),
       Patient,
-      PrefetchHooks Function({bool visitsRefs, bool cashMemosRefs})
+      PrefetchHooks Function({
+        bool visitsRefs,
+        bool cashMemosRefs,
+        bool reviewRequestsRefs,
+      })
     >;
 typedef $$VisitsTableCreateCompanionBuilder =
     VisitsCompanion Function({
@@ -7841,6 +8663,525 @@ typedef $$SettingsTableProcessedTableManager =
       Setting,
       PrefetchHooks Function()
     >;
+typedef $$ReviewRequestsTableCreateCompanionBuilder =
+    ReviewRequestsCompanion Function({
+      required String id,
+      required String patientId,
+      Value<String?> clinicId,
+      Value<DateTime> requestedAt,
+      Value<DateTime?> reviewedAt,
+      Value<int?> rating,
+      Value<String> platform,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+typedef $$ReviewRequestsTableUpdateCompanionBuilder =
+    ReviewRequestsCompanion Function({
+      Value<String> id,
+      Value<String> patientId,
+      Value<String?> clinicId,
+      Value<DateTime> requestedAt,
+      Value<DateTime?> reviewedAt,
+      Value<int?> rating,
+      Value<String> platform,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$ReviewRequestsTableReferences
+    extends BaseReferences<_$AppDatabase, $ReviewRequestsTable, ReviewRequest> {
+  $$ReviewRequestsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PatientsTable _patientIdTable(_$AppDatabase db) =>
+      db.patients.createAlias(
+        $_aliasNameGenerator(db.reviewRequests.patientId, db.patients.id),
+      );
+
+  $$PatientsTableProcessedTableManager get patientId {
+    final $_column = $_itemColumn<String>('patient_id')!;
+
+    final manager = $$PatientsTableTableManager(
+      $_db,
+      $_db.patients,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_patientIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ClinicsTable _clinicIdTable(_$AppDatabase db) =>
+      db.clinics.createAlias(
+        $_aliasNameGenerator(db.reviewRequests.clinicId, db.clinics.id),
+      );
+
+  $$ClinicsTableProcessedTableManager? get clinicId {
+    final $_column = $_itemColumn<String>('clinic_id');
+    if ($_column == null) return null;
+    final manager = $$ClinicsTableTableManager(
+      $_db,
+      $_db.clinics,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_clinicIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ReviewRequestsTableFilterComposer
+    extends Composer<_$AppDatabase, $ReviewRequestsTable> {
+  $$ReviewRequestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get requestedAt => $composableBuilder(
+    column: $table.requestedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rating => $composableBuilder(
+    column: $table.rating,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get platform => $composableBuilder(
+    column: $table.platform,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PatientsTableFilterComposer get patientId {
+    final $$PatientsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableFilterComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ClinicsTableFilterComposer get clinicId {
+    final $$ClinicsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableFilterComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReviewRequestsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReviewRequestsTable> {
+  $$ReviewRequestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get requestedAt => $composableBuilder(
+    column: $table.requestedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rating => $composableBuilder(
+    column: $table.rating,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get platform => $composableBuilder(
+    column: $table.platform,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PatientsTableOrderingComposer get patientId {
+    final $$PatientsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableOrderingComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ClinicsTableOrderingComposer get clinicId {
+    final $$ClinicsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableOrderingComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReviewRequestsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReviewRequestsTable> {
+  $$ReviewRequestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get requestedAt => $composableBuilder(
+    column: $table.requestedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get rating =>
+      $composableBuilder(column: $table.rating, builder: (column) => column);
+
+  GeneratedColumn<String> get platform =>
+      $composableBuilder(column: $table.platform, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$PatientsTableAnnotationComposer get patientId {
+    final $$PatientsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ClinicsTableAnnotationComposer get clinicId {
+    final $$ClinicsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReviewRequestsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ReviewRequestsTable,
+          ReviewRequest,
+          $$ReviewRequestsTableFilterComposer,
+          $$ReviewRequestsTableOrderingComposer,
+          $$ReviewRequestsTableAnnotationComposer,
+          $$ReviewRequestsTableCreateCompanionBuilder,
+          $$ReviewRequestsTableUpdateCompanionBuilder,
+          (ReviewRequest, $$ReviewRequestsTableReferences),
+          ReviewRequest,
+          PrefetchHooks Function({bool patientId, bool clinicId})
+        > {
+  $$ReviewRequestsTableTableManager(
+    _$AppDatabase db,
+    $ReviewRequestsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$ReviewRequestsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$ReviewRequestsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$ReviewRequestsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> patientId = const Value.absent(),
+                Value<String?> clinicId = const Value.absent(),
+                Value<DateTime> requestedAt = const Value.absent(),
+                Value<DateTime?> reviewedAt = const Value.absent(),
+                Value<int?> rating = const Value.absent(),
+                Value<String> platform = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReviewRequestsCompanion(
+                id: id,
+                patientId: patientId,
+                clinicId: clinicId,
+                requestedAt: requestedAt,
+                reviewedAt: reviewedAt,
+                rating: rating,
+                platform: platform,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String patientId,
+                Value<String?> clinicId = const Value.absent(),
+                Value<DateTime> requestedAt = const Value.absent(),
+                Value<DateTime?> reviewedAt = const Value.absent(),
+                Value<int?> rating = const Value.absent(),
+                Value<String> platform = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReviewRequestsCompanion.insert(
+                id: id,
+                patientId: patientId,
+                clinicId: clinicId,
+                requestedAt: requestedAt,
+                reviewedAt: reviewedAt,
+                rating: rating,
+                platform: platform,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$ReviewRequestsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({patientId = false, clinicId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (patientId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.patientId,
+                            referencedTable: $$ReviewRequestsTableReferences
+                                ._patientIdTable(db),
+                            referencedColumn:
+                                $$ReviewRequestsTableReferences
+                                    ._patientIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+                if (clinicId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.clinicId,
+                            referencedTable: $$ReviewRequestsTableReferences
+                                ._clinicIdTable(db),
+                            referencedColumn:
+                                $$ReviewRequestsTableReferences
+                                    ._clinicIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ReviewRequestsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ReviewRequestsTable,
+      ReviewRequest,
+      $$ReviewRequestsTableFilterComposer,
+      $$ReviewRequestsTableOrderingComposer,
+      $$ReviewRequestsTableAnnotationComposer,
+      $$ReviewRequestsTableCreateCompanionBuilder,
+      $$ReviewRequestsTableUpdateCompanionBuilder,
+      (ReviewRequest, $$ReviewRequestsTableReferences),
+      ReviewRequest,
+      PrefetchHooks Function({bool patientId, bool clinicId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7857,4 +9198,6 @@ class $AppDatabaseManager {
       $$ExpensesTableTableManager(_db, _db.expenses);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$ReviewRequestsTableTableManager get reviewRequests =>
+      $$ReviewRequestsTableTableManager(_db, _db.reviewRequests);
 }
