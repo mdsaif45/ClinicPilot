@@ -15,7 +15,18 @@ import '../../clinics/providers/clinic_provider.dart';
 import '../providers/patient_provider.dart';
 
 class AddPatientDialog extends ConsumerStatefulWidget {
-  const AddPatientDialog({super.key});
+  final String? initialName;
+  final String? initialPhone;
+  final String? initialDisease;
+  final String? initialClinicId;
+
+  const AddPatientDialog({
+    super.key,
+    this.initialName,
+    this.initialPhone,
+    this.initialDisease,
+    this.initialClinicId,
+  });
 
   @override
   ConsumerState<AddPatientDialog> createState() => _AddPatientDialogState();
@@ -24,12 +35,12 @@ class AddPatientDialog extends ConsumerStatefulWidget {
 class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   final _formKey = GlobalKey<FormState>();
   final _serialController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
   final _whatsappController = TextEditingController();
   final _ageController = TextEditingController();
   final _areaController = TextEditingController();
-  final _diseaseController = TextEditingController();
+  late final TextEditingController _diseaseController;
 
   String _gender = 'Male';
   String? _selectedClinicId;
@@ -51,7 +62,10 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   @override
   void initState() {
     super.initState();
-    _selectedClinicId = ref.read(activeClinicIdProvider);
+    _nameController = TextEditingController(text: widget.initialName ?? '');
+    _phoneController = TextEditingController(text: widget.initialPhone ?? '');
+    _diseaseController = TextEditingController(text: widget.initialDisease ?? '');
+    _selectedClinicId = widget.initialClinicId ?? ref.read(activeClinicIdProvider);
   }
 
   @override
@@ -262,19 +276,21 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final disease = Formatters.toTitleCase(_diseaseController.text);
 
     try {
-      await ref.read(patientNotifierProvider.notifier).registerPatient(
-            name: name,
-            phone: phone,
-            whatsapp: whatsapp.isEmpty ? null : whatsapp,
-            age: age,
-            gender: _gender,
-            area: area.isEmpty ? null : area,
-            primaryClinicId: _selectedClinicId!,
-            serialNo: serialNo,
-            disease: disease,
-            referralSource: _referralSource,
-          );
+      final patient =
+          await ref.read(patientNotifierProvider.notifier).registerPatient(
+                name: name,
+                phone: phone,
+                whatsapp: whatsapp.isEmpty ? null : whatsapp,
+                age: age,
+                gender: _gender,
+                area: area.isEmpty ? null : area,
+                primaryClinicId: _selectedClinicId!,
+                serialNo: serialNo,
+                disease: disease,
+                referralSource: _referralSource,
+              );
       AppHaptics.success();
+      if (mounted) Navigator.of(context).pop(patient.id);
     } catch (e) {
       AppHaptics.error();
       if (mounted) {
@@ -285,7 +301,5 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
       }
       return;
     }
-
-    if (mounted) Navigator.of(context).pop();
   }
 }

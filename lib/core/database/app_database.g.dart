@@ -5136,6 +5136,631 @@ class ReviewRequestsCompanion extends UpdateCompanion<ReviewRequest> {
   }
 }
 
+class $FootfallsTable extends Footfalls
+    with TableInfo<$FootfallsTable, Footfall> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FootfallsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _clinicIdMeta = const VerificationMeta(
+    'clinicId',
+  );
+  @override
+  late final GeneratedColumn<String> clinicId = GeneratedColumn<String>(
+    'clinic_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES clinics (id)',
+    ),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
+  @override
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+    'phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _diseaseMeta = const VerificationMeta(
+    'disease',
+  );
+  @override
+  late final GeneratedColumn<String> disease = GeneratedColumn<String>(
+    'disease',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _convertedPatientIdMeta =
+      const VerificationMeta('convertedPatientId');
+  @override
+  late final GeneratedColumn<String> convertedPatientId =
+      GeneratedColumn<String>(
+        'converted_patient_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES patients (id)',
+        ),
+      );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    clinicId,
+    date,
+    name,
+    phone,
+    disease,
+    convertedPatientId,
+    notes,
+    isDeleted,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'footfalls';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Footfall> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('clinic_id')) {
+      context.handle(
+        _clinicIdMeta,
+        clinicId.isAcceptableOrUnknown(data['clinic_id']!, _clinicIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clinicIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('phone')) {
+      context.handle(
+        _phoneMeta,
+        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
+    if (data.containsKey('disease')) {
+      context.handle(
+        _diseaseMeta,
+        disease.isAcceptableOrUnknown(data['disease']!, _diseaseMeta),
+      );
+    }
+    if (data.containsKey('converted_patient_id')) {
+      context.handle(
+        _convertedPatientIdMeta,
+        convertedPatientId.isAcceptableOrUnknown(
+          data['converted_patient_id']!,
+          _convertedPatientIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Footfall map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Footfall(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      clinicId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}clinic_id'],
+          )!,
+      date:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}date'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      phone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone'],
+      ),
+      disease: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}disease'],
+      ),
+      convertedPatientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}converted_patient_id'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+    );
+  }
+
+  @override
+  $FootfallsTable createAlias(String alias) {
+    return $FootfallsTable(attachedDatabase, alias);
+  }
+}
+
+class Footfall extends DataClass implements Insertable<Footfall> {
+  final String id;
+  final String clinicId;
+  final DateTime date;
+  final String name;
+  final String? phone;
+  final String? disease;
+  final String? convertedPatientId;
+  final String? notes;
+  final bool isDeleted;
+  final DateTime createdAt;
+  const Footfall({
+    required this.id,
+    required this.clinicId,
+    required this.date,
+    required this.name,
+    this.phone,
+    this.disease,
+    this.convertedPatientId,
+    this.notes,
+    required this.isDeleted,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['clinic_id'] = Variable<String>(clinicId);
+    map['date'] = Variable<DateTime>(date);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || phone != null) {
+      map['phone'] = Variable<String>(phone);
+    }
+    if (!nullToAbsent || disease != null) {
+      map['disease'] = Variable<String>(disease);
+    }
+    if (!nullToAbsent || convertedPatientId != null) {
+      map['converted_patient_id'] = Variable<String>(convertedPatientId);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  FootfallsCompanion toCompanion(bool nullToAbsent) {
+    return FootfallsCompanion(
+      id: Value(id),
+      clinicId: Value(clinicId),
+      date: Value(date),
+      name: Value(name),
+      phone:
+          phone == null && nullToAbsent ? const Value.absent() : Value(phone),
+      disease:
+          disease == null && nullToAbsent
+              ? const Value.absent()
+              : Value(disease),
+      convertedPatientId:
+          convertedPatientId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(convertedPatientId),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      isDeleted: Value(isDeleted),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Footfall.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Footfall(
+      id: serializer.fromJson<String>(json['id']),
+      clinicId: serializer.fromJson<String>(json['clinicId']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      name: serializer.fromJson<String>(json['name']),
+      phone: serializer.fromJson<String?>(json['phone']),
+      disease: serializer.fromJson<String?>(json['disease']),
+      convertedPatientId: serializer.fromJson<String?>(
+        json['convertedPatientId'],
+      ),
+      notes: serializer.fromJson<String?>(json['notes']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'clinicId': serializer.toJson<String>(clinicId),
+      'date': serializer.toJson<DateTime>(date),
+      'name': serializer.toJson<String>(name),
+      'phone': serializer.toJson<String?>(phone),
+      'disease': serializer.toJson<String?>(disease),
+      'convertedPatientId': serializer.toJson<String?>(convertedPatientId),
+      'notes': serializer.toJson<String?>(notes),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Footfall copyWith({
+    String? id,
+    String? clinicId,
+    DateTime? date,
+    String? name,
+    Value<String?> phone = const Value.absent(),
+    Value<String?> disease = const Value.absent(),
+    Value<String?> convertedPatientId = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    bool? isDeleted,
+    DateTime? createdAt,
+  }) => Footfall(
+    id: id ?? this.id,
+    clinicId: clinicId ?? this.clinicId,
+    date: date ?? this.date,
+    name: name ?? this.name,
+    phone: phone.present ? phone.value : this.phone,
+    disease: disease.present ? disease.value : this.disease,
+    convertedPatientId:
+        convertedPatientId.present
+            ? convertedPatientId.value
+            : this.convertedPatientId,
+    notes: notes.present ? notes.value : this.notes,
+    isDeleted: isDeleted ?? this.isDeleted,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Footfall copyWithCompanion(FootfallsCompanion data) {
+    return Footfall(
+      id: data.id.present ? data.id.value : this.id,
+      clinicId: data.clinicId.present ? data.clinicId.value : this.clinicId,
+      date: data.date.present ? data.date.value : this.date,
+      name: data.name.present ? data.name.value : this.name,
+      phone: data.phone.present ? data.phone.value : this.phone,
+      disease: data.disease.present ? data.disease.value : this.disease,
+      convertedPatientId:
+          data.convertedPatientId.present
+              ? data.convertedPatientId.value
+              : this.convertedPatientId,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Footfall(')
+          ..write('id: $id, ')
+          ..write('clinicId: $clinicId, ')
+          ..write('date: $date, ')
+          ..write('name: $name, ')
+          ..write('phone: $phone, ')
+          ..write('disease: $disease, ')
+          ..write('convertedPatientId: $convertedPatientId, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    clinicId,
+    date,
+    name,
+    phone,
+    disease,
+    convertedPatientId,
+    notes,
+    isDeleted,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Footfall &&
+          other.id == this.id &&
+          other.clinicId == this.clinicId &&
+          other.date == this.date &&
+          other.name == this.name &&
+          other.phone == this.phone &&
+          other.disease == this.disease &&
+          other.convertedPatientId == this.convertedPatientId &&
+          other.notes == this.notes &&
+          other.isDeleted == this.isDeleted &&
+          other.createdAt == this.createdAt);
+}
+
+class FootfallsCompanion extends UpdateCompanion<Footfall> {
+  final Value<String> id;
+  final Value<String> clinicId;
+  final Value<DateTime> date;
+  final Value<String> name;
+  final Value<String?> phone;
+  final Value<String?> disease;
+  final Value<String?> convertedPatientId;
+  final Value<String?> notes;
+  final Value<bool> isDeleted;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const FootfallsCompanion({
+    this.id = const Value.absent(),
+    this.clinicId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.name = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.disease = const Value.absent(),
+    this.convertedPatientId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FootfallsCompanion.insert({
+    required String id,
+    required String clinicId,
+    this.date = const Value.absent(),
+    required String name,
+    this.phone = const Value.absent(),
+    this.disease = const Value.absent(),
+    this.convertedPatientId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       clinicId = Value(clinicId),
+       name = Value(name);
+  static Insertable<Footfall> custom({
+    Expression<String>? id,
+    Expression<String>? clinicId,
+    Expression<DateTime>? date,
+    Expression<String>? name,
+    Expression<String>? phone,
+    Expression<String>? disease,
+    Expression<String>? convertedPatientId,
+    Expression<String>? notes,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (clinicId != null) 'clinic_id': clinicId,
+      if (date != null) 'date': date,
+      if (name != null) 'name': name,
+      if (phone != null) 'phone': phone,
+      if (disease != null) 'disease': disease,
+      if (convertedPatientId != null)
+        'converted_patient_id': convertedPatientId,
+      if (notes != null) 'notes': notes,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FootfallsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? clinicId,
+    Value<DateTime>? date,
+    Value<String>? name,
+    Value<String?>? phone,
+    Value<String?>? disease,
+    Value<String?>? convertedPatientId,
+    Value<String?>? notes,
+    Value<bool>? isDeleted,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return FootfallsCompanion(
+      id: id ?? this.id,
+      clinicId: clinicId ?? this.clinicId,
+      date: date ?? this.date,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      disease: disease ?? this.disease,
+      convertedPatientId: convertedPatientId ?? this.convertedPatientId,
+      notes: notes ?? this.notes,
+      isDeleted: isDeleted ?? this.isDeleted,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clinicId.present) {
+      map['clinic_id'] = Variable<String>(clinicId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
+    if (disease.present) {
+      map['disease'] = Variable<String>(disease.value);
+    }
+    if (convertedPatientId.present) {
+      map['converted_patient_id'] = Variable<String>(convertedPatientId.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FootfallsCompanion(')
+          ..write('id: $id, ')
+          ..write('clinicId: $clinicId, ')
+          ..write('date: $date, ')
+          ..write('name: $name, ')
+          ..write('phone: $phone, ')
+          ..write('disease: $disease, ')
+          ..write('convertedPatientId: $convertedPatientId, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5146,6 +5771,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
   late final $ReviewRequestsTable reviewRequests = $ReviewRequestsTable(this);
+  late final $FootfallsTable footfalls = $FootfallsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5158,6 +5784,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     expenses,
     settings,
     reviewRequests,
+    footfalls,
   ];
 }
 
@@ -5265,6 +5892,24 @@ final class $$ClinicsTableReferences
     ).filter((f) => f.clinicId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_reviewRequestsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$FootfallsTable, List<Footfall>>
+  _footfallsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.footfalls,
+    aliasName: $_aliasNameGenerator(db.clinics.id, db.footfalls.clinicId),
+  );
+
+  $$FootfallsTableProcessedTableManager get footfallsRefs {
+    final manager = $$FootfallsTableTableManager(
+      $_db,
+      $_db.footfalls,
+    ).filter((f) => f.clinicId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_footfallsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5426,6 +6071,31 @@ class $$ClinicsTableFilterComposer
           }) => $$ReviewRequestsTableFilterComposer(
             $db: $db,
             $table: $db.reviewRequests,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> footfallsRefs(
+    Expression<bool> Function($$FootfallsTableFilterComposer f) f,
+  ) {
+    final $$FootfallsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.footfalls,
+      getReferencedColumn: (t) => t.clinicId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FootfallsTableFilterComposer(
+            $db: $db,
+            $table: $db.footfalls,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5646,6 +6316,31 @@ class $$ClinicsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> footfallsRefs<T extends Object>(
+    Expression<T> Function($$FootfallsTableAnnotationComposer a) f,
+  ) {
+    final $$FootfallsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.footfalls,
+      getReferencedColumn: (t) => t.clinicId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FootfallsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.footfalls,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ClinicsTableTableManager
@@ -5666,6 +6361,7 @@ class $$ClinicsTableTableManager
             bool cashMemosRefs,
             bool expensesRefs,
             bool reviewRequestsRefs,
+            bool footfallsRefs,
           })
         > {
   $$ClinicsTableTableManager(_$AppDatabase db, $ClinicsTable table)
@@ -5750,6 +6446,7 @@ class $$ClinicsTableTableManager
             cashMemosRefs = false,
             expensesRefs = false,
             reviewRequestsRefs = false,
+            footfallsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -5758,6 +6455,7 @@ class $$ClinicsTableTableManager
                 if (cashMemosRefs) db.cashMemos,
                 if (expensesRefs) db.expenses,
                 if (reviewRequestsRefs) db.reviewRequests,
+                if (footfallsRefs) db.footfalls,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -5838,6 +6536,24 @@ class $$ClinicsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (footfallsRefs)
+                    await $_getPrefetchedData<Clinic, $ClinicsTable, Footfall>(
+                      currentTable: table,
+                      referencedTable: $$ClinicsTableReferences
+                          ._footfallsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$ClinicsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).footfallsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.clinicId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -5863,6 +6579,7 @@ typedef $$ClinicsTableProcessedTableManager =
         bool cashMemosRefs,
         bool expensesRefs,
         bool reviewRequestsRefs,
+        bool footfallsRefs,
       })
     >;
 typedef $$PatientsTableCreateCompanionBuilder =
@@ -5971,6 +6688,26 @@ final class $$PatientsTableReferences
     ).filter((f) => f.patientId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_reviewRequestsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$FootfallsTable, List<Footfall>>
+  _footfallsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.footfalls,
+    aliasName: $_aliasNameGenerator(
+      db.patients.id,
+      db.footfalls.convertedPatientId,
+    ),
+  );
+
+  $$FootfallsTableProcessedTableManager get footfallsRefs {
+    final manager = $$FootfallsTableTableManager($_db, $_db.footfalls).filter(
+      (f) => f.convertedPatientId.id.sqlEquals($_itemColumn<String>('id')!),
+    );
+
+    final cache = $_typedResult.readTableOrNull(_footfallsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -6152,6 +6889,31 @@ class $$PatientsTableFilterComposer
           }) => $$ReviewRequestsTableFilterComposer(
             $db: $db,
             $table: $db.reviewRequests,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> footfallsRefs(
+    Expression<bool> Function($$FootfallsTableFilterComposer f) f,
+  ) {
+    final $$FootfallsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.footfalls,
+      getReferencedColumn: (t) => t.convertedPatientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FootfallsTableFilterComposer(
+            $db: $db,
+            $table: $db.footfalls,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6429,6 +7191,31 @@ class $$PatientsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> footfallsRefs<T extends Object>(
+    Expression<T> Function($$FootfallsTableAnnotationComposer a) f,
+  ) {
+    final $$FootfallsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.footfalls,
+      getReferencedColumn: (t) => t.convertedPatientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FootfallsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.footfalls,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PatientsTableTableManager
@@ -6448,6 +7235,7 @@ class $$PatientsTableTableManager
             bool visitsRefs,
             bool cashMemosRefs,
             bool reviewRequestsRefs,
+            bool footfallsRefs,
           })
         > {
   $$PatientsTableTableManager(_$AppDatabase db, $PatientsTable table)
@@ -6567,6 +7355,7 @@ class $$PatientsTableTableManager
             visitsRefs = false,
             cashMemosRefs = false,
             reviewRequestsRefs = false,
+            footfallsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -6574,6 +7363,7 @@ class $$PatientsTableTableManager
                 if (visitsRefs) db.visits,
                 if (cashMemosRefs) db.cashMemos,
                 if (reviewRequestsRefs) db.reviewRequests,
+                if (footfallsRefs) db.footfalls,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -6640,6 +7430,28 @@ class $$PatientsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (footfallsRefs)
+                    await $_getPrefetchedData<
+                      Patient,
+                      $PatientsTable,
+                      Footfall
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PatientsTableReferences
+                          ._footfallsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$PatientsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).footfallsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.convertedPatientId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -6664,6 +7476,7 @@ typedef $$PatientsTableProcessedTableManager =
         bool visitsRefs,
         bool cashMemosRefs,
         bool reviewRequestsRefs,
+        bool footfallsRefs,
       })
     >;
 typedef $$VisitsTableCreateCompanionBuilder =
@@ -9182,6 +9995,512 @@ typedef $$ReviewRequestsTableProcessedTableManager =
       ReviewRequest,
       PrefetchHooks Function({bool patientId, bool clinicId})
     >;
+typedef $$FootfallsTableCreateCompanionBuilder =
+    FootfallsCompanion Function({
+      required String id,
+      required String clinicId,
+      Value<DateTime> date,
+      required String name,
+      Value<String?> phone,
+      Value<String?> disease,
+      Value<String?> convertedPatientId,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+typedef $$FootfallsTableUpdateCompanionBuilder =
+    FootfallsCompanion Function({
+      Value<String> id,
+      Value<String> clinicId,
+      Value<DateTime> date,
+      Value<String> name,
+      Value<String?> phone,
+      Value<String?> disease,
+      Value<String?> convertedPatientId,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$FootfallsTableReferences
+    extends BaseReferences<_$AppDatabase, $FootfallsTable, Footfall> {
+  $$FootfallsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ClinicsTable _clinicIdTable(_$AppDatabase db) => db.clinics
+      .createAlias($_aliasNameGenerator(db.footfalls.clinicId, db.clinics.id));
+
+  $$ClinicsTableProcessedTableManager get clinicId {
+    final $_column = $_itemColumn<String>('clinic_id')!;
+
+    final manager = $$ClinicsTableTableManager(
+      $_db,
+      $_db.clinics,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_clinicIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PatientsTable _convertedPatientIdTable(_$AppDatabase db) =>
+      db.patients.createAlias(
+        $_aliasNameGenerator(db.footfalls.convertedPatientId, db.patients.id),
+      );
+
+  $$PatientsTableProcessedTableManager? get convertedPatientId {
+    final $_column = $_itemColumn<String>('converted_patient_id');
+    if ($_column == null) return null;
+    final manager = $$PatientsTableTableManager(
+      $_db,
+      $_db.patients,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_convertedPatientIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FootfallsTableFilterComposer
+    extends Composer<_$AppDatabase, $FootfallsTable> {
+  $$FootfallsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get disease => $composableBuilder(
+    column: $table.disease,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ClinicsTableFilterComposer get clinicId {
+    final $$ClinicsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableFilterComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PatientsTableFilterComposer get convertedPatientId {
+    final $$PatientsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.convertedPatientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableFilterComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FootfallsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FootfallsTable> {
+  $$FootfallsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get disease => $composableBuilder(
+    column: $table.disease,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ClinicsTableOrderingComposer get clinicId {
+    final $$ClinicsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableOrderingComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PatientsTableOrderingComposer get convertedPatientId {
+    final $$PatientsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.convertedPatientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableOrderingComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FootfallsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FootfallsTable> {
+  $$FootfallsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<String> get disease =>
+      $composableBuilder(column: $table.disease, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ClinicsTableAnnotationComposer get clinicId {
+    final $$ClinicsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PatientsTableAnnotationComposer get convertedPatientId {
+    final $$PatientsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.convertedPatientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FootfallsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FootfallsTable,
+          Footfall,
+          $$FootfallsTableFilterComposer,
+          $$FootfallsTableOrderingComposer,
+          $$FootfallsTableAnnotationComposer,
+          $$FootfallsTableCreateCompanionBuilder,
+          $$FootfallsTableUpdateCompanionBuilder,
+          (Footfall, $$FootfallsTableReferences),
+          Footfall,
+          PrefetchHooks Function({bool clinicId, bool convertedPatientId})
+        > {
+  $$FootfallsTableTableManager(_$AppDatabase db, $FootfallsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$FootfallsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$FootfallsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$FootfallsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> clinicId = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                Value<String?> disease = const Value.absent(),
+                Value<String?> convertedPatientId = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FootfallsCompanion(
+                id: id,
+                clinicId: clinicId,
+                date: date,
+                name: name,
+                phone: phone,
+                disease: disease,
+                convertedPatientId: convertedPatientId,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String clinicId,
+                Value<DateTime> date = const Value.absent(),
+                required String name,
+                Value<String?> phone = const Value.absent(),
+                Value<String?> disease = const Value.absent(),
+                Value<String?> convertedPatientId = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FootfallsCompanion.insert(
+                id: id,
+                clinicId: clinicId,
+                date: date,
+                name: name,
+                phone: phone,
+                disease: disease,
+                convertedPatientId: convertedPatientId,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$FootfallsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({
+            clinicId = false,
+            convertedPatientId = false,
+          }) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (clinicId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.clinicId,
+                            referencedTable: $$FootfallsTableReferences
+                                ._clinicIdTable(db),
+                            referencedColumn:
+                                $$FootfallsTableReferences
+                                    ._clinicIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+                if (convertedPatientId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.convertedPatientId,
+                            referencedTable: $$FootfallsTableReferences
+                                ._convertedPatientIdTable(db),
+                            referencedColumn:
+                                $$FootfallsTableReferences
+                                    ._convertedPatientIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$FootfallsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FootfallsTable,
+      Footfall,
+      $$FootfallsTableFilterComposer,
+      $$FootfallsTableOrderingComposer,
+      $$FootfallsTableAnnotationComposer,
+      $$FootfallsTableCreateCompanionBuilder,
+      $$FootfallsTableUpdateCompanionBuilder,
+      (Footfall, $$FootfallsTableReferences),
+      Footfall,
+      PrefetchHooks Function({bool clinicId, bool convertedPatientId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9200,4 +10519,6 @@ class $AppDatabaseManager {
       $$SettingsTableTableManager(_db, _db.settings);
   $$ReviewRequestsTableTableManager get reviewRequests =>
       $$ReviewRequestsTableTableManager(_db, _db.reviewRequests);
+  $$FootfallsTableTableManager get footfalls =>
+      $$FootfallsTableTableManager(_db, _db.footfalls);
 }
