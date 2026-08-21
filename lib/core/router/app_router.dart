@@ -15,6 +15,7 @@ import '../../features/growth/presentation/growth_hub_screen.dart';
 import '../../features/growth/presentation/profit_summary_screen.dart';
 import '../../features/growth/presentation/referral_source_screen.dart';
 import '../../features/growth/presentation/clinic_comparison_screen.dart';
+import '../../features/growth/presentation/camp_manager_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
@@ -92,6 +93,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'referral',
                     builder: (context, state) => const ReferralSourceScreen(),
+                  ),
+                  GoRoute(
+                    path: 'camps',
+                    builder: (context, state) => const CampManagerScreen(),
                   ),
                 ],
               ),

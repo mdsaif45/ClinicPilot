@@ -57,6 +57,12 @@ class GrowthHubScreen extends ConsumerWidget {
           subtitle: 'Where patients come from, and what each is worth',
           onTap: () => context.push('/growth/referral'),
         ),
+        _MenuCard(
+          icon: Icons.campaign_outlined,
+          title: 'Camp Manager & ROI',
+          subtitle: 'Free camp tracking, costs and patient follow-up revenue ROI',
+          onTap: () => context.push('/growth/camps'),
+        ),
       ],
     );
   }

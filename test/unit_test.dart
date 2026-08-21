@@ -441,6 +441,11 @@ void main() {
       expect(footfalls, isEmpty);
     });
 
+    test('Schema v8 includes camps table', () async {
+      final camps = await db.select(db.camps).get();
+      expect(camps, isEmpty);
+    });
+
     test('Deleting a patient marks isDeleted = true without losing row', () async {
       await db.into(db.patients).insert(
             PatientsCompanion.insert(
