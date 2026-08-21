@@ -71,7 +71,7 @@ class PickerField<T> extends StatelessWidget {
             color: scheme.onSurface,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: Spacing.xs),
         InkWell(
           borderRadius: Radii.mdAll,
           onTap: options.isEmpty ? null : () => _open(context),

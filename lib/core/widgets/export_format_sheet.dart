@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../design/tokens.dart';
+
 /// The file formats a per-list export can be saved as.
 enum ExportFormat {
   csv('CSV', 'Opens in any spreadsheet app.', Icons.table_chart_outlined),
@@ -28,7 +30,12 @@ Future<ExportFormat?> pickExportFormat(BuildContext context) {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(20, 4, 20, 8),
+            padding: EdgeInsets.fromLTRB(
+              Spacing.xl,
+              Spacing.xs,
+              Spacing.xl,
+              Spacing.sm,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text('Export as', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),

@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
+import 'package:clinic_pilot/core/widgets/app_card.dart';
+import 'package:clinic_pilot/core/widgets/app_list_tile.dart';
 import 'package:clinic_pilot/core/widgets/chip_row.dart';
+import 'package:clinic_pilot/core/widgets/choice_chip_field.dart';
+import 'package:clinic_pilot/core/widgets/custom_badge.dart';
+import 'package:clinic_pilot/core/widgets/custom_text_field.dart';
+import 'package:clinic_pilot/core/widgets/date_field.dart';
+import 'package:clinic_pilot/core/widgets/day_selector_field.dart';
 import 'package:clinic_pilot/core/widgets/empty_state.dart';
+import 'package:clinic_pilot/core/widgets/entity_header.dart';
 import 'package:clinic_pilot/core/widgets/info_row.dart';
 import 'package:clinic_pilot/core/widgets/metric_strip.dart';
 import 'package:clinic_pilot/core/widgets/money_text.dart';
+import 'package:clinic_pilot/core/widgets/picker_field.dart';
 import 'package:clinic_pilot/core/widgets/section_header.dart';
 import 'package:clinic_pilot/core/widgets/segmented_tabs.dart';
+import 'package:clinic_pilot/core/widgets/stat_card.dart';
 
 Widget wrap(Widget child, {Brightness brightness = Brightness.light}) {
   return MaterialApp(
@@ -123,6 +133,185 @@ void main() {
     testWidgets('empty tabs renders nothing', (t) async {
       await t.pumpWidget(wrap(const SegmentedTabs(tabs: [])));
       expect(find.byType(Icon), findsNothing);
+    });
+  });
+
+  group('StatCard', () {
+    testWidgets('renders title, value, subtitle and icon', (t) async {
+      var tapped = false;
+      await t.pumpWidget(wrap(StatCard(
+        title: 'Total Patients',
+        value: '128',
+        subtitle: '+12% this month',
+        icon: Icons.people,
+        onTap: () => tapped = true,
+      )));
+
+      expect(find.text('Total Patients'), findsOneWidget);
+      expect(find.text('128'), findsOneWidget);
+      expect(find.text('+12% this month'), findsOneWidget);
+      expect(find.byIcon(Icons.people), findsOneWidget);
+
+      await t.tap(find.byType(StatCard));
+      expect(tapped, isTrue);
+    });
+  });
+
+  group('CustomBadge', () {
+    testWidgets('renders label with theme color', (t) async {
+      await t.pumpWidget(wrap(const CustomBadge(label: 'Active')));
+      expect(find.text('Active'), findsOneWidget);
+    });
+  });
+
+  group('CustomTextField', () {
+    testWidgets('renders label, hint and responds to text changes', (t) async {
+      final controller = TextEditingController();
+      await t.pumpWidget(wrap(CustomTextField(
+        label: 'Patient Name',
+        hint: 'Enter full name',
+        controller: controller,
+        prefixIcon: Icons.person,
+      )));
+
+      expect(find.text('Patient Name'), findsOneWidget);
+      expect(find.text('Enter full name'), findsOneWidget);
+      expect(find.byIcon(Icons.person), findsOneWidget);
+
+      await t.enterText(find.byType(TextFormField), 'Jane Doe');
+      expect(controller.text, 'Jane Doe');
+    });
+  });
+
+  group('DateField', () {
+    testWidgets('renders label and shortcut buttons', (t) async {
+      DateTime? selected;
+      final now = DateTime.now();
+      await t.pumpWidget(wrap(DateField(
+        label: 'Date of Visit',
+        value: now,
+        onChanged: (d) => selected = d,
+      )));
+
+      expect(find.text('Date of Visit'), findsOneWidget);
+      expect(find.text('Today'), findsWidgets);
+      expect(find.text('Yesterday'), findsOneWidget);
+
+      await t.tap(find.text('Yesterday'));
+      expect(selected, isNotNull);
+    });
+  });
+
+  group('DaySelectorField', () {
+    testWidgets('renders weekday chips and toggles selection', (t) async {
+      String? updated;
+      await t.pumpWidget(wrap(DaySelectorField(
+        label: 'Clinic Days',
+        value: '1,3,5',
+        onChanged: (v) => updated = v,
+      )));
+
+      expect(find.text('Clinic Days'), findsOneWidget);
+      expect(find.text('Mon'), findsOneWidget);
+      expect(find.text('3 days a week'), findsOneWidget);
+
+      // Tap Tuesday (2) to add it
+      await t.tap(find.text('Tue'));
+      expect(updated, '1,2,3,5');
+    });
+  });
+
+  group('AppCard', () {
+    testWidgets('renders child and handles tap', (t) async {
+      var tapped = false;
+      await t.pumpWidget(wrap(AppCard(
+        onTap: () => tapped = true,
+        child: const Text('Card Content'),
+      )));
+
+      expect(find.text('Card Content'), findsOneWidget);
+      await t.tap(find.text('Card Content'));
+      expect(tapped, isTrue);
+    });
+  });
+
+  group('AppListTile and SettingsGroup', () {
+    testWidgets('renders tile and grouped section', (t) async {
+      var tapped = false;
+      await t.pumpWidget(wrap(SettingsGroup(
+        title: 'Preferences',
+        children: [
+          AppListTile(
+            icon: Icons.palette,
+            title: 'Theme',
+            subtitle: 'Dark Mode',
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => tapped = true,
+          ),
+        ],
+      )));
+
+      expect(find.text('PREFERENCES'), findsOneWidget);
+      expect(find.text('Theme'), findsOneWidget);
+      expect(find.text('Dark Mode'), findsOneWidget);
+      expect(find.byIcon(Icons.palette), findsOneWidget);
+
+      await t.tap(find.text('Theme'));
+      expect(tapped, isTrue);
+    });
+  });
+
+  group('ChoiceChipField', () {
+    testWidgets('renders options and selects chip on tap', (t) async {
+      String? selected;
+      await t.pumpWidget(wrap(ChoiceChipField<String>(
+        label: 'Payment Method',
+        options: const ['Cash', 'UPI', 'Due'],
+        value: 'Cash',
+        labelOf: (s) => s,
+        onChanged: (v) => selected = v,
+      )));
+
+      expect(find.text('Payment Method'), findsOneWidget);
+      expect(find.text('Cash'), findsOneWidget);
+      expect(find.text('UPI'), findsOneWidget);
+      expect(find.text('Due'), findsOneWidget);
+
+      await t.tap(find.text('UPI'));
+      expect(selected, 'UPI');
+    });
+  });
+
+  group('EntityHeader', () {
+    testWidgets('renders avatar initial, title, subtitle and badges', (t) async {
+      await t.pumpWidget(wrap(const EntityHeader(
+        title: 'Dr. John',
+        subtitle: 'Senior Consultant',
+        avatarText: 'John',
+        badges: [CustomBadge(label: 'Clinic A')],
+      )));
+
+      expect(find.text('Dr. John'), findsOneWidget);
+      expect(find.text('Senior Consultant'), findsOneWidget);
+      expect(find.text('J'), findsOneWidget);
+      expect(find.text('Clinic A'), findsOneWidget);
+    });
+  });
+
+  group('PickerField', () {
+    testWidgets('renders label and selected option', (t) async {
+      await t.pumpWidget(wrap(PickerField<String>(
+        label: 'Clinic',
+        value: 'c1',
+        options: const [
+          PickerOption(value: 'c1', label: 'Main Clinic'),
+          PickerOption(value: 'c2', label: 'Branch Clinic'),
+        ],
+        onChanged: (_) {},
+      )));
+
+      expect(find.text('Clinic'), findsOneWidget);
+      expect(find.text('Main Clinic'), findsOneWidget);
     });
   });
 }

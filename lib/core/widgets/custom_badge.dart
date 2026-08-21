@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../design/tokens.dart';
+
 // Reusable status and category pill badge
 class CustomBadge extends StatelessWidget {
   final String label;
@@ -15,10 +17,13 @@ class CustomBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = color ?? Theme.of(context).colorScheme.primary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.sm,
+        vertical: Spacing.xs,
+      ),
       decoration: BoxDecoration(
         color: c.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: Radii.pillAll,
         border: Border.all(color: c.withValues(alpha: 0.3)),
       ),
       child: Text(
