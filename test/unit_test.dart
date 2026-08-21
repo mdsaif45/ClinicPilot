@@ -436,6 +436,11 @@ void main() {
       expect(reviews, isEmpty);
     });
 
+    test('Schema v7 includes footfalls table', () async {
+      final footfalls = await db.select(db.footfalls).get();
+      expect(footfalls, isEmpty);
+    });
+
     test('Deleting a patient marks isDeleted = true without losing row', () async {
       await db.into(db.patients).insert(
             PatientsCompanion.insert(
