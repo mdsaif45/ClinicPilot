@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/services/contact_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/chip_row.dart';
+import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/entity_header.dart';
 import '../../../core/widgets/info_row.dart';
@@ -15,6 +17,7 @@ import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/segmented_tabs.dart';
 import '../../cashmemo/presentation/receipt_preview_dialog.dart';
 import '../../cashmemo/providers/cash_memo_provider.dart';
+import '../../clinics/providers/clinic_provider.dart';
 import '../../visits/presentation/add_visit_dialog.dart';
 import '../../visits/providers/visit_provider.dart';
 import 'edit_patient_dialog.dart';
@@ -33,6 +36,11 @@ class PatientProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final visitsAsync = ref.watch(patientVisitsStreamProvider(patient.id));
     final memosAsync = ref.watch(cashMemosStreamProvider);
+    final clinicsAsync = ref.watch(clinicsStreamProvider);
+
+    final clinics = clinicsAsync.value ?? [];
+    final primaryClinic =
+        clinics.where((c) => c.id == patient.primaryClinicId).firstOrNull;
 
     final patientMemos = (memosAsync.value ?? [])
         .where((m) => m.memo.patientId == patient.id)
@@ -54,7 +62,7 @@ class PatientProfileScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: EntityHeader(
               title: patient.name,
-              subtitle: patient.patientCode,
+              subtitle: '${patient.patientCode} · #${patient.serialNo}',
               avatarText: patient.name,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -72,8 +80,17 @@ class PatientProfileScreen extends ConsumerWidget {
                 ),
               ],
               badges: [
+                if (primaryClinic != null)
+                  _Badge(
+                    icon: Icons.local_hospital_outlined,
+                    label: primaryClinic.name,
+                  ),
                 if ((patient.area ?? '').isNotEmpty)
                   _Badge(icon: Icons.place_outlined, label: patient.area!),
+                _Badge(
+                  icon: Icons.person_outline,
+                  label: '${patient.gender}, ${patient.age}y',
+                ),
                 _Badge(
                   icon: Icons.event_outlined,
                   label: 'Since ${Formatters.formatDate(patient.createdAt)}',
@@ -205,8 +222,20 @@ class _InfoTab extends StatelessWidget {
       children: [
         InfoRow(label: 'Serial No.', value: patient.serialNo),
         InfoRow(label: 'Patient code', value: patient.patientCode),
-        InfoRow(label: 'Phone', value: patient.phone, icon: Icons.call_outlined),
-        InfoRow(label: 'WhatsApp', value: patient.whatsapp),
+        InfoRow(
+          label: 'Phone',
+          value: patient.phone,
+          icon: Icons.call_outlined,
+          onTap: () => ContactService.call(patient.phone),
+        ),
+        InfoRow(
+          label: 'WhatsApp',
+          value: patient.whatsapp ?? patient.phone,
+          icon: Icons.chat_outlined,
+          onTap: () => ContactService.openWhatsApp(
+            phone: patient.whatsapp ?? patient.phone,
+          ),
+        ),
         InfoRow(label: 'Age', value: '${patient.age}'),
         InfoRow(label: 'Gender', value: patient.gender),
         InfoRow(label: 'Area', value: patient.area),
@@ -236,6 +265,39 @@ class _VisitsTab extends StatelessWidget {
 
   const _VisitsTab({required this.visits});
 
+  Color _outcomeColor(String? outcome, ColorScheme scheme) {
+    if (outcome == null) return scheme.outline;
+    switch (outcome.toLowerCase()) {
+      case 'recovered':
+      case 'improved':
+        return scheme.primary;
+      case 'worse':
+        return scheme.error;
+      case 'lost_followup':
+        return scheme.tertiary;
+      case 'no_change':
+      default:
+        return scheme.onSurfaceVariant;
+    }
+  }
+
+  String _outcomeLabel(String outcome) {
+    switch (outcome.toLowerCase()) {
+      case 'improved':
+        return 'Improved';
+      case 'recovered':
+        return 'Recovered';
+      case 'no_change':
+        return 'No change';
+      case 'worse':
+        return 'Worse';
+      case 'lost_followup':
+        return 'Lost follow-up';
+      default:
+        return outcome;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (visits.isEmpty) {
@@ -247,6 +309,7 @@ class _VisitsTab extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Column(
       children: [
@@ -270,19 +333,62 @@ class _VisitsTab extends StatelessWidget {
                         style: theme.textTheme.titleSmall,
                       ),
                     ),
-                    Chip(
-                      label: Text(v.visit.visitType == 'new' ? 'New' : 'Repeat'),
-                      visualDensity: VisualDensity.compact,
+                    CustomBadge(
+                      label: v.visit.visitType == 'new'
+                          ? 'New Visit'
+                          : 'Repeat Visit',
+                      color: v.visit.visitType == 'new'
+                          ? scheme.primary
+                          : scheme.secondary,
                     ),
+                    if (v.visit.consultationType.isNotEmpty &&
+                        v.visit.consultationType != 'clinic') ...[
+                      const SizedBox(width: Spacing.xs),
+                      CustomBadge(
+                        label: v.visit.consultationType.toUpperCase(),
+                        color: scheme.tertiary,
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: Spacing.sm),
-                Text(v.visit.disease, style: theme.textTheme.bodyMedium),
-                const SizedBox(height: Spacing.xs),
                 Text(
-                  '${v.clinic.name}'
-                  '${v.visit.outcome != null ? ' · ${v.visit.outcome}' : ''}',
-                  style: theme.textTheme.labelMedium,
+                  v.visit.disease,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if ((v.visit.chiefComplaint ?? '').isNotEmpty) ...[
+                  const SizedBox(height: Spacing.xs),
+                  Text(
+                    v.visit.chiefComplaint!,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: Spacing.sm),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.local_hospital_outlined,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: Spacing.xs),
+                    Text(
+                      v.clinic.name,
+                      style: theme.textTheme.labelMedium,
+                    ),
+                    if (v.visit.outcome != null &&
+                        v.visit.outcome!.isNotEmpty) ...[
+                      const Spacer(),
+                      CustomBadge(
+                        label: _outcomeLabel(v.visit.outcome!),
+                        color: _outcomeColor(v.visit.outcome, scheme),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
@@ -308,6 +414,7 @@ class _PaymentsTab extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Column(
       children: [
@@ -328,37 +435,48 @@ class _PaymentsTab extends StatelessWidget {
                 clinicName: m.clinic.name,
               ),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(m.memo.memoNumber, style: theme.textTheme.titleSmall),
-                      const SizedBox(height: Spacing.xs),
-                      Text(
-                        Formatters.formatDate(m.memo.createdAt),
-                        style: theme.textTheme.labelMedium,
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
                   children: [
+                    Icon(
+                      PaymentIcons.forMethod(m.memo.paymentMethod),
+                      size: 18,
+                      color: scheme.primary,
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      child: Text(
+                        m.memo.memoNumber,
+                        style: theme.textTheme.titleSmall,
+                      ),
+                    ),
                     MoneyText(
                       amount: m.memo.total,
                       style: theme.textTheme.titleSmall,
                     ),
-                    if (m.pendingAmount > 0) ...[
-                      const SizedBox(height: Spacing.xs),
-                      Text(
-                        'Pending ${Formatters.formatCurrency(m.pendingAmount)}',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.error,
-                        ),
+                  ],
+                ),
+                const SizedBox(height: Spacing.xs),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${Formatters.formatDate(m.memo.memoDate)} · ${m.clinic.name}',
+                      style: theme.textTheme.labelMedium,
+                    ),
+                    if (m.pendingAmount > 0)
+                      CustomBadge(
+                        label:
+                            'Pending ${Formatters.formatCurrency(m.pendingAmount)}',
+                        color: scheme.error,
+                      )
+                    else
+                      CustomBadge(
+                        label: 'Paid',
+                        color: scheme.primary,
                       ),
-                    ],
                   ],
                 ),
               ],
@@ -386,21 +504,41 @@ class _InsightsTab extends StatelessWidget {
 
     final outcomes = <String, int>{};
     final clinicSplit = <String, int>{};
+    final consultTypeSplit = <String, int>{};
     var newCount = 0;
     for (final v in visits) {
       final o = v.visit.outcome ?? 'Not recorded';
       outcomes[o] = (outcomes[o] ?? 0) + 1;
       clinicSplit[v.clinic.name] = (clinicSplit[v.clinic.name] ?? 0) + 1;
+      final cType = v.visit.consultationType;
+      consultTypeSplit[cType] = (consultTypeSplit[cType] ?? 0) + 1;
       if (v.visit.visitType == 'new') newCount++;
+    }
+
+    int? avgDaysBetweenVisits;
+    if (visits.length > 1) {
+      final sortedDates = visits.map((v) => v.visit.visitDate).toList()
+        ..sort();
+      final span = sortedDates.last.difference(sortedDates.first).inDays;
+      avgDaysBetweenVisits = (span / (visits.length - 1)).round();
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: Spacing.xs),
-        const SectionHeader(title: 'Visit type', tightTop: true),
-        InfoRow(label: 'New', value: '$newCount'),
-        InfoRow(label: 'Repeat', value: '${visits.length - newCount}'),
+        const SectionHeader(title: 'Visit breakdown', tightTop: true),
+        InfoRow(label: 'Total visits', value: '${visits.length}'),
+        InfoRow(label: 'New consultations', value: '$newCount'),
+        InfoRow(label: 'Repeat follow-ups', value: '${visits.length - newCount}'),
+        if (avgDaysBetweenVisits != null)
+          InfoRow(
+            label: 'Avg interval between visits',
+            value: '$avgDaysBetweenVisits days',
+          ),
+        const SectionHeader(title: 'Consultation mode'),
+        for (final e in consultTypeSplit.entries)
+          InfoRow(label: e.key.toUpperCase(), value: '${e.value} visits'),
         const SectionHeader(title: 'Outcomes'),
         for (final e in outcomes.entries)
           InfoRow(label: e.key, value: '${e.value}'),
@@ -498,6 +636,20 @@ class _FollowUpsTab extends StatelessWidget {
                     : theme.colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+            const SizedBox(width: Spacing.sm),
+            IconButton(
+              icon: const Icon(Icons.chat_outlined),
+              tooltip: 'Send WhatsApp reminder',
+              onPressed: () {
+                ContactService.openWhatsApp(
+                  phone: v.patient.whatsapp ?? v.patient.phone,
+                  message: ContactService.followUpMessage(
+                    patientName: v.patient.name,
+                    clinicName: v.clinic.name,
+                  ),
+                );
+              },
             ),
           ],
         ),
