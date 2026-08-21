@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../core/widgets/picker_field.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/utils/validators.dart';
+import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../providers/patient_provider.dart';
 
 class EditPatientDialog extends ConsumerStatefulWidget {
@@ -25,11 +31,10 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   late TextEditingController _addressController;
   late TextEditingController _occupationController;
   late TextEditingController _notesController;
-
   late String _gender;
 
-  // Guards against a queued tap re-running _saveChanges before the first
-  // write finishes and the dialog closes.
+  // Guards against duplicate writes if the doctor double-taps Save while
+  // the first update is in flight.
   bool _submitting = false;
 
   @override
@@ -38,12 +43,18 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
     _serialController = TextEditingController(text: widget.patient.serialNo);
     _nameController = TextEditingController(text: widget.patient.name);
     _phoneController = TextEditingController(text: widget.patient.phone);
-    _whatsappController = TextEditingController(text: widget.patient.whatsapp ?? '');
-    _ageController = TextEditingController(text: widget.patient.age.toString());
-    _areaController = TextEditingController(text: widget.patient.area ?? '');
-    _addressController = TextEditingController(text: widget.patient.address ?? '');
-    _occupationController = TextEditingController(text: widget.patient.occupation ?? '');
-    _notesController = TextEditingController(text: widget.patient.notes ?? '');
+    _whatsappController =
+        TextEditingController(text: widget.patient.whatsapp ?? '');
+    _ageController =
+        TextEditingController(text: widget.patient.age.toString());
+    _areaController =
+        TextEditingController(text: widget.patient.area ?? '');
+    _addressController =
+        TextEditingController(text: widget.patient.address ?? '');
+    _occupationController =
+        TextEditingController(text: widget.patient.occupation ?? '');
+    _notesController =
+        TextEditingController(text: widget.patient.notes ?? '');
     _gender = widget.patient.gender;
   }
 
@@ -63,8 +74,6 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // Same reasoning as Add Patient: watched in build so it reacts live to
-    // typing, rather than only when validate() is explicitly called.
     final serialText = _serialController.text.trim();
     final liveSerialInUse = serialText.isEmpty
         ? false
@@ -77,125 +86,8 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
                 .value ==
             true;
 
-    return AlertDialog(
-      title: Text('Edit Patient (${widget.patient.patientCode})'),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // Without this the column centres its children. Text fields fill
-            // the width so they look correct either way, but anything
-            // narrower - chips, checkboxes - drifts to the middle.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _serialController,
-                decoration: const InputDecoration(labelText: 'Serial No. *'),
-                onChanged: (_) => setState(() {}),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) return 'Required';
-                  if (liveSerialInUse) {
-                    return 'Serial ${val.trim()} is already used at this '
-                        'clinic';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Full Name *'),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Phone Number *'),
-                keyboardType: TextInputType.phone,
-                validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _whatsappController,
-                decoration: const InputDecoration(labelText: 'WhatsApp Number'),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // A fixed label above the field, matching Gender's
-                        // PickerField, rather than a floating labelText - the
-                        // two were built from different label styles, which is
-                        // why the row never lined up.
-                        Text(
-                          'Age *',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        TextFormField(
-                          controller: _ageController,
-                          keyboardType: TextInputType.number,
-                          validator: (val) => val == null || int.tryParse(val.trim()) == null ? 'Invalid' : null,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PickerField<String>(
-                      label: 'Gender',
-                      value: const ['Male', 'Female', 'Other'].contains(_gender)
-                          ? _gender
-                          : 'Male',
-                      options: const [
-                        PickerOption(value: 'Male', label: 'Male'),
-                        PickerOption(value: 'Female', label: 'Female'),
-                        PickerOption(value: 'Other', label: 'Other'),
-                      ],
-                      onChanged: (val) => setState(() => _gender = val),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _areaController,
-                decoration: const InputDecoration(labelText: 'Area / Locality'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(labelText: 'Full Address'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _occupationController,
-                decoration: const InputDecoration(labelText: 'Occupation'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(labelText: 'Clinical Notes'),
-                maxLines: 2,
-              ),
-            ],
-          ),
-        ),
-      )),
+    return AppFormDialog(
+      title: 'Edit Patient (${widget.patient.patientCode})',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -212,6 +104,107 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
               : const Text('Save Changes'),
         ),
       ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomTextField(
+              controller: _serialController,
+              label: 'Serial No.',
+              hint: 'As in the register',
+              prefixIcon: Icons.tag,
+              onChanged: (_) => setState(() {}),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) return 'Required';
+                if (liveSerialInUse) {
+                  return 'Serial ${val.trim()} is already used at this clinic';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _nameController,
+              label: 'Patient Full Name',
+              prefixIcon: Icons.person,
+              validator: (val) =>
+                  val == null || val.trim().isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _phoneController,
+              label: 'Phone Number',
+              prefixIcon: Icons.phone,
+              keyboardType: TextInputType.phone,
+              validator: (val) =>
+                  val == null || val.trim().isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _whatsappController,
+              label: 'WhatsApp Number (Optional)',
+              prefixIcon: Icons.chat,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: CustomTextField(
+                    controller: _ageController,
+                    label: 'Age',
+                    prefixIcon: Icons.numbers,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: Validators.age,
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Gender',
+                    prefixIcon: Icons.wc,
+                    value: _gender,
+                    options: const [
+                      PickerOption(value: 'Male', label: 'Male'),
+                      PickerOption(value: 'Female', label: 'Female'),
+                      PickerOption(value: 'Other', label: 'Other'),
+                    ],
+                    onChanged: (val) => setState(() => _gender = val),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _areaController,
+              label: 'Locality / Area',
+              prefixIcon: Icons.location_on,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _addressController,
+              label: 'Full Address',
+              prefixIcon: Icons.home,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _occupationController,
+              label: 'Occupation',
+              prefixIcon: Icons.work,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _notesController,
+              label: 'Clinical Notes',
+              prefixIcon: Icons.notes,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

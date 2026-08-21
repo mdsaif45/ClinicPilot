@@ -9,16 +9,6 @@ import 'edit_cash_memo_dialog.dart';
 import 'new_cash_memo_dialog.dart';
 import 'receipt_preview_dialog.dart';
 
-/// Payment methods carry an icon rather than a text chip: on a list scanned at
-/// a glance a symbol reads faster than a word, and it frees the width the chip
-/// was taking from the patient name.
-IconData paymentIcon(String method) => switch (method.toLowerCase()) {
-      'cash' => Icons.payments_outlined,
-      'upi' => Icons.qr_code_2,
-      'card' => Icons.credit_card,
-      _ => Icons.account_balance_outlined,
-    };
-
 class CashMemoScreen extends ConsumerWidget {
   const CashMemoScreen({super.key});
 
@@ -136,7 +126,10 @@ class _MemoRow extends ConsumerWidget {
         message: memo.paymentMethod,
         child: CircleAvatar(
           backgroundColor: scheme.primaryContainer,
-          child: Icon(paymentIcon(memo.paymentMethod), color: scheme.primary),
+          child: Icon(
+            PaymentIcons.forMethod(memo.paymentMethod),
+            color: scheme.primary,
+          ),
         ),
       ),
       title: Row(
@@ -162,7 +155,7 @@ class _MemoRow extends ConsumerWidget {
         ],
       ),
       subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.only(top: Spacing.xs),
         child: Row(
           children: [
             Expanded(

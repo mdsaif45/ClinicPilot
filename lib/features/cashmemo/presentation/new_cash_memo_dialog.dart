@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/choice_chip_field.dart';
+import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
-import '../../../core/widgets/choice_chip_field.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/database/app_database.dart';
-import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/custom_text_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../../patients/presentation/patient_picker.dart';
 import '../providers/cash_memo_provider.dart';
@@ -109,136 +112,8 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
       _paidAmountController.text = currentTotal.toStringAsFixed(0);
     }
 
-    return AlertDialog(
-      title: const Text('Create Cash Memo'),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // Without this the column centres its children. Text fields fill
-            // the width so they look correct either way, but anything
-            // narrower - chips, checkboxes - drifts to the middle.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PickerField<String>(
-                label: 'Clinic',
-                prefixIcon: Icons.local_hospital,
-                value: _selectedClinicId,
-                errorText: _clinicError,
-                options: clinics
-                    .map((c) => PickerOption(
-                          value: c.id,
-                          label: c.name,
-                          subtitle: c.address,
-                        ))
-                    .toList(),
-                onChanged: (val) {
-                  setState(() {
-                    _selectedClinicId = val;
-                    _clinicError = null;
-                    final cl = clinics.firstWhere((c) => c.id == val);
-                    _consultationController.text =
-                        cl.defaultConsultationFee.toStringAsFixed(0);
-                  });
-                },
-              ),
-              const SizedBox(height: 12),
-              DateField(
-                label: 'Date',
-                value: _memoDate,
-                onChanged: (d) => setState(() => _memoDate = d),
-              ),
-              const SizedBox(height: 12),
-              // Searchable picker rather than a dropdown: a flat list cannot
-              // scale, and cannot distinguish two patients with the same name.
-              PatientPickerField(
-                selected: _selectedPatient,
-                onSelected: (p) => setState(() {
-                  _selectedPatient = p;
-                  _patientError = null;
-                }),
-                errorText: _patientError,
-              ),
-              SizedBox(height: 12),
-              CustomTextField(
-                controller: _consultationController,
-                label: 'Consultation Fee (Rs)',
-                prefixIcon: Icons.currency_rupee,
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _medicineController,
-                label: 'Medicine Fee (Rs)',
-                prefixIcon: Icons.medication,
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _otherController,
-                label: 'Other Charges (Rs)',
-                prefixIcon: Icons.add_circle_outline,
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _discountController,
-                label: 'Discount (Rs)',
-                prefixIcon: Icons.discount,
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _paidAmountController,
-                label: 'Paid Amount (Rs)',
-                prefixIcon: Icons.payments,
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Total Payable:',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text(
-                      Formatters.formatCurrency(currentTotal),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              ChoiceChipField<String>(
-                label: 'Payment Method',
-                options: _paymentMethods,
-                value: _paymentMethod,
-                labelOf: (m) => m,
-                iconOf: _paymentIcon,
-                onChanged: (m) => setState(() => _paymentMethod = m),
-              ),
-            ],
-          ),
-        ),
-      )),
+    return AppFormDialog(
+      title: 'Create Cash Memo',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -252,9 +127,128 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Create Memo'),
+              : const Text('Save & Issue Memo'),
         ),
       ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PickerField<String>(
+              label: 'Clinic',
+              prefixIcon: Icons.local_hospital,
+              value: _selectedClinicId,
+              errorText: _clinicError,
+              options: clinics
+                  .map((c) => PickerOption(
+                        value: c.id,
+                        label: c.name,
+                        subtitle: c.address,
+                      ))
+                  .toList(),
+              onChanged: (val) {
+                setState(() {
+                  _selectedClinicId = val;
+                  _clinicError = null;
+                  final cl = clinics.firstWhere((c) => c.id == val);
+                  _consultationController.text =
+                      cl.defaultConsultationFee.toStringAsFixed(0);
+                });
+              },
+            ),
+            const SizedBox(height: Spacing.md),
+            DateField(
+              label: 'Date',
+              value: _memoDate,
+              onChanged: (d) => setState(() => _memoDate = d),
+            ),
+            const SizedBox(height: Spacing.md),
+            PatientPickerField(
+              selected: _selectedPatient,
+              onSelected: (p) => setState(() {
+                _selectedPatient = p;
+                _patientError = null;
+              }),
+              errorText: _patientError,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _consultationController,
+              label: 'Consultation Fee (Rs)',
+              prefixIcon: Icons.currency_rupee,
+              keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _medicineController,
+              label: 'Medicine Fee (Rs)',
+              prefixIcon: Icons.medication,
+              keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _otherController,
+              label: 'Other Charges (Rs)',
+              prefixIcon: Icons.add_circle_outline,
+              keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _discountController,
+              label: 'Discount (Rs)',
+              prefixIcon: Icons.discount,
+              keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _paidAmountController,
+              label: 'Paid Amount (Rs)',
+              prefixIcon: Icons.payments,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: Spacing.lg),
+            Container(
+              padding: const EdgeInsets.all(Spacing.md),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: Radii.smAll,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Total Payable:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    Formatters.formatCurrency(currentTotal),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: Spacing.md),
+            ChoiceChipField<String>(
+              label: 'Payment Method',
+              options: _paymentMethods,
+              value: _paymentMethod,
+              labelOf: (m) => m,
+              iconOf: PaymentIcons.forMethod,
+              onChanged: (m) => setState(() => _paymentMethod = m),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -302,11 +296,4 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
 
     if (mounted) Navigator.of(context).pop();
   }
-
-  IconData _paymentIcon(String method) => switch (method) {
-        'Cash' => Icons.payments_outlined,
-        'UPI' => Icons.qr_code_2,
-        'Card' => Icons.credit_card,
-        _ => Icons.account_balance_outlined,
-      };
 }

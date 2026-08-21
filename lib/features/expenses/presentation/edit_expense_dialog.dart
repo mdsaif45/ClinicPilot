@@ -1,8 +1,12 @@
+
 import 'package:flutter/material.dart';
-import '../../../core/widgets/picker_field.dart';
-import '../../../core/widgets/choice_chip_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/choice_chip_field.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../providers/expense_provider.dart';
 
 class EditExpenseDialog extends ConsumerStatefulWidget {
@@ -26,18 +30,14 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
   late bool _isRecurring;
   late DateTime _date;
 
-  final _categories = [
+  final List<String> _categories = [
+    'Medicine Purchase',
     'Rent',
     'Electricity',
-    'Staff Salary',
-    'Medicine Purchase',
-    'Furniture',
-    'Marketing',
-    'Camp',
-    'Internet',
-    'Travel',
-    'Personal',
-    'Miscellaneous'
+    'Assistant Salary',
+    'Camp Expense',
+    'Packaging',
+    'Miscellaneous',
   ];
 
   @override
@@ -63,77 +63,8 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Edit Expense Entry'),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // Without this the column centres its children. Text fields fill
-            // the width so they look correct either way, but anything
-            // narrower - chips, checkboxes - drifts to the middle.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PickerField<String>(
-                label: 'Category',
-                prefixIcon: Icons.category,
-                value: _categories.contains(_categoryController.text)
-                    ? _categoryController.text
-                    : _categories.first,
-                options: _categories
-                    .map((c) => PickerOption(value: c, label: c))
-                    .toList(),
-                onChanged: (val) =>
-                    setState(() => _categoryController.text = val),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _subcategoryController,
-                decoration: const InputDecoration(labelText: 'Subcategory / Details'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(labelText: 'Amount (Rs) *'),
-                keyboardType: TextInputType.number,
-                validator: (val) => val == null || double.tryParse(val.trim()) == null ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              ChoiceChipField<String>(
-                label: 'Payment Method',
-                options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
-                // Fall back to Cash if a memo carries a method no longer offered.
-                value: const ['Cash', 'UPI', 'Card', 'Bank Transfer']
-                        .contains(_paymentMethod)
-                    ? _paymentMethod
-                    : 'Cash',
-                labelOf: (m) => m,
-                iconOf: _paymentIcon,
-                onChanged: (m) => setState(() => _paymentMethod = m),
-              ),
-              const SizedBox(height: 12),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Recurring Monthly Expense'),
-                value: _isRecurring,
-                onChanged: (val) {
-                  if (val != null) setState(() => _isRecurring = val);
-                },
-              ),
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(labelText: 'Notes'),
-                maxLines: 2,
-              ),
-            ],
-          ),
-        ),
-      )),
+    return AppFormDialog(
+      title: 'Edit Expense Entry',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -144,6 +75,70 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
           child: const Text('Save Changes'),
         ),
       ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PickerField<String>(
+              label: 'Category',
+              prefixIcon: Icons.category,
+              value: _categories.contains(_categoryController.text)
+                  ? _categoryController.text
+                  : _categories.first,
+              options: _categories
+                  .map((c) => PickerOption(value: c, label: c))
+                  .toList(),
+              onChanged: (val) =>
+                  setState(() => _categoryController.text = val),
+            ),
+            const SizedBox(height: Spacing.md),
+            TextFormField(
+              controller: _subcategoryController,
+              decoration:
+                  const InputDecoration(labelText: 'Subcategory / Details'),
+            ),
+            const SizedBox(height: Spacing.md),
+            TextFormField(
+              controller: _amountController,
+              decoration: const InputDecoration(labelText: 'Amount (Rs) *'),
+              keyboardType: TextInputType.number,
+              validator: (val) =>
+                  val == null || double.tryParse(val.trim()) == null
+                      ? 'Required'
+                      : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            ChoiceChipField<String>(
+              label: 'Payment Method',
+              options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
+              // Fall back to Cash if a memo carries a method no longer offered.
+              value: const ['Cash', 'UPI', 'Card', 'Bank Transfer']
+                      .contains(_paymentMethod)
+                  ? _paymentMethod
+                  : 'Cash',
+              labelOf: (m) => m,
+              iconOf: PaymentIcons.forMethod,
+              onChanged: (m) => setState(() => _paymentMethod = m),
+            ),
+            const SizedBox(height: Spacing.md),
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Recurring Monthly Expense'),
+              value: _isRecurring,
+              onChanged: (val) {
+                if (val != null) setState(() => _isRecurring = val);
+              },
+            ),
+            TextFormField(
+              controller: _notesController,
+              decoration: const InputDecoration(labelText: 'Notes'),
+              maxLines: 2,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -174,11 +169,4 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
       );
     }
   }
-
-  IconData _paymentIcon(String method) => switch (method) {
-        'Cash' => Icons.payments_outlined,
-        'UPI' => Icons.qr_code_2,
-        'Card' => Icons.credit_card,
-        _ => Icons.account_balance_outlined,
-      };
 }

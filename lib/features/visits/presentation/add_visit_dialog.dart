@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import '../../../core/widgets/picker_field.dart';
-import '../../../core/widgets/empty_state.dart';
-import '../../../core/utils/formatters.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/date_field.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/visit_provider.dart';
 
@@ -58,7 +62,7 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
 
     if (clinicsAsync.hasValue && clinics.isEmpty) {
       return AlertDialog(
-        title: Text('Add Visit: ${widget.patient.name}'),
+        title: const Text('Add Visit'),
         content: EmptyState(
           icon: Icons.local_hospital_outlined,
           title: 'No clinic yet',
@@ -78,136 +82,8 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
       );
     }
 
-    return AlertDialog(
-      title: Text('Add Visit: ${widget.patient.name}'),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // Without this the column centres its children. Text fields fill
-            // the width so they look correct either way, but anything
-            // narrower - chips, checkboxes - drifts to the middle.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PickerField<String>(
-                label: 'Clinic',
-                prefixIcon: Icons.local_hospital,
-                value: _selectedClinicId,
-                errorText: _clinicError,
-                options: clinics
-                    .map((c) => PickerOption(
-                          value: c.id,
-                          label: c.name,
-                          subtitle: c.address,
-                        ))
-                    .toList(),
-                onChanged: (val) => setState(() {
-                  _selectedClinicId = val;
-                  _clinicError = null;
-                }),
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _diseaseController,
-                label: 'Disease / Condition',
-                prefixIcon: Icons.medical_services,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _chiefComplaintController,
-                label: 'Chief Complaint (Optional)',
-                prefixIcon: Icons.notes,
-              ),
-              const SizedBox(height: 12),
-              PickerField<String>(
-                label: 'Consultation Type',
-                prefixIcon: Icons.event_note_outlined,
-                value: _consultationType,
-                options: const [
-                  PickerOption(
-                    value: 'clinic',
-                    label: 'Clinic',
-                    subtitle: 'Seen in person',
-                    icon: Icons.local_hospital_outlined,
-                  ),
-                  PickerOption(
-                    value: 'online',
-                    label: 'Online',
-                    subtitle: 'Video or phone consultation',
-                    icon: Icons.videocam_outlined,
-                  ),
-                  PickerOption(
-                    value: 'camp',
-                    label: 'Camp',
-                    subtitle: 'Seen at a medical camp',
-                    icon: Icons.festival_outlined,
-                  ),
-                ],
-                onChanged: (val) => setState(() => _consultationType = val),
-              ),
-              const SizedBox(height: 12),
-              PickerField<String>(
-                label: 'Outcome (Optional)',
-                prefixIcon: Icons.insights_outlined,
-                hint: 'Not recorded',
-                value: _outcome,
-                options: const [
-                  // Empty string clears the field: the column is nullable, and
-                  // without this a mis-tap could never be undone.
-                  PickerOption(value: '', label: 'Not recorded'),
-                  PickerOption(value: 'improved', label: 'Improved'),
-                  PickerOption(value: 'no_change', label: 'No change'),
-                  PickerOption(value: 'worse', label: 'Worse'),
-                  PickerOption(value: 'recovered', label: 'Recovered'),
-                  PickerOption(value: 'lost_followup', label: 'Lost follow-up'),
-                ],
-                onChanged: (val) =>
-                    setState(() => _outcome = val.isEmpty ? null : val),
-              ),
-              const SizedBox(height: 12),
-              // The column existed in the schema and was already being saved,
-              // but nothing ever set it - so no follow-up could be recorded.
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.event_repeat_outlined),
-                title: const Text('Next follow-up'),
-                subtitle: Text(
-                  _nextFollowUpDate == null
-                      ? 'Not scheduled'
-                      : Formatters.formatDate(_nextFollowUpDate!),
-                ),
-                trailing: _nextFollowUpDate == null
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        tooltip: 'Clear',
-                        onPressed: () =>
-                            setState(() => _nextFollowUpDate = null),
-                      ),
-                onTap: () async {
-                  final now = DateTime.now();
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        _nextFollowUpDate ?? now.add(const Duration(days: 30)),
-                    firstDate: now,
-                    lastDate: now.add(const Duration(days: 730)),
-                  );
-                  if (picked != null) {
-                    setState(() => _nextFollowUpDate = picked);
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      )),
+    return AppFormDialog(
+      title: 'Add Visit: ${widget.patient.name}',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -224,6 +100,127 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
               : const Text('Save Visit'),
         ),
       ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PickerField<String>(
+              label: 'Clinic',
+              prefixIcon: Icons.local_hospital,
+              value: _selectedClinicId,
+              errorText: _clinicError,
+              options: clinics
+                  .map((c) => PickerOption(
+                        value: c.id,
+                        label: c.name,
+                        subtitle: c.address,
+                      ))
+                  .toList(),
+              onChanged: (val) => setState(() {
+                _selectedClinicId = val;
+                _clinicError = null;
+              }),
+            ),
+            const SizedBox(height: Spacing.md),
+            DateField(
+              label: 'Visit Date',
+              value: _visitDate,
+              onChanged: (d) => setState(() => _visitDate = d),
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _diseaseController,
+              label: 'Disease / Condition',
+              prefixIcon: Icons.medical_services,
+              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _chiefComplaintController,
+              label: 'Chief Complaint (Optional)',
+              prefixIcon: Icons.notes,
+            ),
+            const SizedBox(height: Spacing.md),
+            PickerField<String>(
+              label: 'Consultation Type',
+              prefixIcon: Icons.event_note_outlined,
+              value: _consultationType,
+              options: const [
+                PickerOption(
+                  value: 'clinic',
+                  label: 'Clinic',
+                  subtitle: 'Seen in person',
+                  icon: Icons.local_hospital_outlined,
+                ),
+                PickerOption(
+                  value: 'online',
+                  label: 'Online',
+                  subtitle: 'Video or phone consultation',
+                  icon: Icons.videocam_outlined,
+                ),
+                PickerOption(
+                  value: 'camp',
+                  label: 'Camp',
+                  subtitle: 'Seen at a medical camp',
+                  icon: Icons.festival_outlined,
+                ),
+              ],
+              onChanged: (val) => setState(() => _consultationType = val),
+            ),
+            const SizedBox(height: Spacing.md),
+            PickerField<String>(
+              label: 'Outcome (Optional)',
+              prefixIcon: Icons.insights_outlined,
+              hint: 'Not recorded',
+              value: _outcome,
+              options: const [
+                PickerOption(value: '', label: 'Not recorded'),
+                PickerOption(value: 'improved', label: 'Improved'),
+                PickerOption(value: 'no_change', label: 'No change'),
+                PickerOption(value: 'worse', label: 'Worse'),
+                PickerOption(value: 'recovered', label: 'Recovered'),
+                PickerOption(value: 'lost_followup', label: 'Lost follow-up'),
+              ],
+              onChanged: (val) =>
+                  setState(() => _outcome = val.isEmpty ? null : val),
+            ),
+            const SizedBox(height: Spacing.md),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.event_repeat_outlined),
+              title: const Text('Next follow-up'),
+              subtitle: Text(
+                _nextFollowUpDate == null
+                    ? 'Not scheduled'
+                    : Formatters.formatDate(_nextFollowUpDate!),
+              ),
+              trailing: _nextFollowUpDate == null
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.clear),
+                      tooltip: 'Clear',
+                      onPressed: () =>
+                          setState(() => _nextFollowUpDate = null),
+                    ),
+              onTap: () async {
+                final now = DateTime.now();
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate:
+                      _nextFollowUpDate ?? now.add(const Duration(days: 30)),
+                  firstDate: now,
+                  lastDate: now.add(const Duration(days: 730)),
+                );
+                if (picked != null) {
+                  setState(() => _nextFollowUpDate = picked);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -243,7 +240,7 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
       await ref.read(visitNotifierProvider.notifier).addVisit(
             patientId: widget.patient.id,
             clinicId: _selectedClinicId!,
-            disease: _diseaseController.text.trim(),
+            disease: Formatters.toTitleCase(_diseaseController.text),
             chiefComplaint: _chiefComplaintController.text.trim().isEmpty
                 ? null
                 : _chiefComplaintController.text.trim(),
@@ -256,7 +253,7 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save visit: \$e')),
+          SnackBar(content: Text('Could not save visit: $e')),
         );
       }
       return;
