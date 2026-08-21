@@ -451,6 +451,11 @@ void main() {
       expect(records, isEmpty);
     });
 
+    test('Schema v10 includes complaints table', () async {
+      final complaints = await db.select(db.complaints).get();
+      expect(complaints, isEmpty);
+    });
+
     test('Deleting a patient marks isDeleted = true without losing row', () async {
       await db.into(db.patients).insert(
             PatientsCompanion.insert(

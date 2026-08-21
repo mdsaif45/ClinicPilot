@@ -7692,6 +7692,1252 @@ class PatientCaseRecordsCompanion extends UpdateCompanion<PatientCaseRecord> {
   }
 }
 
+class $ComplaintsTable extends Complaints
+    with TableInfo<$ComplaintsTable, Complaint> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ComplaintsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _patientIdMeta = const VerificationMeta(
+    'patientId',
+  );
+  @override
+  late final GeneratedColumn<String> patientId = GeneratedColumn<String>(
+    'patient_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES patients (id)',
+    ),
+  );
+  static const VerificationMeta _visitIdMeta = const VerificationMeta(
+    'visitId',
+  );
+  @override
+  late final GeneratedColumn<String> visitId = GeneratedColumn<String>(
+    'visit_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES visits (id)',
+    ),
+  );
+  static const VerificationMeta _complaintIndexMeta = const VerificationMeta(
+    'complaintIndex',
+  );
+  @override
+  late final GeneratedColumn<int> complaintIndex = GeneratedColumn<int>(
+    'complaint_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _complaintNameMeta = const VerificationMeta(
+    'complaintName',
+  );
+  @override
+  late final GeneratedColumn<String> complaintName = GeneratedColumn<String>(
+    'complaint_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _locationMeta = const VerificationMeta(
+    'location',
+  );
+  @override
+  late final GeneratedColumn<String> location = GeneratedColumn<String>(
+    'location',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sideMeta = const VerificationMeta('side');
+  @override
+  late final GeneratedColumn<String> side = GeneratedColumn<String>(
+    'side',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _onsetMeta = const VerificationMeta('onset');
+  @override
+  late final GeneratedColumn<String> onset = GeneratedColumn<String>(
+    'onset',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _durationMeta = const VerificationMeta(
+    'duration',
+  );
+  @override
+  late final GeneratedColumn<String> duration = GeneratedColumn<String>(
+    'duration',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sensationMeta = const VerificationMeta(
+    'sensation',
+  );
+  @override
+  late final GeneratedColumn<String> sensation = GeneratedColumn<String>(
+    'sensation',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _extensionMeta = const VerificationMeta(
+    'extension',
+  );
+  @override
+  late final GeneratedColumn<String> extension = GeneratedColumn<String>(
+    'extension',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _aggravatingFactorsMeta =
+      const VerificationMeta('aggravatingFactors');
+  @override
+  late final GeneratedColumn<String> aggravatingFactors =
+      GeneratedColumn<String>(
+        'aggravating_factors',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _amelioratingFactorsMeta =
+      const VerificationMeta('amelioratingFactors');
+  @override
+  late final GeneratedColumn<String> amelioratingFactors =
+      GeneratedColumn<String>(
+        'ameliorating_factors',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _concomitantsMeta = const VerificationMeta(
+    'concomitants',
+  );
+  @override
+  late final GeneratedColumn<String> concomitants = GeneratedColumn<String>(
+    'concomitants',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _causationMeta = const VerificationMeta(
+    'causation',
+  );
+  @override
+  late final GeneratedColumn<String> causation = GeneratedColumn<String>(
+    'causation',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _periodicityMeta = const VerificationMeta(
+    'periodicity',
+  );
+  @override
+  late final GeneratedColumn<String> periodicity = GeneratedColumn<String>(
+    'periodicity',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _severityMeta = const VerificationMeta(
+    'severity',
+  );
+  @override
+  late final GeneratedColumn<int> severity = GeneratedColumn<int>(
+    'severity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(5),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Active'),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    patientId,
+    visitId,
+    complaintIndex,
+    complaintName,
+    location,
+    side,
+    onset,
+    duration,
+    sensation,
+    extension,
+    aggravatingFactors,
+    amelioratingFactors,
+    concomitants,
+    causation,
+    periodicity,
+    severity,
+    status,
+    notes,
+    isDeleted,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'complaints';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Complaint> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('patient_id')) {
+      context.handle(
+        _patientIdMeta,
+        patientId.isAcceptableOrUnknown(data['patient_id']!, _patientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_patientIdMeta);
+    }
+    if (data.containsKey('visit_id')) {
+      context.handle(
+        _visitIdMeta,
+        visitId.isAcceptableOrUnknown(data['visit_id']!, _visitIdMeta),
+      );
+    }
+    if (data.containsKey('complaint_index')) {
+      context.handle(
+        _complaintIndexMeta,
+        complaintIndex.isAcceptableOrUnknown(
+          data['complaint_index']!,
+          _complaintIndexMeta,
+        ),
+      );
+    }
+    if (data.containsKey('complaint_name')) {
+      context.handle(
+        _complaintNameMeta,
+        complaintName.isAcceptableOrUnknown(
+          data['complaint_name']!,
+          _complaintNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_complaintNameMeta);
+    }
+    if (data.containsKey('location')) {
+      context.handle(
+        _locationMeta,
+        location.isAcceptableOrUnknown(data['location']!, _locationMeta),
+      );
+    }
+    if (data.containsKey('side')) {
+      context.handle(
+        _sideMeta,
+        side.isAcceptableOrUnknown(data['side']!, _sideMeta),
+      );
+    }
+    if (data.containsKey('onset')) {
+      context.handle(
+        _onsetMeta,
+        onset.isAcceptableOrUnknown(data['onset']!, _onsetMeta),
+      );
+    }
+    if (data.containsKey('duration')) {
+      context.handle(
+        _durationMeta,
+        duration.isAcceptableOrUnknown(data['duration']!, _durationMeta),
+      );
+    }
+    if (data.containsKey('sensation')) {
+      context.handle(
+        _sensationMeta,
+        sensation.isAcceptableOrUnknown(data['sensation']!, _sensationMeta),
+      );
+    }
+    if (data.containsKey('extension')) {
+      context.handle(
+        _extensionMeta,
+        extension.isAcceptableOrUnknown(data['extension']!, _extensionMeta),
+      );
+    }
+    if (data.containsKey('aggravating_factors')) {
+      context.handle(
+        _aggravatingFactorsMeta,
+        aggravatingFactors.isAcceptableOrUnknown(
+          data['aggravating_factors']!,
+          _aggravatingFactorsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ameliorating_factors')) {
+      context.handle(
+        _amelioratingFactorsMeta,
+        amelioratingFactors.isAcceptableOrUnknown(
+          data['ameliorating_factors']!,
+          _amelioratingFactorsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('concomitants')) {
+      context.handle(
+        _concomitantsMeta,
+        concomitants.isAcceptableOrUnknown(
+          data['concomitants']!,
+          _concomitantsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('causation')) {
+      context.handle(
+        _causationMeta,
+        causation.isAcceptableOrUnknown(data['causation']!, _causationMeta),
+      );
+    }
+    if (data.containsKey('periodicity')) {
+      context.handle(
+        _periodicityMeta,
+        periodicity.isAcceptableOrUnknown(
+          data['periodicity']!,
+          _periodicityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('severity')) {
+      context.handle(
+        _severityMeta,
+        severity.isAcceptableOrUnknown(data['severity']!, _severityMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Complaint map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Complaint(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      patientId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}patient_id'],
+          )!,
+      visitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}visit_id'],
+      ),
+      complaintIndex:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}complaint_index'],
+          )!,
+      complaintName:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}complaint_name'],
+          )!,
+      location: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location'],
+      ),
+      side: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}side'],
+      ),
+      onset: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}onset'],
+      ),
+      duration: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}duration'],
+      ),
+      sensation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sensation'],
+      ),
+      extension: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}extension'],
+      ),
+      aggravatingFactors: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}aggravating_factors'],
+      ),
+      amelioratingFactors: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ameliorating_factors'],
+      ),
+      concomitants: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}concomitants'],
+      ),
+      causation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}causation'],
+      ),
+      periodicity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}periodicity'],
+      ),
+      severity:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}severity'],
+          )!,
+      status:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}status'],
+          )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $ComplaintsTable createAlias(String alias) {
+    return $ComplaintsTable(attachedDatabase, alias);
+  }
+}
+
+class Complaint extends DataClass implements Insertable<Complaint> {
+  final String id;
+  final String patientId;
+  final String? visitId;
+  final int complaintIndex;
+  final String complaintName;
+  final String? location;
+  final String? side;
+  final String? onset;
+  final String? duration;
+  final String? sensation;
+  final String? extension;
+  final String? aggravatingFactors;
+  final String? amelioratingFactors;
+  final String? concomitants;
+  final String? causation;
+  final String? periodicity;
+  final int severity;
+  final String status;
+  final String? notes;
+  final bool isDeleted;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Complaint({
+    required this.id,
+    required this.patientId,
+    this.visitId,
+    required this.complaintIndex,
+    required this.complaintName,
+    this.location,
+    this.side,
+    this.onset,
+    this.duration,
+    this.sensation,
+    this.extension,
+    this.aggravatingFactors,
+    this.amelioratingFactors,
+    this.concomitants,
+    this.causation,
+    this.periodicity,
+    required this.severity,
+    required this.status,
+    this.notes,
+    required this.isDeleted,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['patient_id'] = Variable<String>(patientId);
+    if (!nullToAbsent || visitId != null) {
+      map['visit_id'] = Variable<String>(visitId);
+    }
+    map['complaint_index'] = Variable<int>(complaintIndex);
+    map['complaint_name'] = Variable<String>(complaintName);
+    if (!nullToAbsent || location != null) {
+      map['location'] = Variable<String>(location);
+    }
+    if (!nullToAbsent || side != null) {
+      map['side'] = Variable<String>(side);
+    }
+    if (!nullToAbsent || onset != null) {
+      map['onset'] = Variable<String>(onset);
+    }
+    if (!nullToAbsent || duration != null) {
+      map['duration'] = Variable<String>(duration);
+    }
+    if (!nullToAbsent || sensation != null) {
+      map['sensation'] = Variable<String>(sensation);
+    }
+    if (!nullToAbsent || extension != null) {
+      map['extension'] = Variable<String>(extension);
+    }
+    if (!nullToAbsent || aggravatingFactors != null) {
+      map['aggravating_factors'] = Variable<String>(aggravatingFactors);
+    }
+    if (!nullToAbsent || amelioratingFactors != null) {
+      map['ameliorating_factors'] = Variable<String>(amelioratingFactors);
+    }
+    if (!nullToAbsent || concomitants != null) {
+      map['concomitants'] = Variable<String>(concomitants);
+    }
+    if (!nullToAbsent || causation != null) {
+      map['causation'] = Variable<String>(causation);
+    }
+    if (!nullToAbsent || periodicity != null) {
+      map['periodicity'] = Variable<String>(periodicity);
+    }
+    map['severity'] = Variable<int>(severity);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ComplaintsCompanion toCompanion(bool nullToAbsent) {
+    return ComplaintsCompanion(
+      id: Value(id),
+      patientId: Value(patientId),
+      visitId:
+          visitId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(visitId),
+      complaintIndex: Value(complaintIndex),
+      complaintName: Value(complaintName),
+      location:
+          location == null && nullToAbsent
+              ? const Value.absent()
+              : Value(location),
+      side: side == null && nullToAbsent ? const Value.absent() : Value(side),
+      onset:
+          onset == null && nullToAbsent ? const Value.absent() : Value(onset),
+      duration:
+          duration == null && nullToAbsent
+              ? const Value.absent()
+              : Value(duration),
+      sensation:
+          sensation == null && nullToAbsent
+              ? const Value.absent()
+              : Value(sensation),
+      extension:
+          extension == null && nullToAbsent
+              ? const Value.absent()
+              : Value(extension),
+      aggravatingFactors:
+          aggravatingFactors == null && nullToAbsent
+              ? const Value.absent()
+              : Value(aggravatingFactors),
+      amelioratingFactors:
+          amelioratingFactors == null && nullToAbsent
+              ? const Value.absent()
+              : Value(amelioratingFactors),
+      concomitants:
+          concomitants == null && nullToAbsent
+              ? const Value.absent()
+              : Value(concomitants),
+      causation:
+          causation == null && nullToAbsent
+              ? const Value.absent()
+              : Value(causation),
+      periodicity:
+          periodicity == null && nullToAbsent
+              ? const Value.absent()
+              : Value(periodicity),
+      severity: Value(severity),
+      status: Value(status),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      isDeleted: Value(isDeleted),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Complaint.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Complaint(
+      id: serializer.fromJson<String>(json['id']),
+      patientId: serializer.fromJson<String>(json['patientId']),
+      visitId: serializer.fromJson<String?>(json['visitId']),
+      complaintIndex: serializer.fromJson<int>(json['complaintIndex']),
+      complaintName: serializer.fromJson<String>(json['complaintName']),
+      location: serializer.fromJson<String?>(json['location']),
+      side: serializer.fromJson<String?>(json['side']),
+      onset: serializer.fromJson<String?>(json['onset']),
+      duration: serializer.fromJson<String?>(json['duration']),
+      sensation: serializer.fromJson<String?>(json['sensation']),
+      extension: serializer.fromJson<String?>(json['extension']),
+      aggravatingFactors: serializer.fromJson<String?>(
+        json['aggravatingFactors'],
+      ),
+      amelioratingFactors: serializer.fromJson<String?>(
+        json['amelioratingFactors'],
+      ),
+      concomitants: serializer.fromJson<String?>(json['concomitants']),
+      causation: serializer.fromJson<String?>(json['causation']),
+      periodicity: serializer.fromJson<String?>(json['periodicity']),
+      severity: serializer.fromJson<int>(json['severity']),
+      status: serializer.fromJson<String>(json['status']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'patientId': serializer.toJson<String>(patientId),
+      'visitId': serializer.toJson<String?>(visitId),
+      'complaintIndex': serializer.toJson<int>(complaintIndex),
+      'complaintName': serializer.toJson<String>(complaintName),
+      'location': serializer.toJson<String?>(location),
+      'side': serializer.toJson<String?>(side),
+      'onset': serializer.toJson<String?>(onset),
+      'duration': serializer.toJson<String?>(duration),
+      'sensation': serializer.toJson<String?>(sensation),
+      'extension': serializer.toJson<String?>(extension),
+      'aggravatingFactors': serializer.toJson<String?>(aggravatingFactors),
+      'amelioratingFactors': serializer.toJson<String?>(amelioratingFactors),
+      'concomitants': serializer.toJson<String?>(concomitants),
+      'causation': serializer.toJson<String?>(causation),
+      'periodicity': serializer.toJson<String?>(periodicity),
+      'severity': serializer.toJson<int>(severity),
+      'status': serializer.toJson<String>(status),
+      'notes': serializer.toJson<String?>(notes),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Complaint copyWith({
+    String? id,
+    String? patientId,
+    Value<String?> visitId = const Value.absent(),
+    int? complaintIndex,
+    String? complaintName,
+    Value<String?> location = const Value.absent(),
+    Value<String?> side = const Value.absent(),
+    Value<String?> onset = const Value.absent(),
+    Value<String?> duration = const Value.absent(),
+    Value<String?> sensation = const Value.absent(),
+    Value<String?> extension = const Value.absent(),
+    Value<String?> aggravatingFactors = const Value.absent(),
+    Value<String?> amelioratingFactors = const Value.absent(),
+    Value<String?> concomitants = const Value.absent(),
+    Value<String?> causation = const Value.absent(),
+    Value<String?> periodicity = const Value.absent(),
+    int? severity,
+    String? status,
+    Value<String?> notes = const Value.absent(),
+    bool? isDeleted,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => Complaint(
+    id: id ?? this.id,
+    patientId: patientId ?? this.patientId,
+    visitId: visitId.present ? visitId.value : this.visitId,
+    complaintIndex: complaintIndex ?? this.complaintIndex,
+    complaintName: complaintName ?? this.complaintName,
+    location: location.present ? location.value : this.location,
+    side: side.present ? side.value : this.side,
+    onset: onset.present ? onset.value : this.onset,
+    duration: duration.present ? duration.value : this.duration,
+    sensation: sensation.present ? sensation.value : this.sensation,
+    extension: extension.present ? extension.value : this.extension,
+    aggravatingFactors:
+        aggravatingFactors.present
+            ? aggravatingFactors.value
+            : this.aggravatingFactors,
+    amelioratingFactors:
+        amelioratingFactors.present
+            ? amelioratingFactors.value
+            : this.amelioratingFactors,
+    concomitants: concomitants.present ? concomitants.value : this.concomitants,
+    causation: causation.present ? causation.value : this.causation,
+    periodicity: periodicity.present ? periodicity.value : this.periodicity,
+    severity: severity ?? this.severity,
+    status: status ?? this.status,
+    notes: notes.present ? notes.value : this.notes,
+    isDeleted: isDeleted ?? this.isDeleted,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Complaint copyWithCompanion(ComplaintsCompanion data) {
+    return Complaint(
+      id: data.id.present ? data.id.value : this.id,
+      patientId: data.patientId.present ? data.patientId.value : this.patientId,
+      visitId: data.visitId.present ? data.visitId.value : this.visitId,
+      complaintIndex:
+          data.complaintIndex.present
+              ? data.complaintIndex.value
+              : this.complaintIndex,
+      complaintName:
+          data.complaintName.present
+              ? data.complaintName.value
+              : this.complaintName,
+      location: data.location.present ? data.location.value : this.location,
+      side: data.side.present ? data.side.value : this.side,
+      onset: data.onset.present ? data.onset.value : this.onset,
+      duration: data.duration.present ? data.duration.value : this.duration,
+      sensation: data.sensation.present ? data.sensation.value : this.sensation,
+      extension: data.extension.present ? data.extension.value : this.extension,
+      aggravatingFactors:
+          data.aggravatingFactors.present
+              ? data.aggravatingFactors.value
+              : this.aggravatingFactors,
+      amelioratingFactors:
+          data.amelioratingFactors.present
+              ? data.amelioratingFactors.value
+              : this.amelioratingFactors,
+      concomitants:
+          data.concomitants.present
+              ? data.concomitants.value
+              : this.concomitants,
+      causation: data.causation.present ? data.causation.value : this.causation,
+      periodicity:
+          data.periodicity.present ? data.periodicity.value : this.periodicity,
+      severity: data.severity.present ? data.severity.value : this.severity,
+      status: data.status.present ? data.status.value : this.status,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Complaint(')
+          ..write('id: $id, ')
+          ..write('patientId: $patientId, ')
+          ..write('visitId: $visitId, ')
+          ..write('complaintIndex: $complaintIndex, ')
+          ..write('complaintName: $complaintName, ')
+          ..write('location: $location, ')
+          ..write('side: $side, ')
+          ..write('onset: $onset, ')
+          ..write('duration: $duration, ')
+          ..write('sensation: $sensation, ')
+          ..write('extension: $extension, ')
+          ..write('aggravatingFactors: $aggravatingFactors, ')
+          ..write('amelioratingFactors: $amelioratingFactors, ')
+          ..write('concomitants: $concomitants, ')
+          ..write('causation: $causation, ')
+          ..write('periodicity: $periodicity, ')
+          ..write('severity: $severity, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    patientId,
+    visitId,
+    complaintIndex,
+    complaintName,
+    location,
+    side,
+    onset,
+    duration,
+    sensation,
+    extension,
+    aggravatingFactors,
+    amelioratingFactors,
+    concomitants,
+    causation,
+    periodicity,
+    severity,
+    status,
+    notes,
+    isDeleted,
+    createdAt,
+    updatedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Complaint &&
+          other.id == this.id &&
+          other.patientId == this.patientId &&
+          other.visitId == this.visitId &&
+          other.complaintIndex == this.complaintIndex &&
+          other.complaintName == this.complaintName &&
+          other.location == this.location &&
+          other.side == this.side &&
+          other.onset == this.onset &&
+          other.duration == this.duration &&
+          other.sensation == this.sensation &&
+          other.extension == this.extension &&
+          other.aggravatingFactors == this.aggravatingFactors &&
+          other.amelioratingFactors == this.amelioratingFactors &&
+          other.concomitants == this.concomitants &&
+          other.causation == this.causation &&
+          other.periodicity == this.periodicity &&
+          other.severity == this.severity &&
+          other.status == this.status &&
+          other.notes == this.notes &&
+          other.isDeleted == this.isDeleted &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ComplaintsCompanion extends UpdateCompanion<Complaint> {
+  final Value<String> id;
+  final Value<String> patientId;
+  final Value<String?> visitId;
+  final Value<int> complaintIndex;
+  final Value<String> complaintName;
+  final Value<String?> location;
+  final Value<String?> side;
+  final Value<String?> onset;
+  final Value<String?> duration;
+  final Value<String?> sensation;
+  final Value<String?> extension;
+  final Value<String?> aggravatingFactors;
+  final Value<String?> amelioratingFactors;
+  final Value<String?> concomitants;
+  final Value<String?> causation;
+  final Value<String?> periodicity;
+  final Value<int> severity;
+  final Value<String> status;
+  final Value<String?> notes;
+  final Value<bool> isDeleted;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ComplaintsCompanion({
+    this.id = const Value.absent(),
+    this.patientId = const Value.absent(),
+    this.visitId = const Value.absent(),
+    this.complaintIndex = const Value.absent(),
+    this.complaintName = const Value.absent(),
+    this.location = const Value.absent(),
+    this.side = const Value.absent(),
+    this.onset = const Value.absent(),
+    this.duration = const Value.absent(),
+    this.sensation = const Value.absent(),
+    this.extension = const Value.absent(),
+    this.aggravatingFactors = const Value.absent(),
+    this.amelioratingFactors = const Value.absent(),
+    this.concomitants = const Value.absent(),
+    this.causation = const Value.absent(),
+    this.periodicity = const Value.absent(),
+    this.severity = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ComplaintsCompanion.insert({
+    required String id,
+    required String patientId,
+    this.visitId = const Value.absent(),
+    this.complaintIndex = const Value.absent(),
+    required String complaintName,
+    this.location = const Value.absent(),
+    this.side = const Value.absent(),
+    this.onset = const Value.absent(),
+    this.duration = const Value.absent(),
+    this.sensation = const Value.absent(),
+    this.extension = const Value.absent(),
+    this.aggravatingFactors = const Value.absent(),
+    this.amelioratingFactors = const Value.absent(),
+    this.concomitants = const Value.absent(),
+    this.causation = const Value.absent(),
+    this.periodicity = const Value.absent(),
+    this.severity = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       patientId = Value(patientId),
+       complaintName = Value(complaintName);
+  static Insertable<Complaint> custom({
+    Expression<String>? id,
+    Expression<String>? patientId,
+    Expression<String>? visitId,
+    Expression<int>? complaintIndex,
+    Expression<String>? complaintName,
+    Expression<String>? location,
+    Expression<String>? side,
+    Expression<String>? onset,
+    Expression<String>? duration,
+    Expression<String>? sensation,
+    Expression<String>? extension,
+    Expression<String>? aggravatingFactors,
+    Expression<String>? amelioratingFactors,
+    Expression<String>? concomitants,
+    Expression<String>? causation,
+    Expression<String>? periodicity,
+    Expression<int>? severity,
+    Expression<String>? status,
+    Expression<String>? notes,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (patientId != null) 'patient_id': patientId,
+      if (visitId != null) 'visit_id': visitId,
+      if (complaintIndex != null) 'complaint_index': complaintIndex,
+      if (complaintName != null) 'complaint_name': complaintName,
+      if (location != null) 'location': location,
+      if (side != null) 'side': side,
+      if (onset != null) 'onset': onset,
+      if (duration != null) 'duration': duration,
+      if (sensation != null) 'sensation': sensation,
+      if (extension != null) 'extension': extension,
+      if (aggravatingFactors != null) 'aggravating_factors': aggravatingFactors,
+      if (amelioratingFactors != null)
+        'ameliorating_factors': amelioratingFactors,
+      if (concomitants != null) 'concomitants': concomitants,
+      if (causation != null) 'causation': causation,
+      if (periodicity != null) 'periodicity': periodicity,
+      if (severity != null) 'severity': severity,
+      if (status != null) 'status': status,
+      if (notes != null) 'notes': notes,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ComplaintsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? patientId,
+    Value<String?>? visitId,
+    Value<int>? complaintIndex,
+    Value<String>? complaintName,
+    Value<String?>? location,
+    Value<String?>? side,
+    Value<String?>? onset,
+    Value<String?>? duration,
+    Value<String?>? sensation,
+    Value<String?>? extension,
+    Value<String?>? aggravatingFactors,
+    Value<String?>? amelioratingFactors,
+    Value<String?>? concomitants,
+    Value<String?>? causation,
+    Value<String?>? periodicity,
+    Value<int>? severity,
+    Value<String>? status,
+    Value<String?>? notes,
+    Value<bool>? isDeleted,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ComplaintsCompanion(
+      id: id ?? this.id,
+      patientId: patientId ?? this.patientId,
+      visitId: visitId ?? this.visitId,
+      complaintIndex: complaintIndex ?? this.complaintIndex,
+      complaintName: complaintName ?? this.complaintName,
+      location: location ?? this.location,
+      side: side ?? this.side,
+      onset: onset ?? this.onset,
+      duration: duration ?? this.duration,
+      sensation: sensation ?? this.sensation,
+      extension: extension ?? this.extension,
+      aggravatingFactors: aggravatingFactors ?? this.aggravatingFactors,
+      amelioratingFactors: amelioratingFactors ?? this.amelioratingFactors,
+      concomitants: concomitants ?? this.concomitants,
+      causation: causation ?? this.causation,
+      periodicity: periodicity ?? this.periodicity,
+      severity: severity ?? this.severity,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      isDeleted: isDeleted ?? this.isDeleted,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (patientId.present) {
+      map['patient_id'] = Variable<String>(patientId.value);
+    }
+    if (visitId.present) {
+      map['visit_id'] = Variable<String>(visitId.value);
+    }
+    if (complaintIndex.present) {
+      map['complaint_index'] = Variable<int>(complaintIndex.value);
+    }
+    if (complaintName.present) {
+      map['complaint_name'] = Variable<String>(complaintName.value);
+    }
+    if (location.present) {
+      map['location'] = Variable<String>(location.value);
+    }
+    if (side.present) {
+      map['side'] = Variable<String>(side.value);
+    }
+    if (onset.present) {
+      map['onset'] = Variable<String>(onset.value);
+    }
+    if (duration.present) {
+      map['duration'] = Variable<String>(duration.value);
+    }
+    if (sensation.present) {
+      map['sensation'] = Variable<String>(sensation.value);
+    }
+    if (extension.present) {
+      map['extension'] = Variable<String>(extension.value);
+    }
+    if (aggravatingFactors.present) {
+      map['aggravating_factors'] = Variable<String>(aggravatingFactors.value);
+    }
+    if (amelioratingFactors.present) {
+      map['ameliorating_factors'] = Variable<String>(amelioratingFactors.value);
+    }
+    if (concomitants.present) {
+      map['concomitants'] = Variable<String>(concomitants.value);
+    }
+    if (causation.present) {
+      map['causation'] = Variable<String>(causation.value);
+    }
+    if (periodicity.present) {
+      map['periodicity'] = Variable<String>(periodicity.value);
+    }
+    if (severity.present) {
+      map['severity'] = Variable<int>(severity.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ComplaintsCompanion(')
+          ..write('id: $id, ')
+          ..write('patientId: $patientId, ')
+          ..write('visitId: $visitId, ')
+          ..write('complaintIndex: $complaintIndex, ')
+          ..write('complaintName: $complaintName, ')
+          ..write('location: $location, ')
+          ..write('side: $side, ')
+          ..write('onset: $onset, ')
+          ..write('duration: $duration, ')
+          ..write('sensation: $sensation, ')
+          ..write('extension: $extension, ')
+          ..write('aggravatingFactors: $aggravatingFactors, ')
+          ..write('amelioratingFactors: $amelioratingFactors, ')
+          ..write('concomitants: $concomitants, ')
+          ..write('causation: $causation, ')
+          ..write('periodicity: $periodicity, ')
+          ..write('severity: $severity, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7706,6 +8952,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CampsTable camps = $CampsTable(this);
   late final $PatientCaseRecordsTable patientCaseRecords =
       $PatientCaseRecordsTable(this);
+  late final $ComplaintsTable complaints = $ComplaintsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7721,6 +8968,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     footfalls,
     camps,
     patientCaseRecords,
+    complaints,
   ];
 }
 
@@ -8760,6 +10008,24 @@ final class $$PatientsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$ComplaintsTable, List<Complaint>>
+  _complaintsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.complaints,
+    aliasName: $_aliasNameGenerator(db.patients.id, db.complaints.patientId),
+  );
+
+  $$ComplaintsTableProcessedTableManager get complaintsRefs {
+    final manager = $$ComplaintsTableTableManager(
+      $_db,
+      $_db.complaints,
+    ).filter((f) => f.patientId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_complaintsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$PatientsTableFilterComposer
@@ -8987,6 +10253,31 @@ class $$PatientsTableFilterComposer
           }) => $$PatientCaseRecordsTableFilterComposer(
             $db: $db,
             $table: $db.patientCaseRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> complaintsRefs(
+    Expression<bool> Function($$ComplaintsTableFilterComposer f) f,
+  ) {
+    final $$ComplaintsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.complaints,
+      getReferencedColumn: (t) => t.patientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ComplaintsTableFilterComposer(
+            $db: $db,
+            $table: $db.complaints,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -9315,6 +10606,31 @@ class $$PatientsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> complaintsRefs<T extends Object>(
+    Expression<T> Function($$ComplaintsTableAnnotationComposer a) f,
+  ) {
+    final $$ComplaintsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.complaints,
+      getReferencedColumn: (t) => t.patientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ComplaintsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.complaints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PatientsTableTableManager
@@ -9336,6 +10652,7 @@ class $$PatientsTableTableManager
             bool reviewRequestsRefs,
             bool footfallsRefs,
             bool patientCaseRecordsRefs,
+            bool complaintsRefs,
           })
         > {
   $$PatientsTableTableManager(_$AppDatabase db, $PatientsTable table)
@@ -9457,6 +10774,7 @@ class $$PatientsTableTableManager
             reviewRequestsRefs = false,
             footfallsRefs = false,
             patientCaseRecordsRefs = false,
+            complaintsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -9466,6 +10784,7 @@ class $$PatientsTableTableManager
                 if (reviewRequestsRefs) db.reviewRequests,
                 if (footfallsRefs) db.footfalls,
                 if (patientCaseRecordsRefs) db.patientCaseRecords,
+                if (complaintsRefs) db.complaints,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -9576,6 +10895,28 @@ class $$PatientsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (complaintsRefs)
+                    await $_getPrefetchedData<
+                      Patient,
+                      $PatientsTable,
+                      Complaint
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PatientsTableReferences
+                          ._complaintsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$PatientsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).complaintsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.patientId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -9602,6 +10943,7 @@ typedef $$PatientsTableProcessedTableManager =
         bool reviewRequestsRefs,
         bool footfallsRefs,
         bool patientCaseRecordsRefs,
+        bool complaintsRefs,
       })
     >;
 typedef $$VisitsTableCreateCompanionBuilder =
@@ -9692,6 +11034,24 @@ final class $$VisitsTableReferences
     ).filter((f) => f.visitId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_cashMemosRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ComplaintsTable, List<Complaint>>
+  _complaintsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.complaints,
+    aliasName: $_aliasNameGenerator(db.visits.id, db.complaints.visitId),
+  );
+
+  $$ComplaintsTableProcessedTableManager get complaintsRefs {
+    final manager = $$ComplaintsTableTableManager(
+      $_db,
+      $_db.complaints,
+    ).filter((f) => f.visitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_complaintsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -9829,6 +11189,31 @@ class $$VisitsTableFilterComposer
           }) => $$CashMemosTableFilterComposer(
             $db: $db,
             $table: $db.cashMemos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> complaintsRefs(
+    Expression<bool> Function($$ComplaintsTableFilterComposer f) f,
+  ) {
+    final $$ComplaintsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.complaints,
+      getReferencedColumn: (t) => t.visitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ComplaintsTableFilterComposer(
+            $db: $db,
+            $table: $db.complaints,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -10078,6 +11463,31 @@ class $$VisitsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> complaintsRefs<T extends Object>(
+    Expression<T> Function($$ComplaintsTableAnnotationComposer a) f,
+  ) {
+    final $$ComplaintsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.complaints,
+      getReferencedColumn: (t) => t.visitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ComplaintsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.complaints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$VisitsTableTableManager
@@ -10097,6 +11507,7 @@ class $$VisitsTableTableManager
             bool patientId,
             bool clinicId,
             bool cashMemosRefs,
+            bool complaintsRefs,
           })
         > {
   $$VisitsTableTableManager(_$AppDatabase db, $VisitsTable table)
@@ -10192,10 +11603,14 @@ class $$VisitsTableTableManager
             patientId = false,
             clinicId = false,
             cashMemosRefs = false,
+            complaintsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (cashMemosRefs) db.cashMemos],
+              explicitlyWatchedTables: [
+                if (cashMemosRefs) db.cashMemos,
+                if (complaintsRefs) db.complaints,
+              ],
               addJoins: <
                 T extends TableManagerState<
                   dynamic,
@@ -10258,6 +11673,24 @@ class $$VisitsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (complaintsRefs)
+                    await $_getPrefetchedData<Visit, $VisitsTable, Complaint>(
+                      currentTable: table,
+                      referencedTable: $$VisitsTableReferences
+                          ._complaintsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$VisitsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).complaintsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.visitId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -10282,6 +11715,7 @@ typedef $$VisitsTableProcessedTableManager =
         bool patientId,
         bool clinicId,
         bool cashMemosRefs,
+        bool complaintsRefs,
       })
     >;
 typedef $$CashMemosTableCreateCompanionBuilder =
@@ -13712,6 +15146,750 @@ typedef $$PatientCaseRecordsTableProcessedTableManager =
       PatientCaseRecord,
       PrefetchHooks Function({bool patientId})
     >;
+typedef $$ComplaintsTableCreateCompanionBuilder =
+    ComplaintsCompanion Function({
+      required String id,
+      required String patientId,
+      Value<String?> visitId,
+      Value<int> complaintIndex,
+      required String complaintName,
+      Value<String?> location,
+      Value<String?> side,
+      Value<String?> onset,
+      Value<String?> duration,
+      Value<String?> sensation,
+      Value<String?> extension,
+      Value<String?> aggravatingFactors,
+      Value<String?> amelioratingFactors,
+      Value<String?> concomitants,
+      Value<String?> causation,
+      Value<String?> periodicity,
+      Value<int> severity,
+      Value<String> status,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ComplaintsTableUpdateCompanionBuilder =
+    ComplaintsCompanion Function({
+      Value<String> id,
+      Value<String> patientId,
+      Value<String?> visitId,
+      Value<int> complaintIndex,
+      Value<String> complaintName,
+      Value<String?> location,
+      Value<String?> side,
+      Value<String?> onset,
+      Value<String?> duration,
+      Value<String?> sensation,
+      Value<String?> extension,
+      Value<String?> aggravatingFactors,
+      Value<String?> amelioratingFactors,
+      Value<String?> concomitants,
+      Value<String?> causation,
+      Value<String?> periodicity,
+      Value<int> severity,
+      Value<String> status,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ComplaintsTableReferences
+    extends BaseReferences<_$AppDatabase, $ComplaintsTable, Complaint> {
+  $$ComplaintsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PatientsTable _patientIdTable(_$AppDatabase db) =>
+      db.patients.createAlias(
+        $_aliasNameGenerator(db.complaints.patientId, db.patients.id),
+      );
+
+  $$PatientsTableProcessedTableManager get patientId {
+    final $_column = $_itemColumn<String>('patient_id')!;
+
+    final manager = $$PatientsTableTableManager(
+      $_db,
+      $_db.patients,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_patientIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $VisitsTable _visitIdTable(_$AppDatabase db) => db.visits.createAlias(
+    $_aliasNameGenerator(db.complaints.visitId, db.visits.id),
+  );
+
+  $$VisitsTableProcessedTableManager? get visitId {
+    final $_column = $_itemColumn<String>('visit_id');
+    if ($_column == null) return null;
+    final manager = $$VisitsTableTableManager(
+      $_db,
+      $_db.visits,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_visitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ComplaintsTableFilterComposer
+    extends Composer<_$AppDatabase, $ComplaintsTable> {
+  $$ComplaintsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get complaintIndex => $composableBuilder(
+    column: $table.complaintIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get complaintName => $composableBuilder(
+    column: $table.complaintName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get side => $composableBuilder(
+    column: $table.side,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get onset => $composableBuilder(
+    column: $table.onset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get duration => $composableBuilder(
+    column: $table.duration,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sensation => $composableBuilder(
+    column: $table.sensation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get extension => $composableBuilder(
+    column: $table.extension,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get aggravatingFactors => $composableBuilder(
+    column: $table.aggravatingFactors,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get amelioratingFactors => $composableBuilder(
+    column: $table.amelioratingFactors,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get concomitants => $composableBuilder(
+    column: $table.concomitants,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get causation => $composableBuilder(
+    column: $table.causation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get periodicity => $composableBuilder(
+    column: $table.periodicity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get severity => $composableBuilder(
+    column: $table.severity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PatientsTableFilterComposer get patientId {
+    final $$PatientsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableFilterComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$VisitsTableFilterComposer get visitId {
+    final $$VisitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.visitId,
+      referencedTable: $db.visits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VisitsTableFilterComposer(
+            $db: $db,
+            $table: $db.visits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ComplaintsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ComplaintsTable> {
+  $$ComplaintsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get complaintIndex => $composableBuilder(
+    column: $table.complaintIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get complaintName => $composableBuilder(
+    column: $table.complaintName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get side => $composableBuilder(
+    column: $table.side,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get onset => $composableBuilder(
+    column: $table.onset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get duration => $composableBuilder(
+    column: $table.duration,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sensation => $composableBuilder(
+    column: $table.sensation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get extension => $composableBuilder(
+    column: $table.extension,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get aggravatingFactors => $composableBuilder(
+    column: $table.aggravatingFactors,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get amelioratingFactors => $composableBuilder(
+    column: $table.amelioratingFactors,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get concomitants => $composableBuilder(
+    column: $table.concomitants,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get causation => $composableBuilder(
+    column: $table.causation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get periodicity => $composableBuilder(
+    column: $table.periodicity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get severity => $composableBuilder(
+    column: $table.severity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PatientsTableOrderingComposer get patientId {
+    final $$PatientsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableOrderingComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$VisitsTableOrderingComposer get visitId {
+    final $$VisitsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.visitId,
+      referencedTable: $db.visits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VisitsTableOrderingComposer(
+            $db: $db,
+            $table: $db.visits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ComplaintsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ComplaintsTable> {
+  $$ComplaintsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get complaintIndex => $composableBuilder(
+    column: $table.complaintIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get complaintName => $composableBuilder(
+    column: $table.complaintName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get location =>
+      $composableBuilder(column: $table.location, builder: (column) => column);
+
+  GeneratedColumn<String> get side =>
+      $composableBuilder(column: $table.side, builder: (column) => column);
+
+  GeneratedColumn<String> get onset =>
+      $composableBuilder(column: $table.onset, builder: (column) => column);
+
+  GeneratedColumn<String> get duration =>
+      $composableBuilder(column: $table.duration, builder: (column) => column);
+
+  GeneratedColumn<String> get sensation =>
+      $composableBuilder(column: $table.sensation, builder: (column) => column);
+
+  GeneratedColumn<String> get extension =>
+      $composableBuilder(column: $table.extension, builder: (column) => column);
+
+  GeneratedColumn<String> get aggravatingFactors => $composableBuilder(
+    column: $table.aggravatingFactors,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get amelioratingFactors => $composableBuilder(
+    column: $table.amelioratingFactors,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get concomitants => $composableBuilder(
+    column: $table.concomitants,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get causation =>
+      $composableBuilder(column: $table.causation, builder: (column) => column);
+
+  GeneratedColumn<String> get periodicity => $composableBuilder(
+    column: $table.periodicity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get severity =>
+      $composableBuilder(column: $table.severity, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$PatientsTableAnnotationComposer get patientId {
+    final $$PatientsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$VisitsTableAnnotationComposer get visitId {
+    final $$VisitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.visitId,
+      referencedTable: $db.visits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VisitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.visits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ComplaintsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ComplaintsTable,
+          Complaint,
+          $$ComplaintsTableFilterComposer,
+          $$ComplaintsTableOrderingComposer,
+          $$ComplaintsTableAnnotationComposer,
+          $$ComplaintsTableCreateCompanionBuilder,
+          $$ComplaintsTableUpdateCompanionBuilder,
+          (Complaint, $$ComplaintsTableReferences),
+          Complaint,
+          PrefetchHooks Function({bool patientId, bool visitId})
+        > {
+  $$ComplaintsTableTableManager(_$AppDatabase db, $ComplaintsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$ComplaintsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$ComplaintsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$ComplaintsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> patientId = const Value.absent(),
+                Value<String?> visitId = const Value.absent(),
+                Value<int> complaintIndex = const Value.absent(),
+                Value<String> complaintName = const Value.absent(),
+                Value<String?> location = const Value.absent(),
+                Value<String?> side = const Value.absent(),
+                Value<String?> onset = const Value.absent(),
+                Value<String?> duration = const Value.absent(),
+                Value<String?> sensation = const Value.absent(),
+                Value<String?> extension = const Value.absent(),
+                Value<String?> aggravatingFactors = const Value.absent(),
+                Value<String?> amelioratingFactors = const Value.absent(),
+                Value<String?> concomitants = const Value.absent(),
+                Value<String?> causation = const Value.absent(),
+                Value<String?> periodicity = const Value.absent(),
+                Value<int> severity = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ComplaintsCompanion(
+                id: id,
+                patientId: patientId,
+                visitId: visitId,
+                complaintIndex: complaintIndex,
+                complaintName: complaintName,
+                location: location,
+                side: side,
+                onset: onset,
+                duration: duration,
+                sensation: sensation,
+                extension: extension,
+                aggravatingFactors: aggravatingFactors,
+                amelioratingFactors: amelioratingFactors,
+                concomitants: concomitants,
+                causation: causation,
+                periodicity: periodicity,
+                severity: severity,
+                status: status,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String patientId,
+                Value<String?> visitId = const Value.absent(),
+                Value<int> complaintIndex = const Value.absent(),
+                required String complaintName,
+                Value<String?> location = const Value.absent(),
+                Value<String?> side = const Value.absent(),
+                Value<String?> onset = const Value.absent(),
+                Value<String?> duration = const Value.absent(),
+                Value<String?> sensation = const Value.absent(),
+                Value<String?> extension = const Value.absent(),
+                Value<String?> aggravatingFactors = const Value.absent(),
+                Value<String?> amelioratingFactors = const Value.absent(),
+                Value<String?> concomitants = const Value.absent(),
+                Value<String?> causation = const Value.absent(),
+                Value<String?> periodicity = const Value.absent(),
+                Value<int> severity = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ComplaintsCompanion.insert(
+                id: id,
+                patientId: patientId,
+                visitId: visitId,
+                complaintIndex: complaintIndex,
+                complaintName: complaintName,
+                location: location,
+                side: side,
+                onset: onset,
+                duration: duration,
+                sensation: sensation,
+                extension: extension,
+                aggravatingFactors: aggravatingFactors,
+                amelioratingFactors: amelioratingFactors,
+                concomitants: concomitants,
+                causation: causation,
+                periodicity: periodicity,
+                severity: severity,
+                status: status,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$ComplaintsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({patientId = false, visitId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (patientId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.patientId,
+                            referencedTable: $$ComplaintsTableReferences
+                                ._patientIdTable(db),
+                            referencedColumn:
+                                $$ComplaintsTableReferences
+                                    ._patientIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+                if (visitId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.visitId,
+                            referencedTable: $$ComplaintsTableReferences
+                                ._visitIdTable(db),
+                            referencedColumn:
+                                $$ComplaintsTableReferences
+                                    ._visitIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ComplaintsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ComplaintsTable,
+      Complaint,
+      $$ComplaintsTableFilterComposer,
+      $$ComplaintsTableOrderingComposer,
+      $$ComplaintsTableAnnotationComposer,
+      $$ComplaintsTableCreateCompanionBuilder,
+      $$ComplaintsTableUpdateCompanionBuilder,
+      (Complaint, $$ComplaintsTableReferences),
+      Complaint,
+      PrefetchHooks Function({bool patientId, bool visitId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -13736,4 +15914,6 @@ class $AppDatabaseManager {
       $$CampsTableTableManager(_db, _db.camps);
   $$PatientCaseRecordsTableTableManager get patientCaseRecords =>
       $$PatientCaseRecordsTableTableManager(_db, _db.patientCaseRecords);
+  $$ComplaintsTableTableManager get complaints =>
+      $$ComplaintsTableTableManager(_db, _db.complaints);
 }
