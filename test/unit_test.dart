@@ -466,6 +466,11 @@ void main() {
       expect(investigations, isEmpty);
     });
 
+    test('Schema v13 includes referral_contacts table', () async {
+      final contacts = await db.select(db.referralContacts).get();
+      expect(contacts, isEmpty);
+    });
+
     test('Deleting a patient marks isDeleted = true without losing row', () async {
       await db.into(db.patients).insert(
             PatientsCompanion.insert(

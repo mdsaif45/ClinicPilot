@@ -69,6 +69,12 @@ class GrowthHubScreen extends ConsumerWidget {
           subtitle: 'Revenue per condition, patient volume and repeat retention',
           onTap: () => context.push('/growth/diseases'),
         ),
+        _MenuCard(
+          icon: Icons.store_outlined,
+          title: 'Referral Partner CRM',
+          subtitle: 'Pharmacies, labs, physios & local healthcare partner outreach',
+          onTap: () => context.push('/growth/referral-crm'),
+        ),
       ],
     );
   }
