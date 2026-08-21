@@ -69,8 +69,7 @@ class ProfitSummaryScreen extends ConsumerWidget {
 
             const SectionHeader(title: 'Profit Trend'),
             if (s.dailyProfit.isEmpty)
-              const EmptyState(
-                icon: Icons.show_chart,
+              EmptyState.growth(
                 title: 'No activity in this period',
                 message: 'Record a cash memo or an expense to see the trend.',
               )

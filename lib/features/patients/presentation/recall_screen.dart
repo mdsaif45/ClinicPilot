@@ -39,11 +39,9 @@ class RecallScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Could not load: $e')),
         data: (lists) {
           if (lists.total == 0) {
-            return const EmptyState(
-              icon: Icons.event_available,
-              title: 'Nobody to chase',
-              message: 'Patients with an overdue follow-up, or who have not '
-                  'visited in a while, will appear here.',
+            return EmptyState.recall(
+              title: 'All caught up!',
+              message: 'No patients are currently due for recall or follow-up.',
             );
           }
 

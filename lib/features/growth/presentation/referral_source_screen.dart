@@ -30,8 +30,7 @@ class ReferralSourceScreen extends ConsumerWidget {
               children: [
                 PeriodSelector(),
                 Expanded(
-                  child: EmptyState(
-                    icon: Icons.share_outlined,
+                  child: EmptyState.growth(
                     title: 'No referral data yet',
                     message: 'Ask each new patient how they heard about the '
                         'clinic and record it when registering them.',
