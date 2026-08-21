@@ -446,6 +446,11 @@ void main() {
       expect(camps, isEmpty);
     });
 
+    test('Schema v9 includes patient_case_records table', () async {
+      final records = await db.select(db.patientCaseRecords).get();
+      expect(records, isEmpty);
+    });
+
     test('Deleting a patient marks isDeleted = true without losing row', () async {
       await db.into(db.patients).insert(
             PatientsCompanion.insert(
