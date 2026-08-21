@@ -24,6 +24,7 @@ import '../../visits/providers/visit_provider.dart';
 import '../../growth/presentation/record_review_dialog.dart';
 import '../../clinical/presentation/master_case_taking_screen.dart';
 import '../../clinical/presentation/widgets/complaint_list_view.dart';
+import '../../clinical/presentation/widgets/prescription_list_view.dart';
 import '../../clinical/providers/case_record_provider.dart';
 import 'edit_patient_dialog.dart';
 
@@ -163,6 +164,11 @@ class PatientProfileScreen extends ConsumerWidget {
                     icon: Icons.assignment_outlined,
                     label: 'Case Record',
                     builder: (_) => _ClinicalCaseRecordTab(patient: patient),
+                  ),
+                  SegmentedTab(
+                    icon: Icons.medication_outlined,
+                    label: 'Prescriptions',
+                    builder: (_) => PrescriptionListView(patient: patient),
                   ),
                   SegmentedTab(
                     icon: Icons.timeline,
