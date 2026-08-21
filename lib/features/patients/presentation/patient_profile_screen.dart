@@ -21,6 +21,7 @@ import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../../visits/presentation/add_visit_dialog.dart';
 import '../../visits/providers/visit_provider.dart';
+import '../../growth/presentation/record_review_dialog.dart';
 import 'edit_patient_dialog.dart';
 
 /// Everything known about one patient, on one page.
@@ -267,6 +268,22 @@ class _InfoTab extends StatelessWidget {
           label: 'Next follow-up',
           value:
               nextFollowUp == null ? null : Formatters.formatDate(nextFollowUp),
+        ),
+        InfoRow(
+          label: 'Google Review',
+          value: patient.reviewGiven
+              ? 'Reviewed ★'
+              : patient.reviewAskedAt != null
+                  ? 'Asked ${Formatters.formatDate(patient.reviewAskedAt!)}'
+                  : 'Not requested',
+          icon: Icons.star_outline,
+          onTap: () => showDialog(
+            context: context,
+            builder: (_) => RecordReviewDialog(
+              patient: patient,
+              clinicId: patient.primaryClinicId,
+            ),
+          ),
         ),
         InfoRow(label: 'Notes', value: patient.notes),
       ],

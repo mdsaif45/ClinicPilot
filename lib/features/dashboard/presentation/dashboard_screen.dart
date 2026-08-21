@@ -14,6 +14,7 @@ import '../../expenses/presentation/add_expense_dialog.dart';
 import '../../patients/presentation/add_patient_dialog.dart';
 import '../../patients/providers/recall_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
+import '../../growth/providers/review_provider.dart';
 import '../providers/dashboard_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -260,6 +261,36 @@ class DashboardScreen extends ConsumerWidget {
                 );
               }),
             ),
+
+            const SectionHeader(title: 'Google Reviews'),
+            Consumer(builder: (context, ref, _) {
+              final reviewStats = ref.watch(reviewStatsProvider).value;
+              final thisMonth = reviewStats?.thisMonthReviewed ?? 0;
+              final total = reviewStats?.totalReviewed ?? 0;
+              final avgRating = reviewStats?.averageRating ?? 0.0;
+
+              return _TileRow(
+                children: [
+                  _MiniTile(
+                    label: 'This Month',
+                    value: '$thisMonth',
+                    tone: _Tone.positive,
+                  ),
+                  _MiniTile(
+                    label: 'Total Reviews',
+                    value: '$total',
+                    tone: _Tone.neutral,
+                  ),
+                  _MiniTile(
+                    label: 'Avg Rating',
+                    value: avgRating > 0
+                        ? '${avgRating.toStringAsFixed(1)} ★'
+                        : '—',
+                    tone: _Tone.positive,
+                  ),
+                ],
+              );
+            }),
 
             // Surfaced on the landing screen rather than buried: a recall
             // list only works if it is seen without being sought.
