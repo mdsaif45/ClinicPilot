@@ -116,12 +116,16 @@ class ExpensesScreen extends ConsumerWidget {
               const SizedBox(height: Spacing.sm),
               Expanded(
                 child: expenses.isEmpty
-                    ? EmptyState(
-                        icon: Icons.account_balance_wallet_outlined,
+                    ? EmptyState.expenses(
                         title: selectedCategory == 'All'
-                            ? 'No expenses yet'
+                            ? 'No expenses recorded'
                             : 'Nothing under $selectedCategory',
-                        message: 'Log a clinic cost and it will appear here.',
+                        message:
+                            'Track clinic supplies, rent, and travel costs here.',
+                        onAction: () => showDialog(
+                          context: context,
+                          builder: (_) => const AddExpenseDialog(),
+                        ),
                       )
                     : ListView.separated(
                         padding: const EdgeInsets.only(bottom: 96),
