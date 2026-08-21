@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../design/breakpoints.dart';
 import '../design/tokens.dart';
 import '../widgets/animated_nav_icon.dart';
 import '../widgets/clinic_switcher.dart';
@@ -240,6 +241,72 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
           data: (u) => u != null && !ref.watch(updateBadgeDismissedProvider),
           orElse: () => false,
         );
+
+    final isTablet = context.isTablet;
+
+    if (isTablet) {
+      return Scaffold(
+        appBar: isDashboard
+            ? AppBar(
+                elevation: 0,
+                scrolledUnderElevation: 1,
+                backgroundColor: scheme.surface,
+                foregroundColor: scheme.onSurface,
+                titleSpacing: Spacing.sm,
+                title: const ClinicSwitcher(),
+              )
+            : null,
+        body: SafeArea(
+          top: !isDashboard,
+          bottom: false,
+          child: Row(
+            children: [
+              NavigationRail(
+                selectedIndex: navigationShell.currentIndex,
+                labelType: NavigationRailLabelType.all,
+                onDestinationSelected: (index) {
+                  final alwaysReset = index == _growthIndex;
+                  navigationShell.goBranch(
+                    index,
+                    initialLocation:
+                        alwaysReset || index == navigationShell.currentIndex,
+                  );
+                },
+                destinations: [
+                  for (final d in _destinations)
+                    NavigationRailDestination(
+                      icon: d.index == 4 && updateWaiting
+                          ? Badge(
+                              smallSize: 8,
+                              backgroundColor: scheme.tertiary,
+                              child: AnimatedNavIcon(
+                                icon: d.icon,
+                                selectedIcon: d.selectedIcon,
+                                selected:
+                                    navigationShell.currentIndex == d.index,
+                              ),
+                            )
+                          : AnimatedNavIcon(
+                              icon: d.icon,
+                              selectedIcon: d.selectedIcon,
+                              selected:
+                                  navigationShell.currentIndex == d.index,
+                            ),
+                      label: Text(d.label),
+                    ),
+                ],
+              ),
+              const VerticalDivider(thickness: 1, width: 1),
+              Expanded(
+                child: ResponsiveContent(
+                  child: navigationShell,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: isDashboard
