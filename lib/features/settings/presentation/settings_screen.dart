@@ -12,6 +12,7 @@ import 'package:drift/drift.dart' as drift;
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/services/export_service.dart';
+import '../../../core/services/import_template_service.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_list_tile.dart';
@@ -20,9 +21,20 @@ import '../../clinics/presentation/clinics_screen.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
 import 'app_version_screen.dart';
+import 'import_preview_screen.dart';
 import '../providers/release_provider.dart';
 import '../providers/update_provider.dart';
 import 'appearance_section.dart';
+
+/// Whether the database is empty - the gate on the whole import feature.
+/// Import only ever runs against a fresh install or a wiped device; offering
+/// it once real data exists risks a doctor thinking it merges rather than
+/// (as it does) only ever adding fresh rows on top of nothing.
+final _isDatabaseEmptyProvider = FutureProvider<bool>((ref) async {
+  final db = ref.watch(databaseProvider);
+  final rows = await ExportService(db).countRows();
+  return rows == 0;
+});
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -81,6 +93,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final clinics = ref.watch(clinicsStreamProvider).value ?? [];
+    final isEmptyAsync = ref.watch(_isDatabaseEmptyProvider);
+    final isEmpty = isEmptyAsync.value ?? false;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -141,6 +155,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: 'Choose where to save a CSV of all records',
                 onTap: _exportData,
               ),
+              // Import only makes sense before there is anything to lose -
+              // offered on a fresh install or a wiped device, not as a
+              // standing action against real data.
+              if (isEmpty) ...[
+                AppListTile(
+                  icon: Icons.description_outlined,
+                  title: 'Download import template',
+                  subtitle: 'A blank spreadsheet to fill in and import back',
+                  onTap: _downloadImportTemplate,
+                ),
+                AppListTile(
+                  icon: Icons.upload_outlined,
+                  title: 'Import from template',
+                  subtitle: 'Pick a filled-in template to restore from',
+                  onTap: _pickImportFile,
+                ),
+              ],
             ],
           ),
           SettingsGroup(
@@ -312,5 +343,76 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         SnackBar(content: Text('Export failed: $e')),
       );
     }
+  }
+
+  Future<void> _downloadImportTemplate() async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final bytes = Uint8List.fromList(ImportTemplateService.build());
+
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save import template',
+        fileName: 'clinicpilot-import-template.xlsx',
+        bytes: bytes,
+        type: FileType.custom,
+        allowedExtensions: const ['xlsx'],
+      );
+
+      if (path == null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Download cancelled.')),
+        );
+        return;
+      }
+
+      if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+        await File(path).writeAsBytes(bytes, flush: true);
+      }
+
+      messenger.showSnackBar(
+        SnackBar(content: Text('Template saved to $path')),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not save template: $e')),
+      );
+    }
+  }
+
+  Future<void> _pickImportFile() async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    final clinics = ref.read(clinicsStreamProvider).value ?? const <Clinic>[];
+    if (clinics.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Add at least one clinic before importing - a '
+              'template row links to a clinic by name.'),
+        ),
+      );
+      return;
+    }
+
+    final result = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Pick a filled-in import template',
+      type: FileType.custom,
+      allowedExtensions: const ['xlsx'],
+      withData: true,
+    );
+    final bytes = result?.files.single.bytes;
+    if (bytes == null) return;
+
+    if (!mounted) return;
+    final clinicIdsByName = {for (final c in clinics) c.name: c.id};
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ImportPreviewScreen(
+          bytes: bytes,
+          clinicIdsByName: clinicIdsByName,
+        ),
+      ),
+    );
   }
 }
