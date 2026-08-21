@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../design/tokens.dart';
 import 'section_switch.dart';
 
 /// [SectionSwitch] plus the pages it switches between, connected two ways:
@@ -54,8 +55,8 @@ class _SwipeableSectionsState extends State<SwipeableSections> {
     setState(() => _index = i);
     _controller.animateToPage(
       i,
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
+      duration: Motion.slow,
+      curve: Motion.curve,
     );
   }
 

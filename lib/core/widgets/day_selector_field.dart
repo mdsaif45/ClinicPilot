@@ -60,7 +60,7 @@ class DaySelectorField extends StatelessWidget {
             color: scheme.onSurface,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: Spacing.xs),
         Wrap(
           spacing: Spacing.sm,
           runSpacing: Spacing.sm,

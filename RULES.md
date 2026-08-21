@@ -1,0 +1,185 @@
+# ClinicPilot — Project Rules
+
+> **Every agent (human or AI) reads this before touching code.**
+
+---
+
+## 0. Product
+
+Offline-first Flutter app for a solo homeopathic physician running 2 clinics
+on alternate evenings. Used **standing up, between patients, on a phone**.
+
+```
+PRIORITIES:
+Speed > Features > Polish
+Offline > Cloud
+Growth Intelligence > Clinic Management
+```
+
+---
+
+## 1. Git Rules
+
+```
+NEVER:
+├── force-push
+├── --no-verify
+├── amend a pushed commit
+├── git add -A / git add .     (stage explicit file list)
+├── rm -rf without git status
+├── merge PR without explicit user approval IN THAT TURN
+└── add Co-Authored-By trailers
+
+ALWAYS:
+├── branch from freshly-pulled main
+├── branch name: feat/xyz, fix/xyz
+├── commit msg: WHY not WHAT
+├── commit via heredoc (git commit -F - <<'EOF')
+├── run flutter analyze + flutter test before reporting done
+├── poll CI before merge: gh pr view <n> --json statusCheckRollup
+└── squash-merge + delete-branch
+```
+
+---
+
+## 2. Code Rules
+
+```
+STYLE:
+├── Caveman response: min tokens, ASCII diagrams, bullets
+├── Comments explain WHY, never WHAT (unless non-obvious)
+├── No scope creep: don't add unrequested abstractions
+└── No defensive code for impossible cases
+
+ARCHITECTURE:
+lib/
+├── core/
+│   ├── database/     # Drift tables, DAOs, migrations
+│   ├── design/       # tokens.dart, app_palette.dart (SINGLE SOURCE OF TRUTH)
+│   ├── providers/    # shared Riverpod providers
+│   ├── router/       # GoRouter
+│   ├── services/     # PDF, export, import, update
+│   ├── theme/        # app_theme.dart (ONLY file with color literals)
+│   ├── utils/        # formatters.dart, validators.dart
+│   └── widgets/      # reusable components (28+)
+└── features/
+    └── <name>/
+        ├── presentation/  # screens, dialogs
+        └── providers/     # Riverpod notifiers
+
+STATE MANAGEMENT: Riverpod
+├── StreamProvider for lists
+├── StateNotifierProvider for mutations
+├── AsyncValue.guard swallows exceptions — rethrow if caller needs try/catch
+└── Check ctx.mounted before Navigator pops after async
+
+ROUTING: GoRouter (5-tab shell)
+
+DATABASE: Drift ORM → SQLite
+├── IDs = String UUIDs
+├── Money = RealColumn (double)
+├── All queries filter isDeleted = false
+├── Never hand-edit app_database.g.dart
+├── After schema change: flutter pub run build_runner build --delete-conflicting-outputs
+├── Migration: use CREATE UNIQUE INDEX, never Table.uniqueKeys
+├── Backfill: use actual PK (id), never derived fields
+└── New PDF file? Match pdf_service/pdf_export_service pattern for theme test exemption
+```
+
+---
+
+## 3. Design System Rules
+
+```
+TOKENS (core/design/tokens.dart):
+├── Spacing: xs=4, sm=8, md=12, lg=16, xl=24, xxl=32
+├── Radii: sm=8, md=12, lg=16, pill=999
+├── Motion: fast=120ms, base=180ms, slow=240ms (ceiling)
+└── BrandColors: only app_theme.dart reads these
+
+THEME (core/theme/app_theme.dart):
+├── ONLY file allowed to name a color literal
+├── Everything else → Theme.of(context).colorScheme
+├── Typography: Google Fonts Inter, tabular figures for money
+└── Full M3 ColorScheme from emerald seed
+
+COMPONENTS (core/widgets/):
+├── If a pattern appears on 2+ screens → extract to widget
+├── Stateless where possible, theme-driven
+├── Delete superseded widgets (no two ways to do one thing)
+└── Widget tests for each component
+
+FORBIDDEN OUTSIDE core/theme/ and core/design/:
+├── Colors.* or Color(0xFF...)
+├── Hardcoded EdgeInsets values (use Spacing.*)
+├── Hardcoded BorderRadius values (use Radii.*)
+└── theme_compliance_test.dart enforces this
+```
+
+---
+
+## 4. Data & Privacy Rules
+
+```
+NEVER IN lib/:
+├── Real names (Zaid, Khidderpore, Babu Bazar)
+├── Real clinic names
+└── test/no_personal_data_test.dart enforces this
+
+CURRENCY:
+├── Screen/CSV/XLSX: ₹ formatter
+├── PDF: Rs. formatter (Helvetica has no Rupee glyph)
+└── ExportColumn.pdfFormat for per-column PDF override
+
+DISEASE FIELD:
+└── Normalize on save: trim + title-case
+
+EXPORT:
+├── Column specs = top-level functions (testable without widget tree)
+└── Pattern: patientsExportColumns(), cashMemoExportColumns()
+```
+
+---
+
+## 5. Testing Rules
+
+```
+BEFORE ANY PR:
+├── flutter analyze --no-fatal-infos → 0 errors
+├── flutter test → all green
+└── flutter build apk --release → builds (when practical)
+
+GUARD TESTS (always keep green):
+├── test/theme_compliance_test.dart   → no hardcoded colors
+├── test/no_personal_data_test.dart   → no real names/locations
+└── Migration tests: simulate pre-upgrade shape
+
+VALIDATION:
+├── TextFormField.validator won't react to async state
+├── Pattern: watch provider in build(), compute error, pass to field
+└── Import: two-pass validation (parent sheet first, then children)
+```
+
+---
+
+## 6. Files to Never Touch
+
+```
+├── chatgpt-chat/*.md        (untracked patient data — never stage)
+├── chatgpt-chat/*.xlsx      (untracked patient cases — never stage)
+├── app_database.g.dart      (auto-generated by build_runner)
+└── .github/workflows/       (only if explicitly asked)
+```
+
+---
+
+## 7. Environment
+
+```
+Flutter SDK: C:/Apps/flutter/bin/flutter.bat
+GitHub repo: mdsaif45/ClinicPilot
+CI: analyze-and-test (every PR)
+Release: release.yml (on tag push, needs 4 signing secrets)
+User email: saif@vegam.co (attribution only)
+Current: v0.3.0+3, schema v5
+```

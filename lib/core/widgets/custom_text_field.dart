@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../design/tokens.dart';
+
 // Reusable Custom Input Text Field component
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -60,7 +62,7 @@ class CustomTextField extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: Spacing.xs),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
