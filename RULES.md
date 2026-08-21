@@ -181,7 +181,7 @@ GitHub repo: mdsaif45/ClinicPilot
 CI: analyze-and-test (every PR)
 Release: release.yml (on tag push, needs 4 signing secrets)
 User email: saif@vegam.co (attribution only)
-Current: v0.3.0+3, schema v6
+Current: v0.3.0+3, schema v7
 ```
 
 ---

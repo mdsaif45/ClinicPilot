@@ -8,6 +8,7 @@ import '../../../core/widgets/export_action.dart';
 import '../../../core/widgets/swipeable_sections.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/patient_provider.dart';
+import 'footfalls_screen.dart';
 import 'patients_screen.dart';
 import 'recall_screen.dart';
 
@@ -25,10 +26,11 @@ class PatientsTabScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Directory leads: looking someone up is the far more frequent task.
     return SwipeableSections(
-      labels: const ['Directory', 'Follow-ups'],
+      labels: const ['Directory', 'Follow-ups', 'Footfalls'],
       children: const [
         PatientsScreen(),
         RecallScreen(showAppBar: false),
+        FootfallsScreen(),
       ],
       // Export only covers the directory - a follow-up list is a view over
       // the same patients, not a distinct export the plan asked for.
