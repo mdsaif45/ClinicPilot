@@ -183,3 +183,29 @@ Release: release.yml (on tag push, needs 4 signing secrets)
 User email: saif@vegam.co (attribution only)
 Current: v0.3.0+3, schema v5
 ```
+
+---
+
+## 8. GitHub Templates
+
+```
+PULL REQUESTS (.github/pull_request_template.md):
+├── Title: type(scope): short description (closes #n)
+├── What and why: problem context and architectural rationale
+├── Checklist: flutter analyze, flutter test, privacy check
+├── Schema changes: (if modifying Drift tables/migrations)
+└── Verification: commands executed and results
+
+FEATURE REQUESTS (.github/ISSUE_TEMPLATE/feature_request.yml):
+├── Problem: clinical/operational situation to solve
+├── Proposal: what the app should do
+├── Core Question: Money in/out/left, Patient/case charged, Clinic comparison
+└── Alternatives: workarounds/current handling
+
+BUG REPORTS (.github/ISSUE_TEMPLATE/bug_report.yml):
+├── What happened: steps to reproduce + actual behavior (NO real patient data)
+├── Expected: expected behavior
+├── Area: specific screen/module
+├── App Version & Device: e.g. v0.3.0 on Android 14
+└── Data impact: data loss or post-migration flag
+```
