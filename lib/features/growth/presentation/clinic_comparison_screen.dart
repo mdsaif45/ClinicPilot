@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/providers/period_provider.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/period_selector.dart';
 import '../providers/clinic_comparison_provider.dart';
 
@@ -24,8 +27,11 @@ class ClinicComparisonScreen extends ConsumerWidget {
               children: [
                 PeriodSelector(),
                 Expanded(
-                  child: Center(
-                    child: Text('No clinic data for the selected period.'),
+                  child: EmptyState(
+                    icon: Icons.compare_arrows_outlined,
+                    title: 'No clinics to compare',
+                    message:
+                        'Add clinics to compare their performance side by side.',
                   ),
                 ),
               ],
@@ -38,42 +44,47 @@ class ClinicComparisonScreen extends ConsumerWidget {
               children: [
                 const PeriodSelector(),
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(Spacing.lg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                Text(
-                  'Side-by-Side Performance',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        columnSpacing: 24,
-                        columns: [
-                          const DataColumn(
-                              label: Text('Metric',
-                                  style: TextStyle(fontWeight: FontWeight.bold))),
-                          ...metricsList.map((m) => DataColumn(
-                                label: Text(
-                                  m.clinic.name,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.primary),
+                      const Text(
+                        'Side-by-Side Performance',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: Spacing.lg),
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: Radii.mdAll,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(Spacing.md),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              columnSpacing: Spacing.xl,
+                              columns: [
+                                const DataColumn(
+                                  label: Text(
+                                    'Metric',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                              )),
-                        ],
-                        rows: [
+                                ...metricsList.map((m) => DataColumn(
+                                      label: Text(
+                                        m.clinic.name,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                    )),
+                              ],
+                              rows: [
                           // Headline Net Profit
                           DataRow(cells: [
                             DataCell(Text('Net Profit (Headline)',

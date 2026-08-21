@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../core/design/tokens.dart';
+import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/choice_chip_field.dart';
+import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
-import '../../../core/widgets/choice_chip_field.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/widgets/custom_text_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/expense_provider.dart';
 
@@ -18,9 +21,6 @@ class AddExpenseDialog extends ConsumerStatefulWidget {
 
 class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _amountController = TextEditingController();
-  final _subcategoryController = TextEditingController();
-  final _notesController = TextEditingController();
 
   String? _selectedClinicId;
   String? _clinicError;
@@ -29,21 +29,21 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   bool _isRecurring = false;
   DateTime _date = DateTime.now();
 
-  // Guards against a queued tap re-running _submit before the first write
-  // finishes and the dialog closes.
+  // Guards against duplicate expenses if the user taps Save twice while an
+  // insert is in flight.
   bool _submitting = false;
 
+  final _amountController = TextEditingController();
+  final _subcategoryController = TextEditingController();
+  final _notesController = TextEditingController();
+
   final List<String> _categories = [
+    'Medicine Purchase',
     'Rent',
     'Electricity',
-    'Staff Salary',
-    'Medicine Purchase',
-    'Furniture',
-    'Marketing',
-    'Camp',
-    'Internet',
-    'Travel',
-    'Personal',
+    'Assistant Salary',
+    'Camp Expense',
+    'Packaging',
     'Miscellaneous',
   ];
 
@@ -66,7 +66,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
 
-    // An expense has to belong to a clinic - without one the write can
+    // An expense must belong to a clinic. Without one the write below will
     // never succeed, so say so before the form is filled in.
     if (clinicsAsync.hasValue && clinics.isEmpty) {
       return AlertDialog(
@@ -90,99 +90,8 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
       );
     }
 
-    return AlertDialog(
-      title: const Text('Add Expense Entry'),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // Without this the column centres its children. Text fields fill
-            // the width so they look correct either way, but anything
-            // narrower - chips, checkboxes - drifts to the middle.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PickerField<String>(
-                label: 'Clinic',
-                prefixIcon: Icons.local_hospital,
-                value: _selectedClinicId,
-                errorText: _clinicError,
-                options: clinics
-                    .map((c) => PickerOption(
-                          value: c.id,
-                          label: c.name,
-                          subtitle: c.address,
-                        ))
-                    .toList(),
-                onChanged: (val) => setState(() {
-                  _selectedClinicId = val;
-                  _clinicError = null;
-                }),
-              ),
-              const SizedBox(height: 12),
-              DateField(
-                label: 'Date',
-                value: _date,
-                onChanged: (d) => setState(() => _date = d),
-              ),
-              const SizedBox(height: 12),
-              PickerField<String>(
-                label: 'Expense Category',
-                prefixIcon: Icons.category,
-                value: _category,
-                options: _categories
-                    .map((c) => PickerOption(value: c, label: c))
-                    .toList(),
-                onChanged: (val) => setState(() => _category = val),
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _subcategoryController,
-                label: 'Subcategory / Details (e.g. Camp Name)',
-                prefixIcon: Icons.subtitles,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _amountController,
-                label: 'Amount (Rs)',
-                prefixIcon: Icons.currency_rupee,
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? 'Valid amount' : null,
-              ),
-              const SizedBox(height: 12),
-              // The field was already being saved but had no control, so every
-              // expense recorded as Cash whatever it actually was.
-              ChoiceChipField<String>(
-                label: 'Payment Method',
-                options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
-                value: _paymentMethod,
-                labelOf: (m) => m,
-                iconOf: _paymentIcon,
-                onChanged: (m) => setState(() => _paymentMethod = m),
-              ),
-              const SizedBox(height: 12),
-              CheckboxListTile(
-                title: const Text('Recurring Fixed Cost (e.g. Rent)'),
-                value: _isRecurring,
-                onChanged: (val) => setState(() => _isRecurring = val ?? false),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _notesController,
-                label: 'Notes (Optional)',
-                prefixIcon: Icons.notes,
-              ),
-            ],
-          ),
-        ),
-      )),
+    return AppFormDialog(
+      title: 'Add Expense Entry',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -199,6 +108,88 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
               : const Text('Save Expense'),
         ),
       ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PickerField<String>(
+              label: 'Clinic',
+              prefixIcon: Icons.local_hospital,
+              value: _selectedClinicId,
+              errorText: _clinicError,
+              options: clinics
+                  .map((c) => PickerOption(
+                        value: c.id,
+                        label: c.name,
+                        subtitle: c.address,
+                      ))
+                  .toList(),
+              onChanged: (val) => setState(() {
+                _selectedClinicId = val;
+                _clinicError = null;
+              }),
+            ),
+            const SizedBox(height: Spacing.md),
+            DateField(
+              label: 'Date',
+              value: _date,
+              onChanged: (d) => setState(() => _date = d),
+            ),
+            const SizedBox(height: Spacing.md),
+            PickerField<String>(
+              label: 'Expense Category',
+              prefixIcon: Icons.category,
+              value: _category,
+              options: _categories
+                  .map((c) => PickerOption(value: c, label: c))
+                  .toList(),
+              onChanged: (val) => setState(() => _category = val),
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _subcategoryController,
+              label: 'Subcategory / Details (e.g. Camp Name)',
+              prefixIcon: Icons.subtitles,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _amountController,
+              label: 'Amount (Rs)',
+              prefixIcon: Icons.currency_rupee,
+              keyboardType: TextInputType.number,
+              validator: (v) =>
+                  v == null || double.tryParse(v) == null ? 'Valid amount' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            // The field was already being saved but had no control, so every
+            // expense recorded as Cash whatever it actually was.
+            ChoiceChipField<String>(
+              label: 'Payment Method',
+              options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
+              value: _paymentMethod,
+              labelOf: (m) => m,
+              iconOf: PaymentIcons.forMethod,
+              onChanged: (m) => setState(() => _paymentMethod = m),
+            ),
+            const SizedBox(height: Spacing.md),
+            CheckboxListTile(
+              title: const Text('Recurring Fixed Cost (e.g. Rent)'),
+              value: _isRecurring,
+              onChanged: (val) => setState(() => _isRecurring = val ?? false),
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _notesController,
+              label: 'Notes (Optional)',
+              prefixIcon: Icons.notes,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -233,7 +224,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save expense: \$e')),
+          SnackBar(content: Text('Could not save expense: $e')),
         );
       }
       return;
@@ -241,11 +232,4 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
 
     if (mounted) Navigator.of(context).pop();
   }
-
-  IconData _paymentIcon(String method) => switch (method) {
-        'Cash' => Icons.payments_outlined,
-        'UPI' => Icons.qr_code_2,
-        'Card' => Icons.credit_card,
-        _ => Icons.account_balance_outlined,
-      };
 }

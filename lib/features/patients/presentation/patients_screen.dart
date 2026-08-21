@@ -124,7 +124,7 @@ class _PatientRow extends ConsumerWidget {
         ],
       ),
       subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.only(top: Spacing.xs),
         child: Row(
           children: [
             Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),

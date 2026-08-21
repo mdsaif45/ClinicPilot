@@ -96,7 +96,7 @@ class ProfitSummaryScreen extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(_methodIcon(e.key),
+                      Icon(PaymentIcons.forMethod(e.key),
                           size: 18, color: scheme.onSurfaceVariant),
                       const SizedBox(width: Spacing.md),
                       Expanded(child: Text(e.key,
@@ -184,13 +184,6 @@ class ProfitSummaryScreen extends ConsumerWidget {
       ),
     );
   }
-
-  IconData _methodIcon(String method) => switch (method.toLowerCase()) {
-        'cash' => Icons.payments_outlined,
-        'upi' => Icons.qr_code_2,
-        'card' => Icons.credit_card,
-        _ => Icons.account_balance_outlined,
-      };
 
   LineChartData _chart(BuildContext context, Map<int, double> daily) {
     final scheme = Theme.of(context).colorScheme;

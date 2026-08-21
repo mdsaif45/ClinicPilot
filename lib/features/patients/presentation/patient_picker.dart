@@ -4,18 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
 import '../providers/patient_provider.dart';
 
 /// Searchable patient selector.
 ///
 /// Replaces the plain dropdown that was previously used to pick a patient. A
-/// flat list cannot scale past a few dozen patients, and — more importantly —
-/// it gives no way to tell two patients with the same name apart. Billing the
-/// wrong patient silently corrupts lifetime value and per-clinic revenue, and
-/// nothing in the UI would reveal the mistake.
-///
-/// Every row therefore shows the patient code, phone, age/gender, area and last
-/// visit, which is enough to disambiguate in practice.
+/// Searchable modal bottom sheet for picking a patient.
 class PatientPicker extends ConsumerStatefulWidget {
   const PatientPicker({super.key});
 
@@ -58,10 +53,10 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
     super.dispose();
   }
 
-  void _onQueryChanged(String value) {
+  void _onQueryChanged(String val) {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 250), () {
-      if (mounted) setState(() => _query = value);
+    _debounce = Timer(Motion.base, () {
+      if (mounted) setState(() => _query = val.trim());
     });
   }
 
@@ -82,17 +77,22 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
           ),
           child: Column(
             children: [
-              const SizedBox(height: 12),
+              const SizedBox(height: Spacing.md),
               Container(
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
                   color: theme.dividerColor,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: Radii.pillAll,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                padding: const EdgeInsets.fromLTRB(
+                  Spacing.lg,
+                  Spacing.md,
+                  Spacing.lg,
+                  Spacing.sm,
+                ),
                 child: Row(
                   children: [
                     Text('Select Patient',
@@ -107,7 +107,7 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
                 child: TextField(
                   controller: _searchController,
                   focusNode: _searchFocus,
@@ -131,7 +131,12 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
               ),
               if (_query.isEmpty)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(
+                    Spacing.lg,
+                    Spacing.md,
+                    Spacing.lg,
+                    0,
+                  ),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -141,7 +146,7 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 8),
+              const SizedBox(height: Spacing.sm),
               Expanded(
                 child: resultsAsync.when(
                   loading: () =>
@@ -183,7 +188,10 @@ class _PatientTile extends StatelessWidget {
     final gender = p.gender.isNotEmpty ? p.gender[0].toUpperCase() : '';
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: Spacing.lg,
+        vertical: Spacing.xs,
+      ),
       leading: CircleAvatar(
         backgroundColor: scheme.primaryContainer,
         child: Text(
@@ -206,21 +214,21 @@ class _PatientTile extends StatelessWidget {
                   ?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: Spacing.sm),
           Text('${p.age} $gender', style: theme.textTheme.labelMedium),
         ],
       ),
       subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.only(top: Spacing.xs),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),
-                const SizedBox(width: 4),
+                const SizedBox(width: Spacing.xs),
                 Text(p.phone, style: theme.textTheme.labelMedium),
-                const SizedBox(width: 12),
+                const SizedBox(width: Spacing.md),
                 Expanded(
                   child: Text(
                     p.patientCode,
@@ -248,12 +256,12 @@ class _EmptyState extends StatelessWidget {
     final theme = Theme.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(Spacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.person_search, size: 48, color: theme.hintColor),
-            const SizedBox(height: 12),
+            const SizedBox(height: Spacing.md),
             Text(
               query.isEmpty
                   ? 'No patients registered yet'
@@ -261,7 +269,7 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: Spacing.sm),
             Text(
               'Register the patient from the Patients tab first.',
               textAlign: TextAlign.center,
@@ -302,15 +310,16 @@ class PatientPickerField extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: Spacing.xs),
         InkWell(
+          borderRadius: Radii.mdAll,
           onTap: () async {
             final picked = await PatientPicker.show(context);
             if (picked != null) onSelected(picked);
           },
           child: InputDecorator(
             decoration: InputDecoration(
-              prefixIcon: Icon(Icons.person_search),
+              prefixIcon: const Icon(Icons.person_search),
               suffixIcon: const Icon(Icons.arrow_drop_down),
               errorText: errorText,
             ),
@@ -319,8 +328,6 @@ class PatientPickerField extends StatelessWidget {
                     'Tap to search patient',
                     style: TextStyle(color: Theme.of(context).hintColor),
                   )
-                // Show the code alongside the name so the choice is verifiable
-                // before saving.
                 : Text(
                     '${p.name}  ·  ${p.patientCode}',
                     overflow: TextOverflow.ellipsis,

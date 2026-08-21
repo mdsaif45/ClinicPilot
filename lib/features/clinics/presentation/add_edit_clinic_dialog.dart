@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/day_selector_field.dart';
 import '../providers/clinic_provider.dart';
@@ -41,10 +43,15 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
         TextEditingController(text: widget.clinic?.address ?? '');
     _phoneController = TextEditingController(text: widget.clinic?.phone ?? '');
     _rentController = TextEditingController(
-        text: (widget.clinic?.monthlyRent ?? 3000.0).toStringAsFixed(0));
+      text: widget.clinic != null
+          ? widget.clinic!.monthlyRent.toStringAsFixed(0)
+          : '0',
+    );
     _feeController = TextEditingController(
-        text: (widget.clinic?.defaultConsultationFee ?? 300.0)
-            .toStringAsFixed(0));
+      text: widget.clinic != null
+          ? widget.clinic!.defaultConsultationFee.toStringAsFixed(0)
+          : '300',
+    );
     _openDays = widget.clinic?.openDays ?? '1,3,5';
     _colorHex = widget.clinic?.colorHex ?? '#0F5132';
   }
@@ -63,69 +70,8 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.clinic != null;
 
-    return AlertDialog(
-      title: Text(isEditing ? 'Edit Clinic' : 'Add New Clinic'),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            // Without this the column centres its children. Text fields fill
-            // the width so they look correct either way, but anything
-            // narrower - chips, checkboxes - drifts to the middle.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomTextField(
-                controller: _nameController,
-                label: 'Clinic Name',
-                prefixIcon: Icons.local_hospital,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _addressController,
-                label: 'Address / Location',
-                prefixIcon: Icons.location_on,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _phoneController,
-                label: 'Phone Number',
-                prefixIcon: Icons.phone,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _rentController,
-                label: 'Monthly Fixed Rent (Rs)',
-                prefixIcon: Icons.home_work,
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? 'Valid rent' : null,
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _feeController,
-                label: 'Default Consultation Fee (Rs)',
-                prefixIcon: Icons.currency_rupee,
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? 'Valid fee' : null,
-              ),
-              const SizedBox(height: 12),
-              DaySelectorField(
-                label: 'Open Days',
-                value: _openDays,
-                onChanged: (v) => setState(() => _openDays = v),
-              ),
-            ],
-          ),
-        ),
-      )),
+    return AppFormDialog(
+      title: isEditing ? 'Edit Clinic' : 'Add New Clinic',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -142,6 +88,58 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
               : Text(isEditing ? 'Save Changes' : 'Add Clinic'),
         ),
       ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomTextField(
+              controller: _nameController,
+              label: 'Clinic Name',
+              prefixIcon: Icons.local_hospital,
+              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _addressController,
+              label: 'Address / Location',
+              prefixIcon: Icons.location_on,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _phoneController,
+              label: 'Phone Number',
+              prefixIcon: Icons.phone,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _rentController,
+              label: 'Monthly Fixed Rent (Rs)',
+              prefixIcon: Icons.home_work,
+              keyboardType: TextInputType.number,
+              validator: (v) =>
+                  v == null || double.tryParse(v) == null ? 'Valid rent' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _feeController,
+              label: 'Default Consultation Fee (Rs)',
+              prefixIcon: Icons.currency_rupee,
+              keyboardType: TextInputType.number,
+              validator: (v) =>
+                  v == null || double.tryParse(v) == null ? 'Valid fee' : null,
+            ),
+            const SizedBox(height: Spacing.md),
+            DaySelectorField(
+              label: 'Open Days',
+              value: _openDays,
+              onChanged: (v) => setState(() => _openDays = v),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

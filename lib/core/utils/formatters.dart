@@ -44,4 +44,17 @@ class Formatters {
   static String formatFullDate(DateTime date) {
     return DateFormat('d MMM yyyy, EEEE').format(date);
   }
+
+  /// Normalizes free-text disease/complaint strings: trims whitespace and capitalizes each word.
+  static String toTitleCase(String input) {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return '';
+    return trimmed
+        .split(RegExp(r'\s+'))
+        .map((word) => word.isEmpty
+            ? ''
+            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
+        .join(' ');
+  }
 }
+

@@ -41,7 +41,7 @@ class ReferralSourceScreen extends ConsumerWidget {
             );
           }
 
-          final colours = _seriesColours(scheme);
+          final colours = SemanticColors.chartSeries(context);
 
           return ListView(
             padding: const EdgeInsets.only(bottom: Spacing.xxl),
@@ -152,18 +152,6 @@ class ReferralSourceScreen extends ConsumerWidget {
       ),
     );
   }
-
-  /// Series colours drawn from the active scheme, so the chart follows the
-  /// selected palette instead of naming its own colours.
-  List<Color> _seriesColours(ColorScheme s) => [
-        s.primary,
-        s.tertiary,
-        s.secondary,
-        s.error,
-        s.primaryContainer,
-        s.tertiaryContainer,
-        s.secondaryContainer,
-      ];
 }
 
 class _SourceRow extends StatelessWidget {
