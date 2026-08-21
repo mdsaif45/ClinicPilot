@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'core/providers/security_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/security/presentation/lock_screen.dart';
 import 'features/settings/providers/theme_provider.dart';
 
 void main() async {
@@ -18,13 +20,42 @@ void main() async {
   );
 }
 
-class ClinicPilotApp extends ConsumerWidget {
+class ClinicPilotApp extends ConsumerStatefulWidget {
   const ClinicPilotApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ClinicPilotApp> createState() => _ClinicPilotAppState();
+}
+
+class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final notifier = ref.read(appLockProvider.notifier);
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      notifier.onAppPaused();
+    } else if (state == AppLifecycleState.resumed) {
+      notifier.onAppResumed();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final prefs = ref.watch(themeProvider);
+    final lockState = ref.watch(appLockProvider);
 
     return MaterialApp.router(
       title: 'ClinicPilot',
@@ -39,6 +70,12 @@ class ClinicPilotApp extends ConsumerWidget {
       ),
       themeMode: ThemeMode.light,
       routerConfig: router,
+      builder: (context, child) {
+        if (lockState.isLocked) {
+          return const LockScreen();
+        }
+        return child ?? const SizedBox.shrink();
+      },
     );
   }
 }
