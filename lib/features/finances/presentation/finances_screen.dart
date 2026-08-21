@@ -9,6 +9,7 @@ import '../../cashmemo/presentation/cash_memo_screen.dart';
 import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../expenses/presentation/expenses_screen.dart';
 import '../../expenses/providers/expense_provider.dart';
+import 'payment_method_breakdown_screen.dart';
 
 /// Money in and money out under one tab.
 ///
@@ -24,17 +25,20 @@ class FinancesScreen extends StatelessWidget {
     // Cash memo leads: recording income is the far more frequent task during
     // a clinic evening.
     return SwipeableSections(
-      labels: const ['Cash Memo', 'Expenses'],
+      labels: const ['Cash Memo', 'Expenses', 'Split'],
       children: const [
         CashMemoScreen(),
         ExpensesScreen(),
+        PaymentMethodBreakdownScreen(),
       ],
       // Which columns and totals to export depends on which half is
       // showing - a memo export and an expense export answer different
       // questions, so the action itself has to switch with the section.
-      trailingBuilder: (index) => index == 0
-          ? const _CashMemoExportAction()
-          : const _ExpensesExportAction(),
+      trailingBuilder: (index) {
+        if (index == 0) return const _CashMemoExportAction();
+        if (index == 1) return const _ExpensesExportAction();
+        return null;
+      },
     );
   }
 }
