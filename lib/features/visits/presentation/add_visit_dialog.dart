@@ -8,6 +8,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/date_field.dart';
+import '../../../core/widgets/disease_autocomplete_field.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
@@ -130,11 +131,10 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
               onChanged: (d) => setState(() => _visitDate = d),
             ),
             const SizedBox(height: Spacing.md),
-            CustomTextField(
+            DiseaseAutocompleteField(
               controller: _diseaseController,
               label: 'Disease / Condition',
-              prefixIcon: Icons.medical_services,
-              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(

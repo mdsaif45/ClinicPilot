@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/disease_autocomplete_field.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/footfall_provider.dart';
@@ -137,13 +138,10 @@ class _AddFootfallDialogState extends ConsumerState<AddFootfallDialog> {
               ),
             ),
             const SizedBox(height: Spacing.md),
-            TextFormField(
+            DiseaseAutocompleteField(
               controller: _diseaseController,
-              decoration: const InputDecoration(
-                labelText: 'Inquiry / Chief Complaint',
-                hintText: 'e.g. Skin Allergy, Hairfall, Joint Pain',
-                prefixIcon: Icon(Icons.medical_services_outlined),
-              ),
+              label: 'Inquiry / Chief Complaint',
+              hint: 'e.g. Skin Allergy, Hairfall, Joint Pain',
             ),
             const SizedBox(height: Spacing.md),
             TextFormField(

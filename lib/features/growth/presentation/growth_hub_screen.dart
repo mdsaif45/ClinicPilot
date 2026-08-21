@@ -63,6 +63,12 @@ class GrowthHubScreen extends ConsumerWidget {
           subtitle: 'Free camp tracking, costs and patient follow-up revenue ROI',
           onTap: () => context.push('/growth/camps'),
         ),
+        _MenuCard(
+          icon: Icons.medical_services_outlined,
+          title: 'Disease Analytics',
+          subtitle: 'Revenue per condition, patient volume and repeat retention',
+          onTap: () => context.push('/growth/diseases'),
+        ),
       ],
     );
   }
