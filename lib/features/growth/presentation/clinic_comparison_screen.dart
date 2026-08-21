@@ -27,8 +27,7 @@ class ClinicComparisonScreen extends ConsumerWidget {
               children: [
                 PeriodSelector(),
                 Expanded(
-                  child: EmptyState(
-                    icon: Icons.compare_arrows_outlined,
+                  child: EmptyState.clinics(
                     title: 'No clinics to compare',
                     message:
                         'Add clinics to compare their performance side by side.',

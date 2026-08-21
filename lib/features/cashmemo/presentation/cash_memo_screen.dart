@@ -76,10 +76,11 @@ class CashMemoScreen extends ConsumerWidget {
               ),
               Expanded(
                 child: memos.isEmpty
-                    ? const EmptyState(
-                        icon: Icons.receipt_long_outlined,
-                        title: 'No cash memos yet',
-                        message: 'Bill a patient and it will appear here.',
+                    ? EmptyState.cashMemos(
+                        onAction: () => showDialog(
+                          context: context,
+                          builder: (_) => const NewCashMemoDialog(),
+                        ),
                       )
                     : ListView.separated(
                         padding: const EdgeInsets.only(bottom: 96),

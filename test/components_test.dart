@@ -70,7 +70,7 @@ void main() {
     });
   });
 
-  group('EmptyState', () {
+  group('EmptyState & EmptyIllustration', () {
     testWidgets('shows title, message and action', (t) async {
       var tapped = false;
       await t.pumpWidget(wrap(EmptyState(
@@ -84,6 +84,45 @@ void main() {
       expect(find.text('Add something'), findsOneWidget);
       await t.tap(find.text('Add'));
       expect(tapped, isTrue);
+    });
+
+    testWidgets('renders EmptyState.patients factory', (t) async {
+      var tapped = false;
+      await t.pumpWidget(wrap(EmptyState.patients(onAction: () => tapped = true)));
+      expect(find.text('No patients found'), findsOneWidget);
+      expect(find.text('Add Patient'), findsOneWidget);
+      await t.tap(find.text('Add Patient'));
+      expect(tapped, isTrue);
+    });
+
+    testWidgets('renders EmptyState.cashMemos factory', (t) async {
+      await t.pumpWidget(wrap(EmptyState.cashMemos()));
+      expect(find.text('No cash memos yet'), findsOneWidget);
+    });
+
+    testWidgets('renders EmptyState.expenses factory', (t) async {
+      await t.pumpWidget(wrap(EmptyState.expenses()));
+      expect(find.text('No expenses recorded'), findsOneWidget);
+    });
+
+    testWidgets('renders EmptyState.growth factory', (t) async {
+      await t.pumpWidget(wrap(EmptyState.growth()));
+      expect(find.text('No analytics available'), findsOneWidget);
+    });
+
+    testWidgets('renders EmptyState.recall factory', (t) async {
+      await t.pumpWidget(wrap(EmptyState.recall()));
+      expect(find.text('All caught up!'), findsOneWidget);
+    });
+
+    testWidgets('renders EmptyState.clinics factory', (t) async {
+      await t.pumpWidget(wrap(EmptyState.clinics()));
+      expect(find.text('No clinics added'), findsOneWidget);
+    });
+
+    testWidgets('renders EmptyState.search factory', (t) async {
+      await t.pumpWidget(wrap(EmptyState.search()));
+      expect(find.text('No results found'), findsOneWidget);
     });
   });
 

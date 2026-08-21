@@ -56,15 +56,17 @@ class PatientsScreen extends ConsumerWidget {
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (patients) {
                 if (patients.isEmpty) {
-                  return EmptyState(
-                    icon: Icons.people_outline,
-                    title: query.isEmpty
-                        ? 'No patients yet'
-                        : 'No match for "$query"',
-                    message: query.isEmpty
-                        ? 'Register the first patient to get started.'
-                        : 'Try a name, patient code or phone number.',
-                  );
+                  return query.isEmpty
+                      ? EmptyState.patients(
+                          onAction: () => showDialog(
+                            context: context,
+                            builder: (_) => const AddPatientDialog(),
+                          ),
+                        )
+                      : EmptyState.search(
+                          title: 'No match for "$query"',
+                          message: 'Try a name, patient code or phone number.',
+                        );
                 }
 
                 return ListView.separated(
