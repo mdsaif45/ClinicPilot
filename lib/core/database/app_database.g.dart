@@ -6368,6 +6368,1330 @@ class CampsCompanion extends UpdateCompanion<Camp> {
   }
 }
 
+class $PatientCaseRecordsTable extends PatientCaseRecords
+    with TableInfo<$PatientCaseRecordsTable, PatientCaseRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PatientCaseRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _patientIdMeta = const VerificationMeta(
+    'patientId',
+  );
+  @override
+  late final GeneratedColumn<String> patientId = GeneratedColumn<String>(
+    'patient_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES patients (id)',
+    ),
+  );
+  static const VerificationMeta _recordDateMeta = const VerificationMeta(
+    'recordDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> recordDate = GeneratedColumn<DateTime>(
+    'record_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _chiefComplaintsJsonMeta =
+      const VerificationMeta('chiefComplaintsJson');
+  @override
+  late final GeneratedColumn<String> chiefComplaintsJson =
+      GeneratedColumn<String>(
+        'chief_complaints_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _hpiMeta = const VerificationMeta('hpi');
+  @override
+  late final GeneratedColumn<String> hpi = GeneratedColumn<String>(
+    'hpi',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pastHistoryJsonMeta = const VerificationMeta(
+    'pastHistoryJson',
+  );
+  @override
+  late final GeneratedColumn<String> pastHistoryJson = GeneratedColumn<String>(
+    'past_history_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _familyHistoryJsonMeta = const VerificationMeta(
+    'familyHistoryJson',
+  );
+  @override
+  late final GeneratedColumn<String> familyHistoryJson =
+      GeneratedColumn<String>(
+        'family_history_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _developmentalHistoryJsonMeta =
+      const VerificationMeta('developmentalHistoryJson');
+  @override
+  late final GeneratedColumn<String> developmentalHistoryJson =
+      GeneratedColumn<String>(
+        'developmental_history_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _physicalGeneralsJsonMeta =
+      const VerificationMeta('physicalGeneralsJson');
+  @override
+  late final GeneratedColumn<String> physicalGeneralsJson =
+      GeneratedColumn<String>(
+        'physical_generals_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _mentalGeneralsJsonMeta =
+      const VerificationMeta('mentalGeneralsJson');
+  @override
+  late final GeneratedColumn<String> mentalGeneralsJson =
+      GeneratedColumn<String>(
+        'mental_generals_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _lifestyleJsonMeta = const VerificationMeta(
+    'lifestyleJson',
+  );
+  @override
+  late final GeneratedColumn<String> lifestyleJson = GeneratedColumn<String>(
+    'lifestyle_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _clinicalExamJsonMeta = const VerificationMeta(
+    'clinicalExamJson',
+  );
+  @override
+  late final GeneratedColumn<String> clinicalExamJson = GeneratedColumn<String>(
+    'clinical_exam_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _miasmaticAnalysisJsonMeta =
+      const VerificationMeta('miasmaticAnalysisJson');
+  @override
+  late final GeneratedColumn<String> miasmaticAnalysisJson =
+      GeneratedColumn<String>(
+        'miasmatic_analysis_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _caseTotalityJsonMeta = const VerificationMeta(
+    'caseTotalityJson',
+  );
+  @override
+  late final GeneratedColumn<String> caseTotalityJson = GeneratedColumn<String>(
+    'case_totality_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _baselinePrescriptionJsonMeta =
+      const VerificationMeta('baselinePrescriptionJson');
+  @override
+  late final GeneratedColumn<String> baselinePrescriptionJson =
+      GeneratedColumn<String>(
+        'baseline_prescription_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _investigationsJsonMeta =
+      const VerificationMeta('investigationsJson');
+  @override
+  late final GeneratedColumn<String> investigationsJson =
+      GeneratedColumn<String>(
+        'investigations_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _followUpNotesMeta = const VerificationMeta(
+    'followUpNotes',
+  );
+  @override
+  late final GeneratedColumn<String> followUpNotes = GeneratedColumn<String>(
+    'follow_up_notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _outcomeMeta = const VerificationMeta(
+    'outcome',
+  );
+  @override
+  late final GeneratedColumn<String> outcome = GeneratedColumn<String>(
+    'outcome',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    patientId,
+    recordDate,
+    chiefComplaintsJson,
+    hpi,
+    pastHistoryJson,
+    familyHistoryJson,
+    developmentalHistoryJson,
+    physicalGeneralsJson,
+    mentalGeneralsJson,
+    lifestyleJson,
+    clinicalExamJson,
+    miasmaticAnalysisJson,
+    caseTotalityJson,
+    baselinePrescriptionJson,
+    investigationsJson,
+    followUpNotes,
+    outcome,
+    isDeleted,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'patient_case_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PatientCaseRecord> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('patient_id')) {
+      context.handle(
+        _patientIdMeta,
+        patientId.isAcceptableOrUnknown(data['patient_id']!, _patientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_patientIdMeta);
+    }
+    if (data.containsKey('record_date')) {
+      context.handle(
+        _recordDateMeta,
+        recordDate.isAcceptableOrUnknown(data['record_date']!, _recordDateMeta),
+      );
+    }
+    if (data.containsKey('chief_complaints_json')) {
+      context.handle(
+        _chiefComplaintsJsonMeta,
+        chiefComplaintsJson.isAcceptableOrUnknown(
+          data['chief_complaints_json']!,
+          _chiefComplaintsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('hpi')) {
+      context.handle(
+        _hpiMeta,
+        hpi.isAcceptableOrUnknown(data['hpi']!, _hpiMeta),
+      );
+    }
+    if (data.containsKey('past_history_json')) {
+      context.handle(
+        _pastHistoryJsonMeta,
+        pastHistoryJson.isAcceptableOrUnknown(
+          data['past_history_json']!,
+          _pastHistoryJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('family_history_json')) {
+      context.handle(
+        _familyHistoryJsonMeta,
+        familyHistoryJson.isAcceptableOrUnknown(
+          data['family_history_json']!,
+          _familyHistoryJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('developmental_history_json')) {
+      context.handle(
+        _developmentalHistoryJsonMeta,
+        developmentalHistoryJson.isAcceptableOrUnknown(
+          data['developmental_history_json']!,
+          _developmentalHistoryJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('physical_generals_json')) {
+      context.handle(
+        _physicalGeneralsJsonMeta,
+        physicalGeneralsJson.isAcceptableOrUnknown(
+          data['physical_generals_json']!,
+          _physicalGeneralsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mental_generals_json')) {
+      context.handle(
+        _mentalGeneralsJsonMeta,
+        mentalGeneralsJson.isAcceptableOrUnknown(
+          data['mental_generals_json']!,
+          _mentalGeneralsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('lifestyle_json')) {
+      context.handle(
+        _lifestyleJsonMeta,
+        lifestyleJson.isAcceptableOrUnknown(
+          data['lifestyle_json']!,
+          _lifestyleJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('clinical_exam_json')) {
+      context.handle(
+        _clinicalExamJsonMeta,
+        clinicalExamJson.isAcceptableOrUnknown(
+          data['clinical_exam_json']!,
+          _clinicalExamJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('miasmatic_analysis_json')) {
+      context.handle(
+        _miasmaticAnalysisJsonMeta,
+        miasmaticAnalysisJson.isAcceptableOrUnknown(
+          data['miasmatic_analysis_json']!,
+          _miasmaticAnalysisJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('case_totality_json')) {
+      context.handle(
+        _caseTotalityJsonMeta,
+        caseTotalityJson.isAcceptableOrUnknown(
+          data['case_totality_json']!,
+          _caseTotalityJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('baseline_prescription_json')) {
+      context.handle(
+        _baselinePrescriptionJsonMeta,
+        baselinePrescriptionJson.isAcceptableOrUnknown(
+          data['baseline_prescription_json']!,
+          _baselinePrescriptionJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('investigations_json')) {
+      context.handle(
+        _investigationsJsonMeta,
+        investigationsJson.isAcceptableOrUnknown(
+          data['investigations_json']!,
+          _investigationsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('follow_up_notes')) {
+      context.handle(
+        _followUpNotesMeta,
+        followUpNotes.isAcceptableOrUnknown(
+          data['follow_up_notes']!,
+          _followUpNotesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('outcome')) {
+      context.handle(
+        _outcomeMeta,
+        outcome.isAcceptableOrUnknown(data['outcome']!, _outcomeMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PatientCaseRecord map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PatientCaseRecord(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      patientId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}patient_id'],
+          )!,
+      recordDate:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}record_date'],
+          )!,
+      chiefComplaintsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}chief_complaints_json'],
+      ),
+      hpi: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hpi'],
+      ),
+      pastHistoryJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}past_history_json'],
+      ),
+      familyHistoryJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}family_history_json'],
+      ),
+      developmentalHistoryJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}developmental_history_json'],
+      ),
+      physicalGeneralsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}physical_generals_json'],
+      ),
+      mentalGeneralsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mental_generals_json'],
+      ),
+      lifestyleJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lifestyle_json'],
+      ),
+      clinicalExamJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}clinical_exam_json'],
+      ),
+      miasmaticAnalysisJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}miasmatic_analysis_json'],
+      ),
+      caseTotalityJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}case_totality_json'],
+      ),
+      baselinePrescriptionJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}baseline_prescription_json'],
+      ),
+      investigationsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}investigations_json'],
+      ),
+      followUpNotes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}follow_up_notes'],
+      ),
+      outcome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outcome'],
+      ),
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $PatientCaseRecordsTable createAlias(String alias) {
+    return $PatientCaseRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class PatientCaseRecord extends DataClass
+    implements Insertable<PatientCaseRecord> {
+  final String id;
+  final String patientId;
+  final DateTime recordDate;
+  final String? chiefComplaintsJson;
+  final String? hpi;
+  final String? pastHistoryJson;
+  final String? familyHistoryJson;
+  final String? developmentalHistoryJson;
+  final String? physicalGeneralsJson;
+  final String? mentalGeneralsJson;
+  final String? lifestyleJson;
+  final String? clinicalExamJson;
+  final String? miasmaticAnalysisJson;
+  final String? caseTotalityJson;
+  final String? baselinePrescriptionJson;
+  final String? investigationsJson;
+  final String? followUpNotes;
+  final String? outcome;
+  final bool isDeleted;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const PatientCaseRecord({
+    required this.id,
+    required this.patientId,
+    required this.recordDate,
+    this.chiefComplaintsJson,
+    this.hpi,
+    this.pastHistoryJson,
+    this.familyHistoryJson,
+    this.developmentalHistoryJson,
+    this.physicalGeneralsJson,
+    this.mentalGeneralsJson,
+    this.lifestyleJson,
+    this.clinicalExamJson,
+    this.miasmaticAnalysisJson,
+    this.caseTotalityJson,
+    this.baselinePrescriptionJson,
+    this.investigationsJson,
+    this.followUpNotes,
+    this.outcome,
+    required this.isDeleted,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['patient_id'] = Variable<String>(patientId);
+    map['record_date'] = Variable<DateTime>(recordDate);
+    if (!nullToAbsent || chiefComplaintsJson != null) {
+      map['chief_complaints_json'] = Variable<String>(chiefComplaintsJson);
+    }
+    if (!nullToAbsent || hpi != null) {
+      map['hpi'] = Variable<String>(hpi);
+    }
+    if (!nullToAbsent || pastHistoryJson != null) {
+      map['past_history_json'] = Variable<String>(pastHistoryJson);
+    }
+    if (!nullToAbsent || familyHistoryJson != null) {
+      map['family_history_json'] = Variable<String>(familyHistoryJson);
+    }
+    if (!nullToAbsent || developmentalHistoryJson != null) {
+      map['developmental_history_json'] = Variable<String>(
+        developmentalHistoryJson,
+      );
+    }
+    if (!nullToAbsent || physicalGeneralsJson != null) {
+      map['physical_generals_json'] = Variable<String>(physicalGeneralsJson);
+    }
+    if (!nullToAbsent || mentalGeneralsJson != null) {
+      map['mental_generals_json'] = Variable<String>(mentalGeneralsJson);
+    }
+    if (!nullToAbsent || lifestyleJson != null) {
+      map['lifestyle_json'] = Variable<String>(lifestyleJson);
+    }
+    if (!nullToAbsent || clinicalExamJson != null) {
+      map['clinical_exam_json'] = Variable<String>(clinicalExamJson);
+    }
+    if (!nullToAbsent || miasmaticAnalysisJson != null) {
+      map['miasmatic_analysis_json'] = Variable<String>(miasmaticAnalysisJson);
+    }
+    if (!nullToAbsent || caseTotalityJson != null) {
+      map['case_totality_json'] = Variable<String>(caseTotalityJson);
+    }
+    if (!nullToAbsent || baselinePrescriptionJson != null) {
+      map['baseline_prescription_json'] = Variable<String>(
+        baselinePrescriptionJson,
+      );
+    }
+    if (!nullToAbsent || investigationsJson != null) {
+      map['investigations_json'] = Variable<String>(investigationsJson);
+    }
+    if (!nullToAbsent || followUpNotes != null) {
+      map['follow_up_notes'] = Variable<String>(followUpNotes);
+    }
+    if (!nullToAbsent || outcome != null) {
+      map['outcome'] = Variable<String>(outcome);
+    }
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  PatientCaseRecordsCompanion toCompanion(bool nullToAbsent) {
+    return PatientCaseRecordsCompanion(
+      id: Value(id),
+      patientId: Value(patientId),
+      recordDate: Value(recordDate),
+      chiefComplaintsJson:
+          chiefComplaintsJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(chiefComplaintsJson),
+      hpi: hpi == null && nullToAbsent ? const Value.absent() : Value(hpi),
+      pastHistoryJson:
+          pastHistoryJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(pastHistoryJson),
+      familyHistoryJson:
+          familyHistoryJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(familyHistoryJson),
+      developmentalHistoryJson:
+          developmentalHistoryJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(developmentalHistoryJson),
+      physicalGeneralsJson:
+          physicalGeneralsJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(physicalGeneralsJson),
+      mentalGeneralsJson:
+          mentalGeneralsJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(mentalGeneralsJson),
+      lifestyleJson:
+          lifestyleJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lifestyleJson),
+      clinicalExamJson:
+          clinicalExamJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(clinicalExamJson),
+      miasmaticAnalysisJson:
+          miasmaticAnalysisJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(miasmaticAnalysisJson),
+      caseTotalityJson:
+          caseTotalityJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(caseTotalityJson),
+      baselinePrescriptionJson:
+          baselinePrescriptionJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(baselinePrescriptionJson),
+      investigationsJson:
+          investigationsJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(investigationsJson),
+      followUpNotes:
+          followUpNotes == null && nullToAbsent
+              ? const Value.absent()
+              : Value(followUpNotes),
+      outcome:
+          outcome == null && nullToAbsent
+              ? const Value.absent()
+              : Value(outcome),
+      isDeleted: Value(isDeleted),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PatientCaseRecord.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PatientCaseRecord(
+      id: serializer.fromJson<String>(json['id']),
+      patientId: serializer.fromJson<String>(json['patientId']),
+      recordDate: serializer.fromJson<DateTime>(json['recordDate']),
+      chiefComplaintsJson: serializer.fromJson<String?>(
+        json['chiefComplaintsJson'],
+      ),
+      hpi: serializer.fromJson<String?>(json['hpi']),
+      pastHistoryJson: serializer.fromJson<String?>(json['pastHistoryJson']),
+      familyHistoryJson: serializer.fromJson<String?>(
+        json['familyHistoryJson'],
+      ),
+      developmentalHistoryJson: serializer.fromJson<String?>(
+        json['developmentalHistoryJson'],
+      ),
+      physicalGeneralsJson: serializer.fromJson<String?>(
+        json['physicalGeneralsJson'],
+      ),
+      mentalGeneralsJson: serializer.fromJson<String?>(
+        json['mentalGeneralsJson'],
+      ),
+      lifestyleJson: serializer.fromJson<String?>(json['lifestyleJson']),
+      clinicalExamJson: serializer.fromJson<String?>(json['clinicalExamJson']),
+      miasmaticAnalysisJson: serializer.fromJson<String?>(
+        json['miasmaticAnalysisJson'],
+      ),
+      caseTotalityJson: serializer.fromJson<String?>(json['caseTotalityJson']),
+      baselinePrescriptionJson: serializer.fromJson<String?>(
+        json['baselinePrescriptionJson'],
+      ),
+      investigationsJson: serializer.fromJson<String?>(
+        json['investigationsJson'],
+      ),
+      followUpNotes: serializer.fromJson<String?>(json['followUpNotes']),
+      outcome: serializer.fromJson<String?>(json['outcome']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'patientId': serializer.toJson<String>(patientId),
+      'recordDate': serializer.toJson<DateTime>(recordDate),
+      'chiefComplaintsJson': serializer.toJson<String?>(chiefComplaintsJson),
+      'hpi': serializer.toJson<String?>(hpi),
+      'pastHistoryJson': serializer.toJson<String?>(pastHistoryJson),
+      'familyHistoryJson': serializer.toJson<String?>(familyHistoryJson),
+      'developmentalHistoryJson': serializer.toJson<String?>(
+        developmentalHistoryJson,
+      ),
+      'physicalGeneralsJson': serializer.toJson<String?>(physicalGeneralsJson),
+      'mentalGeneralsJson': serializer.toJson<String?>(mentalGeneralsJson),
+      'lifestyleJson': serializer.toJson<String?>(lifestyleJson),
+      'clinicalExamJson': serializer.toJson<String?>(clinicalExamJson),
+      'miasmaticAnalysisJson': serializer.toJson<String?>(
+        miasmaticAnalysisJson,
+      ),
+      'caseTotalityJson': serializer.toJson<String?>(caseTotalityJson),
+      'baselinePrescriptionJson': serializer.toJson<String?>(
+        baselinePrescriptionJson,
+      ),
+      'investigationsJson': serializer.toJson<String?>(investigationsJson),
+      'followUpNotes': serializer.toJson<String?>(followUpNotes),
+      'outcome': serializer.toJson<String?>(outcome),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  PatientCaseRecord copyWith({
+    String? id,
+    String? patientId,
+    DateTime? recordDate,
+    Value<String?> chiefComplaintsJson = const Value.absent(),
+    Value<String?> hpi = const Value.absent(),
+    Value<String?> pastHistoryJson = const Value.absent(),
+    Value<String?> familyHistoryJson = const Value.absent(),
+    Value<String?> developmentalHistoryJson = const Value.absent(),
+    Value<String?> physicalGeneralsJson = const Value.absent(),
+    Value<String?> mentalGeneralsJson = const Value.absent(),
+    Value<String?> lifestyleJson = const Value.absent(),
+    Value<String?> clinicalExamJson = const Value.absent(),
+    Value<String?> miasmaticAnalysisJson = const Value.absent(),
+    Value<String?> caseTotalityJson = const Value.absent(),
+    Value<String?> baselinePrescriptionJson = const Value.absent(),
+    Value<String?> investigationsJson = const Value.absent(),
+    Value<String?> followUpNotes = const Value.absent(),
+    Value<String?> outcome = const Value.absent(),
+    bool? isDeleted,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => PatientCaseRecord(
+    id: id ?? this.id,
+    patientId: patientId ?? this.patientId,
+    recordDate: recordDate ?? this.recordDate,
+    chiefComplaintsJson:
+        chiefComplaintsJson.present
+            ? chiefComplaintsJson.value
+            : this.chiefComplaintsJson,
+    hpi: hpi.present ? hpi.value : this.hpi,
+    pastHistoryJson:
+        pastHistoryJson.present ? pastHistoryJson.value : this.pastHistoryJson,
+    familyHistoryJson:
+        familyHistoryJson.present
+            ? familyHistoryJson.value
+            : this.familyHistoryJson,
+    developmentalHistoryJson:
+        developmentalHistoryJson.present
+            ? developmentalHistoryJson.value
+            : this.developmentalHistoryJson,
+    physicalGeneralsJson:
+        physicalGeneralsJson.present
+            ? physicalGeneralsJson.value
+            : this.physicalGeneralsJson,
+    mentalGeneralsJson:
+        mentalGeneralsJson.present
+            ? mentalGeneralsJson.value
+            : this.mentalGeneralsJson,
+    lifestyleJson:
+        lifestyleJson.present ? lifestyleJson.value : this.lifestyleJson,
+    clinicalExamJson:
+        clinicalExamJson.present
+            ? clinicalExamJson.value
+            : this.clinicalExamJson,
+    miasmaticAnalysisJson:
+        miasmaticAnalysisJson.present
+            ? miasmaticAnalysisJson.value
+            : this.miasmaticAnalysisJson,
+    caseTotalityJson:
+        caseTotalityJson.present
+            ? caseTotalityJson.value
+            : this.caseTotalityJson,
+    baselinePrescriptionJson:
+        baselinePrescriptionJson.present
+            ? baselinePrescriptionJson.value
+            : this.baselinePrescriptionJson,
+    investigationsJson:
+        investigationsJson.present
+            ? investigationsJson.value
+            : this.investigationsJson,
+    followUpNotes:
+        followUpNotes.present ? followUpNotes.value : this.followUpNotes,
+    outcome: outcome.present ? outcome.value : this.outcome,
+    isDeleted: isDeleted ?? this.isDeleted,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PatientCaseRecord copyWithCompanion(PatientCaseRecordsCompanion data) {
+    return PatientCaseRecord(
+      id: data.id.present ? data.id.value : this.id,
+      patientId: data.patientId.present ? data.patientId.value : this.patientId,
+      recordDate:
+          data.recordDate.present ? data.recordDate.value : this.recordDate,
+      chiefComplaintsJson:
+          data.chiefComplaintsJson.present
+              ? data.chiefComplaintsJson.value
+              : this.chiefComplaintsJson,
+      hpi: data.hpi.present ? data.hpi.value : this.hpi,
+      pastHistoryJson:
+          data.pastHistoryJson.present
+              ? data.pastHistoryJson.value
+              : this.pastHistoryJson,
+      familyHistoryJson:
+          data.familyHistoryJson.present
+              ? data.familyHistoryJson.value
+              : this.familyHistoryJson,
+      developmentalHistoryJson:
+          data.developmentalHistoryJson.present
+              ? data.developmentalHistoryJson.value
+              : this.developmentalHistoryJson,
+      physicalGeneralsJson:
+          data.physicalGeneralsJson.present
+              ? data.physicalGeneralsJson.value
+              : this.physicalGeneralsJson,
+      mentalGeneralsJson:
+          data.mentalGeneralsJson.present
+              ? data.mentalGeneralsJson.value
+              : this.mentalGeneralsJson,
+      lifestyleJson:
+          data.lifestyleJson.present
+              ? data.lifestyleJson.value
+              : this.lifestyleJson,
+      clinicalExamJson:
+          data.clinicalExamJson.present
+              ? data.clinicalExamJson.value
+              : this.clinicalExamJson,
+      miasmaticAnalysisJson:
+          data.miasmaticAnalysisJson.present
+              ? data.miasmaticAnalysisJson.value
+              : this.miasmaticAnalysisJson,
+      caseTotalityJson:
+          data.caseTotalityJson.present
+              ? data.caseTotalityJson.value
+              : this.caseTotalityJson,
+      baselinePrescriptionJson:
+          data.baselinePrescriptionJson.present
+              ? data.baselinePrescriptionJson.value
+              : this.baselinePrescriptionJson,
+      investigationsJson:
+          data.investigationsJson.present
+              ? data.investigationsJson.value
+              : this.investigationsJson,
+      followUpNotes:
+          data.followUpNotes.present
+              ? data.followUpNotes.value
+              : this.followUpNotes,
+      outcome: data.outcome.present ? data.outcome.value : this.outcome,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PatientCaseRecord(')
+          ..write('id: $id, ')
+          ..write('patientId: $patientId, ')
+          ..write('recordDate: $recordDate, ')
+          ..write('chiefComplaintsJson: $chiefComplaintsJson, ')
+          ..write('hpi: $hpi, ')
+          ..write('pastHistoryJson: $pastHistoryJson, ')
+          ..write('familyHistoryJson: $familyHistoryJson, ')
+          ..write('developmentalHistoryJson: $developmentalHistoryJson, ')
+          ..write('physicalGeneralsJson: $physicalGeneralsJson, ')
+          ..write('mentalGeneralsJson: $mentalGeneralsJson, ')
+          ..write('lifestyleJson: $lifestyleJson, ')
+          ..write('clinicalExamJson: $clinicalExamJson, ')
+          ..write('miasmaticAnalysisJson: $miasmaticAnalysisJson, ')
+          ..write('caseTotalityJson: $caseTotalityJson, ')
+          ..write('baselinePrescriptionJson: $baselinePrescriptionJson, ')
+          ..write('investigationsJson: $investigationsJson, ')
+          ..write('followUpNotes: $followUpNotes, ')
+          ..write('outcome: $outcome, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    patientId,
+    recordDate,
+    chiefComplaintsJson,
+    hpi,
+    pastHistoryJson,
+    familyHistoryJson,
+    developmentalHistoryJson,
+    physicalGeneralsJson,
+    mentalGeneralsJson,
+    lifestyleJson,
+    clinicalExamJson,
+    miasmaticAnalysisJson,
+    caseTotalityJson,
+    baselinePrescriptionJson,
+    investigationsJson,
+    followUpNotes,
+    outcome,
+    isDeleted,
+    createdAt,
+    updatedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PatientCaseRecord &&
+          other.id == this.id &&
+          other.patientId == this.patientId &&
+          other.recordDate == this.recordDate &&
+          other.chiefComplaintsJson == this.chiefComplaintsJson &&
+          other.hpi == this.hpi &&
+          other.pastHistoryJson == this.pastHistoryJson &&
+          other.familyHistoryJson == this.familyHistoryJson &&
+          other.developmentalHistoryJson == this.developmentalHistoryJson &&
+          other.physicalGeneralsJson == this.physicalGeneralsJson &&
+          other.mentalGeneralsJson == this.mentalGeneralsJson &&
+          other.lifestyleJson == this.lifestyleJson &&
+          other.clinicalExamJson == this.clinicalExamJson &&
+          other.miasmaticAnalysisJson == this.miasmaticAnalysisJson &&
+          other.caseTotalityJson == this.caseTotalityJson &&
+          other.baselinePrescriptionJson == this.baselinePrescriptionJson &&
+          other.investigationsJson == this.investigationsJson &&
+          other.followUpNotes == this.followUpNotes &&
+          other.outcome == this.outcome &&
+          other.isDeleted == this.isDeleted &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PatientCaseRecordsCompanion extends UpdateCompanion<PatientCaseRecord> {
+  final Value<String> id;
+  final Value<String> patientId;
+  final Value<DateTime> recordDate;
+  final Value<String?> chiefComplaintsJson;
+  final Value<String?> hpi;
+  final Value<String?> pastHistoryJson;
+  final Value<String?> familyHistoryJson;
+  final Value<String?> developmentalHistoryJson;
+  final Value<String?> physicalGeneralsJson;
+  final Value<String?> mentalGeneralsJson;
+  final Value<String?> lifestyleJson;
+  final Value<String?> clinicalExamJson;
+  final Value<String?> miasmaticAnalysisJson;
+  final Value<String?> caseTotalityJson;
+  final Value<String?> baselinePrescriptionJson;
+  final Value<String?> investigationsJson;
+  final Value<String?> followUpNotes;
+  final Value<String?> outcome;
+  final Value<bool> isDeleted;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const PatientCaseRecordsCompanion({
+    this.id = const Value.absent(),
+    this.patientId = const Value.absent(),
+    this.recordDate = const Value.absent(),
+    this.chiefComplaintsJson = const Value.absent(),
+    this.hpi = const Value.absent(),
+    this.pastHistoryJson = const Value.absent(),
+    this.familyHistoryJson = const Value.absent(),
+    this.developmentalHistoryJson = const Value.absent(),
+    this.physicalGeneralsJson = const Value.absent(),
+    this.mentalGeneralsJson = const Value.absent(),
+    this.lifestyleJson = const Value.absent(),
+    this.clinicalExamJson = const Value.absent(),
+    this.miasmaticAnalysisJson = const Value.absent(),
+    this.caseTotalityJson = const Value.absent(),
+    this.baselinePrescriptionJson = const Value.absent(),
+    this.investigationsJson = const Value.absent(),
+    this.followUpNotes = const Value.absent(),
+    this.outcome = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PatientCaseRecordsCompanion.insert({
+    required String id,
+    required String patientId,
+    this.recordDate = const Value.absent(),
+    this.chiefComplaintsJson = const Value.absent(),
+    this.hpi = const Value.absent(),
+    this.pastHistoryJson = const Value.absent(),
+    this.familyHistoryJson = const Value.absent(),
+    this.developmentalHistoryJson = const Value.absent(),
+    this.physicalGeneralsJson = const Value.absent(),
+    this.mentalGeneralsJson = const Value.absent(),
+    this.lifestyleJson = const Value.absent(),
+    this.clinicalExamJson = const Value.absent(),
+    this.miasmaticAnalysisJson = const Value.absent(),
+    this.caseTotalityJson = const Value.absent(),
+    this.baselinePrescriptionJson = const Value.absent(),
+    this.investigationsJson = const Value.absent(),
+    this.followUpNotes = const Value.absent(),
+    this.outcome = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       patientId = Value(patientId);
+  static Insertable<PatientCaseRecord> custom({
+    Expression<String>? id,
+    Expression<String>? patientId,
+    Expression<DateTime>? recordDate,
+    Expression<String>? chiefComplaintsJson,
+    Expression<String>? hpi,
+    Expression<String>? pastHistoryJson,
+    Expression<String>? familyHistoryJson,
+    Expression<String>? developmentalHistoryJson,
+    Expression<String>? physicalGeneralsJson,
+    Expression<String>? mentalGeneralsJson,
+    Expression<String>? lifestyleJson,
+    Expression<String>? clinicalExamJson,
+    Expression<String>? miasmaticAnalysisJson,
+    Expression<String>? caseTotalityJson,
+    Expression<String>? baselinePrescriptionJson,
+    Expression<String>? investigationsJson,
+    Expression<String>? followUpNotes,
+    Expression<String>? outcome,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (patientId != null) 'patient_id': patientId,
+      if (recordDate != null) 'record_date': recordDate,
+      if (chiefComplaintsJson != null)
+        'chief_complaints_json': chiefComplaintsJson,
+      if (hpi != null) 'hpi': hpi,
+      if (pastHistoryJson != null) 'past_history_json': pastHistoryJson,
+      if (familyHistoryJson != null) 'family_history_json': familyHistoryJson,
+      if (developmentalHistoryJson != null)
+        'developmental_history_json': developmentalHistoryJson,
+      if (physicalGeneralsJson != null)
+        'physical_generals_json': physicalGeneralsJson,
+      if (mentalGeneralsJson != null)
+        'mental_generals_json': mentalGeneralsJson,
+      if (lifestyleJson != null) 'lifestyle_json': lifestyleJson,
+      if (clinicalExamJson != null) 'clinical_exam_json': clinicalExamJson,
+      if (miasmaticAnalysisJson != null)
+        'miasmatic_analysis_json': miasmaticAnalysisJson,
+      if (caseTotalityJson != null) 'case_totality_json': caseTotalityJson,
+      if (baselinePrescriptionJson != null)
+        'baseline_prescription_json': baselinePrescriptionJson,
+      if (investigationsJson != null) 'investigations_json': investigationsJson,
+      if (followUpNotes != null) 'follow_up_notes': followUpNotes,
+      if (outcome != null) 'outcome': outcome,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PatientCaseRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? patientId,
+    Value<DateTime>? recordDate,
+    Value<String?>? chiefComplaintsJson,
+    Value<String?>? hpi,
+    Value<String?>? pastHistoryJson,
+    Value<String?>? familyHistoryJson,
+    Value<String?>? developmentalHistoryJson,
+    Value<String?>? physicalGeneralsJson,
+    Value<String?>? mentalGeneralsJson,
+    Value<String?>? lifestyleJson,
+    Value<String?>? clinicalExamJson,
+    Value<String?>? miasmaticAnalysisJson,
+    Value<String?>? caseTotalityJson,
+    Value<String?>? baselinePrescriptionJson,
+    Value<String?>? investigationsJson,
+    Value<String?>? followUpNotes,
+    Value<String?>? outcome,
+    Value<bool>? isDeleted,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return PatientCaseRecordsCompanion(
+      id: id ?? this.id,
+      patientId: patientId ?? this.patientId,
+      recordDate: recordDate ?? this.recordDate,
+      chiefComplaintsJson: chiefComplaintsJson ?? this.chiefComplaintsJson,
+      hpi: hpi ?? this.hpi,
+      pastHistoryJson: pastHistoryJson ?? this.pastHistoryJson,
+      familyHistoryJson: familyHistoryJson ?? this.familyHistoryJson,
+      developmentalHistoryJson:
+          developmentalHistoryJson ?? this.developmentalHistoryJson,
+      physicalGeneralsJson: physicalGeneralsJson ?? this.physicalGeneralsJson,
+      mentalGeneralsJson: mentalGeneralsJson ?? this.mentalGeneralsJson,
+      lifestyleJson: lifestyleJson ?? this.lifestyleJson,
+      clinicalExamJson: clinicalExamJson ?? this.clinicalExamJson,
+      miasmaticAnalysisJson:
+          miasmaticAnalysisJson ?? this.miasmaticAnalysisJson,
+      caseTotalityJson: caseTotalityJson ?? this.caseTotalityJson,
+      baselinePrescriptionJson:
+          baselinePrescriptionJson ?? this.baselinePrescriptionJson,
+      investigationsJson: investigationsJson ?? this.investigationsJson,
+      followUpNotes: followUpNotes ?? this.followUpNotes,
+      outcome: outcome ?? this.outcome,
+      isDeleted: isDeleted ?? this.isDeleted,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (patientId.present) {
+      map['patient_id'] = Variable<String>(patientId.value);
+    }
+    if (recordDate.present) {
+      map['record_date'] = Variable<DateTime>(recordDate.value);
+    }
+    if (chiefComplaintsJson.present) {
+      map['chief_complaints_json'] = Variable<String>(
+        chiefComplaintsJson.value,
+      );
+    }
+    if (hpi.present) {
+      map['hpi'] = Variable<String>(hpi.value);
+    }
+    if (pastHistoryJson.present) {
+      map['past_history_json'] = Variable<String>(pastHistoryJson.value);
+    }
+    if (familyHistoryJson.present) {
+      map['family_history_json'] = Variable<String>(familyHistoryJson.value);
+    }
+    if (developmentalHistoryJson.present) {
+      map['developmental_history_json'] = Variable<String>(
+        developmentalHistoryJson.value,
+      );
+    }
+    if (physicalGeneralsJson.present) {
+      map['physical_generals_json'] = Variable<String>(
+        physicalGeneralsJson.value,
+      );
+    }
+    if (mentalGeneralsJson.present) {
+      map['mental_generals_json'] = Variable<String>(mentalGeneralsJson.value);
+    }
+    if (lifestyleJson.present) {
+      map['lifestyle_json'] = Variable<String>(lifestyleJson.value);
+    }
+    if (clinicalExamJson.present) {
+      map['clinical_exam_json'] = Variable<String>(clinicalExamJson.value);
+    }
+    if (miasmaticAnalysisJson.present) {
+      map['miasmatic_analysis_json'] = Variable<String>(
+        miasmaticAnalysisJson.value,
+      );
+    }
+    if (caseTotalityJson.present) {
+      map['case_totality_json'] = Variable<String>(caseTotalityJson.value);
+    }
+    if (baselinePrescriptionJson.present) {
+      map['baseline_prescription_json'] = Variable<String>(
+        baselinePrescriptionJson.value,
+      );
+    }
+    if (investigationsJson.present) {
+      map['investigations_json'] = Variable<String>(investigationsJson.value);
+    }
+    if (followUpNotes.present) {
+      map['follow_up_notes'] = Variable<String>(followUpNotes.value);
+    }
+    if (outcome.present) {
+      map['outcome'] = Variable<String>(outcome.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PatientCaseRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('patientId: $patientId, ')
+          ..write('recordDate: $recordDate, ')
+          ..write('chiefComplaintsJson: $chiefComplaintsJson, ')
+          ..write('hpi: $hpi, ')
+          ..write('pastHistoryJson: $pastHistoryJson, ')
+          ..write('familyHistoryJson: $familyHistoryJson, ')
+          ..write('developmentalHistoryJson: $developmentalHistoryJson, ')
+          ..write('physicalGeneralsJson: $physicalGeneralsJson, ')
+          ..write('mentalGeneralsJson: $mentalGeneralsJson, ')
+          ..write('lifestyleJson: $lifestyleJson, ')
+          ..write('clinicalExamJson: $clinicalExamJson, ')
+          ..write('miasmaticAnalysisJson: $miasmaticAnalysisJson, ')
+          ..write('caseTotalityJson: $caseTotalityJson, ')
+          ..write('baselinePrescriptionJson: $baselinePrescriptionJson, ')
+          ..write('investigationsJson: $investigationsJson, ')
+          ..write('followUpNotes: $followUpNotes, ')
+          ..write('outcome: $outcome, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6380,6 +7704,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ReviewRequestsTable reviewRequests = $ReviewRequestsTable(this);
   late final $FootfallsTable footfalls = $FootfallsTable(this);
   late final $CampsTable camps = $CampsTable(this);
+  late final $PatientCaseRecordsTable patientCaseRecords =
+      $PatientCaseRecordsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6394,6 +7720,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     reviewRequests,
     footfalls,
     camps,
+    patientCaseRecords,
   ];
 }
 
@@ -7409,6 +8736,30 @@ final class $$PatientsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$PatientCaseRecordsTable, List<PatientCaseRecord>>
+  _patientCaseRecordsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.patientCaseRecords,
+        aliasName: $_aliasNameGenerator(
+          db.patients.id,
+          db.patientCaseRecords.patientId,
+        ),
+      );
+
+  $$PatientCaseRecordsTableProcessedTableManager get patientCaseRecordsRefs {
+    final manager = $$PatientCaseRecordsTableTableManager(
+      $_db,
+      $_db.patientCaseRecords,
+    ).filter((f) => f.patientId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _patientCaseRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$PatientsTableFilterComposer
@@ -7611,6 +8962,31 @@ class $$PatientsTableFilterComposer
           }) => $$FootfallsTableFilterComposer(
             $db: $db,
             $table: $db.footfalls,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> patientCaseRecordsRefs(
+    Expression<bool> Function($$PatientCaseRecordsTableFilterComposer f) f,
+  ) {
+    final $$PatientCaseRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.patientCaseRecords,
+      getReferencedColumn: (t) => t.patientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientCaseRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.patientCaseRecords,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -7913,6 +9289,32 @@ class $$PatientsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> patientCaseRecordsRefs<T extends Object>(
+    Expression<T> Function($$PatientCaseRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$PatientCaseRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.patientCaseRecords,
+          getReferencedColumn: (t) => t.patientId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PatientCaseRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.patientCaseRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$PatientsTableTableManager
@@ -7933,6 +9335,7 @@ class $$PatientsTableTableManager
             bool cashMemosRefs,
             bool reviewRequestsRefs,
             bool footfallsRefs,
+            bool patientCaseRecordsRefs,
           })
         > {
   $$PatientsTableTableManager(_$AppDatabase db, $PatientsTable table)
@@ -8053,6 +9456,7 @@ class $$PatientsTableTableManager
             cashMemosRefs = false,
             reviewRequestsRefs = false,
             footfallsRefs = false,
+            patientCaseRecordsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -8061,6 +9465,7 @@ class $$PatientsTableTableManager
                 if (cashMemosRefs) db.cashMemos,
                 if (reviewRequestsRefs) db.reviewRequests,
                 if (footfallsRefs) db.footfalls,
+                if (patientCaseRecordsRefs) db.patientCaseRecords,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -8149,6 +9554,28 @@ class $$PatientsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (patientCaseRecordsRefs)
+                    await $_getPrefetchedData<
+                      Patient,
+                      $PatientsTable,
+                      PatientCaseRecord
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PatientsTableReferences
+                          ._patientCaseRecordsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$PatientsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).patientCaseRecordsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.patientId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -8174,6 +9601,7 @@ typedef $$PatientsTableProcessedTableManager =
         bool cashMemosRefs,
         bool reviewRequestsRefs,
         bool footfallsRefs,
+        bool patientCaseRecordsRefs,
       })
     >;
 typedef $$VisitsTableCreateCompanionBuilder =
@@ -11611,6 +13039,679 @@ typedef $$CampsTableProcessedTableManager =
       Camp,
       PrefetchHooks Function({bool clinicId})
     >;
+typedef $$PatientCaseRecordsTableCreateCompanionBuilder =
+    PatientCaseRecordsCompanion Function({
+      required String id,
+      required String patientId,
+      Value<DateTime> recordDate,
+      Value<String?> chiefComplaintsJson,
+      Value<String?> hpi,
+      Value<String?> pastHistoryJson,
+      Value<String?> familyHistoryJson,
+      Value<String?> developmentalHistoryJson,
+      Value<String?> physicalGeneralsJson,
+      Value<String?> mentalGeneralsJson,
+      Value<String?> lifestyleJson,
+      Value<String?> clinicalExamJson,
+      Value<String?> miasmaticAnalysisJson,
+      Value<String?> caseTotalityJson,
+      Value<String?> baselinePrescriptionJson,
+      Value<String?> investigationsJson,
+      Value<String?> followUpNotes,
+      Value<String?> outcome,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$PatientCaseRecordsTableUpdateCompanionBuilder =
+    PatientCaseRecordsCompanion Function({
+      Value<String> id,
+      Value<String> patientId,
+      Value<DateTime> recordDate,
+      Value<String?> chiefComplaintsJson,
+      Value<String?> hpi,
+      Value<String?> pastHistoryJson,
+      Value<String?> familyHistoryJson,
+      Value<String?> developmentalHistoryJson,
+      Value<String?> physicalGeneralsJson,
+      Value<String?> mentalGeneralsJson,
+      Value<String?> lifestyleJson,
+      Value<String?> clinicalExamJson,
+      Value<String?> miasmaticAnalysisJson,
+      Value<String?> caseTotalityJson,
+      Value<String?> baselinePrescriptionJson,
+      Value<String?> investigationsJson,
+      Value<String?> followUpNotes,
+      Value<String?> outcome,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$PatientCaseRecordsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $PatientCaseRecordsTable,
+          PatientCaseRecord
+        > {
+  $$PatientCaseRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PatientsTable _patientIdTable(_$AppDatabase db) =>
+      db.patients.createAlias(
+        $_aliasNameGenerator(db.patientCaseRecords.patientId, db.patients.id),
+      );
+
+  $$PatientsTableProcessedTableManager get patientId {
+    final $_column = $_itemColumn<String>('patient_id')!;
+
+    final manager = $$PatientsTableTableManager(
+      $_db,
+      $_db.patients,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_patientIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PatientCaseRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $PatientCaseRecordsTable> {
+  $$PatientCaseRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get recordDate => $composableBuilder(
+    column: $table.recordDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get chiefComplaintsJson => $composableBuilder(
+    column: $table.chiefComplaintsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hpi => $composableBuilder(
+    column: $table.hpi,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pastHistoryJson => $composableBuilder(
+    column: $table.pastHistoryJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get familyHistoryJson => $composableBuilder(
+    column: $table.familyHistoryJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get developmentalHistoryJson => $composableBuilder(
+    column: $table.developmentalHistoryJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get physicalGeneralsJson => $composableBuilder(
+    column: $table.physicalGeneralsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mentalGeneralsJson => $composableBuilder(
+    column: $table.mentalGeneralsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lifestyleJson => $composableBuilder(
+    column: $table.lifestyleJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clinicalExamJson => $composableBuilder(
+    column: $table.clinicalExamJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get miasmaticAnalysisJson => $composableBuilder(
+    column: $table.miasmaticAnalysisJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get caseTotalityJson => $composableBuilder(
+    column: $table.caseTotalityJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get baselinePrescriptionJson => $composableBuilder(
+    column: $table.baselinePrescriptionJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get investigationsJson => $composableBuilder(
+    column: $table.investigationsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get followUpNotes => $composableBuilder(
+    column: $table.followUpNotes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PatientsTableFilterComposer get patientId {
+    final $$PatientsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableFilterComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PatientCaseRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PatientCaseRecordsTable> {
+  $$PatientCaseRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get recordDate => $composableBuilder(
+    column: $table.recordDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get chiefComplaintsJson => $composableBuilder(
+    column: $table.chiefComplaintsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hpi => $composableBuilder(
+    column: $table.hpi,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pastHistoryJson => $composableBuilder(
+    column: $table.pastHistoryJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get familyHistoryJson => $composableBuilder(
+    column: $table.familyHistoryJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get developmentalHistoryJson => $composableBuilder(
+    column: $table.developmentalHistoryJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get physicalGeneralsJson => $composableBuilder(
+    column: $table.physicalGeneralsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mentalGeneralsJson => $composableBuilder(
+    column: $table.mentalGeneralsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lifestyleJson => $composableBuilder(
+    column: $table.lifestyleJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clinicalExamJson => $composableBuilder(
+    column: $table.clinicalExamJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get miasmaticAnalysisJson => $composableBuilder(
+    column: $table.miasmaticAnalysisJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get caseTotalityJson => $composableBuilder(
+    column: $table.caseTotalityJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get baselinePrescriptionJson => $composableBuilder(
+    column: $table.baselinePrescriptionJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get investigationsJson => $composableBuilder(
+    column: $table.investigationsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get followUpNotes => $composableBuilder(
+    column: $table.followUpNotes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PatientsTableOrderingComposer get patientId {
+    final $$PatientsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableOrderingComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PatientCaseRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PatientCaseRecordsTable> {
+  $$PatientCaseRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get recordDate => $composableBuilder(
+    column: $table.recordDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get chiefComplaintsJson => $composableBuilder(
+    column: $table.chiefComplaintsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get hpi =>
+      $composableBuilder(column: $table.hpi, builder: (column) => column);
+
+  GeneratedColumn<String> get pastHistoryJson => $composableBuilder(
+    column: $table.pastHistoryJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get familyHistoryJson => $composableBuilder(
+    column: $table.familyHistoryJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get developmentalHistoryJson => $composableBuilder(
+    column: $table.developmentalHistoryJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get physicalGeneralsJson => $composableBuilder(
+    column: $table.physicalGeneralsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get mentalGeneralsJson => $composableBuilder(
+    column: $table.mentalGeneralsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lifestyleJson => $composableBuilder(
+    column: $table.lifestyleJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get clinicalExamJson => $composableBuilder(
+    column: $table.clinicalExamJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get miasmaticAnalysisJson => $composableBuilder(
+    column: $table.miasmaticAnalysisJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get caseTotalityJson => $composableBuilder(
+    column: $table.caseTotalityJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get baselinePrescriptionJson => $composableBuilder(
+    column: $table.baselinePrescriptionJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get investigationsJson => $composableBuilder(
+    column: $table.investigationsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get followUpNotes => $composableBuilder(
+    column: $table.followUpNotes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get outcome =>
+      $composableBuilder(column: $table.outcome, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$PatientsTableAnnotationComposer get patientId {
+    final $$PatientsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.patientId,
+      referencedTable: $db.patients,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PatientsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.patients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PatientCaseRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PatientCaseRecordsTable,
+          PatientCaseRecord,
+          $$PatientCaseRecordsTableFilterComposer,
+          $$PatientCaseRecordsTableOrderingComposer,
+          $$PatientCaseRecordsTableAnnotationComposer,
+          $$PatientCaseRecordsTableCreateCompanionBuilder,
+          $$PatientCaseRecordsTableUpdateCompanionBuilder,
+          (PatientCaseRecord, $$PatientCaseRecordsTableReferences),
+          PatientCaseRecord,
+          PrefetchHooks Function({bool patientId})
+        > {
+  $$PatientCaseRecordsTableTableManager(
+    _$AppDatabase db,
+    $PatientCaseRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$PatientCaseRecordsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$PatientCaseRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$PatientCaseRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> patientId = const Value.absent(),
+                Value<DateTime> recordDate = const Value.absent(),
+                Value<String?> chiefComplaintsJson = const Value.absent(),
+                Value<String?> hpi = const Value.absent(),
+                Value<String?> pastHistoryJson = const Value.absent(),
+                Value<String?> familyHistoryJson = const Value.absent(),
+                Value<String?> developmentalHistoryJson = const Value.absent(),
+                Value<String?> physicalGeneralsJson = const Value.absent(),
+                Value<String?> mentalGeneralsJson = const Value.absent(),
+                Value<String?> lifestyleJson = const Value.absent(),
+                Value<String?> clinicalExamJson = const Value.absent(),
+                Value<String?> miasmaticAnalysisJson = const Value.absent(),
+                Value<String?> caseTotalityJson = const Value.absent(),
+                Value<String?> baselinePrescriptionJson = const Value.absent(),
+                Value<String?> investigationsJson = const Value.absent(),
+                Value<String?> followUpNotes = const Value.absent(),
+                Value<String?> outcome = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PatientCaseRecordsCompanion(
+                id: id,
+                patientId: patientId,
+                recordDate: recordDate,
+                chiefComplaintsJson: chiefComplaintsJson,
+                hpi: hpi,
+                pastHistoryJson: pastHistoryJson,
+                familyHistoryJson: familyHistoryJson,
+                developmentalHistoryJson: developmentalHistoryJson,
+                physicalGeneralsJson: physicalGeneralsJson,
+                mentalGeneralsJson: mentalGeneralsJson,
+                lifestyleJson: lifestyleJson,
+                clinicalExamJson: clinicalExamJson,
+                miasmaticAnalysisJson: miasmaticAnalysisJson,
+                caseTotalityJson: caseTotalityJson,
+                baselinePrescriptionJson: baselinePrescriptionJson,
+                investigationsJson: investigationsJson,
+                followUpNotes: followUpNotes,
+                outcome: outcome,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String patientId,
+                Value<DateTime> recordDate = const Value.absent(),
+                Value<String?> chiefComplaintsJson = const Value.absent(),
+                Value<String?> hpi = const Value.absent(),
+                Value<String?> pastHistoryJson = const Value.absent(),
+                Value<String?> familyHistoryJson = const Value.absent(),
+                Value<String?> developmentalHistoryJson = const Value.absent(),
+                Value<String?> physicalGeneralsJson = const Value.absent(),
+                Value<String?> mentalGeneralsJson = const Value.absent(),
+                Value<String?> lifestyleJson = const Value.absent(),
+                Value<String?> clinicalExamJson = const Value.absent(),
+                Value<String?> miasmaticAnalysisJson = const Value.absent(),
+                Value<String?> caseTotalityJson = const Value.absent(),
+                Value<String?> baselinePrescriptionJson = const Value.absent(),
+                Value<String?> investigationsJson = const Value.absent(),
+                Value<String?> followUpNotes = const Value.absent(),
+                Value<String?> outcome = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PatientCaseRecordsCompanion.insert(
+                id: id,
+                patientId: patientId,
+                recordDate: recordDate,
+                chiefComplaintsJson: chiefComplaintsJson,
+                hpi: hpi,
+                pastHistoryJson: pastHistoryJson,
+                familyHistoryJson: familyHistoryJson,
+                developmentalHistoryJson: developmentalHistoryJson,
+                physicalGeneralsJson: physicalGeneralsJson,
+                mentalGeneralsJson: mentalGeneralsJson,
+                lifestyleJson: lifestyleJson,
+                clinicalExamJson: clinicalExamJson,
+                miasmaticAnalysisJson: miasmaticAnalysisJson,
+                caseTotalityJson: caseTotalityJson,
+                baselinePrescriptionJson: baselinePrescriptionJson,
+                investigationsJson: investigationsJson,
+                followUpNotes: followUpNotes,
+                outcome: outcome,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$PatientCaseRecordsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({patientId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (patientId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.patientId,
+                            referencedTable: $$PatientCaseRecordsTableReferences
+                                ._patientIdTable(db),
+                            referencedColumn:
+                                $$PatientCaseRecordsTableReferences
+                                    ._patientIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PatientCaseRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PatientCaseRecordsTable,
+      PatientCaseRecord,
+      $$PatientCaseRecordsTableFilterComposer,
+      $$PatientCaseRecordsTableOrderingComposer,
+      $$PatientCaseRecordsTableAnnotationComposer,
+      $$PatientCaseRecordsTableCreateCompanionBuilder,
+      $$PatientCaseRecordsTableUpdateCompanionBuilder,
+      (PatientCaseRecord, $$PatientCaseRecordsTableReferences),
+      PatientCaseRecord,
+      PrefetchHooks Function({bool patientId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11633,4 +13734,6 @@ class $AppDatabaseManager {
       $$FootfallsTableTableManager(_db, _db.footfalls);
   $$CampsTableTableManager get camps =>
       $$CampsTableTableManager(_db, _db.camps);
+  $$PatientCaseRecordsTableTableManager get patientCaseRecords =>
+      $$PatientCaseRecordsTableTableManager(_db, _db.patientCaseRecords);
 }

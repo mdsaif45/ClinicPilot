@@ -10,16 +10,17 @@ import 'tables/settings.dart';
 import 'tables/review_requests.dart';
 import 'tables/footfalls.dart';
 import 'tables/camps.dart';
+import 'tables/patient_case_records.dart';
 
 part 'app_database.g.dart';
 
-// Type-safe database powered by Drift ORM (Schema Version 8)
-@DriftDatabase(tables: [Clinics, Patients, Visits, CashMemos, Expenses, Settings, ReviewRequests, Footfalls, Camps])
+// Type-safe database powered by Drift ORM (Schema Version 9)
+@DriftDatabase(tables: [Clinics, Patients, Visits, CashMemos, Expenses, Settings, ReviewRequests, Footfalls, Camps, PatientCaseRecords])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -197,6 +198,10 @@ class AppDatabase extends _$AppDatabase {
 
           if (from < 8) {
             await m.createTable(camps);
+          }
+
+          if (from < 9) {
+            await m.createTable(patientCaseRecords);
           }
         },
         beforeOpen: (details) async {
