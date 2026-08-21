@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../design/breakpoints.dart';
 import '../design/tokens.dart';
 
 /// Standard dialog for every form in the app.
@@ -15,7 +16,7 @@ class AppFormDialog extends StatelessWidget {
 
   /// Wide enough for a labelled field with a prefix icon, narrow enough to
   /// keep comfortable margins on a small phone.
-  static const double maxWidth = 420;
+  static const double maxWidth = Breakpoints.maxFormWidth;
 
   const AppFormDialog({
     super.key,
@@ -27,6 +28,7 @@ class AppFormDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
+    final isShort = media.size.height < 600;
 
     return AlertDialog(
       title: Text(title),
@@ -44,7 +46,9 @@ class AppFormDialog extends StatelessWidget {
         width: maxWidth,
         child: ConstrainedBox(
           // Leaves room for the title and the action row on a short screen.
-          constraints: BoxConstraints(maxHeight: media.size.height * 0.6),
+          constraints: BoxConstraints(
+            maxHeight: media.size.height * (isShort ? 0.6 : 0.72),
+          ),
           child: SingleChildScrollView(child: child),
         ),
       ),
