@@ -10866,6 +10866,829 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
   }
 }
 
+class $ReferralContactsTable extends ReferralContacts
+    with TableInfo<$ReferralContactsTable, ReferralContact> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReferralContactsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contactPersonMeta = const VerificationMeta(
+    'contactPerson',
+  );
+  @override
+  late final GeneratedColumn<String> contactPerson = GeneratedColumn<String>(
+    'contact_person',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Pharmacy'),
+  );
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
+  @override
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+    'phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _addressMeta = const VerificationMeta(
+    'address',
+  );
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+    'address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastVisitedDateMeta = const VerificationMeta(
+    'lastVisitedDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastVisitedDate =
+      GeneratedColumn<DateTime>(
+        'last_visited_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _visitCountMeta = const VerificationMeta(
+    'visitCount',
+  );
+  @override
+  late final GeneratedColumn<int> visitCount = GeneratedColumn<int>(
+    'visit_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _referralCountMeta = const VerificationMeta(
+    'referralCount',
+  );
+  @override
+  late final GeneratedColumn<int> referralCount = GeneratedColumn<int>(
+    'referral_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    contactPerson,
+    category,
+    phone,
+    address,
+    lastVisitedDate,
+    visitCount,
+    referralCount,
+    notes,
+    isActive,
+    isDeleted,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'referral_contacts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReferralContact> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('contact_person')) {
+      context.handle(
+        _contactPersonMeta,
+        contactPerson.isAcceptableOrUnknown(
+          data['contact_person']!,
+          _contactPersonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
+    if (data.containsKey('phone')) {
+      context.handle(
+        _phoneMeta,
+        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
+    if (data.containsKey('address')) {
+      context.handle(
+        _addressMeta,
+        address.isAcceptableOrUnknown(data['address']!, _addressMeta),
+      );
+    }
+    if (data.containsKey('last_visited_date')) {
+      context.handle(
+        _lastVisitedDateMeta,
+        lastVisitedDate.isAcceptableOrUnknown(
+          data['last_visited_date']!,
+          _lastVisitedDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('visit_count')) {
+      context.handle(
+        _visitCountMeta,
+        visitCount.isAcceptableOrUnknown(data['visit_count']!, _visitCountMeta),
+      );
+    }
+    if (data.containsKey('referral_count')) {
+      context.handle(
+        _referralCountMeta,
+        referralCount.isAcceptableOrUnknown(
+          data['referral_count']!,
+          _referralCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ReferralContact map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReferralContact(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      contactPerson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contact_person'],
+      ),
+      category:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}category'],
+          )!,
+      phone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone'],
+      ),
+      address: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}address'],
+      ),
+      lastVisitedDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_visited_date'],
+      ),
+      visitCount:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}visit_count'],
+          )!,
+      referralCount:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}referral_count'],
+          )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      isActive:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_active'],
+          )!,
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $ReferralContactsTable createAlias(String alias) {
+    return $ReferralContactsTable(attachedDatabase, alias);
+  }
+}
+
+class ReferralContact extends DataClass implements Insertable<ReferralContact> {
+  final String id;
+  final String name;
+  final String? contactPerson;
+  final String category;
+  final String? phone;
+  final String? address;
+  final DateTime? lastVisitedDate;
+  final int visitCount;
+  final int referralCount;
+  final String? notes;
+  final bool isActive;
+  final bool isDeleted;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ReferralContact({
+    required this.id,
+    required this.name,
+    this.contactPerson,
+    required this.category,
+    this.phone,
+    this.address,
+    this.lastVisitedDate,
+    required this.visitCount,
+    required this.referralCount,
+    this.notes,
+    required this.isActive,
+    required this.isDeleted,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || contactPerson != null) {
+      map['contact_person'] = Variable<String>(contactPerson);
+    }
+    map['category'] = Variable<String>(category);
+    if (!nullToAbsent || phone != null) {
+      map['phone'] = Variable<String>(phone);
+    }
+    if (!nullToAbsent || address != null) {
+      map['address'] = Variable<String>(address);
+    }
+    if (!nullToAbsent || lastVisitedDate != null) {
+      map['last_visited_date'] = Variable<DateTime>(lastVisitedDate);
+    }
+    map['visit_count'] = Variable<int>(visitCount);
+    map['referral_count'] = Variable<int>(referralCount);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['is_active'] = Variable<bool>(isActive);
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ReferralContactsCompanion toCompanion(bool nullToAbsent) {
+    return ReferralContactsCompanion(
+      id: Value(id),
+      name: Value(name),
+      contactPerson:
+          contactPerson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(contactPerson),
+      category: Value(category),
+      phone:
+          phone == null && nullToAbsent ? const Value.absent() : Value(phone),
+      address:
+          address == null && nullToAbsent
+              ? const Value.absent()
+              : Value(address),
+      lastVisitedDate:
+          lastVisitedDate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastVisitedDate),
+      visitCount: Value(visitCount),
+      referralCount: Value(referralCount),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      isActive: Value(isActive),
+      isDeleted: Value(isDeleted),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ReferralContact.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReferralContact(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      contactPerson: serializer.fromJson<String?>(json['contactPerson']),
+      category: serializer.fromJson<String>(json['category']),
+      phone: serializer.fromJson<String?>(json['phone']),
+      address: serializer.fromJson<String?>(json['address']),
+      lastVisitedDate: serializer.fromJson<DateTime?>(json['lastVisitedDate']),
+      visitCount: serializer.fromJson<int>(json['visitCount']),
+      referralCount: serializer.fromJson<int>(json['referralCount']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'contactPerson': serializer.toJson<String?>(contactPerson),
+      'category': serializer.toJson<String>(category),
+      'phone': serializer.toJson<String?>(phone),
+      'address': serializer.toJson<String?>(address),
+      'lastVisitedDate': serializer.toJson<DateTime?>(lastVisitedDate),
+      'visitCount': serializer.toJson<int>(visitCount),
+      'referralCount': serializer.toJson<int>(referralCount),
+      'notes': serializer.toJson<String?>(notes),
+      'isActive': serializer.toJson<bool>(isActive),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ReferralContact copyWith({
+    String? id,
+    String? name,
+    Value<String?> contactPerson = const Value.absent(),
+    String? category,
+    Value<String?> phone = const Value.absent(),
+    Value<String?> address = const Value.absent(),
+    Value<DateTime?> lastVisitedDate = const Value.absent(),
+    int? visitCount,
+    int? referralCount,
+    Value<String?> notes = const Value.absent(),
+    bool? isActive,
+    bool? isDeleted,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ReferralContact(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    contactPerson:
+        contactPerson.present ? contactPerson.value : this.contactPerson,
+    category: category ?? this.category,
+    phone: phone.present ? phone.value : this.phone,
+    address: address.present ? address.value : this.address,
+    lastVisitedDate:
+        lastVisitedDate.present ? lastVisitedDate.value : this.lastVisitedDate,
+    visitCount: visitCount ?? this.visitCount,
+    referralCount: referralCount ?? this.referralCount,
+    notes: notes.present ? notes.value : this.notes,
+    isActive: isActive ?? this.isActive,
+    isDeleted: isDeleted ?? this.isDeleted,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ReferralContact copyWithCompanion(ReferralContactsCompanion data) {
+    return ReferralContact(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      contactPerson:
+          data.contactPerson.present
+              ? data.contactPerson.value
+              : this.contactPerson,
+      category: data.category.present ? data.category.value : this.category,
+      phone: data.phone.present ? data.phone.value : this.phone,
+      address: data.address.present ? data.address.value : this.address,
+      lastVisitedDate:
+          data.lastVisitedDate.present
+              ? data.lastVisitedDate.value
+              : this.lastVisitedDate,
+      visitCount:
+          data.visitCount.present ? data.visitCount.value : this.visitCount,
+      referralCount:
+          data.referralCount.present
+              ? data.referralCount.value
+              : this.referralCount,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReferralContact(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('contactPerson: $contactPerson, ')
+          ..write('category: $category, ')
+          ..write('phone: $phone, ')
+          ..write('address: $address, ')
+          ..write('lastVisitedDate: $lastVisitedDate, ')
+          ..write('visitCount: $visitCount, ')
+          ..write('referralCount: $referralCount, ')
+          ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    contactPerson,
+    category,
+    phone,
+    address,
+    lastVisitedDate,
+    visitCount,
+    referralCount,
+    notes,
+    isActive,
+    isDeleted,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReferralContact &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.contactPerson == this.contactPerson &&
+          other.category == this.category &&
+          other.phone == this.phone &&
+          other.address == this.address &&
+          other.lastVisitedDate == this.lastVisitedDate &&
+          other.visitCount == this.visitCount &&
+          other.referralCount == this.referralCount &&
+          other.notes == this.notes &&
+          other.isActive == this.isActive &&
+          other.isDeleted == this.isDeleted &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ReferralContactsCompanion extends UpdateCompanion<ReferralContact> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String?> contactPerson;
+  final Value<String> category;
+  final Value<String?> phone;
+  final Value<String?> address;
+  final Value<DateTime?> lastVisitedDate;
+  final Value<int> visitCount;
+  final Value<int> referralCount;
+  final Value<String?> notes;
+  final Value<bool> isActive;
+  final Value<bool> isDeleted;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ReferralContactsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.contactPerson = const Value.absent(),
+    this.category = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.address = const Value.absent(),
+    this.lastVisitedDate = const Value.absent(),
+    this.visitCount = const Value.absent(),
+    this.referralCount = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReferralContactsCompanion.insert({
+    required String id,
+    required String name,
+    this.contactPerson = const Value.absent(),
+    this.category = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.address = const Value.absent(),
+    this.lastVisitedDate = const Value.absent(),
+    this.visitCount = const Value.absent(),
+    this.referralCount = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name);
+  static Insertable<ReferralContact> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? contactPerson,
+    Expression<String>? category,
+    Expression<String>? phone,
+    Expression<String>? address,
+    Expression<DateTime>? lastVisitedDate,
+    Expression<int>? visitCount,
+    Expression<int>? referralCount,
+    Expression<String>? notes,
+    Expression<bool>? isActive,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (contactPerson != null) 'contact_person': contactPerson,
+      if (category != null) 'category': category,
+      if (phone != null) 'phone': phone,
+      if (address != null) 'address': address,
+      if (lastVisitedDate != null) 'last_visited_date': lastVisitedDate,
+      if (visitCount != null) 'visit_count': visitCount,
+      if (referralCount != null) 'referral_count': referralCount,
+      if (notes != null) 'notes': notes,
+      if (isActive != null) 'is_active': isActive,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReferralContactsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String?>? contactPerson,
+    Value<String>? category,
+    Value<String?>? phone,
+    Value<String?>? address,
+    Value<DateTime?>? lastVisitedDate,
+    Value<int>? visitCount,
+    Value<int>? referralCount,
+    Value<String?>? notes,
+    Value<bool>? isActive,
+    Value<bool>? isDeleted,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ReferralContactsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      contactPerson: contactPerson ?? this.contactPerson,
+      category: category ?? this.category,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+      lastVisitedDate: lastVisitedDate ?? this.lastVisitedDate,
+      visitCount: visitCount ?? this.visitCount,
+      referralCount: referralCount ?? this.referralCount,
+      notes: notes ?? this.notes,
+      isActive: isActive ?? this.isActive,
+      isDeleted: isDeleted ?? this.isDeleted,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (contactPerson.present) {
+      map['contact_person'] = Variable<String>(contactPerson.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
+    if (lastVisitedDate.present) {
+      map['last_visited_date'] = Variable<DateTime>(lastVisitedDate.value);
+    }
+    if (visitCount.present) {
+      map['visit_count'] = Variable<int>(visitCount.value);
+    }
+    if (referralCount.present) {
+      map['referral_count'] = Variable<int>(referralCount.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReferralContactsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('contactPerson: $contactPerson, ')
+          ..write('category: $category, ')
+          ..write('phone: $phone, ')
+          ..write('address: $address, ')
+          ..write('lastVisitedDate: $lastVisitedDate, ')
+          ..write('visitCount: $visitCount, ')
+          ..write('referralCount: $referralCount, ')
+          ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -10883,6 +11706,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ComplaintsTable complaints = $ComplaintsTable(this);
   late final $PrescriptionsTable prescriptions = $PrescriptionsTable(this);
   late final $InvestigationsTable investigations = $InvestigationsTable(this);
+  late final $ReferralContactsTable referralContacts = $ReferralContactsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10901,6 +11727,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     complaints,
     prescriptions,
     investigations,
+    referralContacts,
   ];
 }
 
@@ -19496,6 +20323,405 @@ typedef $$InvestigationsTableProcessedTableManager =
       Investigation,
       PrefetchHooks Function({bool patientId, bool visitId})
     >;
+typedef $$ReferralContactsTableCreateCompanionBuilder =
+    ReferralContactsCompanion Function({
+      required String id,
+      required String name,
+      Value<String?> contactPerson,
+      Value<String> category,
+      Value<String?> phone,
+      Value<String?> address,
+      Value<DateTime?> lastVisitedDate,
+      Value<int> visitCount,
+      Value<int> referralCount,
+      Value<String?> notes,
+      Value<bool> isActive,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ReferralContactsTableUpdateCompanionBuilder =
+    ReferralContactsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String?> contactPerson,
+      Value<String> category,
+      Value<String?> phone,
+      Value<String?> address,
+      Value<DateTime?> lastVisitedDate,
+      Value<int> visitCount,
+      Value<int> referralCount,
+      Value<String?> notes,
+      Value<bool> isActive,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$ReferralContactsTableFilterComposer
+    extends Composer<_$AppDatabase, $ReferralContactsTable> {
+  $$ReferralContactsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contactPerson => $composableBuilder(
+    column: $table.contactPerson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastVisitedDate => $composableBuilder(
+    column: $table.lastVisitedDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get visitCount => $composableBuilder(
+    column: $table.visitCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get referralCount => $composableBuilder(
+    column: $table.referralCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ReferralContactsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReferralContactsTable> {
+  $$ReferralContactsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contactPerson => $composableBuilder(
+    column: $table.contactPerson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastVisitedDate => $composableBuilder(
+    column: $table.lastVisitedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get visitCount => $composableBuilder(
+    column: $table.visitCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get referralCount => $composableBuilder(
+    column: $table.referralCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ReferralContactsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReferralContactsTable> {
+  $$ReferralContactsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get contactPerson => $composableBuilder(
+    column: $table.contactPerson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastVisitedDate => $composableBuilder(
+    column: $table.lastVisitedDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get visitCount => $composableBuilder(
+    column: $table.visitCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get referralCount => $composableBuilder(
+    column: $table.referralCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ReferralContactsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ReferralContactsTable,
+          ReferralContact,
+          $$ReferralContactsTableFilterComposer,
+          $$ReferralContactsTableOrderingComposer,
+          $$ReferralContactsTableAnnotationComposer,
+          $$ReferralContactsTableCreateCompanionBuilder,
+          $$ReferralContactsTableUpdateCompanionBuilder,
+          (
+            ReferralContact,
+            BaseReferences<
+              _$AppDatabase,
+              $ReferralContactsTable,
+              ReferralContact
+            >,
+          ),
+          ReferralContact,
+          PrefetchHooks Function()
+        > {
+  $$ReferralContactsTableTableManager(
+    _$AppDatabase db,
+    $ReferralContactsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () =>
+                  $$ReferralContactsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$ReferralContactsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$ReferralContactsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> contactPerson = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                Value<String?> address = const Value.absent(),
+                Value<DateTime?> lastVisitedDate = const Value.absent(),
+                Value<int> visitCount = const Value.absent(),
+                Value<int> referralCount = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReferralContactsCompanion(
+                id: id,
+                name: name,
+                contactPerson: contactPerson,
+                category: category,
+                phone: phone,
+                address: address,
+                lastVisitedDate: lastVisitedDate,
+                visitCount: visitCount,
+                referralCount: referralCount,
+                notes: notes,
+                isActive: isActive,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String?> contactPerson = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                Value<String?> address = const Value.absent(),
+                Value<DateTime?> lastVisitedDate = const Value.absent(),
+                Value<int> visitCount = const Value.absent(),
+                Value<int> referralCount = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReferralContactsCompanion.insert(
+                id: id,
+                name: name,
+                contactPerson: contactPerson,
+                category: category,
+                phone: phone,
+                address: address,
+                lastVisitedDate: lastVisitedDate,
+                visitCount: visitCount,
+                referralCount: referralCount,
+                notes: notes,
+                isActive: isActive,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ReferralContactsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ReferralContactsTable,
+      ReferralContact,
+      $$ReferralContactsTableFilterComposer,
+      $$ReferralContactsTableOrderingComposer,
+      $$ReferralContactsTableAnnotationComposer,
+      $$ReferralContactsTableCreateCompanionBuilder,
+      $$ReferralContactsTableUpdateCompanionBuilder,
+      (
+        ReferralContact,
+        BaseReferences<_$AppDatabase, $ReferralContactsTable, ReferralContact>,
+      ),
+      ReferralContact,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -19526,4 +20752,6 @@ class $AppDatabaseManager {
       $$PrescriptionsTableTableManager(_db, _db.prescriptions);
   $$InvestigationsTableTableManager get investigations =>
       $$InvestigationsTableTableManager(_db, _db.investigations);
+  $$ReferralContactsTableTableManager get referralContacts =>
+      $$ReferralContactsTableTableManager(_db, _db.referralContacts);
 }
