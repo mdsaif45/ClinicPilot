@@ -5761,6 +5761,613 @@ class FootfallsCompanion extends UpdateCompanion<Footfall> {
   }
 }
 
+class $CampsTable extends Camps with TableInfo<$CampsTable, Camp> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CampsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _locationMeta = const VerificationMeta(
+    'location',
+  );
+  @override
+  late final GeneratedColumn<String> location = GeneratedColumn<String>(
+    'location',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _costMeta = const VerificationMeta('cost');
+  @override
+  late final GeneratedColumn<double> cost = GeneratedColumn<double>(
+    'cost',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _attendanceMeta = const VerificationMeta(
+    'attendance',
+  );
+  @override
+  late final GeneratedColumn<int> attendance = GeneratedColumn<int>(
+    'attendance',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _clinicIdMeta = const VerificationMeta(
+    'clinicId',
+  );
+  @override
+  late final GeneratedColumn<String> clinicId = GeneratedColumn<String>(
+    'clinic_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES clinics (id)',
+    ),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    date,
+    location,
+    cost,
+    attendance,
+    clinicId,
+    notes,
+    isDeleted,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'camps';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Camp> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    }
+    if (data.containsKey('location')) {
+      context.handle(
+        _locationMeta,
+        location.isAcceptableOrUnknown(data['location']!, _locationMeta),
+      );
+    }
+    if (data.containsKey('cost')) {
+      context.handle(
+        _costMeta,
+        cost.isAcceptableOrUnknown(data['cost']!, _costMeta),
+      );
+    }
+    if (data.containsKey('attendance')) {
+      context.handle(
+        _attendanceMeta,
+        attendance.isAcceptableOrUnknown(data['attendance']!, _attendanceMeta),
+      );
+    }
+    if (data.containsKey('clinic_id')) {
+      context.handle(
+        _clinicIdMeta,
+        clinicId.isAcceptableOrUnknown(data['clinic_id']!, _clinicIdMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Camp map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Camp(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      date:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}date'],
+          )!,
+      location: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location'],
+      ),
+      cost:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.double,
+            data['${effectivePrefix}cost'],
+          )!,
+      attendance:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}attendance'],
+          )!,
+      clinicId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}clinic_id'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+    );
+  }
+
+  @override
+  $CampsTable createAlias(String alias) {
+    return $CampsTable(attachedDatabase, alias);
+  }
+}
+
+class Camp extends DataClass implements Insertable<Camp> {
+  final String id;
+  final String name;
+  final DateTime date;
+  final String? location;
+  final double cost;
+  final int attendance;
+  final String? clinicId;
+  final String? notes;
+  final bool isDeleted;
+  final DateTime createdAt;
+  const Camp({
+    required this.id,
+    required this.name,
+    required this.date,
+    this.location,
+    required this.cost,
+    required this.attendance,
+    this.clinicId,
+    this.notes,
+    required this.isDeleted,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['date'] = Variable<DateTime>(date);
+    if (!nullToAbsent || location != null) {
+      map['location'] = Variable<String>(location);
+    }
+    map['cost'] = Variable<double>(cost);
+    map['attendance'] = Variable<int>(attendance);
+    if (!nullToAbsent || clinicId != null) {
+      map['clinic_id'] = Variable<String>(clinicId);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  CampsCompanion toCompanion(bool nullToAbsent) {
+    return CampsCompanion(
+      id: Value(id),
+      name: Value(name),
+      date: Value(date),
+      location:
+          location == null && nullToAbsent
+              ? const Value.absent()
+              : Value(location),
+      cost: Value(cost),
+      attendance: Value(attendance),
+      clinicId:
+          clinicId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(clinicId),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      isDeleted: Value(isDeleted),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Camp.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Camp(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      location: serializer.fromJson<String?>(json['location']),
+      cost: serializer.fromJson<double>(json['cost']),
+      attendance: serializer.fromJson<int>(json['attendance']),
+      clinicId: serializer.fromJson<String?>(json['clinicId']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'date': serializer.toJson<DateTime>(date),
+      'location': serializer.toJson<String?>(location),
+      'cost': serializer.toJson<double>(cost),
+      'attendance': serializer.toJson<int>(attendance),
+      'clinicId': serializer.toJson<String?>(clinicId),
+      'notes': serializer.toJson<String?>(notes),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Camp copyWith({
+    String? id,
+    String? name,
+    DateTime? date,
+    Value<String?> location = const Value.absent(),
+    double? cost,
+    int? attendance,
+    Value<String?> clinicId = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    bool? isDeleted,
+    DateTime? createdAt,
+  }) => Camp(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    date: date ?? this.date,
+    location: location.present ? location.value : this.location,
+    cost: cost ?? this.cost,
+    attendance: attendance ?? this.attendance,
+    clinicId: clinicId.present ? clinicId.value : this.clinicId,
+    notes: notes.present ? notes.value : this.notes,
+    isDeleted: isDeleted ?? this.isDeleted,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Camp copyWithCompanion(CampsCompanion data) {
+    return Camp(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      date: data.date.present ? data.date.value : this.date,
+      location: data.location.present ? data.location.value : this.location,
+      cost: data.cost.present ? data.cost.value : this.cost,
+      attendance:
+          data.attendance.present ? data.attendance.value : this.attendance,
+      clinicId: data.clinicId.present ? data.clinicId.value : this.clinicId,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Camp(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('date: $date, ')
+          ..write('location: $location, ')
+          ..write('cost: $cost, ')
+          ..write('attendance: $attendance, ')
+          ..write('clinicId: $clinicId, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    date,
+    location,
+    cost,
+    attendance,
+    clinicId,
+    notes,
+    isDeleted,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Camp &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.date == this.date &&
+          other.location == this.location &&
+          other.cost == this.cost &&
+          other.attendance == this.attendance &&
+          other.clinicId == this.clinicId &&
+          other.notes == this.notes &&
+          other.isDeleted == this.isDeleted &&
+          other.createdAt == this.createdAt);
+}
+
+class CampsCompanion extends UpdateCompanion<Camp> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<DateTime> date;
+  final Value<String?> location;
+  final Value<double> cost;
+  final Value<int> attendance;
+  final Value<String?> clinicId;
+  final Value<String?> notes;
+  final Value<bool> isDeleted;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const CampsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.date = const Value.absent(),
+    this.location = const Value.absent(),
+    this.cost = const Value.absent(),
+    this.attendance = const Value.absent(),
+    this.clinicId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CampsCompanion.insert({
+    required String id,
+    required String name,
+    this.date = const Value.absent(),
+    this.location = const Value.absent(),
+    this.cost = const Value.absent(),
+    this.attendance = const Value.absent(),
+    this.clinicId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name);
+  static Insertable<Camp> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<DateTime>? date,
+    Expression<String>? location,
+    Expression<double>? cost,
+    Expression<int>? attendance,
+    Expression<String>? clinicId,
+    Expression<String>? notes,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (date != null) 'date': date,
+      if (location != null) 'location': location,
+      if (cost != null) 'cost': cost,
+      if (attendance != null) 'attendance': attendance,
+      if (clinicId != null) 'clinic_id': clinicId,
+      if (notes != null) 'notes': notes,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CampsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<DateTime>? date,
+    Value<String?>? location,
+    Value<double>? cost,
+    Value<int>? attendance,
+    Value<String?>? clinicId,
+    Value<String?>? notes,
+    Value<bool>? isDeleted,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return CampsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      date: date ?? this.date,
+      location: location ?? this.location,
+      cost: cost ?? this.cost,
+      attendance: attendance ?? this.attendance,
+      clinicId: clinicId ?? this.clinicId,
+      notes: notes ?? this.notes,
+      isDeleted: isDeleted ?? this.isDeleted,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (location.present) {
+      map['location'] = Variable<String>(location.value);
+    }
+    if (cost.present) {
+      map['cost'] = Variable<double>(cost.value);
+    }
+    if (attendance.present) {
+      map['attendance'] = Variable<int>(attendance.value);
+    }
+    if (clinicId.present) {
+      map['clinic_id'] = Variable<String>(clinicId.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CampsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('date: $date, ')
+          ..write('location: $location, ')
+          ..write('cost: $cost, ')
+          ..write('attendance: $attendance, ')
+          ..write('clinicId: $clinicId, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5772,6 +6379,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SettingsTable settings = $SettingsTable(this);
   late final $ReviewRequestsTable reviewRequests = $ReviewRequestsTable(this);
   late final $FootfallsTable footfalls = $FootfallsTable(this);
+  late final $CampsTable camps = $CampsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5785,6 +6393,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     settings,
     reviewRequests,
     footfalls,
+    camps,
   ];
 }
 
@@ -5910,6 +6519,25 @@ final class $$ClinicsTableReferences
     ).filter((f) => f.clinicId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_footfallsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CampsTable, List<Camp>> _campsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.camps,
+    aliasName: $_aliasNameGenerator(db.clinics.id, db.camps.clinicId),
+  );
+
+  $$CampsTableProcessedTableManager get campsRefs {
+    final manager = $$CampsTableTableManager(
+      $_db,
+      $_db.camps,
+    ).filter((f) => f.clinicId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_campsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -6096,6 +6724,31 @@ class $$ClinicsTableFilterComposer
           }) => $$FootfallsTableFilterComposer(
             $db: $db,
             $table: $db.footfalls,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> campsRefs(
+    Expression<bool> Function($$CampsTableFilterComposer f) f,
+  ) {
+    final $$CampsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.camps,
+      getReferencedColumn: (t) => t.clinicId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CampsTableFilterComposer(
+            $db: $db,
+            $table: $db.camps,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6341,6 +6994,31 @@ class $$ClinicsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> campsRefs<T extends Object>(
+    Expression<T> Function($$CampsTableAnnotationComposer a) f,
+  ) {
+    final $$CampsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.camps,
+      getReferencedColumn: (t) => t.clinicId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CampsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.camps,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ClinicsTableTableManager
@@ -6362,6 +7040,7 @@ class $$ClinicsTableTableManager
             bool expensesRefs,
             bool reviewRequestsRefs,
             bool footfallsRefs,
+            bool campsRefs,
           })
         > {
   $$ClinicsTableTableManager(_$AppDatabase db, $ClinicsTable table)
@@ -6447,6 +7126,7 @@ class $$ClinicsTableTableManager
             expensesRefs = false,
             reviewRequestsRefs = false,
             footfallsRefs = false,
+            campsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -6456,6 +7136,7 @@ class $$ClinicsTableTableManager
                 if (expensesRefs) db.expenses,
                 if (reviewRequestsRefs) db.reviewRequests,
                 if (footfallsRefs) db.footfalls,
+                if (campsRefs) db.camps,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -6554,6 +7235,21 @@ class $$ClinicsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (campsRefs)
+                    await $_getPrefetchedData<Clinic, $ClinicsTable, Camp>(
+                      currentTable: table,
+                      referencedTable: $$ClinicsTableReferences._campsRefsTable(
+                        db,
+                      ),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$ClinicsTableReferences(db, table, p0).campsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.clinicId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -6580,6 +7276,7 @@ typedef $$ClinicsTableProcessedTableManager =
         bool expensesRefs,
         bool reviewRequestsRefs,
         bool footfallsRefs,
+        bool campsRefs,
       })
     >;
 typedef $$PatientsTableCreateCompanionBuilder =
@@ -10501,6 +11198,419 @@ typedef $$FootfallsTableProcessedTableManager =
       Footfall,
       PrefetchHooks Function({bool clinicId, bool convertedPatientId})
     >;
+typedef $$CampsTableCreateCompanionBuilder =
+    CampsCompanion Function({
+      required String id,
+      required String name,
+      Value<DateTime> date,
+      Value<String?> location,
+      Value<double> cost,
+      Value<int> attendance,
+      Value<String?> clinicId,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+typedef $$CampsTableUpdateCompanionBuilder =
+    CampsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<DateTime> date,
+      Value<String?> location,
+      Value<double> cost,
+      Value<int> attendance,
+      Value<String?> clinicId,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$CampsTableReferences
+    extends BaseReferences<_$AppDatabase, $CampsTable, Camp> {
+  $$CampsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ClinicsTable _clinicIdTable(_$AppDatabase db) => db.clinics
+      .createAlias($_aliasNameGenerator(db.camps.clinicId, db.clinics.id));
+
+  $$ClinicsTableProcessedTableManager? get clinicId {
+    final $_column = $_itemColumn<String>('clinic_id');
+    if ($_column == null) return null;
+    final manager = $$ClinicsTableTableManager(
+      $_db,
+      $_db.clinics,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_clinicIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CampsTableFilterComposer extends Composer<_$AppDatabase, $CampsTable> {
+  $$CampsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cost => $composableBuilder(
+    column: $table.cost,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attendance => $composableBuilder(
+    column: $table.attendance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ClinicsTableFilterComposer get clinicId {
+    final $$ClinicsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableFilterComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CampsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CampsTable> {
+  $$CampsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get cost => $composableBuilder(
+    column: $table.cost,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attendance => $composableBuilder(
+    column: $table.attendance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ClinicsTableOrderingComposer get clinicId {
+    final $$ClinicsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableOrderingComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CampsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CampsTable> {
+  $$CampsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get location =>
+      $composableBuilder(column: $table.location, builder: (column) => column);
+
+  GeneratedColumn<double> get cost =>
+      $composableBuilder(column: $table.cost, builder: (column) => column);
+
+  GeneratedColumn<int> get attendance => $composableBuilder(
+    column: $table.attendance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ClinicsTableAnnotationComposer get clinicId {
+    final $$ClinicsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CampsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CampsTable,
+          Camp,
+          $$CampsTableFilterComposer,
+          $$CampsTableOrderingComposer,
+          $$CampsTableAnnotationComposer,
+          $$CampsTableCreateCompanionBuilder,
+          $$CampsTableUpdateCompanionBuilder,
+          (Camp, $$CampsTableReferences),
+          Camp,
+          PrefetchHooks Function({bool clinicId})
+        > {
+  $$CampsTableTableManager(_$AppDatabase db, $CampsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$CampsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$CampsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$CampsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<String?> location = const Value.absent(),
+                Value<double> cost = const Value.absent(),
+                Value<int> attendance = const Value.absent(),
+                Value<String?> clinicId = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CampsCompanion(
+                id: id,
+                name: name,
+                date: date,
+                location: location,
+                cost: cost,
+                attendance: attendance,
+                clinicId: clinicId,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<DateTime> date = const Value.absent(),
+                Value<String?> location = const Value.absent(),
+                Value<double> cost = const Value.absent(),
+                Value<int> attendance = const Value.absent(),
+                Value<String?> clinicId = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CampsCompanion.insert(
+                id: id,
+                name: name,
+                date: date,
+                location: location,
+                cost: cost,
+                attendance: attendance,
+                clinicId: clinicId,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$CampsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({clinicId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (clinicId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.clinicId,
+                            referencedTable: $$CampsTableReferences
+                                ._clinicIdTable(db),
+                            referencedColumn:
+                                $$CampsTableReferences._clinicIdTable(db).id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CampsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CampsTable,
+      Camp,
+      $$CampsTableFilterComposer,
+      $$CampsTableOrderingComposer,
+      $$CampsTableAnnotationComposer,
+      $$CampsTableCreateCompanionBuilder,
+      $$CampsTableUpdateCompanionBuilder,
+      (Camp, $$CampsTableReferences),
+      Camp,
+      PrefetchHooks Function({bool clinicId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10521,4 +11631,6 @@ class $AppDatabaseManager {
       $$ReviewRequestsTableTableManager(_db, _db.reviewRequests);
   $$FootfallsTableTableManager get footfalls =>
       $$FootfallsTableTableManager(_db, _db.footfalls);
+  $$CampsTableTableManager get camps =>
+      $$CampsTableTableManager(_db, _db.camps);
 }
