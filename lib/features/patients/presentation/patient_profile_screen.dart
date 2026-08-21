@@ -22,6 +22,8 @@ import '../../clinics/providers/clinic_provider.dart';
 import '../../visits/presentation/add_visit_dialog.dart';
 import '../../visits/providers/visit_provider.dart';
 import '../../growth/presentation/record_review_dialog.dart';
+import '../../clinical/presentation/master_case_taking_screen.dart';
+import '../../clinical/providers/case_record_provider.dart';
 import 'edit_patient_dialog.dart';
 
 /// Everything known about one patient, on one page.
@@ -150,6 +152,11 @@ class PatientProfileScreen extends ConsumerWidget {
                     icon: Icons.info_outline,
                     label: 'Information',
                     builder: (_) => _InfoTab(patient: patient, visits: visits),
+                  ),
+                  SegmentedTab(
+                    icon: Icons.assignment_outlined,
+                    label: 'Case Record',
+                    builder: (_) => _ClinicalCaseRecordTab(patient: patient),
                   ),
                   SegmentedTab(
                     icon: Icons.timeline,
@@ -700,6 +707,94 @@ class _FollowUpsTab extends StatelessWidget {
           for (final v in upcoming) row(v, isOverdue: false),
         ],
       ],
+    );
+  }
+}
+
+class _ClinicalCaseRecordTab extends ConsumerWidget {
+  final Patient patient;
+
+  const _ClinicalCaseRecordTab({required this.patient});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final caseRecordAsync = ref.watch(patientCaseRecordProvider(patient.id));
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final record = caseRecordAsync.value;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(Spacing.xs + 2),
+                      decoration: BoxDecoration(
+                        color: scheme.primaryContainer,
+                        borderRadius: Radii.smAll,
+                      ),
+                      child: Icon(Icons.assignment_outlined, color: scheme.primary),
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Master Clinical Case Record',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            record == null
+                                ? 'No case taking form recorded yet'
+                                : 'Recorded on ${Formatters.formatDate(record.recordDate)}',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Spacing.md),
+                if (record != null) ...[
+                  InfoRow(label: 'Dominant Miasm', value: record.miasmaticAnalysis.dominantMiasm),
+                  InfoRow(label: 'Thermal State', value: record.physicalGenerals.thermal),
+                  InfoRow(
+                    label: 'Similimum Remedy',
+                    value: record.caseTotality.selectedRemedy.isNotEmpty
+                        ? '${record.caseTotality.selectedRemedy} ${record.caseTotality.potency}'
+                        : null,
+                  ),
+                  InfoRow(label: 'Case Outcome', value: record.outcome),
+                  const SizedBox(height: Spacing.sm),
+                ],
+                FilledButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => MasterCaseTakingScreen(patient: patient),
+                      ),
+                    );
+                  },
+                  icon: Icon(record == null ? Icons.edit_note : Icons.visibility_outlined),
+                  label: Text(record == null ? 'Start 16-Section Case Taking' : 'View / Edit Master Record'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
