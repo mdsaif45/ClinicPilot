@@ -9,6 +9,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/disease_autocomplete_field.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
@@ -233,11 +234,9 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
               }),
             ),
             const SizedBox(height: Spacing.md),
-            CustomTextField(
+            DiseaseAutocompleteField(
               controller: _diseaseController,
-              label: 'Disease / Chief Complaint',
-              prefixIcon: Icons.medical_services,
-              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
             PickerField<String>(
