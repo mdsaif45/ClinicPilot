@@ -17,6 +17,7 @@ import '../../onboarding/providers/onboarding_provider.dart';
 import '../../growth/providers/review_provider.dart';
 import '../providers/dashboard_provider.dart';
 import 'widgets/clinic_health_score_card.dart';
+import 'widgets/daily_insight_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -75,6 +76,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: Spacing.sm),
               const ClinicHealthScoreCard(),
+              const DailyInsightCard(),
 
               const SectionHeader(title: 'Today'),
               _TileRow(children: [
