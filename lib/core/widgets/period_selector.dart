@@ -33,7 +33,7 @@ class PeriodSelector extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Showing', style: theme.textTheme.labelSmall),
-                const SizedBox(height: 2),
+                const SizedBox(height: Spacing.xs),
                 Text(
                   '${Formatters.formatDate(range.start)} — '
                   '${Formatters.formatDate(range.end)}',
