@@ -47,6 +47,10 @@ class DashboardStats {
   double get revenueGoalProgress => monthlyRevenueGoal <= 0
       ? 0
       : (monthlyRevenue / monthlyRevenueGoal).clamp(0.0, 1.0);
+
+  double get newPatientGoalProgress => monthlyNewPatientGoal <= 0
+      ? 0
+      : (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0);
 }
 
 /// Live dashboard figures.
