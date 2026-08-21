@@ -24,6 +24,7 @@ import 'import_preview_screen.dart';
 import '../providers/release_provider.dart';
 import '../providers/update_provider.dart';
 import 'appearance_section.dart';
+import '../../security/presentation/security_settings_card.dart';
 
 /// Whether the database is empty - the gate on the whole import feature.
 /// Import only ever runs against a fresh install or a wiped device; offering
@@ -101,6 +102,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: const EdgeInsets.only(bottom: Spacing.xxl),
         children: [
           const AppearanceSection(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.sm),
+            child: SecuritySettingsCard(),
+          ),
           SettingsGroup(
             title: 'Goals',
             children: [
