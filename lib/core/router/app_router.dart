@@ -18,6 +18,7 @@ import '../../features/growth/presentation/clinic_comparison_screen.dart';
 import '../../features/growth/presentation/camp_manager_screen.dart';
 import '../../features/growth/presentation/disease_analytics_screen.dart';
 import '../../features/growth/presentation/referral_crm_screen.dart';
+import '../../features/settings/presentation/doctor_profile_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
@@ -124,6 +125,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'profile',
+                    builder: (context, state) => const DoctorProfileScreen(),
+                  ),
+                ],
               ),
             ],
           ),

@@ -15,6 +15,9 @@ import '../../../core/services/sample_data_seeder.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_list_tile.dart';
+import '../../../core/widgets/app_card.dart';
+import '../providers/doctor_profile_provider.dart';
+import 'doctor_profile_screen.dart';
 import '../../clinics/presentation/clinics_screen.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
@@ -68,6 +71,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
         children: [
+          const _DoctorProfileHeader(),
           const AppearanceSection(),
           SettingsGroup(
             title: 'Clinics',
@@ -304,5 +308,81 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         SnackBar(content: Text('Failed to read file: $e')),
       );
     }
+  }
+}
+
+class _DoctorProfileHeader extends ConsumerWidget {
+  const _DoctorProfileHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final profile = ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
+
+    final displayName = profile.name.isNotEmpty ? profile.name : 'Set up Doctor Profile';
+    final initial = profile.name.isNotEmpty
+        ? profile.name.replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '').trim()
+        : 'D';
+    final avatarLetter = initial.isNotEmpty ? initial[0].toUpperCase() : 'D';
+
+    final subtitle = profile.email.isNotEmpty
+        ? profile.email
+        : (profile.phone.isNotEmpty
+            ? profile.phone
+            : 'Tap to view credentials & contact info');
+
+    return AppCard(
+      margin: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.xs, Spacing.lg, Spacing.sm),
+      padding: const EdgeInsets.all(Spacing.md),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const DoctorProfileScreen()),
+        );
+      },
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 26,
+            backgroundColor: scheme.primaryContainer,
+            child: Text(
+              avatarLetter,
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: scheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: Spacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            size: 22,
+            color: scheme.onSurfaceVariant,
+          ),
+        ],
+      ),
+    );
   }
 }
