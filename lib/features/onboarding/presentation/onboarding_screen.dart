@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
+import '../../../core/services/sample_data_seeder.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../providers/onboarding_provider.dart';
@@ -115,6 +117,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (mounted) context.go('/dashboard');
   }
 
+  Future<void> _loadSampleData() async {
+    setState(() => _saving = true);
+    await SampleDataSeeder.seedRealisticData(ref);
+    AppHaptics.success();
+    if (mounted) context.go('/dashboard');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -149,7 +158,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             color: i <= _page
                                 ? theme.colorScheme.primary
                                 : theme.colorScheme.surfaceContainerHighest,
-                            borderRadius: Radii.pillAll,
+                            borderRadius: Radii.smAll,
                           ),
                         ),
                       ),
@@ -164,7 +173,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onPageChanged: (i) {
                   setState(() => _page = i);
                   if (i == 1 && !_focusClinicsPage) {
-                    _focusClinicsPage = true;
+                    setState(() => _focusClinicsPage = true);
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) _clinicNameFocus.requestFocus();
                     });
@@ -175,6 +184,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     controller: _nameController,
                     focusNode: _nameFocus,
                     onChanged: _refresh,
+                    onDemoSelected: _saving ? null : _loadSampleData,
                     onSubmitted: () {
                       // Matches the Continue button's own guard - Enter must
                       // not advance past an empty name any more than a tap
@@ -262,12 +272,14 @@ class _NamePage extends StatelessWidget {
   final FocusNode focusNode;
   final VoidCallback onChanged;
   final VoidCallback onSubmitted;
+  final VoidCallback? onDemoSelected;
 
   const _NamePage({
     required this.controller,
     required this.focusNode,
     required this.onChanged,
     required this.onSubmitted,
+    this.onDemoSelected,
   });
 
   @override
@@ -307,6 +319,14 @@ class _NamePage extends StatelessWidget {
           // key is not a dead end next to a button that works.
           onFieldSubmitted: (_) => onSubmitted(),
         ),
+        if (onDemoSelected != null) ...[
+          const SizedBox(height: Spacing.xl),
+          OutlinedButton.icon(
+            onPressed: onDemoSelected,
+            icon: const Icon(Icons.auto_awesome, size: 18),
+            label: const Text('Explore with Sample Practice Data'),
+          ),
+        ],
       ],
     );
   }
