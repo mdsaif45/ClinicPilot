@@ -39,11 +39,16 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
 
   final List<String> _categories = [
     'Medicine Purchase',
+    'Packaging & Dispensing',
+    'Staff Salary',
     'Rent',
     'Electricity',
-    'Assistant Salary',
-    'Camp Expense',
-    'Packaging',
+    'Camp',
+    'Marketing',
+    'Furniture',
+    'Internet',
+    'Travel',
+    'Personal',
     'Miscellaneous',
   ];
 
@@ -65,6 +70,10 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   Widget build(BuildContext context) {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
+
+    if (_selectedClinicId == null && clinics.length == 1) {
+      _selectedClinicId = clinics.first.id;
+    }
 
     // An expense must belong to a clinic. Without one the write below will
     // never succeed, so say so before the form is filled in.
