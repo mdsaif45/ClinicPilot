@@ -2,37 +2,51 @@ import 'package:flutter/material.dart';
 
 import '../design/tokens.dart';
 
-/// Consistent surface for grouped content. Use instead of raw Card/Container
-/// so padding, radius and border stay uniform across screens.
+/// Consistent surface for grouped content.
+/// Provides standardized padding, radius, border, and elevation across screens.
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
+  final BorderRadius? borderRadius;
+  final Color? color;
+  final Color? borderColor;
+  final double? elevation;
   final VoidCallback? onTap;
 
   const AppCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(Spacing.lg),
-    this.margin = const EdgeInsets.symmetric(horizontal: Spacing.lg),
+    this.padding = const EdgeInsets.all(Spacing.md),
+    this.margin = const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
+    this.borderRadius,
+    this.color,
+    this.borderColor,
+    this.elevation,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final r = borderRadius ?? Radii.mdAll;
+    final bg = color ?? scheme.surfaceContainerLow;
+    final border = borderColor ?? scheme.outlineVariant.withValues(alpha: 0.5);
+
     return Padding(
       padding: margin,
       child: Material(
-        color: scheme.surfaceContainerLow,
-        borderRadius: Radii.lgAll,
+        color: bg,
+        elevation: elevation ?? 0,
+        borderRadius: r,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
+          borderRadius: r,
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: Radii.lgAll,
-              border: Border.all(color: scheme.outlineVariant),
+              borderRadius: r,
+              border: Border.all(color: border),
             ),
             padding: padding,
             child: child,

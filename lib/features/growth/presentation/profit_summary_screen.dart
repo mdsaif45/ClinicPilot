@@ -25,7 +25,7 @@ class ProfitSummaryScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Could not load: $e')),
         data: (s) => ListView(
-          padding: const EdgeInsets.only(bottom: Spacing.xxl),
+          padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
           children: [
             const PeriodSelector(),
             Padding(

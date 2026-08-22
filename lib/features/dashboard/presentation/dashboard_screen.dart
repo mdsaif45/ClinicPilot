@@ -7,6 +7,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/animated_counter.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
@@ -43,7 +44,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ref.invalidate(dashboardStatsProvider);
           },
           child: ListView(
-            padding: const EdgeInsets.only(bottom: Spacing.xxl),
+            padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
             children: [
               // 1. Top Greeting Header
               Padding(
@@ -236,13 +237,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: FilledButton.tonalIcon(
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size.fromHeight(46),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: Radii.mdAll,
-                              ),
-                            ),
+                          child: AppButton.tonal(
+                            label: 'Add Patient',
+                            icon: Icons.person_add_outlined,
+                            fullWidth: true,
                             onPressed: () {
                               AppHaptics.selection();
                               showDialog(
@@ -250,19 +248,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 builder: (_) => const AddPatientDialog(),
                               );
                             },
-                            icon: const Icon(Icons.person_add_outlined, size: 18),
-                            label: const Text('Add Patient'),
                           ),
                         ),
                         const SizedBox(width: Spacing.md),
                         Expanded(
-                          child: FilledButton.tonalIcon(
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size.fromHeight(46),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: Radii.mdAll,
-                              ),
-                            ),
+                          child: AppButton.tonal(
+                            label: 'Create Memo',
+                            icon: Icons.receipt_long_outlined,
+                            fullWidth: true,
                             onPressed: () {
                               AppHaptics.selection();
                               showDialog(
@@ -270,32 +263,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 builder: (_) => const NewCashMemoDialog(),
                               );
                             },
-                            icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                            label: const Text('Create Memo'),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: Spacing.md),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(46),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: Radii.mdAll,
-                          ),
-                        ),
-                        onPressed: () {
-                          AppHaptics.selection();
-                          showDialog(
-                            context: context,
-                            builder: (_) => const AddExpenseDialog(),
-                          );
-                        },
-                        icon: const Icon(Icons.money_off_outlined, size: 18),
-                        label: const Text('Log Expense'),
-                      ),
+                    AppButton.outlined(
+                      label: 'Log Expense',
+                      icon: Icons.money_off_outlined,
+                      fullWidth: true,
+                      onPressed: () {
+                        AppHaptics.selection();
+                        showDialog(
+                          context: context,
+                          builder: (_) => const AddExpenseDialog(),
+                        );
+                      },
                     ),
                   ],
                 ),

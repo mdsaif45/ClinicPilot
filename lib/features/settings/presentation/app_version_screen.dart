@@ -60,7 +60,7 @@ class AppVersionScreen extends ConsumerWidget {
               UpdateService.compareVersions(release.version, running) > 0;
 
           return ListView(
-            padding: const EdgeInsets.only(bottom: Spacing.xxl),
+            padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
             children: [
               AppCard(
                 margin: const EdgeInsets.all(Spacing.lg),

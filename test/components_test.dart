@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
+import 'package:clinic_pilot/core/widgets/app_button.dart';
 import 'package:clinic_pilot/core/widgets/app_card.dart';
+import 'package:clinic_pilot/core/widgets/app_confirm_dialog.dart';
 import 'package:clinic_pilot/core/widgets/app_list_tile.dart';
 import 'package:clinic_pilot/core/widgets/chip_row.dart';
 import 'package:clinic_pilot/core/widgets/choice_chip_field.dart';
@@ -373,13 +375,68 @@ void main() {
         value: 'c1',
         options: const [
           PickerOption(value: 'c1', label: 'Main Clinic'),
-          PickerOption(value: 'c2', label: 'Branch Clinic'),
         ],
         onChanged: (_) {},
       )));
 
       expect(find.text('Clinic'), findsOneWidget);
       expect(find.text('Main Clinic'), findsOneWidget);
+    });
+  });
+
+  group('AppButton', () {
+    testWidgets('renders primary, tonal, outlined and text variants', (t) async {
+      var primaryPressed = false;
+      var tonalPressed = false;
+
+      await t.pumpWidget(wrap(Column(
+        children: [
+          AppButton.primary(
+            label: 'Save',
+            icon: Icons.check,
+            onPressed: () => primaryPressed = true,
+          ),
+          AppButton.tonal(
+            label: 'Add',
+            icon: Icons.add,
+            onPressed: () => tonalPressed = true,
+          ),
+          const AppButton.outlined(label: 'Cancel'),
+          const AppButton.text(label: 'Close'),
+        ],
+      )));
+
+      expect(find.text('Save'), findsOneWidget);
+      expect(find.text('Add'), findsOneWidget);
+      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Close'), findsOneWidget);
+
+      await t.tap(find.text('Save'));
+      expect(primaryPressed, isTrue);
+
+      await t.tap(find.text('Add'));
+      expect(tonalPressed, isTrue);
+    });
+  });
+
+  group('AppConfirmDialog', () {
+    testWidgets('renders title, message and fires callbacks', (t) async {
+      var confirmed = false;
+
+      await t.pumpWidget(wrap(AppConfirmDialog(
+        title: 'Delete Item',
+        message: 'Are you sure you want to delete this?',
+        confirmLabel: 'Delete',
+        isDestructive: true,
+        onConfirm: () => confirmed = true,
+      )));
+
+      expect(find.text('Delete Item'), findsOneWidget);
+      expect(find.text('Are you sure you want to delete this?'), findsOneWidget);
+      expect(find.text('Delete'), findsOneWidget);
+
+      await t.tap(find.text('Delete'));
+      expect(confirmed, isTrue);
     });
   });
 }

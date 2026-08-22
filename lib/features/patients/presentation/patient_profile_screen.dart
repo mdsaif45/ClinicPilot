@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/contact_service.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/chip_row.dart';
 import '../../../core/widgets/custom_badge.dart';
@@ -797,7 +798,14 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                   InfoRow(label: 'Case Outcome', value: record.outcome),
                   const SizedBox(height: Spacing.sm),
                 ],
-                FilledButton.icon(
+                AppButton.primary(
+                  label: record == null
+                      ? 'Start Clinical Case Taking'
+                      : 'View / Edit Master Record',
+                  icon: record == null
+                      ? Icons.edit_note
+                      : Icons.visibility_outlined,
+                  fullWidth: true,
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -805,8 +813,6 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                       ),
                     );
                   },
-                  icon: Icon(record == null ? Icons.edit_note : Icons.visibility_outlined),
-                  label: Text(record == null ? 'Start 16-Section Case Taking' : 'View / Edit Master Record'),
                 ),
               ],
             ),

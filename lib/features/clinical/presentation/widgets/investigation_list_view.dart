@@ -5,6 +5,8 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../add_edit_investigation_dialog.dart';
@@ -54,26 +56,16 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
     AppHaptics.error();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Lab Report'),
-        content: Text('Are you sure you want to remove "${inv.testName}" recorded on ${Formatters.formatDate(inv.testDate)}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              await ref.read(investigationNotifierProvider.notifier).deleteInvestigation(inv.id);
-              AppHaptics.medium();
-            },
-            child: const Text('Delete'),
-          ),
-        ],
+      builder: (ctx) => AppConfirmDialog(
+        title: 'Delete Lab Report',
+        message: 'Are you sure you want to remove "${inv.testName}" recorded on ${Formatters.formatDate(inv.testDate)}?',
+        confirmLabel: 'Delete',
+        isDestructive: true,
+        onConfirm: () async {
+          Navigator.of(ctx).pop();
+          await ref.read(investigationNotifierProvider.notifier).deleteInvestigation(inv.id);
+          AppHaptics.medium();
+        },
       ),
     );
   }
@@ -122,10 +114,10 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
                 ),
               ),
               const Spacer(),
-              FilledButton.tonalIcon(
+              AppButton.tonal(
+                label: 'Add Lab Test',
+                icon: Icons.add,
                 onPressed: () => _openAddInvestigation(context),
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add Lab Test'),
               ),
             ],
           ),

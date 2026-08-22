@@ -4,26 +4,13 @@ import '../design/tokens.dart';
 import '../utils/formatters.dart';
 
 /// Labelled date selector that opens the calendar picker.
-///
-/// Label placement and field decoration match [PickerField] and
-/// CustomTextField, so a form mixing all three lines up.
-///
-/// Offers "Today" and "Yesterday" shortcuts because those two cover almost
-/// every entry - the doctor is usually recording either this evening's clinic
-/// or last night's, and both should be one tap rather than a trip through a
-/// calendar.
+/// Matches [CustomTextField] and [PickerField] geometry.
 class DateField extends StatelessWidget {
   final String label;
   final DateTime value;
   final ValueChanged<DateTime> onChanged;
   final IconData prefixIcon;
-
-  /// Earliest selectable date. Defaults to five years back, which comfortably
-  /// covers backdating an old receipt.
   final DateTime? firstDate;
-
-  /// Latest selectable date. Defaults to today: a memo or expense dated in the
-  /// future would sit in the reports as money that has not moved yet.
   final DateTime? lastDate;
 
   const DateField({
@@ -44,16 +31,15 @@ class DateField extends StatelessWidget {
     final today = _dayOf(DateTime.now());
     final selected = _dayOf(value);
     final isToday = selected == today;
-    final isYesterday =
-        selected == today.subtract(const Duration(days: 1));
+    final isYesterday = selected == today.subtract(const Duration(days: 1));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
+          style: theme.textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color: scheme.onSurface,
           ),
@@ -64,8 +50,13 @@ class DateField extends StatelessWidget {
           onTap: () => _pick(context),
           child: InputDecorator(
             decoration: InputDecoration(
-              prefixIcon: Icon(prefixIcon),
-              suffixIcon: const Icon(Icons.calendar_month_outlined),
+              isDense: true,
+              prefixIcon: Icon(prefixIcon, size: 20, color: scheme.onSurfaceVariant),
+              suffixIcon: const Icon(Icons.calendar_month_outlined, size: 20),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: Spacing.md,
+                vertical: 14,
+              ),
             ),
             child: Row(
               children: [
@@ -73,22 +64,24 @@ class DateField extends StatelessWidget {
                   child: Text(
                     Formatters.formatDate(value),
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                // Naming the common cases saves reading the date back to work
-                // out whether it is the one you meant.
                 if (isToday || isYesterday)
                   Text(
                     isToday ? 'Today' : 'Yesterday',
-                    style: theme.textTheme.labelMedium
-                        ?.copyWith(color: scheme.onSurfaceVariant),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: scheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: Spacing.sm),
+        const SizedBox(height: Spacing.xs),
         Wrap(
           spacing: Spacing.sm,
           children: [
@@ -101,7 +94,8 @@ class DateField extends StatelessWidget {
               label: 'Yesterday',
               selected: isYesterday,
               onTap: () => onChanged(
-                  _carryTime(today.subtract(const Duration(days: 1)))),
+                _carryTime(today.subtract(const Duration(days: 1))),
+              ),
             ),
           ],
         ),
@@ -110,28 +104,21 @@ class DateField extends StatelessWidget {
   }
 
   Future<void> _pick(BuildContext context) async {
-    final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: value,
-      firstDate: firstDate ?? DateTime(now.year - 5),
-      lastDate: lastDate ?? now,
+      firstDate: firstDate ?? DateTime(2000),
+      lastDate: lastDate ?? DateTime.now(),
     );
-    if (picked != null) onChanged(_carryTime(picked));
+    if (picked != null) {
+      onChanged(_carryTime(picked));
+    }
   }
 
-  /// Keeps the clock time already on the value while moving the calendar day.
-  ///
-  /// The picker returns midnight. Storing that would make every backdated row
-  /// land at 00:00, and a "today" row stamped midnight sits outside a range
-  /// that starts at the current moment.
-  DateTime _carryTime(DateTime day) {
-    final now = DateTime.now();
-    final t = _dayOf(value) == _dayOf(now) ? now : value;
-    return DateTime(day.year, day.month, day.day, t.hour, t.minute, t.second);
-  }
+  DateTime _dayOf(DateTime d) => DateTime(d.year, d.month, d.day);
 
-  static DateTime _dayOf(DateTime d) => DateTime(d.year, d.month, d.day);
+  DateTime _carryTime(DateTime d) =>
+      DateTime(d.year, d.month, d.day, value.hour, value.minute, value.second);
 }
 
 class _Shortcut extends StatelessWidget {
@@ -147,11 +134,18 @@ class _Shortcut extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     return ChoiceChip(
-      label: Text(label),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
       selected: selected,
       onSelected: (_) => onTap(),
       visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      side: BorderSide(
+        color: selected ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.6),
+      ),
     );
   }
 }

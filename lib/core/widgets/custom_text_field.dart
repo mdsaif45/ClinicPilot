@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../design/tokens.dart';
 
-// Reusable Custom Input Text Field component
+/// Reusable Standard Text Input Field component with unified geometry.
 class CustomTextField extends StatelessWidget {
   final String label;
   final String? hint;
@@ -20,6 +20,7 @@ class CustomTextField extends StatelessWidget {
   final bool autofocus;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onFieldSubmitted;
+  final int maxLines;
 
   const CustomTextField({
     super.key,
@@ -38,11 +39,13 @@ class CustomTextField extends StatelessWidget {
     this.autofocus = false,
     this.textInputAction,
     this.onFieldSubmitted,
+    this.maxLines = 1,
   });
 
-  Widget? _buildPrefixIcon() {
+  Widget? _buildPrefixIcon(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     if (prefixIcon is IconData) {
-      return Icon(prefixIcon as IconData);
+      return Icon(prefixIcon as IconData, size: 20, color: scheme.onSurfaceVariant);
     } else if (prefixIcon is Widget) {
       return prefixIcon as Widget;
     }
@@ -51,15 +54,18 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
+          style: theme.textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: scheme.onSurface,
           ),
         ),
         const SizedBox(height: Spacing.xs),
@@ -75,10 +81,22 @@ class CustomTextField extends StatelessWidget {
           autofocus: autofocus,
           textInputAction: textInputAction,
           onFieldSubmitted: onFieldSubmitted,
+          maxLines: maxLines,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: scheme.onSurface,
+          ),
           decoration: InputDecoration(
+            isDense: true,
             hintText: hint,
-            prefixIcon: _buildPrefixIcon(),
+            hintStyle: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+            ),
+            prefixIcon: _buildPrefixIcon(context),
             suffixIcon: suffixIcon,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: Spacing.md,
+              vertical: 14,
+            ),
           ),
         ),
       ],

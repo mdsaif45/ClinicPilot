@@ -60,6 +60,7 @@ const List<String> kCuratedRemedies = [
 ];
 
 /// Smart autocomplete picker for standardized Latin remedy names.
+/// Matches [CustomTextField] and [PickerField] geometry.
 class RemedyAutocompleteField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -78,71 +79,98 @@ class RemedyAutocompleteField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RawAutocomplete<String>(
-      textEditingController: controller,
-      focusNode: FocusNode(),
-      optionsBuilder: (TextEditingValue textEditingValue) {
-        final query = textEditingValue.text.trim().toLowerCase();
-        if (query.isEmpty) {
-          return kCuratedRemedies.take(8);
-        }
-        return kCuratedRemedies.where((String option) {
-          return option.toLowerCase().contains(query);
-        });
-      },
-      onSelected: (String selection) {
-        controller.text = selection;
-        onSelected?.call(selection);
-      },
-      optionsViewBuilder: (context, onSelectedOption, options) {
-        final theme = Theme.of(context);
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            elevation: 4,
-            borderRadius: Radii.mdAll,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 240, maxWidth: 320),
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
-                shrinkWrap: true,
-                itemCount: options.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final String option = options.elementAt(index);
-                  return InkWell(
-                    onTap: () => onSelectedOption(option),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Spacing.md,
-                        vertical: Spacing.sm,
-                      ),
-                      child: Text(
-                        option,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontStyle: FontStyle.italic,
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: scheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: Spacing.xs),
+        RawAutocomplete<String>(
+          textEditingController: controller,
+          focusNode: FocusNode(),
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            final query = textEditingValue.text.trim().toLowerCase();
+            if (query.isEmpty) {
+              return kCuratedRemedies.take(8);
+            }
+            return kCuratedRemedies.where((String option) {
+              return option.toLowerCase().contains(query);
+            });
+          },
+          onSelected: (String selection) {
+            controller.text = selection;
+            onSelected?.call(selection);
+          },
+          optionsViewBuilder: (context, onSelectedOption, options) {
+            return Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                elevation: 4,
+                borderRadius: Radii.mdAll,
+                color: scheme.surfaceContainerHigh,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 240, maxWidth: 320),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
+                    shrinkWrap: true,
+                    itemCount: options.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final String option = options.elementAt(index);
+                      return ListTile(
+                        dense: true,
+                        title: Text(
+                          option,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                },
+                        onTap: () => onSelectedOption(option),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
-          ),
-        );
-      },
-      fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-        return TextFormField(
-          controller: textEditingController,
-          focusNode: focusNode,
-          decoration: InputDecoration(
-            labelText: label,
-            hintText: hint,
-            prefixIcon: const Icon(Icons.medication_outlined),
-          ),
-          validator: validator,
-          onFieldSubmitted: (v) => onFieldSubmitted(),
-        );
-      },
+            );
+          },
+          fieldViewBuilder:
+              (context, textEditingController, focusNode, onFieldSubmitted) {
+            return TextFormField(
+              controller: textEditingController,
+              focusNode: focusNode,
+              validator: validator,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurface,
+              ),
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: hint,
+                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+                ),
+                prefixIcon: Icon(
+                  Icons.medication_outlined,
+                  size: 20,
+                  color: scheme.onSurfaceVariant,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: Spacing.md,
+                  vertical: 14,
+                ),
+              ),
+              onFieldSubmitted: (v) => onFieldSubmitted(),
+            );
+          },
+        ),
+      ],
     );
   }
 }
