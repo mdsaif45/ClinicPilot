@@ -12,6 +12,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/services/export_service.dart';
 import '../../../core/services/import_template_service.dart';
+import '../../../core/services/sample_data_seeder.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_list_tile.dart';
@@ -153,6 +154,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsGroup(
             title: 'Data',
             children: [
+              AppListTile(
+                icon: Icons.auto_awesome,
+                title: 'Load Demo Practice Data',
+                subtitle: 'Populate realistic patients, case records, and finances',
+                onTap: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  await SampleDataSeeder.seedRealisticData(ref);
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text('Realistic practice demo data loaded!')),
+                  );
+                },
+              ),
               AppListTile(
                 icon: Icons.download_outlined,
                 title: 'Export backup',
