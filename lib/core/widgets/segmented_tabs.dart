@@ -177,6 +177,7 @@ class _TabPill extends StatelessWidget {
     final scheme = theme.colorScheme;
     final animate = !MediaQuery.of(context).disableAnimations;
     final duration = animate ? Motion.base : Duration.zero;
+    final borderRadius = BorderRadius.circular(selected ? Radii.pill : Radii.md);
 
     return Semantics(
       label: tab.label,
@@ -189,50 +190,55 @@ class _TabPill extends StatelessWidget {
         duration: duration,
         curve: Motion.curve,
         height: 44,
-        padding: EdgeInsets.symmetric(
-          horizontal: selected ? Spacing.lg : Spacing.md,
-        ),
         decoration: BoxDecoration(
           color: selected
               ? scheme.secondaryContainer
               : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius:
-              BorderRadius.circular(selected ? Radii.pill : Radii.md),
+          borderRadius: borderRadius,
         ),
         clipBehavior: Clip.antiAlias,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  tab.icon,
-                  size: 20,
-                  color: selected
-                      ? scheme.onSecondaryContainer
-                      : scheme.onSurfaceVariant,
-                ),
-                // Width animates from zero, so the label slides out of the
-                // icon rather than appearing beside it.
-                AnimatedSize(
-                  duration: duration,
-                  curve: Motion.curve,
-                  child: selected
-                      ? Padding(
-                          padding: const EdgeInsets.only(left: Spacing.sm),
-                          child: Text(
-                            tab.label,
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: scheme.onSecondaryContainer,
-                              fontWeight: FontWeight.w700,
+            borderRadius: borderRadius,
+            child: AnimatedContainer(
+              duration: duration,
+              curve: Motion.curve,
+              height: 44,
+              padding: EdgeInsets.symmetric(
+                horizontal: selected ? Spacing.lg : Spacing.md,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    tab.icon,
+                    size: 20,
+                    color: selected
+                        ? scheme.onSecondaryContainer
+                        : scheme.onSurfaceVariant,
+                  ),
+                  // Width animates from zero, so the label slides out of the
+                  // icon rather than appearing beside it.
+                  AnimatedSize(
+                    duration: duration,
+                    curve: Motion.curve,
+                    child: selected
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: Spacing.sm),
+                            child: Text(
+                              tab.label,
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: scheme.onSecondaryContainer,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
