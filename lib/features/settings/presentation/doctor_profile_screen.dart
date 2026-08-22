@@ -171,18 +171,6 @@ class DoctorProfileScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: Spacing.xl),
-
-          // 5. Edit Doctor Profile Action Button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-            child: AppButton.primary(
-              label: 'Edit Doctor Profile',
-              icon: Icons.edit_outlined,
-              fullWidth: true,
-              onPressed: () => _openEditDialog(context, profile),
-            ),
-          ),
         ],
       ),
     );
