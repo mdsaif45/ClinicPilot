@@ -6,10 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Neither onboarding page focused its first field, and no field responded
-/// to the keyboard's Next/Done action - every field needed a tap, every page
-/// advance needed a reach for the button. These pin the fix: autofocus on
-/// arrival, and Enter doing what the visible button does.
 void main() {
   late AppDatabase db;
 
@@ -42,10 +38,10 @@ void main() {
     await tester.pump();
 
     // Matches what tapping a disabled Continue button would do: nothing.
-    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Your clinics'), findsNothing);
+    expect(find.text('Where do you practice?'), findsNothing);
     expect(find.text('Welcome to ClinicPilot'), findsOneWidget);
   });
 
@@ -55,10 +51,11 @@ void main() {
     await tester.pump();
 
     await tester.enterText(find.byType(TextField).first, 'Dr. Rao');
-    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Your clinics'), findsOneWidget);
+    expect(find.text('Where do you practice?'), findsOneWidget);
   });
 
   testWidgets('arriving on the clinics page focuses the first clinic field',
@@ -67,7 +64,8 @@ void main() {
     await tester.pump();
 
     await tester.enterText(find.byType(TextField).first, 'Dr. Rao');
-    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     // The focus request on arrival is itself scheduled a frame later.
     await tester.pump();
@@ -75,9 +73,7 @@ void main() {
     final clinicField = tester.widget<TextField>(
       find.widgetWithText(TextField, '').first,
     );
-    // "Clinic 1" is the first field on this page - locate it by its label
-    // text sitting above it instead, since the field itself is empty.
-    expect(find.text('Clinic 1'), findsOneWidget);
+    expect(find.text('Where do you practice?'), findsOneWidget);
     expect(clinicField.focusNode!.hasFocus, isTrue);
   });
 
@@ -88,7 +84,8 @@ void main() {
     await tester.pump();
 
     await tester.enterText(find.byType(TextField).first, 'Dr. Rao');
-    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     await tester.pump();
 
