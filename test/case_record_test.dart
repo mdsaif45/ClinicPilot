@@ -106,29 +106,26 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Clinical Case Taking'), findsWidgets);
-      expect(find.text('Patient Identification'), findsOneWidget);
-      expect(find.text('Chief Complaints (1 Relational Block)'), findsOneWidget);
+      expect(find.textContaining('Complete Case Taking'), findsWidgets);
+      expect(find.text('1. Patient Identification'), findsOneWidget);
 
-      await tester.drag(find.byType(ListView), const Offset(0, -600));
-      await tester.pumpAndSettle();
-      expect(find.text('Physical Generals'), findsOneWidget);
+      final scrollable = find.byType(Scrollable).first;
 
-      await tester.drag(find.byType(ListView), const Offset(0, -600));
-      await tester.pumpAndSettle();
-      expect(find.text('Mental Generals & Disposition'), findsOneWidget);
+      final physicalFinder = find.text('8. Physical Generals – Complete');
+      await tester.scrollUntilVisible(physicalFinder, 300, scrollable: scrollable);
+      expect(physicalFinder, findsOneWidget);
 
-      await tester.drag(find.byType(ListView), const Offset(0, -800));
-      await tester.pumpAndSettle();
-      expect(find.text('Miasmatic Analysis'), findsOneWidget);
+      final mentalFinder = find.text('9. Mental Generals – Complete');
+      await tester.scrollUntilVisible(mentalFinder, 300, scrollable: scrollable);
+      expect(mentalFinder, findsOneWidget);
 
-      await tester.drag(find.byType(ListView), const Offset(0, -800));
-      await tester.pumpAndSettle();
-      expect(find.text('Case Totality, Repertory & Analysis'), findsOneWidget);
+      final miasmFinder = find.text('12. Miasmatic Analysis');
+      await tester.scrollUntilVisible(miasmFinder, 300, scrollable: scrollable);
+      expect(miasmFinder, findsOneWidget);
 
-      await tester.drag(find.byType(ListView), const Offset(0, -1200));
-      await tester.pumpAndSettle();
-      expect(find.text('Save Master Case Record'), findsOneWidget);
+      final saveButtonFinder = find.text('Save Master Case Record');
+      await tester.scrollUntilVisible(saveButtonFinder, 300, scrollable: scrollable);
+      expect(saveButtonFinder, findsOneWidget);
     });
   });
 }

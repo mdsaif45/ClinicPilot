@@ -23,7 +23,9 @@ final patientCaseRecordProvider =
       id: row.id,
       patientId: row.patientId,
       recordDate: row.recordDate,
+      identification: MasterCaseRecordData.parseIdentification(row.hpi),
       chiefComplaints: MasterCaseRecordData.parseChiefComplaints(row.chiefComplaintsJson),
+      additionalComplaints: MasterCaseRecordData.parseAdditionalComplaints(row.hpi),
       hpi: MasterCaseRecordData.parseHpi(row.hpi),
       pastHistory: MasterCaseRecordData.parsePastHistory(row.pastHistoryJson),
       familyHistory: MasterCaseRecordData.parseFamilyHistory(row.familyHistoryJson),
@@ -34,10 +36,14 @@ final patientCaseRecordProvider =
       clinicalExam: MasterCaseRecordData.parseClinicalExam(row.clinicalExamJson),
       miasmaticAnalysis: MasterCaseRecordData.parseMiasmaticAnalysis(row.miasmaticAnalysisJson),
       caseTotality: MasterCaseRecordData.parseCaseTotality(row.caseTotalityJson),
+      clinicalAssessment: MasterCaseRecordData.parseAssessment(row.caseTotalityJson),
       baselinePrescription: MasterCaseRecordData.parsePrescription(row.baselinePrescriptionJson),
       investigations: MasterCaseRecordData.parseInvestigations(row.investigationsJson),
+      followUpDetails: MasterCaseRecordData.parseFollowUp(row.followUpNotes),
       followUpNotes: row.followUpNotes ?? '',
+      outcomeDetails: MasterCaseRecordData.parseOutcome(row.outcome),
       outcome: row.outcome ?? 'Under Active Treatment',
+      documentation: MasterCaseRecordData.parseDocumentation(row.hpi),
     );
   });
 });
@@ -57,7 +63,7 @@ class CaseRecordNotifier extends StateNotifier<AsyncValue<void>> {
       patientId: Value(data.patientId),
       recordDate: Value(data.recordDate),
       chiefComplaintsJson: Value(data.chiefComplaintsJson),
-      hpi: Value(data.hpiJson),
+      hpi: Value(data.hpiPackedJson),
       pastHistoryJson: Value(data.pastHistoryJson),
       familyHistoryJson: Value(data.familyHistoryJson),
       developmentalHistoryJson: Value(data.developmentalHistoryJson),
@@ -66,11 +72,11 @@ class CaseRecordNotifier extends StateNotifier<AsyncValue<void>> {
       lifestyleJson: Value(data.lifestyleJson),
       clinicalExamJson: Value(data.clinicalExamJson),
       miasmaticAnalysisJson: Value(data.miasmaticAnalysisJson),
-      caseTotalityJson: Value(data.caseTotalityJson),
+      caseTotalityJson: Value(data.caseTotalityPackedJson),
       baselinePrescriptionJson: Value(data.baselinePrescriptionJson),
       investigationsJson: Value(data.investigationsJson),
-      followUpNotes: Value(data.followUpNotes),
-      outcome: Value(data.outcome),
+      followUpNotes: Value(data.followUpPackedJson),
+      outcome: Value(data.outcomePackedJson),
       updatedAt: Value(now),
     );
 

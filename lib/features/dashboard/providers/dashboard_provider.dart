@@ -92,10 +92,11 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
       return null;
     }
 
-    final goal =
-        double.tryParse(settingValue('monthly_revenue_goal') ?? '') ?? 50000.0;
-    final patientGoal =
-        int.tryParse(settingValue('monthly_new_patient_goal') ?? '') ?? 10;
+    String? clinicRevenueGoal = clinicId != null ? settingValue('monthly_revenue_goal_$clinicId') : null;
+    String? clinicPatientGoal = clinicId != null ? settingValue('monthly_new_patient_goal_$clinicId') : null;
+
+    final goal = double.tryParse(clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '') ?? 50000.0;
+    final patientGoal = int.tryParse(clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '') ?? 10;
 
     bool inClinic(String? rowClinicId) =>
         clinicId == null || rowClinicId == clinicId;

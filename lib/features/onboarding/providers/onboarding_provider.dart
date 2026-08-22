@@ -9,18 +9,12 @@ import '../../../core/database/database_provider.dart';
 const kDoctorNameKey = 'doctor_name';
 const kOnboardingDoneKey = 'onboarding_complete';
 
-/// Defaults offered on the goals page.
-///
-/// Rs 30,000 is a deliberately reachable first milestone; the growth plan's
-/// Rs 50,000 is the target after that. Ten new patients a month is the plan's
-/// own stated goal, against the two to three the practice was managing.
+/// Defaults offered on clinic setup.
 const kDefaultRevenueGoal = 30000.0;
 const kDefaultPatientGoal = 10;
-
-const kRevenueGoalMin = 5000.0;
-const kRevenueGoalMax = 200000.0;
-const kPatientGoalMin = 1;
-const kPatientGoalMax = 100;
+const kDefaultRent = 5000.0;
+const kDefaultConsultationFee = 300.0;
+const kDefaultOpenDays = '1,2,3,4,5,6';
 
 /// Doctor's name, shown in the dashboard greeting.
 final doctorNameProvider = FutureProvider<String>((ref) async {
@@ -32,9 +26,6 @@ final doctorNameProvider = FutureProvider<String>((ref) async {
 });
 
 /// Whether the first-run flow still needs to be shown.
-///
-/// Keyed off an explicit flag rather than "are there any clinics", so a doctor
-/// who deletes every clinic later is not dropped back into onboarding.
 final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
   final db = ref.watch(databaseProvider);
 
@@ -50,8 +41,7 @@ final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
     return true;
   }
 
-  // An install that already holds clinics predates this flow. Treating it as
-  // complete keeps existing data out of a setup wizard it does not need.
+  // An install that already holds clinics predates this flow.
   final clinics = await (db.select(db.clinics)
         ..where((t) => t.isDeleted.equals(false)))
       .get();
@@ -89,8 +79,23 @@ Future<void> _write(AppDatabase db, String key, String value) async {
 class DraftClinic {
   final String name;
   final String address;
+  final String phone;
+  final double rent;
+  final double consultationFee;
+  final String openDays;
+  final double revenueGoal;
+  final int patientGoal;
 
-  const DraftClinic({required this.name, this.address = ''});
+  const DraftClinic({
+    required this.name,
+    this.address = '',
+    this.phone = '',
+    this.rent = kDefaultRent,
+    this.consultationFee = kDefaultConsultationFee,
+    this.openDays = kDefaultOpenDays,
+    this.revenueGoal = kDefaultRevenueGoal,
+    this.patientGoal = kDefaultPatientGoal,
+  });
 }
 
 class OnboardingController {
@@ -99,23 +104,17 @@ class OnboardingController {
 
   const OnboardingController(this._db, this._ref);
 
-  /// Writes everything the flow collected, then marks it done.
-  ///
-  /// One transaction: a half-finished setup would leave the app with a name
-  /// but no clinic, and nothing to attribute a memo to.
+  /// Writes everything the flow collected, then marks it done in one transaction.
   Future<void> complete({
     required String doctorName,
     required List<DraftClinic> clinics,
-    required double revenueGoal,
-    required int patientGoal,
+    double? revenueGoal,
+    int? patientGoal,
   }) async {
     const uuid = Uuid();
 
     await _db.transaction(() async {
       await _write(_db, kDoctorNameKey, doctorName.trim());
-      await _write(_db, 'monthly_revenue_goal',
-          revenueGoal.round().toString());
-      await _write(_db, 'monthly_new_patient_goal', patientGoal.toString());
 
       String? firstId;
       for (final c in clinics) {
@@ -128,12 +127,37 @@ class OnboardingController {
                 name: c.name.trim(),
                 address: drift.Value(
                     c.address.trim().isEmpty ? null : c.address.trim()),
+                phone: drift.Value(
+                    c.phone.trim().isEmpty ? null : c.phone.trim()),
+                monthlyRent: drift.Value(c.rent),
+                defaultConsultationFee: drift.Value(c.consultationFee),
+                openDays: drift.Value(c.openDays),
               ),
             );
+
+        // Save clinic-level target goals
+        await _write(_db, 'monthly_revenue_goal_$id',
+            c.revenueGoal.round().toString());
+        await _write(
+            _db, 'monthly_new_patient_goal_$id', c.patientGoal.toString());
       }
 
       if (firstId != null) {
         await _write(_db, 'active_clinic_id', firstId);
+        final first = clinics.firstWhere(
+          (c) => c.name.trim().isNotEmpty,
+          orElse: () => clinics.first,
+        );
+        await _write(
+          _db,
+          'monthly_revenue_goal',
+          (revenueGoal ?? first.revenueGoal).round().toString(),
+        );
+        await _write(
+          _db,
+          'monthly_new_patient_goal',
+          (patientGoal ?? first.patientGoal).toString(),
+        );
       }
 
       await _write(_db, kOnboardingDoneKey, 'true');

@@ -1,3 +1,4 @@
+import '../../../clinics/providers/clinic_provider.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -299,6 +300,24 @@ class _EditGoalsDialogState extends ConsumerState<_EditGoalsDialog> {
     final db = ref.read(databaseProvider);
     final rev = double.tryParse(_revController.text.trim()) ?? 50000.0;
     final pat = int.tryParse(_patController.text.trim()) ?? 10;
+
+    final activeClinic = ref.read(activeClinicProvider);
+    if (activeClinic != null) {
+      await db.into(db.settings).insertOnConflictUpdate(
+            SettingsCompanion.insert(
+              key: 'monthly_revenue_goal_${activeClinic.id}',
+              value: rev.toStringAsFixed(0),
+              updatedAt: drift.Value(DateTime.now()),
+            ),
+          );
+      await db.into(db.settings).insertOnConflictUpdate(
+            SettingsCompanion.insert(
+              key: 'monthly_new_patient_goal_${activeClinic.id}',
+              value: pat.toString(),
+              updatedAt: drift.Value(DateTime.now()),
+            ),
+          );
+    }
 
     await db.into(db.settings).insertOnConflictUpdate(
           SettingsCompanion.insert(

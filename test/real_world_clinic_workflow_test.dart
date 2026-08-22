@@ -254,16 +254,16 @@ void main() {
         ),
         mentalGenerals: const MentalGenerals(
           disposition: 'Industrious, anxious about health',
-          irritabilityAnger: 'Easily angered, irritable with gastric trouble',
-          anxietyFears: 'Fear of incurable disease',
-          consolationReaction: 'Aggravated by consolation',
+          anger: 'Easily angered, irritable with gastric trouble',
+          fears: 'Fear of incurable disease',
+          desireForAttentionConsolation: 'Aggravated by consolation',
         ),
         clinicalExam: const ClinicalExamVitals(
-          bp: '130/85',
+          bloodPressure: '130/85',
           pulse: '76',
           weightKg: '72',
-          tongueExam: 'Flat wart-like eruption on tongue margin',
-          systemicFindings: 'Right hip joint tenderness on extension',
+          entOralExamination: 'Flat wart-like eruption on tongue margin',
+          otherExaminationFindings: 'Right hip joint tenderness on extension',
         ),
         miasmaticAnalysis: const MiasmaticAnalysis(
           psoricFeatures: 'Intense itching, functional digestive disorders',
@@ -273,16 +273,16 @@ void main() {
         caseTotality: const CaseTotality(
           characteristicSymptoms: 'Right-sided joint stiffness, warts, hot patient, profuse sweat',
           rubricsSelected: 'Extremities; pain; hip; right • Generals; thermal; hot',
-          selectedRemedy: 'Thuja Occidentalis',
+          finalRemedySelection: 'Thuja Occidentalis',
           potency: '200C',
         ),
         baselinePrescription: const PrescriptionPlanDetails(
           remedyName: 'Thuja Occidentalis',
           potency: '200C',
-          dosageForm: 'Globules',
-          doseCount: '4 pills',
-          frequency: 'OD',
-          duration: '3 days',
+          pharmaceuticalForm: 'Globules',
+          dose: '4 pills',
+          repetitionFrequency: 'OD',
+          
         ),
         outcome: 'Under Active Treatment',
       );

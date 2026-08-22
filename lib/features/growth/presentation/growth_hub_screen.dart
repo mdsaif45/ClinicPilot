@@ -3,34 +3,148 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/period_selector.dart';
+import '../../dashboard/presentation/widgets/clinic_health_score_card.dart';
+import '../../dashboard/presentation/widgets/daily_insight_card.dart';
 import '../providers/growth_provider.dart';
 import '../providers/profit_provider.dart';
+import '../providers/review_provider.dart';
 
 /// Landing screen for the Growth tab.
 ///
-/// The four analytics views answer different questions and each is dense
-/// enough to want a full screen, so this presents them as a menu rather than
-/// stacking everything into one long scroll.
+/// Houses high-level practice diagnostics (health score, growth tips),
+/// reputation management (Google reviews), and deep analytical tools.
 class GrowthHubScreen extends ConsumerWidget {
   const GrowthHubScreen({super.key});
+
+  void _showGoogleReviewsSheet(
+    BuildContext context,
+    ReviewStats? reviews,
+  ) {
+    AppHaptics.selection();
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final total = reviews?.totalReviewed ?? 0;
+    final thisMonth = reviews?.thisMonthReviewed ?? 0;
+    final avgRating = reviews?.averageRating ?? 0.0;
+
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Spacing.xl,
+          Spacing.sm,
+          Spacing.xl,
+          Spacing.xxl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: scheme.primaryContainer,
+                  foregroundColor: scheme.primary,
+                  child: const Icon(Icons.star, size: 22),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Google Reviews & Reputation',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Patient ratings & Google review conversion',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.lg),
+            Row(
+              children: [
+                Expanded(
+                  child: _ReviewStatBox(
+                    label: 'Total Reviews',
+                    value: '$total',
+                    color: scheme.primary,
+                  ),
+                ),
+                const SizedBox(width: Spacing.sm),
+                Expanded(
+                  child: _ReviewStatBox(
+                    label: 'This Month',
+                    value: '$thisMonth',
+                    color: scheme.tertiary,
+                  ),
+                ),
+                const SizedBox(width: Spacing.sm),
+                Expanded(
+                  child: _ReviewStatBox(
+                    label: 'Avg. Rating',
+                    value: avgRating > 0 ? '${avgRating.toStringAsFixed(1)} ★' : '—',
+                    color: scheme.secondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.lg),
+            Text(
+              'Tip: Send a review request to happy patients directly from the Patient Profile > WhatsApp quick actions after a successful consultation.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: Spacing.lg),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Close'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final growth = ref.watch(growthAnalyticsProvider).value;
     final profit = ref.watch(profitSummaryProvider).value;
+    final reviews = ref.watch(reviewStatsProvider).value;
+
+    final reviewCount = reviews?.totalReviewed ?? 0;
+    final avgRating = reviews?.averageRating ?? 0.0;
 
     return ListView(
       padding: const EdgeInsets.only(bottom: Spacing.xxl),
       children: [
+        const ClinicHealthScoreCard(),
+        const DailyInsightCard(),
         const PeriodSelector(),
         _MenuCard(
           icon: Icons.trending_up,
           title: 'Growth Overview',
           subtitle: 'New and repeat patients, trend, quick stats',
-          // A preview value on each card means the menu itself answers
-          // something, rather than being a list of doors.
           trailing: growth == null
               ? null
               : '${growth.totalNewPatients} new',
@@ -44,6 +158,15 @@ class GrowthHubScreen extends ConsumerWidget {
               ? null
               : Formatters.formatCurrency(profit.netProfit),
           onTap: () => context.push('/growth/profit'),
+        ),
+        _MenuCard(
+          icon: Icons.star_outline,
+          title: 'Google Reviews & Reputation',
+          subtitle: 'Track positive patient reviews and 5-star Google rating',
+          trailing: reviewCount > 0
+              ? '$reviewCount reviews • ${avgRating.toStringAsFixed(1)} ★'
+              : 'View stats',
+          onTap: () => _showGoogleReviewsSheet(context, reviews),
         ),
         _MenuCard(
           icon: Icons.compare_arrows,
@@ -80,6 +203,54 @@ class GrowthHubScreen extends ConsumerWidget {
   }
 }
 
+class _ReviewStatBox extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _ReviewStatBox({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: Radii.mdAll,
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.4),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: Spacing.xs),
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _MenuCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -101,66 +272,59 @@ class _MenuCard extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Spacing.lg,
-        0,
-        Spacing.lg,
-        Spacing.md,
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.lg,
+        vertical: Spacing.xs,
       ),
-      child: Material(
+      child: Card(
+        elevation: 0,
         color: scheme.surfaceContainerLow,
-        borderRadius: Radii.lgAll,
+        shape: RoundedRectangleBorder(
+          borderRadius: Radii.mdAll,
+          side: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.4),
+          ),
+        ),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: Radii.lgAll,
-              border: Border.all(color: scheme.outlineVariant),
-            ),
-            padding: const EdgeInsets.all(Spacing.lg),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: scheme.primaryContainer.withValues(alpha: 0.5),
-                    borderRadius: Radii.mdAll,
-                  ),
-                  child: Icon(icon, color: scheme.primary),
-                ),
-                const SizedBox(width: Spacing.lg),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: theme.textTheme.titleSmall),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.labelSmall,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                if (trailing != null) ...[
-                  const SizedBox(width: Spacing.sm),
-                  Text(
-                    trailing!,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: scheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-                const SizedBox(width: Spacing.xs),
-                Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
-              ],
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: scheme.primaryContainer.withValues(alpha: 0.7),
+            foregroundColor: scheme.primary,
+            child: Icon(icon, size: 20),
+          ),
+          title: Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
             ),
           ),
+          subtitle: Text(
+            subtitle,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (trailing != null) ...[
+                Text(
+                  trailing!,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: Spacing.xs),
+              ],
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+          onTap: onTap,
         ),
       ),
     );

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/providers/security_provider.dart';
 import '../../../core/services/app_haptics.dart';
-import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/picker_field.dart';
 import 'pin_setup_dialog.dart';
 
@@ -86,82 +86,52 @@ class SecuritySettingsCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.security, color: scheme.primary, size: 20),
-              const SizedBox(width: Spacing.sm),
-              Text(
-                'Security & Privacy',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+    return SettingsGroup(
+      title: 'Security & Privacy',
+      children: [
+        SwitchListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+          secondary: Icon(
+            lockState.isEnabled ? Icons.lock_outline : Icons.lock_open_outlined,
+            color: lockState.isEnabled ? scheme.primary : scheme.onSurfaceVariant,
           ),
-          const SizedBox(height: Spacing.xs),
-          Text(
-            'Protect patient health data with PIN & biometric authentication.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
+          title: const Text('Enable App Lock'),
+          subtitle: Text(
+            lockState.isEnabled
+                ? 'PIN protection active'
+                : 'Protect patient health data with PIN',
           ),
-          const SizedBox(height: Spacing.md),
-
-          // Enable Lock Switch
+          value: lockState.isEnabled,
+          onChanged: (val) {
+            if (val) {
+              _openPinSetup(context);
+            } else {
+              _confirmDisable(context, ref);
+            }
+          },
+        ),
+        if (lockState.isEnabled) ...[
+          AppListTile(
+            icon: Icons.password,
+            title: 'Change Security PIN',
+            subtitle: 'Update your 4-6 digit security PIN',
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _openPinSetup(context, isChanging: true),
+          ),
           SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: lockState.isEnabled,
-            title: const Text('Enable App Lock'),
-            subtitle: Text(
-              lockState.isEnabled
-                  ? 'PIN protection is active'
-                  : 'Require PIN to open app',
-            ),
-            secondary: Icon(
-              lockState.isEnabled ? Icons.lock : Icons.lock_open,
-              color: lockState.isEnabled ? scheme.primary : scheme.onSurfaceVariant,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+            secondary: const Icon(Icons.fingerprint),
+            title: const Text('Biometric Authentication'),
+            subtitle: const Text('Unlock with Fingerprint or Face ID'),
+            value: lockState.isBiometricsEnabled,
             onChanged: (val) {
-              if (val) {
-                _openPinSetup(context);
-              } else {
-                _confirmDisable(context, ref);
-              }
+              AppHaptics.selection();
+              ref.read(appLockProvider.notifier).toggleBiometrics(val);
             },
           ),
-
-          if (lockState.isEnabled) ...[
-            const Divider(height: Spacing.lg),
-
-            // Change PIN Button
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.password),
-              title: const Text('Change Security PIN'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _openPinSetup(context, isChanging: true),
-            ),
-
-            // Biometrics Toggle
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              value: lockState.isBiometricsEnabled,
-              title: const Text('Biometric Authentication'),
-              subtitle: const Text('Unlock with Fingerprint or Face ID'),
-              secondary: const Icon(Icons.fingerprint),
-              onChanged: (val) {
-                AppHaptics.selection();
-                ref.read(appLockProvider.notifier).toggleBiometrics(val);
-              },
-            ),
-
-            // Auto-lock dropdown
-            const SizedBox(height: Spacing.xs),
-            PickerField<int>(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
+            child: PickerField<int>(
               label: 'Auto-Lock Inactivity Timeout',
               value: lockState.autoLockMinutes,
               options: const [
@@ -176,20 +146,9 @@ class SecuritySettingsCard extends ConsumerWidget {
                 ref.read(appLockProvider.notifier).setAutoLockMinutes(val);
               },
             ),
-            const SizedBox(height: Spacing.md),
-
-            // Lock Now Button
-            OutlinedButton.icon(
-              onPressed: () {
-                AppHaptics.medium();
-                ref.read(appLockProvider.notifier).lockNow();
-              },
-              icon: const Icon(Icons.lock_clock, size: 16),
-              label: const Text('Lock App Now'),
-            ),
-          ],
+          ),
         ],
-      ),
+      ],
     );
   }
 }

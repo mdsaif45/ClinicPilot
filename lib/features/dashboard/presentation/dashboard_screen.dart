@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
@@ -13,17 +14,21 @@ import '../../expenses/presentation/add_expense_dialog.dart';
 import '../../patients/presentation/add_patient_dialog.dart';
 import '../../patients/providers/recall_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
-import '../../growth/providers/review_provider.dart';
 import '../providers/dashboard_provider.dart';
-import 'widgets/clinic_health_score_card.dart';
-import 'widgets/daily_insight_card.dart';
 import 'widgets/goal_tracker_card.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  bool _showGoals = false;
+
+  @override
+  Widget build(BuildContext context) {
     final statsAsync = ref.watch(dashboardStatsProvider);
     final theme = Theme.of(context);
     final now = DateTime.now();
@@ -40,11 +45,14 @@ class DashboardScreen extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.only(bottom: Spacing.xxl),
             children: [
-              // Greeting reflects the actual time of day; a fixed "Good Day"
-              // reads as an unfinished placeholder.
+              // 1. Top Greeting Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    Spacing.lg, Spacing.lg, Spacing.lg, Spacing.xs),
+                  Spacing.lg,
+                  Spacing.lg,
+                  Spacing.lg,
+                  Spacing.xs,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -59,12 +67,12 @@ class DashboardScreen extends ConsumerWidget {
                                   ? '${Formatters.greeting(now)} 👋'
                                   : '${Formatters.greeting(now)}, $name 👋';
                             }(),
-                            style: theme.textTheme.titleLarge,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: Spacing.xs),
                           Text(
-                            // Clinic name lives in the app bar switcher directly
-                            // above; repeating it here said the same thing twice.
                             Formatters.formatFullDate(now),
                             style: theme.textTheme.labelMedium,
                           ),
@@ -74,23 +82,82 @@ class DashboardScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: Spacing.sm),
-              const ClinicHealthScoreCard(),
-              const DailyInsightCard(),
+              const SizedBox(height: Spacing.xs),
 
+              // 2. Patient Follow-up Alert (Only surfaces when overdue patients exist)
+              Consumer(builder: (context, ref, _) {
+                final lists = ref.watch(recallListProvider).value;
+                final count = lists == null
+                    ? 0
+                    : lists.overdue.length + lists.lapsed.length;
+                if (count == 0) return const SizedBox.shrink();
+
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Spacing.lg,
+                    Spacing.sm,
+                    Spacing.lg,
+                    0,
+                  ),
+                  child: Material(
+                    color: theme.colorScheme.errorContainer
+                        .withValues(alpha: 0.35),
+                    borderRadius: Radii.mdAll,
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => context.push('/recall'),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Spacing.lg,
+                          vertical: Spacing.md,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.notifications_active_outlined,
+                                color: theme.colorScheme.error, size: 22),
+                            const SizedBox(width: Spacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    count == 1
+                                        ? '1 patient needs following up'
+                                        : '$count patients need following up',
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Overdue for consultation or review',
+                                    style: theme.textTheme.labelSmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right, size: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+
+              // 3. Today's Clinic Snapshot
               const SectionHeader(title: 'Today'),
               _TileRow(children: [
+                _MiniTile(
+                  label: "Today's Patients",
+                  value: '${stats.todayPatients}',
+                  numericValue: stats.todayPatients.toDouble(),
+                  tone: _Tone.neutral,
+                ),
                 _MiniTile(
                   label: "Today's Revenue",
                   value: Formatters.formatCurrency(stats.todayRevenue),
                   numericValue: stats.todayRevenue,
                   tone: _Tone.positive,
-                ),
-                _MiniTile(
-                  label: "Today's Expenses",
-                  value: Formatters.formatCurrency(stats.todayExpense),
-                  numericValue: stats.todayExpense,
-                  tone: _Tone.negative,
                 ),
                 _MiniTile(
                   label: "Today's Profit",
@@ -102,8 +169,15 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ]),
 
+              // 4. This Month at a Glance (Year removed from title)
               SectionHeader(
-                  title: 'Monthly Overview (${Formatters.formatMonthYear(now)})'),
+                title: 'This Month (${DateFormat('MMMM').format(now)})',
+                onAction: () {
+                  AppHaptics.selection();
+                  setState(() => _showGoals = !_showGoals);
+                },
+                actionIcon: _showGoals ? Icons.expand_less : Icons.expand_more,
+              ),
               _TileRow(children: [
                 _MiniTile(
                   label: 'Revenue',
@@ -127,196 +201,108 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ]),
 
-            const SectionHeader(title: 'Patients Overview'),
-            _TileRow(children: [
-              _MiniTile(
-                label: 'Total Patients',
-                value: '${stats.totalPatients}',
-                tone: _Tone.neutral,
-              ),
-              _MiniTile(
-                label: 'New Patients',
-                value: '${stats.monthlyNewPatients}',
-                tone: _Tone.neutral,
-              ),
-              _MiniTile(
-                label: 'Repeat Patients',
-                value: '${stats.monthlyRepeatPatients}',
-                tone: _Tone.neutral,
-              ),
-            ]),
+              // 5. Goal Progress Card (Moved directly under This Month, hidden by default)
+              if (_showGoals) ...[
+                const SizedBox(height: Spacing.sm),
+                GoalTrackerCard(stats: stats, now: now),
+              ],
 
-            const SectionHeader(title: 'Monthly Growth'),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _GrowthTile(
-                      label: 'Revenue Growth',
-                      percent: stats.revenueGrowthPercent,
-                    ),
-                  ),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: _GrowthTile(
-                      label: 'Patient Growth',
-                      percent: stats.patientGrowthPercent,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SectionHeader(
-                title: 'Goal Progress (${Formatters.formatMonthYear(now)})'),
-            GoalTrackerCard(stats: stats, now: now),
-
-            const SectionHeader(title: 'Google Reviews'),
-            Consumer(builder: (context, ref, _) {
-              final reviewStats = ref.watch(reviewStatsProvider).value;
-              final thisMonth = reviewStats?.thisMonthReviewed ?? 0;
-              final total = reviewStats?.totalReviewed ?? 0;
-              final avgRating = reviewStats?.averageRating ?? 0.0;
-
-              return _TileRow(
-                children: [
-                  _MiniTile(
-                    label: 'This Month',
-                    value: '$thisMonth',
-                    tone: _Tone.positive,
-                  ),
-                  _MiniTile(
-                    label: 'Total Reviews',
-                    value: '$total',
-                    tone: _Tone.neutral,
-                  ),
-                  _MiniTile(
-                    label: 'Avg Rating',
-                    value: avgRating > 0
-                        ? '${avgRating.toStringAsFixed(1)} ★'
-                        : '—',
-                    tone: _Tone.positive,
-                  ),
-                ],
-              );
-            }),
-
-            // Surfaced on the landing screen rather than buried: a recall
-            // list only works if it is seen without being sought.
-            Consumer(builder: (context, ref, _) {
-              final lists = ref.watch(recallListProvider).value;
-              final count = lists == null
-                  ? 0
-                  : lists.overdue.length + lists.lapsed.length;
-              if (count == 0) return const SizedBox.shrink();
-
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Spacing.lg,
-                  Spacing.lg,
-                  Spacing.lg,
-                  0,
+              // 6. Patients Summary
+              const SectionHeader(title: 'Patients Summary'),
+              _TileRow(children: [
+                _MiniTile(
+                  label: 'Total Patients',
+                  value: '${stats.totalPatients}',
+                  tone: _Tone.neutral,
                 ),
-                child: Material(
-                  color: theme.colorScheme.errorContainer
-                      .withValues(alpha: 0.35),
-                  borderRadius: Radii.mdAll,
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () => context.push('/recall'),
-                    child: Padding(
-                      padding: const EdgeInsets.all(Spacing.lg),
-                      child: Row(
-                        children: [
-                          Icon(Icons.notifications_active_outlined,
-                              color: theme.colorScheme.error),
-                          const SizedBox(width: Spacing.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  count == 1
-                                      ? '1 patient needs following up'
-                                      : '$count patients need following up',
-                                  style: theme.textTheme.titleSmall,
-                                ),
-                                Text(
-                                  'Overdue or not seen in a while',
-                                  style: theme.textTheme.labelSmall,
-                                ),
-                              ],
+                _MiniTile(
+                  label: 'New This Month',
+                  value: '${stats.monthlyNewPatients}',
+                  tone: _Tone.neutral,
+                ),
+                _MiniTile(
+                  label: 'Repeat This Month',
+                  value: '${stats.monthlyRepeatPatients}',
+                  tone: _Tone.neutral,
+                ),
+              ]),
+
+              // 7. Quick Actions at bottom
+              const SectionHeader(title: 'Quick Actions'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(46),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: Radii.mdAll,
+                              ),
                             ),
+                            onPressed: () {
+                              AppHaptics.selection();
+                              showDialog(
+                                context: context,
+                                builder: (_) => const AddPatientDialog(),
+                              );
+                            },
+                            icon: const Icon(Icons.person_add_outlined, size: 18),
+                            label: const Text('Add Patient'),
                           ),
-                          const Icon(Icons.chevron_right),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: Spacing.md),
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(46),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: Radii.mdAll,
+                              ),
+                            ),
+                            onPressed: () {
+                              AppHaptics.selection();
+                              showDialog(
+                                context: context,
+                                builder: (_) => const NewCashMemoDialog(),
+                              );
+                            },
+                            icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                            label: const Text('Create Memo'),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-              );
-            }),
-
-            const SectionHeader(title: 'Quick Actions'),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton.tonalIcon(
-                          onPressed: () => showDialog(
-                            context: context,
-                            builder: (_) => const AddPatientDialog(),
+                    const SizedBox(height: Spacing.md),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(46),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: Radii.mdAll,
                           ),
-                          icon: const Icon(Icons.person_add_outlined),
-                          label: const Text('Add Patient'),
                         ),
-                      ),
-                      const SizedBox(width: Spacing.md),
-                      Expanded(
-                        child: FilledButton.tonalIcon(
-                          onPressed: () => showDialog(
-                            context: context,
-                            builder: (_) => const NewCashMemoDialog(),
-                          ),
-                          icon: const Icon(Icons.receipt_long_outlined),
-                          label: const Text('Create Memo'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: Spacing.md),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => showDialog(
+                        onPressed: () {
+                          AppHaptics.selection();
+                          showDialog(
                             context: context,
                             builder: (_) => const AddExpenseDialog(),
-                          ),
-                          icon: const Icon(Icons.money_off),
-                          label: const Text('Log Expense'),
-                        ),
+                          );
+                        },
+                        icon: const Icon(Icons.money_off_outlined, size: 18),
+                        label: const Text('Log Expense'),
                       ),
-                      const SizedBox(width: Spacing.md),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => context.push('/comparison'),
-                          icon: const Icon(Icons.compare_arrows),
-                          label: const Text('Compare'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -324,7 +310,6 @@ class DashboardScreen extends ConsumerWidget {
 
 enum _Tone { positive, negative, neutral }
 
-/// Three tiles side by side, matching the compact overview rows.
 class _TileRow extends StatelessWidget {
   final List<Widget> children;
 
@@ -334,16 +319,13 @@ class _TileRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (var i = 0; i < children.length; i++) ...[
-              if (i > 0) const SizedBox(width: Spacing.md),
-              Expanded(child: children[i]),
-            ],
+      child: Row(
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) const SizedBox(width: Spacing.md),
+            Expanded(child: children[i]),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -364,105 +346,66 @@ class _MiniTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
-    final (fg, bg) = switch (tone) {
-      _Tone.positive => (scheme.primary, scheme.primaryContainer),
-      _Tone.negative => (scheme.error, scheme.errorContainer),
-      _Tone.neutral => (scheme.onSurface, scheme.surfaceContainerHighest),
+    final (bg, border, text) = switch (tone) {
+      _Tone.positive => (
+          scheme.primaryContainer.withValues(alpha: 0.35),
+          scheme.primary.withValues(alpha: 0.2),
+          scheme.primary,
+        ),
+      _Tone.negative => (
+          scheme.errorContainer.withValues(alpha: 0.35),
+          scheme.error.withValues(alpha: 0.2),
+          scheme.error,
+        ),
+      _Tone.neutral => (
+          scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          scheme.outlineVariant.withValues(alpha: 0.3),
+          scheme.onSurface,
+        ),
     };
-
-    final textStyle = theme.textTheme.titleMedium?.copyWith(
-      color: fg,
-      fontWeight: FontWeight.w700,
-    );
 
     return Container(
       padding: const EdgeInsets.all(Spacing.md),
       decoration: BoxDecoration(
-        color: bg.withValues(alpha: 0.45),
+        color: bg,
         borderRadius: Radii.mdAll,
-        border: Border.all(color: scheme.outlineVariant),
+        border: Border.all(color: border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             label,
-            style: theme.textTheme.labelSmall,
-            maxLines: 2,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: Spacing.sm),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: numericValue != null
-                ? AnimatedCounter.currency(
-                    value: numericValue!,
-                    style: textStyle,
-                  )
-                : Text(
-                    value,
-                    style: textStyle,
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Month-over-month change. Renders a dash when there is no prior month to
-/// compare against, rather than an inflated percentage.
-class _GrowthTile extends StatelessWidget {
-  final String label;
-  final double? percent;
-
-  const _GrowthTile({required this.label, required this.percent});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final p = percent;
-    final rising = (p ?? 0) >= 0;
-    final colour = p == null
-        ? scheme.onSurfaceVariant
-        : (rising ? scheme.primary : scheme.error);
-
-    return Container(
-      padding: const EdgeInsets.all(Spacing.md),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
-        borderRadius: Radii.mdAll,
-        border: Border.all(color: scheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: theme.textTheme.labelSmall),
-          const SizedBox(height: Spacing.sm),
-          Row(
-            children: [
-              Icon(
-                p == null
-                    ? Icons.remove
-                    : (rising ? Icons.trending_up : Icons.trending_down),
-                size: 18,
-                color: colour,
+          const SizedBox(height: Spacing.xs),
+          if (numericValue != null)
+            AnimatedCounter(
+              value: numericValue!,
+              formatter: (_) => value,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: text,
               ),
-              const SizedBox(width: Spacing.xs),
-              Text(
-                p == null
-                    ? 'No prior month'
-                    : '${rising ? '+' : ''}${p.toStringAsFixed(1)}%',
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(color: colour, fontWeight: FontWeight.w700),
+            )
+          else
+            Text(
+              value,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: text,
               ),
-            ],
-          ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
         ],
       ),
     );

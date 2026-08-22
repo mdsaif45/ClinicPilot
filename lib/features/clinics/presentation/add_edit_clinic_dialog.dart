@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:drift/drift.dart' as drift;
 import '../../../core/database/app_database.dart';
+import '../../../core/database/database_provider.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
@@ -27,12 +29,11 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
   late TextEditingController _phoneController;
   late TextEditingController _rentController;
   late TextEditingController _feeController;
+  late TextEditingController _revGoalController;
+  late TextEditingController _patGoalController;
   late String _openDays;
 
   String _colorHex = '#0F5132';
-
-  // Guards against a queued tap re-running _submit before the first write
-  // finishes and the dialog closes.
   bool _submitting = false;
 
   @override
@@ -52,8 +53,27 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
           ? widget.clinic!.defaultConsultationFee.toStringAsFixed(0)
           : '300',
     );
+    _revGoalController = TextEditingController(text: '50000');
+    _patGoalController = TextEditingController(text: '15');
     _openDays = widget.clinic?.openDays ?? '1,3,5';
     _colorHex = widget.clinic?.colorHex ?? '#0F5132';
+
+    if (widget.clinic != null) {
+      _loadClinicGoals(widget.clinic!.id);
+    }
+  }
+
+  Future<void> _loadClinicGoals(String clinicId) async {
+    final db = ref.read(databaseProvider);
+    final rev = await (db.select(db.settings)
+          ..where((tbl) => tbl.key.equals('monthly_revenue_goal_$clinicId')))
+        .getSingleOrNull();
+    if (rev != null && mounted) _revGoalController.text = rev.value;
+
+    final pat = await (db.select(db.settings)
+          ..where((tbl) => tbl.key.equals('monthly_new_patient_goal_$clinicId')))
+        .getSingleOrNull();
+    if (pat != null && mounted) _patGoalController.text = pat.value;
   }
 
   @override
@@ -63,15 +83,18 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
     _phoneController.dispose();
     _rentController.dispose();
     _feeController.dispose();
+    _revGoalController.dispose();
+    _patGoalController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.clinic != null;
+    final theme = Theme.of(context);
 
     return AppFormDialog(
-      title: isEditing ? 'Edit Clinic' : 'Add New Clinic',
+      title: isEditing ? 'Edit Clinic & Targets' : 'Add New Clinic',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -90,54 +113,83 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
       ],
       child: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomTextField(
-              controller: _nameController,
-              label: 'Clinic Name',
-              prefixIcon: Icons.local_hospital,
-              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-            ),
-            const SizedBox(height: Spacing.md),
-            CustomTextField(
-              controller: _addressController,
-              label: 'Address / Location',
-              prefixIcon: Icons.location_on,
-            ),
-            const SizedBox(height: Spacing.md),
-            CustomTextField(
-              controller: _phoneController,
-              label: 'Phone Number',
-              prefixIcon: Icons.phone,
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: Spacing.md),
-            CustomTextField(
-              controller: _rentController,
-              label: 'Monthly Fixed Rent (Rs)',
-              prefixIcon: Icons.home_work,
-              keyboardType: TextInputType.number,
-              validator: (v) =>
-                  v == null || double.tryParse(v) == null ? 'Valid rent' : null,
-            ),
-            const SizedBox(height: Spacing.md),
-            CustomTextField(
-              controller: _feeController,
-              label: 'Default Consultation Fee (Rs)',
-              prefixIcon: Icons.currency_rupee,
-              keyboardType: TextInputType.number,
-              validator: (v) =>
-                  v == null || double.tryParse(v) == null ? 'Valid fee' : null,
-            ),
-            const SizedBox(height: Spacing.md),
-            DaySelectorField(
-              label: 'Open Days',
-              value: _openDays,
-              onChanged: (v) => setState(() => _openDays = v),
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomTextField(
+                controller: _nameController,
+                label: 'Clinic Name',
+                prefixIcon: Icons.local_hospital,
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: Spacing.md),
+              CustomTextField(
+                controller: _addressController,
+                label: 'Address / Location',
+                prefixIcon: Icons.location_on,
+              ),
+              const SizedBox(height: Spacing.md),
+              CustomTextField(
+                controller: _phoneController,
+                label: 'Phone Number',
+                prefixIcon: Icons.phone,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: Spacing.md),
+              CustomTextField(
+                controller: _rentController,
+                label: 'Monthly Fixed Rent (₹)',
+                prefixIcon: Icons.home_work,
+                keyboardType: TextInputType.number,
+                validator: (v) =>
+                    v == null || double.tryParse(v) == null ? 'Valid rent' : null,
+              ),
+              const SizedBox(height: Spacing.md),
+              CustomTextField(
+                controller: _feeController,
+                label: 'Default Consultation Fee (₹)',
+                prefixIcon: Icons.currency_rupee,
+                keyboardType: TextInputType.number,
+                validator: (v) =>
+                    v == null || double.tryParse(v) == null ? 'Valid fee' : null,
+              ),
+              const SizedBox(height: Spacing.md),
+              DaySelectorField(
+                label: 'Open Days',
+                value: _openDays,
+                onChanged: (v) => setState(() => _openDays = v),
+              ),
+              const SizedBox(height: Spacing.lg),
+              Text(
+                'CLINIC MONTHLY TARGETS',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: Spacing.sm),
+              CustomTextField(
+                controller: _revGoalController,
+                label: 'Monthly Revenue Goal (₹)',
+                prefixIcon: Icons.currency_rupee,
+                keyboardType: TextInputType.number,
+                validator: (v) =>
+                    v == null || double.tryParse(v) == null ? 'Valid revenue goal' : null,
+              ),
+              const SizedBox(height: Spacing.md),
+              CustomTextField(
+                controller: _patGoalController,
+                label: 'Monthly New Patient Goal',
+                prefixIcon: Icons.person_add_outlined,
+                keyboardType: TextInputType.number,
+                validator: (v) =>
+                    v == null || int.tryParse(v) == null ? 'Valid patient goal' : null,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -154,14 +206,18 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
     final phone = _phoneController.text.trim();
     final rent = double.parse(_rentController.text.trim());
     final fee = double.parse(_feeController.text.trim());
+    final revGoal = _revGoalController.text.trim();
+    final patGoal = _patGoalController.text.trim();
     final openDays = _openDays;
 
     final notifier = ref.read(clinicNotifierProvider.notifier);
+    final db = ref.read(databaseProvider);
+    final String clinicId = widget.clinic?.id ?? _uuid.v4();
 
     try {
       if (widget.clinic != null) {
         await notifier.updateClinic(
-          id: widget.clinic!.id,
+          id: clinicId,
           name: name,
           address: address.isEmpty ? null : address,
           phone: phone.isEmpty ? null : phone,
@@ -172,7 +228,7 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
         );
       } else {
         await notifier.addClinic(
-          id: _uuid.v4(),
+          id: clinicId,
           name: name,
           address: address.isEmpty ? null : address,
           phone: phone.isEmpty ? null : phone,
@@ -182,11 +238,46 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
           colorHex: _colorHex,
         );
       }
+
+      // Save clinic-level target goals
+      await db.into(db.settings).insertOnConflictUpdate(
+            SettingsCompanion.insert(
+              key: 'monthly_revenue_goal_$clinicId',
+              value: revGoal,
+              updatedAt: drift.Value(DateTime.now()),
+            ),
+          );
+
+      await db.into(db.settings).insertOnConflictUpdate(
+            SettingsCompanion.insert(
+              key: 'monthly_new_patient_goal_$clinicId',
+              value: patGoal,
+              updatedAt: drift.Value(DateTime.now()),
+            ),
+          );
+
+      final activeId = ref.read(activeClinicIdProvider);
+      if (activeId == null || activeId == clinicId) {
+        await db.into(db.settings).insertOnConflictUpdate(
+              SettingsCompanion.insert(
+                key: 'monthly_revenue_goal',
+                value: revGoal,
+                updatedAt: drift.Value(DateTime.now()),
+              ),
+            );
+        await db.into(db.settings).insertOnConflictUpdate(
+              SettingsCompanion.insert(
+                key: 'monthly_new_patient_goal',
+                value: patGoal,
+                updatedAt: drift.Value(DateTime.now()),
+              ),
+            );
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save clinic: \$e')),
+          SnackBar(content: Text('Could not save clinic: $e')),
         );
       }
       return;
