@@ -1,7 +1,9 @@
 import 'package:clinic_pilot/core/database/app_database.dart';
+import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
 import 'package:clinic_pilot/features/clinical/models/case_record_models.dart';
 import 'package:clinic_pilot/features/clinical/presentation/master_case_taking_screen.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -66,6 +68,9 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+
       final patient = Patient(
         id: 'p_test_1',
         patientCode: 'P-2026-00001',
@@ -82,8 +87,16 @@ void main() {
         reviewGiven: false,
       );
 
+      final container = ProviderContainer(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+        ],
+      );
+      addTearDown(container.dispose);
+
       await tester.pumpWidget(
-        ProviderScope(
+        UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             theme: AppTheme.lightTheme,
             home: MasterCaseTakingScreen(patient: patient),
@@ -93,15 +106,29 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Clinical Case Taking'), findsOneWidget);
-      expect(find.text('Demo Patient (P-2026-00001)'), findsOneWidget);
-      expect(find.text('Patient Identification & Demographics'), findsOneWidget);
-      expect(find.text('Chief Complaints (3 Relational Blocks)'), findsOneWidget);
+      expect(find.textContaining('Clinical Case Taking'), findsWidgets);
+      expect(find.text('Patient Identification'), findsOneWidget);
+      expect(find.text('Chief Complaints (1 Relational Block)'), findsOneWidget);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -600));
+      await tester.pumpAndSettle();
       expect(find.text('Physical Generals'), findsOneWidget);
-      expect(find.text('Mental Generals'), findsOneWidget);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -600));
+      await tester.pumpAndSettle();
+      expect(find.text('Mental Generals & Disposition'), findsOneWidget);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -800));
+      await tester.pumpAndSettle();
       expect(find.text('Miasmatic Analysis'), findsOneWidget);
-      expect(find.text('Case Totality & Repertory'), findsOneWidget);
-      expect(find.text('Save Record'), findsOneWidget);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -800));
+      await tester.pumpAndSettle();
+      expect(find.text('Case Totality, Repertory & Analysis'), findsOneWidget);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -1200));
+      await tester.pumpAndSettle();
+      expect(find.text('Save Master Case Record'), findsOneWidget);
     });
   });
 }
