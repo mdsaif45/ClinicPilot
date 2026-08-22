@@ -21,6 +21,7 @@ import '../../features/growth/presentation/referral_crm_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../features/settings/presentation/app_version_screen.dart';
 import '../../features/settings/providers/release_provider.dart';
 import '../../features/settings/providers/update_provider.dart';
@@ -32,14 +33,20 @@ final routerProvider = Provider<GoRouter>((ref) {
   // dashboard through, and never re-runs.
   ref.listen(onboardingCompleteProvider, (_, __) {});
 
+  bool isDone = false;
+  try {
+    if (Hive.isBoxOpen('settings')) {
+      isDone = Hive.box('settings').get(kOnboardingDoneKey, defaultValue: false) == true;
+    }
+  } catch (_) {}
+
   return GoRouter(
     refreshListenable: _ProviderRefresh(ref, onboardingCompleteProvider),
-    initialLocation: '/dashboard',
+    initialLocation: isDone ? '/dashboard' : '/onboarding',
     // First run has no clinic to attribute anything to, so the app cannot do
     // its job until setup is finished.
     redirect: (context, state) {
-      final done = ref.read(onboardingCompleteProvider).value;
-      if (done == null) return null; // still loading
+      final done = ref.read(onboardingCompleteProvider).value ?? isDone;
       if (!done && state.matchedLocation != '/onboarding') return '/onboarding';
       if (done && state.matchedLocation == '/onboarding') return '/dashboard';
       return null;

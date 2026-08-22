@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
@@ -40,7 +41,14 @@ final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
   final flag = await (db.select(db.settings)
         ..where((t) => t.key.equals(kOnboardingDoneKey)))
       .getSingleOrNull();
-  if (flag?.value == 'true') return true;
+  if (flag?.value == 'true') {
+    try {
+      if (Hive.isBoxOpen('settings')) {
+        Hive.box('settings').put(kOnboardingDoneKey, true);
+      }
+    } catch (_) {}
+    return true;
+  }
 
   // An install that already holds clinics predates this flow. Treating it as
   // complete keeps existing data out of a setup wizard it does not need.
@@ -49,14 +57,26 @@ final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
       .get();
   if (clinics.isNotEmpty) {
     await _write(db, kOnboardingDoneKey, 'true');
+    try {
+      if (Hive.isBoxOpen('settings')) {
+        Hive.box('settings').put(kOnboardingDoneKey, true);
+      }
+    } catch (_) {}
     return true;
   }
 
   return false;
 });
 
-Future<void> _write(AppDatabase db, String key, String value) {
-  return db.into(db.settings).insertOnConflictUpdate(
+Future<void> _write(AppDatabase db, String key, String value) async {
+  if (key == kOnboardingDoneKey) {
+    try {
+      if (Hive.isBoxOpen('settings')) {
+        Hive.box('settings').put(kOnboardingDoneKey, value == 'true');
+      }
+    } catch (_) {}
+  }
+  await db.into(db.settings).insertOnConflictUpdate(
         SettingsCompanion.insert(
           key: key,
           value: value,
