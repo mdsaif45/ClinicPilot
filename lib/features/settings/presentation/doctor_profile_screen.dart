@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/widgets/info_row.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/doctor_profile_provider.dart';
 
@@ -50,183 +51,129 @@ class DoctorProfileScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
         children: [
-          // 1. Doctor Avatar & Name Header Card
+          // 1. Hero Avatar & Identity Card
           AppCard(
-            margin: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
-            padding: const EdgeInsets.all(Spacing.lg),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: scheme.primaryContainer,
-                  child: Text(
-                    avatarLetter,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: scheme.primary,
-                      fontWeight: FontWeight.bold,
+            margin: const EdgeInsets.symmetric(
+              horizontal: Spacing.lg,
+              vertical: Spacing.xs,
+            ),
+            padding: const EdgeInsets.all(Spacing.xl),
+            child: Center(
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: scheme.primaryContainer,
+                    child: Text(
+                      avatarLetter,
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 32,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: Spacing.lg),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (profile.qualification.isNotEmpty) ...[
-                        const SizedBox(height: Spacing.xs),
-                        Text(
-                          profile.qualification,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: scheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                      if (profile.regNumber.isNotEmpty) ...[
-                        const SizedBox(height: Spacing.xs),
-                        CustomBadge(
-                          label: 'Reg: ${profile.regNumber}',
-                          color: scheme.secondary,
-                        ),
-                      ],
-                    ],
+                  const SizedBox(height: Spacing.md),
+                  Text(
+                    displayName,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
+                  if (profile.qualification.isNotEmpty) ...[
+                    const SizedBox(height: Spacing.xs),
+                    Text(
+                      profile.qualification,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  if (profile.regNumber.isNotEmpty) ...[
+                    const SizedBox(height: Spacing.sm),
+                    CustomBadge(
+                      label: 'Reg: ${profile.regNumber}',
+                      color: scheme.secondary,
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: Spacing.md),
 
           // 2. Contact Information
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-            child: Text(
-              'CONTACT INFORMATION',
-              style: theme.textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.1,
-                color: scheme.primary,
+          SettingsGroup(
+            title: 'Contact Information',
+            children: [
+              AppListTile(
+                icon: Icons.email_outlined,
+                title: 'Email Address',
+                subtitle: profile.email.isNotEmpty ? profile.email : 'Not set',
+                onTap: () => _openEditDialog(context, profile),
               ),
-            ),
-          ),
-          const SizedBox(height: Spacing.xs),
-          AppCard(
-            margin: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
-            padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
-            child: Column(
-              children: [
-                InfoRow(
-                  icon: Icons.email_outlined,
-                  label: 'Email Address',
-                  value: profile.email.isNotEmpty ? profile.email : 'Not set',
-                ),
-                const Divider(height: 1),
-                InfoRow(
-                  icon: Icons.phone_outlined,
-                  label: 'Phone Number',
-                  value: profile.phone.isNotEmpty ? profile.phone : 'Not set',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: Spacing.md),
-
-          // 3. Credentials & Practice Information
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-            child: Text(
-              'CREDENTIALS & PRACTICE',
-              style: theme.textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.1,
-                color: scheme.primary,
+              AppListTile(
+                icon: Icons.phone_outlined,
+                title: 'Phone Number',
+                subtitle: profile.phone.isNotEmpty ? profile.phone : 'Not set',
+                onTap: () => _openEditDialog(context, profile),
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: Spacing.xs),
-          AppCard(
-            margin: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
-            padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
-            child: Column(
-              children: [
-                InfoRow(
-                  icon: Icons.school_outlined,
-                  label: 'Qualifications',
-                  value: profile.qualification.isNotEmpty ? profile.qualification : 'Not set',
-                ),
-                const Divider(height: 1),
-                InfoRow(
-                  icon: Icons.badge_outlined,
-                  label: 'Registration No.',
-                  value: profile.regNumber.isNotEmpty ? profile.regNumber : 'Not set',
-                ),
-                const Divider(height: 1),
-                InfoRow(
-                  icon: Icons.local_hospital_outlined,
-                  label: 'Clinics Managed',
-                  value: '${clinics.length} ${clinics.length == 1 ? 'Clinic' : 'Clinics'}',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: Spacing.md),
 
-          // 4. Cloud Sync & Storage Foundation
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-            child: Text(
-              'DATA & SYNC STATUS',
-              style: theme.textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.1,
-                color: scheme.primary,
+          // 3. Credentials & Practice Info
+          SettingsGroup(
+            title: 'Credentials & Practice',
+            children: [
+              AppListTile(
+                icon: Icons.school_outlined,
+                title: 'Qualifications / Degrees',
+                subtitle: profile.qualification.isNotEmpty
+                    ? profile.qualification
+                    : 'Not set (e.g. BHMS, MD)',
+                onTap: () => _openEditDialog(context, profile),
               ),
-            ),
+              AppListTile(
+                icon: Icons.badge_outlined,
+                title: 'Medical Registration No.',
+                subtitle: profile.regNumber.isNotEmpty
+                    ? profile.regNumber
+                    : 'Not set (e.g. WBMC-12345)',
+                onTap: () => _openEditDialog(context, profile),
+              ),
+              AppListTile(
+                icon: Icons.local_hospital_outlined,
+                title: 'Clinics Managed',
+                subtitle: '${clinics.length} ${clinics.length == 1 ? 'Clinic' : 'Clinics'}',
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/clinics'),
+              ),
+            ],
           ),
-          const SizedBox(height: Spacing.xs),
-          AppCard(
-            margin: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
-            padding: const EdgeInsets.all(Spacing.md),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(Spacing.sm),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHighest,
-                    borderRadius: Radii.mdAll,
-                  ),
-                  child: Icon(Icons.cloud_off_outlined, color: scheme.onSurfaceVariant, size: 22),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Offline Safe Storage',
-                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'All clinical cases, patients & financials remain 100% private and stored locally on this device. Cloud sync and backup will be available in future releases.',
-                        style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: Spacing.lg),
 
-          // 5. Edit Button
+          // 4. Data & Cloud Sync Status
+          SettingsGroup(
+            title: 'Data & Sync Status',
+            children: [
+              const AppListTile(
+                icon: Icons.cloud_off_outlined,
+                title: 'Offline Safe Storage',
+                subtitle: 'All records stored 100% locally and privately on this device',
+              ),
+              const AppListTile(
+                icon: Icons.sync_outlined,
+                title: 'Cloud Sync & Multi-Device',
+                subtitle: 'Will be available in future releases',
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.xl),
+
+          // 5. Edit Doctor Profile Action Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
             child: AppButton.primary(
