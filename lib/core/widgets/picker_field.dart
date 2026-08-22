@@ -19,14 +19,8 @@ class PickerOption<T> {
   });
 }
 
-/// Labelled selector that opens a bottom sheet.
-///
-/// Replaces DropdownButtonFormField for anything with a handful of options.
-/// The floating `labelText` a dropdown uses sits on the border and clips when
-/// the field has a prefix icon, and the popup menu it opens has no room for a
-/// second line, so options can only ever be a bare string.
-///
-/// Label placement matches CustomTextField, so a form mixing the two lines up.
+/// Standard labelled selector that opens a bottom sheet.
+/// Matches [CustomTextField] geometry down to the pixel.
 class PickerField<T> extends StatelessWidget {
   final String label;
   final T? value;
@@ -62,11 +56,11 @@ class PickerField<T> extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
+          style: theme.textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color: scheme.onSurface,
           ),
@@ -77,9 +71,16 @@ class PickerField<T> extends StatelessWidget {
           onTap: options.isEmpty ? null : () => _open(context),
           child: InputDecorator(
             decoration: InputDecoration(
-              prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
-              suffixIcon: const Icon(Icons.expand_more),
+              isDense: true,
+              prefixIcon: prefixIcon == null
+                  ? null
+                  : Icon(prefixIcon, size: 20, color: scheme.onSurfaceVariant),
+              suffixIcon: const Icon(Icons.expand_more, size: 20),
               errorText: errorText,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: Spacing.md,
+                vertical: 14,
+              ),
             ),
             child: Row(
               children: [
@@ -98,9 +99,11 @@ class PickerField<T> extends StatelessWidget {
                   child: Text(
                     selected?.label ?? hint,
                     overflow: TextOverflow.ellipsis,
-                    style: selected == null
-                        ? TextStyle(color: theme.hintColor)
-                        : const TextStyle(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: selected != null
+                          ? scheme.onSurface
+                          : scheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    ),
                   ),
                 ),
               ],
@@ -111,54 +114,67 @@ class PickerField<T> extends StatelessWidget {
     );
   }
 
-  Future<void> _open(BuildContext context) async {
-    final scheme = Theme.of(context).colorScheme;
+  void _open(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
-    final picked = await showModalBottomSheet<T>(
+    showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-              child: Text(label, style: Theme.of(ctx).textTheme.titleMedium),
-            ),
-            const SizedBox(height: Spacing.sm),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  for (final o in options)
-                    ListTile(
-                      leading: o.colour != null
+      builder: (ctx) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.only(bottom: Spacing.lg),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Spacing.lg,
+                  0,
+                  Spacing.lg,
+                  Spacing.sm,
+                ),
+                child: Text(
+                  label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              for (final o in options)
+                ListTile(
+                  leading: o.icon != null
+                      ? Icon(o.icon, size: 20, color: scheme.primary)
+                      : (o.colour != null
                           ? Container(
-                              width: 14,
-                              height: 14,
+                              width: 16,
+                              height: 16,
                               decoration: BoxDecoration(
                                 color: o.colour,
                                 shape: BoxShape.circle,
                               ),
                             )
-                          : (o.icon == null ? null : Icon(o.icon)),
-                      title: Text(o.label),
-                      subtitle: o.subtitle == null ? null : Text(o.subtitle!),
-                      trailing: o.value == value
-                          ? Icon(Icons.check_circle, color: scheme.primary)
-                          : null,
-                      onTap: () => Navigator.of(ctx).pop(o.value),
+                          : null),
+                  title: Text(
+                    o.label,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight:
+                          o.value == value ? FontWeight.bold : FontWeight.normal,
                     ),
-                ],
-              ),
-            ),
-            const SizedBox(height: Spacing.sm),
-          ],
-        ),
-      ),
+                  ),
+                  subtitle: o.subtitle == null ? null : Text(o.subtitle!),
+                  trailing: o.value == value
+                      ? Icon(Icons.check, color: scheme.primary)
+                      : null,
+                  onTap: () {
+                    onChanged(o.value);
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
     );
-
-    if (picked != null) onChanged(picked);
   }
 }

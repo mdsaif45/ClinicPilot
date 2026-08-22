@@ -6,7 +6,10 @@ import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/services/contact_service.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_confirm_dialog.dart';
+import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/empty_state.dart';
 import 'add_edit_referral_contact_dialog.dart';
 import '../providers/referral_crm_provider.dart';
@@ -48,26 +51,16 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
     AppHaptics.error();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Partner'),
-        content: Text('Are you sure you want to remove "${contact.name}" from the referral network?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              await ref.read(referralCrmNotifierProvider.notifier).deleteContact(contact.id);
-              AppHaptics.medium();
-            },
-            child: const Text('Delete'),
-          ),
-        ],
+      builder: (ctx) => AppConfirmDialog(
+        title: 'Delete Partner',
+        message: 'Are you sure you want to remove "${contact.name}" from the referral network?',
+        confirmLabel: 'Delete',
+        isDestructive: true,
+        onConfirm: () async {
+          Navigator.of(ctx).pop();
+          await ref.read(referralCrmNotifierProvider.notifier).deleteContact(contact.id);
+          AppHaptics.medium();
+        },
       ),
     );
   }
@@ -154,17 +147,22 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
                     controller: _searchController,
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
+                      isDense: true,
                       hintText: 'Search pharmacy, lab, clinic, locality...',
-                      prefixIcon: const Icon(Icons.search),
+                      prefixIcon: const Icon(Icons.search, size: 20),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear),
+                              icon: const Icon(Icons.clear, size: 20),
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() {});
                               },
                             )
                           : null,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: Spacing.md,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                   const SizedBox(height: Spacing.sm),
@@ -204,7 +202,7 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: Spacing.md),
+                  const SizedBox(height: Spacing.sm),
                 ],
               ),
             ),
@@ -218,15 +216,17 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
                 child: EmptyState(
                   icon: Icons.share_location_outlined,
                   title: 'No referral partners found',
-                  message: 'Build your local B2B medical network with pharmacies, diagnostic labs, and gyms.',
-                  actionLabel: 'Add Partner',
+                  message: query.isNotEmpty
+                      ? 'No partners matching "$query". Try clearing search filters.'
+                      : 'Build professional outreach with nearby pharmacies, labs & practitioners to grow your practice footfalls.',
+                  actionLabel: 'Add First Partner',
                   onAction: () => _openAddPartner(context),
                 ),
               ),
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -238,18 +238,12 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
                         onEdit: () => _openEditPartner(context, contact),
                         onDelete: () => _confirmDelete(context, ref, contact),
                         onLogVisit: () {
-                          AppHaptics.medium();
+                          AppHaptics.selection();
                           ref.read(referralCrmNotifierProvider.notifier).logOutreachVisit(contact.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Logged outreach visit to ${contact.name}!')),
-                          );
                         },
                         onAddReferral: () {
-                          AppHaptics.success();
+                          AppHaptics.selection();
                           ref.read(referralCrmNotifierProvider.notifier).incrementReferralCount(contact.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('+1 referral recorded from ${contact.name}!')),
-                          );
                         },
                       ),
                     );
@@ -287,20 +281,29 @@ class _KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
-    return AppCard(
+    return Container(
+      padding: const EdgeInsets.all(Spacing.sm),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: Radii.mdAll,
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: color),
+              Icon(icon, size: 14, color: color),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   label,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -311,7 +314,7 @@ class _KpiCard extends StatelessWidget {
           const SizedBox(height: Spacing.xs),
           Text(
             value,
-            style: theme.textTheme.headlineSmall?.copyWith(
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
               color: color,
             ),
@@ -319,8 +322,11 @@ class _KpiCard extends StatelessWidget {
           Text(
             subtext,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 10.5,
+              color: scheme.onSurfaceVariant,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -347,13 +353,14 @@ class _PartnerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final c = contact;
 
     return AppCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(Spacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Name + Category badge + More actions
+          // Header Row
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -362,14 +369,14 @@ class _PartnerCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      c.name,
+                      contact.name,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    if ((c.contactPerson ?? '').isNotEmpty)
+                    if ((contact.contactPerson ?? '').isNotEmpty)
                       Text(
-                        'Contact: ${c.contactPerson!}',
+                        'Contact: ${contact.contactPerson}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: scheme.onSurfaceVariant,
                         ),
@@ -377,20 +384,11 @@ class _PartnerCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: scheme.secondaryContainer,
-                  borderRadius: Radii.smAll,
-                ),
-                child: Text(
-                  c.category,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSecondaryContainer,
-                  ),
-                ),
+              CustomBadge(
+                label: contact.category,
+                color: scheme.primary,
               ),
+              const SizedBox(width: Spacing.xs),
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, size: 20),
                 onSelected: (val) {
@@ -398,7 +396,7 @@ class _PartnerCard extends StatelessWidget {
                   if (val == 'delete') onDelete();
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  const PopupMenuItem(value: 'edit', child: Text('Edit Partner')),
                   PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete', style: TextStyle(color: scheme.error)),
@@ -407,143 +405,119 @@ class _PartnerCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: Spacing.sm),
+          const SizedBox(height: Spacing.xs),
 
           // Address & Phone
-          if ((c.address ?? '').isNotEmpty) ...[
+          if ((contact.address ?? '').isNotEmpty) ...[
             Row(
               children: [
-                Icon(Icons.location_on_outlined, size: 14, color: scheme.onSurfaceVariant),
-                const SizedBox(width: 4),
+                Icon(Icons.place_outlined, size: 14, color: scheme.onSurfaceVariant),
+                const SizedBox(width: Spacing.xs),
                 Expanded(
                   child: Text(
-                    c.address!,
+                    contact.address!,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 2),
           ],
-          if ((c.phone ?? '').isNotEmpty) ...[
+          if ((contact.phone ?? '').isNotEmpty) ...[
             Row(
               children: [
                 Icon(Icons.phone_outlined, size: 14, color: scheme.onSurfaceVariant),
-                const SizedBox(width: 4),
+                const SizedBox(width: Spacing.xs),
                 Text(
-                  c.phone!,
+                  contact.phone!,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
-                IconButton.filledTonal(
-                  icon: const Icon(Icons.chat_outlined, size: 16),
+                IconButton(
+                  icon: const Icon(Icons.chat_outlined, size: 18),
+                  tooltip: 'WhatsApp message',
                   visualDensity: VisualDensity.compact,
-                  tooltip: 'WhatsApp Partner',
                   onPressed: () {
                     AppHaptics.selection();
                     ContactService.openWhatsApp(
-                      phone: c.phone!,
-                      message: 'Hello ${c.contactPerson ?? c.name}, greetings from the clinic!',
+                      phone: contact.phone!,
+                      message: 'Hello ${contact.contactPerson ?? contact.name}, Dr. Saifuddin here from City Care Homeopathy.',
                     );
                   },
                 ),
-                const SizedBox(width: Spacing.xs),
-                IconButton.filledTonal(
-                  icon: const Icon(Icons.call_outlined, size: 16),
+                IconButton(
+                  icon: const Icon(Icons.call_outlined, size: 18),
+                  tooltip: 'Call partner',
                   visualDensity: VisualDensity.compact,
-                  tooltip: 'Call Partner',
                   onPressed: () {
                     AppHaptics.selection();
-                    ContactService.call(c.phone!);
+                    ContactService.call(contact.phone!);
                   },
                 ),
               ],
             ),
           ],
-          const SizedBox(height: Spacing.sm),
+          const SizedBox(height: Spacing.xs),
 
-          // CRM Stats & Outreach details
+          // Stats Chips
           Wrap(
             spacing: Spacing.xs,
             runSpacing: Spacing.xs,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: scheme.primaryContainer,
-                  borderRadius: Radii.smAll,
-                ),
-                child: Text(
-                  '${c.referralCount} Patients Referred',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: scheme.primary,
-                  ),
-                ),
+              CustomBadge(
+                label: '${contact.referralCount} Patients Referred',
+                color: scheme.tertiary,
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHighest,
-                  borderRadius: Radii.smAll,
-                ),
-                child: Text(
-                  '${c.visitCount} Doctor Visits Logged',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              CustomBadge(
+                label: '${contact.visitCount} Doctor Visits Logged',
+                color: scheme.secondary,
               ),
-              if (c.lastVisitedDate != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHighest,
-                    borderRadius: Radii.smAll,
-                  ),
-                  child: Text(
-                    'Last Visited: ${Formatters.formatDate(c.lastVisitedDate!)}',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
+              if (contact.lastVisitedDate != null)
+                CustomBadge(
+                  label: 'Last Visited: ${Formatters.formatDate(contact.lastVisitedDate!)}',
+                  color: scheme.onSurfaceVariant,
                 ),
             ],
           ),
 
-          if ((c.notes ?? '').isNotEmpty) ...[
+          if ((contact.notes ?? '').isNotEmpty) ...[
             const SizedBox(height: Spacing.xs),
             Text(
-              'Notes: ${c.notes!}',
+              'Notes: ${contact.notes}',
               style: theme.textTheme.bodySmall?.copyWith(
                 fontStyle: FontStyle.italic,
                 color: scheme.onSurfaceVariant,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
           const SizedBox(height: Spacing.sm),
 
-          // Action buttons: Log Visit & Add Referral
+          // Action Buttons
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: AppButton.outlined(
+                  label: 'Log Visit',
+                  icon: Icons.directions_walk_outlined,
+                  fullWidth: true,
                   onPressed: onLogVisit,
-                  icon: const Icon(Icons.directions_walk, size: 16),
-                  label: const Text('Log Visit'),
                 ),
               ),
               const SizedBox(width: Spacing.sm),
               Expanded(
-                child: FilledButton.tonalIcon(
+                child: AppButton.tonal(
+                  label: '+1 Referral',
+                  icon: Icons.person_add_outlined,
+                  fullWidth: true,
                   onPressed: onAddReferral,
-                  icon: const Icon(Icons.person_add_alt, size: 16),
-                  label: const Text('+1 Referral'),
                 ),
               ),
             ],

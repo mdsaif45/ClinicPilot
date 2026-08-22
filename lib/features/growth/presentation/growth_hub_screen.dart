@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/period_selector.dart';
 import '../../dashboard/presentation/widgets/clinic_health_score_card.dart';
 import '../../dashboard/presentation/widgets/daily_insight_card.dart';
@@ -13,9 +15,6 @@ import '../providers/profit_provider.dart';
 import '../providers/review_provider.dart';
 
 /// Landing screen for the Growth tab.
-///
-/// Houses high-level practice diagnostics (health score, growth tips),
-/// reputation management (Google reviews), and deep analytical tools.
 class GrowthHubScreen extends ConsumerWidget {
   const GrowthHubScreen({super.key});
 
@@ -113,12 +112,10 @@ class GrowthHubScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: Spacing.lg),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Close'),
-              ),
+            AppButton.primary(
+              label: 'Close',
+              fullWidth: true,
+              onPressed: () => Navigator.of(ctx).pop(),
             ),
           ],
         ),
@@ -136,7 +133,8 @@ class GrowthHubScreen extends ConsumerWidget {
     final avgRating = reviews?.averageRating ?? 0.0;
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: Spacing.xxl),
+      // Standard top padding so first card never touches upper screen boundary
+      padding: const EdgeInsets.fromLTRB(0, Spacing.md, 0, Spacing.xxl),
       children: [
         const ClinicHealthScoreCard(),
         const DailyInsightCard(),
@@ -262,8 +260,8 @@ class _MenuCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.onTap,
     this.trailing,
+    required this.onTap,
   });
 
   @override
@@ -271,61 +269,67 @@ class _MenuCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return Padding(
+    return AppCard(
+      margin: const EdgeInsets.symmetric(
+        horizontal: Spacing.lg,
+        vertical: Spacing.xs + 1,
+      ),
       padding: const EdgeInsets.symmetric(
         horizontal: Spacing.lg,
-        vertical: Spacing.xs,
+        vertical: Spacing.md,
       ),
-      child: Card(
-        elevation: 0,
-        color: scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: Radii.mdAll,
-          side: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.4),
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: scheme.primaryContainer.withValues(alpha: 0.7),
-            foregroundColor: scheme.primary,
-            child: Icon(icon, size: 20),
-          ),
-          title: Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+      onTap: () {
+        AppHaptics.selection();
+        onTap();
+      },
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(Spacing.sm),
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer.withValues(alpha: 0.5),
+              borderRadius: Radii.mdAll,
             ),
+            child: Icon(icon, color: scheme.primary, size: 22),
           ),
-          subtitle: Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (trailing != null) ...[
+          const SizedBox(width: Spacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  trailing!,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: scheme.primary,
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: Spacing.xs),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
-              Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: scheme.onSurfaceVariant,
-              ),
-            ],
+            ),
           ),
-          onTap: onTap,
-        ),
+          if (trailing != null) ...[
+            const SizedBox(width: Spacing.sm),
+            Text(
+              trailing!,
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: scheme.primary,
+              ),
+            ),
+          ],
+          const SizedBox(width: Spacing.xs),
+          Icon(
+            Icons.chevron_right,
+            size: 20,
+            color: scheme.onSurfaceVariant,
+          ),
+        ],
       ),
     );
   }

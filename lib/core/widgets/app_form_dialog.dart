@@ -4,18 +4,12 @@ import '../design/breakpoints.dart';
 import '../design/tokens.dart';
 
 /// Standard dialog for every form in the app.
-///
-/// A bare AlertDialog sizes itself to its content, so each form ended up a
-/// different width depending on its longest label. This fixes the width and
-/// caps the height, which also stops a long form from running off the bottom
-/// of a small screen.
+/// Enforces consistent width, height constraints, and vertical content-to-action gutter.
 class AppFormDialog extends StatelessWidget {
   final String title;
   final Widget child;
   final List<Widget> actions;
 
-  /// Wide enough for a labelled field with a prefix icon, narrow enough to
-  /// keep comfortable margins on a small phone.
   static const double maxWidth = Breakpoints.maxFormWidth;
 
   const AppFormDialog({
@@ -29,23 +23,34 @@ class AppFormDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final isShort = media.size.height < 600;
+    final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(title),
+      title: Text(
+        title,
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       insetPadding: const EdgeInsets.symmetric(
         horizontal: Spacing.lg,
         vertical: Spacing.xl,
       ),
       contentPadding: const EdgeInsets.fromLTRB(
         Spacing.xl,
-        Spacing.lg,
+        Spacing.md,
         Spacing.xl,
+        Spacing.lg, // Enforce clean 16dp separation between bottom form field and action buttons
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(
+        Spacing.lg,
         0,
+        Spacing.lg,
+        Spacing.md,
       ),
       content: SizedBox(
         width: maxWidth,
         child: ConstrainedBox(
-          // Leaves room for the title and the action row on a short screen.
           constraints: BoxConstraints(
             maxHeight: media.size.height * (isShort ? 0.6 : 0.72),
           ),

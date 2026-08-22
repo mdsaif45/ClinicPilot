@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/custom_badge.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../add_edit_complaint_dialog.dart';
 import '../../providers/complaint_provider.dart';
@@ -40,26 +43,16 @@ class ComplaintListView extends ConsumerWidget {
     AppHaptics.error();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Complaint'),
-        content: Text('Are you sure you want to remove "${complaint.complaintName}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              await ref.read(complaintNotifierProvider.notifier).deleteComplaint(complaint.id);
-              AppHaptics.medium();
-            },
-            child: const Text('Delete'),
-          ),
-        ],
+      builder: (ctx) => AppConfirmDialog(
+        title: 'Delete Complaint',
+        message: 'Are you sure you want to remove "${complaint.complaintName}"?',
+        confirmLabel: 'Delete',
+        isDestructive: true,
+        onConfirm: () async {
+          Navigator.of(ctx).pop();
+          await ref.read(complaintNotifierProvider.notifier).deleteComplaint(complaint.id);
+          AppHaptics.medium();
+        },
       ),
     );
   }
@@ -75,6 +68,7 @@ class ComplaintListView extends ConsumerWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
         child: AppCard(
+          margin: EdgeInsets.zero,
           child: EmptyState(
             icon: Icons.healing_outlined,
             title: 'No complaints logged',
@@ -100,10 +94,10 @@ class ComplaintListView extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
-              FilledButton.tonalIcon(
+              AppButton.tonal(
+                label: 'Add Complaint',
+                icon: Icons.add,
                 onPressed: () => _openAddComplaint(context, complaints.length + 1),
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add Complaint'),
               ),
             ],
           ),
@@ -150,7 +144,17 @@ class _ComplaintCard extends StatelessWidget {
             ? scheme.tertiary
             : scheme.primary;
 
+    final statusColor = switch (complaint.status.toLowerCase()) {
+      'active' => scheme.primary,
+      'improving' => scheme.tertiary,
+      'resolved' => scheme.secondary,
+      'recurrent' => scheme.error,
+      _ => scheme.onSurfaceVariant,
+    };
+
     return AppCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(Spacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -187,7 +191,7 @@ class _ComplaintCard extends StatelessWidget {
                   if (val == 'delete') onDelete();
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  const PopupMenuItem(value: 'edit', child: Text('Edit Complaint')),
                   PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete', style: TextStyle(color: scheme.error)),
@@ -198,52 +202,33 @@ class _ComplaintCard extends StatelessWidget {
           ),
           const SizedBox(height: Spacing.xs),
 
-          // Badges: Severity + Status
+          // Badges: Severity + Side + Status Menu Pill
           Wrap(
             spacing: Spacing.xs,
             runSpacing: Spacing.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: sevColor.withValues(alpha: 0.12),
-                  borderRadius: Radii.smAll,
-                ),
-                child: Text(
-                  'Severity: ${complaint.severity}/10',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: sevColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+              CustomBadge(
+                label: 'Severity: ${complaint.severity}/10',
+                color: sevColor,
               ),
               if (complaint.side != null && complaint.side != 'Not specified')
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHighest,
-                    borderRadius: Radii.smAll,
-                  ),
-                  child: Text(
-                    complaint.side!,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
+                CustomBadge(
+                  label: complaint.side!,
+                  color: scheme.onSurfaceVariant,
                 ),
-              DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: complaint.status,
-                  isDense: true,
-                  items: const [
-                    DropdownMenuItem(value: 'Active', child: Text('Active')),
-                    DropdownMenuItem(value: 'Improving', child: Text('Improving')),
-                    DropdownMenuItem(value: 'Resolved', child: Text('Resolved')),
-                    DropdownMenuItem(value: 'Recurrent', child: Text('Recurrent')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) onStatusChanged(val);
-                  },
+              PopupMenuButton<String>(
+                tooltip: 'Change Status',
+                onSelected: onStatusChanged,
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'Active', child: Text('Active')),
+                  PopupMenuItem(value: 'Improving', child: Text('Improving')),
+                  PopupMenuItem(value: 'Resolved', child: Text('Resolved')),
+                  PopupMenuItem(value: 'Recurrent', child: Text('Recurrent')),
+                ],
+                child: CustomBadge(
+                  label: '${complaint.status} ▾',
+                  color: statusColor,
                 ),
               ),
             ],
@@ -261,14 +246,15 @@ class _ComplaintCard extends StatelessWidget {
               _FieldLine(label: 'Sensation', value: complaint.sensation!),
           ],
 
-          // Modalities (< Aggravation / > Amelioration)
+          // Modalities Box
           if ((complaint.aggravatingFactors ?? '').isNotEmpty || (complaint.amelioratingFactors ?? '').isNotEmpty) ...[
             const SizedBox(height: Spacing.xs),
             Container(
-              padding: const EdgeInsets.all(Spacing.xs + 2),
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
               decoration: BoxDecoration(
                 color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
                 borderRadius: Radii.smAll,
+                border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,13 +280,10 @@ class _ComplaintCard extends StatelessWidget {
             ),
           ],
 
-          // Concomitants & Causation
-          if ((complaint.concomitants ?? '').isNotEmpty)
-            _FieldLine(label: 'Concomitants', value: complaint.concomitants!),
-          if ((complaint.causation ?? '').isNotEmpty)
-            _FieldLine(label: 'Causation', value: complaint.causation!),
-          if ((complaint.duration ?? '').isNotEmpty)
+          if ((complaint.duration ?? '').isNotEmpty) ...[
+            const SizedBox(height: Spacing.xs),
             _FieldLine(label: 'Duration', value: complaint.duration!),
+          ],
         ],
       ),
     );
@@ -319,23 +302,27 @@ class _FieldLine extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 2),
-      child: RichText(
-        text: TextSpan(
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: scheme.onSurface,
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label: ',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: scheme.onSurfaceVariant,
+          Expanded(
+            child: Text(
+              value,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurface,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            TextSpan(text: value),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -66,7 +66,7 @@ class _DiseaseAnalyticsScreenState extends ConsumerState<DiseaseAnalyticsScreen>
           final maxRevenue = summary.stats.fold<double>(0.0, (max, s) => s.totalRevenue > max ? s.totalRevenue : max);
 
           return ListView(
-            padding: const EdgeInsets.only(bottom: Spacing.xxl),
+            padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
             children: [
               const PeriodSelector(),
               MetricStrip(

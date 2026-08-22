@@ -6,6 +6,8 @@ import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
 import '../../../../core/services/contact_service.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../add_edit_prescription_dialog.dart';
@@ -49,26 +51,16 @@ class PrescriptionListView extends ConsumerWidget {
     AppHaptics.error();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Prescription'),
-        content: Text('Are you sure you want to remove "${rx.remedyName} ${rx.potency}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              await ref.read(prescriptionNotifierProvider.notifier).deletePrescription(rx.id);
-              AppHaptics.medium();
-            },
-            child: const Text('Delete'),
-          ),
-        ],
+      builder: (ctx) => AppConfirmDialog(
+        title: 'Delete Prescription',
+        message: 'Are you sure you want to remove "${rx.remedyName} ${rx.potency}"?',
+        confirmLabel: 'Delete',
+        isDestructive: true,
+        onConfirm: () async {
+          Navigator.of(ctx).pop();
+          await ref.read(prescriptionNotifierProvider.notifier).deletePrescription(rx.id);
+          AppHaptics.medium();
+        },
       ),
     );
   }
@@ -156,10 +148,10 @@ class PrescriptionListView extends ConsumerWidget {
                 tooltip: 'Share Rx via WhatsApp',
                 onPressed: () => _shareViaWhatsApp(context, prescriptions),
               ),
-              FilledButton.tonalIcon(
+              AppButton.tonal(
+                label: 'Add Remedy',
+                icon: Icons.add,
                 onPressed: () => _openAddPrescription(context, prescriptions.length + 1),
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add Remedy'),
               ),
             ],
           ),

@@ -88,7 +88,7 @@ class CampManagerScreen extends ConsumerWidget {
           final stats = statsAsync.value;
 
           return ListView(
-            padding: const EdgeInsets.only(bottom: Spacing.xxl * 2),
+            padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl * 2),
             children: [
               const PeriodSelector(),
               if (stats != null)

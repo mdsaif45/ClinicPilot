@@ -138,22 +138,31 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: Spacing.md),
-              CustomTextField(
-                controller: _rentController,
-                label: 'Monthly Fixed Rent (₹)',
-                prefixIcon: Icons.home_work,
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? 'Valid rent' : null,
-              ),
-              const SizedBox(height: Spacing.md),
-              CustomTextField(
-                controller: _feeController,
-                label: 'Default Consultation Fee (₹)',
-                prefixIcon: Icons.currency_rupee,
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? 'Valid fee' : null,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _rentController,
+                      label: 'Monthly Rent (₹)',
+                      prefixIcon: Icons.home_work_outlined,
+                      keyboardType: TextInputType.number,
+                      validator: (v) =>
+                          v == null || double.tryParse(v) == null ? 'Valid rent' : null,
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.md),
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _feeController,
+                      label: 'Default Fee (₹)',
+                      prefixIcon: Icons.currency_rupee,
+                      keyboardType: TextInputType.number,
+                      validator: (v) =>
+                          v == null || double.tryParse(v) == null ? 'Valid fee' : null,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: Spacing.md),
               DaySelectorField(
@@ -171,22 +180,31 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
                 ),
               ),
               const SizedBox(height: Spacing.sm),
-              CustomTextField(
-                controller: _revGoalController,
-                label: 'Monthly Revenue Goal (₹)',
-                prefixIcon: Icons.currency_rupee,
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? 'Valid revenue goal' : null,
-              ),
-              const SizedBox(height: Spacing.md),
-              CustomTextField(
-                controller: _patGoalController,
-                label: 'Monthly New Patient Goal',
-                prefixIcon: Icons.person_add_outlined,
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || int.tryParse(v) == null ? 'Valid patient goal' : null,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _revGoalController,
+                      label: 'Revenue Goal (₹)',
+                      prefixIcon: Icons.currency_rupee,
+                      keyboardType: TextInputType.number,
+                      validator: (v) =>
+                          v == null || double.tryParse(v) == null ? 'Valid target' : null,
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.md),
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _patGoalController,
+                      label: 'New Patients Goal',
+                      prefixIcon: Icons.person_add_outlined,
+                      keyboardType: TextInputType.number,
+                      validator: (v) =>
+                          v == null || int.tryParse(v) == null ? 'Valid target' : null,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
