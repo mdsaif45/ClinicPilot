@@ -86,6 +86,10 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final clinics = clinicsAsync.value ?? [];
 
+    if (_selectedClinicId == null && clinics.length == 1) {
+      _selectedClinicId = clinics.first.id;
+    }
+
     final serialText = _serialController.text.trim();
     final liveSerialInUse = serialText.isEmpty || _selectedClinicId == null
         ? false
@@ -259,10 +263,13 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final formOk = _formKey.currentState!.validate();
 
     setState(() {
-      _clinicError = _selectedClinicId == null ? 'Select a clinic' : null;
+      _clinicError = _selectedClinicId == null ? 'Please select a clinic' : null;
     });
 
-    if (!formOk || _selectedClinicId == null) return;
+    if (!formOk || _selectedClinicId == null) {
+      AppHaptics.error();
+      return;
+    }
 
     setState(() => _submitting = true);
 
