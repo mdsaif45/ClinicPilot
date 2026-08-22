@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
-import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/custom_badge.dart';
-import '../../../core/widgets/day_selector_field.dart';
+import '../../../core/services/app_haptics.dart';
 import '../providers/clinic_provider.dart';
 import 'add_edit_clinic_dialog.dart';
 
@@ -13,6 +11,7 @@ class ClinicsScreen extends ConsumerWidget {
   const ClinicsScreen({super.key});
 
   void _openAddClinic(BuildContext context) {
+    AppHaptics.selection();
     showDialog(
       context: context,
       builder: (_) => const AddEditClinicDialog(),
@@ -20,6 +19,7 @@ class ClinicsScreen extends ConsumerWidget {
   }
 
   void _openEditClinic(BuildContext context, Clinic clinic) {
+    AppHaptics.selection();
     showDialog(
       context: context,
       builder: (_) => AddEditClinicDialog(clinic: clinic),
@@ -30,6 +30,8 @@ class ClinicsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final activeId = ref.watch(activeClinicIdProvider);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -46,78 +48,51 @@ class ClinicsScreen extends ConsumerWidget {
             return const Center(child: Text('No clinics configured.'));
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(Spacing.lg),
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
             itemCount: clinics.length,
+            separatorBuilder: (_, __) => const SizedBox(height: Spacing.sm),
             itemBuilder: (context, index) {
               final clinic = clinics[index];
               final isActive = clinic.id == activeId;
-              final scheme = Theme.of(context).colorScheme;
 
-              return Card(
-                elevation: isActive ? 4 : 1,
-                margin: const EdgeInsets.only(bottom: Spacing.md),
-                shape: RoundedRectangleBorder(
+              return Container(
+                decoration: BoxDecoration(
+                  color: isActive ? scheme.primaryContainer.withValues(alpha: 0.3) : scheme.surfaceContainerLow,
                   borderRadius: Radii.mdAll,
-                  side: isActive
-                      ? BorderSide(
-                          color: scheme.primary,
-                          width: 2,
-                        )
-                      : BorderSide.none,
+                  border: Border.all(
+                    color: isActive ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.5),
+                    width: isActive ? 1.5 : 1,
+                  ),
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.all(Spacing.lg),
-                  leading: CircleAvatar(
-                    backgroundColor: scheme.primary,
-                    child: Icon(Icons.local_hospital, color: scheme.onPrimary),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
+                  leading: Radio<String>(
+                    value: clinic.id,
+                    groupValue: activeId,
+                    activeColor: scheme.primary,
+                    onChanged: (val) {
+                      if (val != null) {
+                        AppHaptics.selection();
+                        ref.read(activeClinicIdProvider.notifier).setClinicId(val);
+                      }
+                    },
                   ),
-                  title: Row(
-                    children: [
-                      Text(
-                        clinic.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      if (isActive) ...[
-                        const SizedBox(width: Spacing.sm),
-                        const CustomBadge(label: 'Active'),
-                      ],
-                    ],
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: Spacing.sm),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Address: ${clinic.address ?? "N/A"}'),
-                        Text('Monthly Rent: ${Formatters.formatCurrency(clinic.monthlyRent)}'),
-                        Text('Default Fee: ${Formatters.formatCurrency(clinic.defaultConsultationFee)}'),
-                        Text('Open: ${DaySelectorField.describe(clinic.openDays)}'),
-                      ],
+                  title: Text(
+                    clinic.name,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (!isActive)
-                        IconButton(
-                          icon: const Icon(Icons.check_circle_outline),
-                          tooltip: 'Set Active',
-                          onPressed: () {
-                            ref
-                                .read(activeClinicIdProvider.notifier)
-                                .setClinicId(clinic.id);
-                          },
-                        ),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _openEditClinic(context, clinic),
-                      ),
-                    ],
+                  trailing: IconButton(
+                    icon: const Icon(Icons.edit_outlined, size: 20),
+                    tooltip: 'Edit Clinic Details & Targets',
+                    onPressed: () => _openEditClinic(context, clinic),
                   ),
+                  onTap: () {
+                    AppHaptics.selection();
+                    ref.read(activeClinicIdProvider.notifier).setClinicId(clinic.id);
+                  },
                 ),
               );
             },

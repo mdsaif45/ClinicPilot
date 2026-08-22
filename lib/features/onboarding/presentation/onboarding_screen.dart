@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/services/sample_data_seeder.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/day_selector_field.dart';
 import '../providers/onboarding_provider.dart';
 
-/// First-run setup: who the doctor is, and which clinics they run.
-///
-/// Two pages only. Everything asked here is something the app cannot work
-/// without - a greeting needs a name, and a cash memo needs a clinic to
-/// attribute revenue to. Anything else belongs in Settings, where it can be
-/// changed later without a wizard.
+/// First-run setup: who the doctor is, and their clinic details.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -23,38 +17,64 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
+class _ClinicFormControllers {
+  final TextEditingController nameController;
+  final TextEditingController addressController;
+  final TextEditingController phoneController;
+  final TextEditingController rentController;
+  final TextEditingController feeController;
+  final TextEditingController revGoalController;
+  final TextEditingController patGoalController;
+  String openDays;
+
+  _ClinicFormControllers()
+      : nameController = TextEditingController(),
+        addressController = TextEditingController(),
+        phoneController = TextEditingController(),
+        rentController = TextEditingController(text: '5000'),
+        feeController = TextEditingController(text: '300'),
+        revGoalController = TextEditingController(text: '30000'),
+        patGoalController = TextEditingController(text: '10'),
+        openDays = '1,2,3,4,5,6';
+
+  void dispose() {
+    nameController.dispose();
+    addressController.dispose();
+    phoneController.dispose();
+    rentController.dispose();
+    feeController.dispose();
+    revGoalController.dispose();
+    patGoalController.dispose();
+  }
+
+  DraftClinic toDraft() {
+    return DraftClinic(
+      name: nameController.text,
+      address: addressController.text,
+      phone: phoneController.text,
+      rent: double.tryParse(rentController.text) ?? 5000,
+      consultationFee: double.tryParse(feeController.text) ?? 300,
+      openDays: openDays,
+      revenueGoal: double.tryParse(revGoalController.text) ?? 30000,
+      patientGoal: int.tryParse(patGoalController.text) ?? 10,
+    );
+  }
+}
+
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   final _nameController = TextEditingController();
   final _nameFocus = FocusNode();
 
-  final _clinicNameControllers = <TextEditingController>[
-    TextEditingController(),
+  final _clinics = <_ClinicFormControllers>[
+    _ClinicFormControllers(),
   ];
-  final _clinicAddressControllers = <TextEditingController>[
-    TextEditingController(),
-  ];
+
   final _clinicNameFocus = FocusNode();
   final _areaFocus = FocusNode();
-  final _revenueFocus = FocusNode();
-  final _patientFocus = FocusNode();
-
-  double _revenueGoal = kDefaultRevenueGoal;
-  int _patientGoal = kDefaultPatientGoal;
-
-  late final TextEditingController _revenueController =
-      TextEditingController(text: kDefaultRevenueGoal.round().toString());
-  late final TextEditingController _patientController =
-      TextEditingController(text: kDefaultPatientGoal.toString());
 
   int _page = 0;
   bool _saving = false;
-
-  // The clinics page is already built (PageView builds both up front), so
-  // autofocus:true on its field would fire before the page is ever shown.
-  // This flags "the doctor has just arrived here", set once on the page
-  // transition, and is not re-armed by Back so returning to page 1 and
-  // forward again does not steal focus a second time.
   bool _focusClinicsPage = false;
 
   @override
@@ -62,16 +82,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _pageController.dispose();
     _nameController.dispose();
     _nameFocus.dispose();
-    _revenueController.dispose();
-    _patientController.dispose();
     _clinicNameFocus.dispose();
     _areaFocus.dispose();
-    _revenueFocus.dispose();
-    _patientFocus.dispose();
-    for (final c in _clinicNameControllers) {
-      c.dispose();
-    }
-    for (final c in _clinicAddressControllers) {
+    for (final c in _clinics) {
       c.dispose();
     }
     super.dispose();
@@ -79,39 +92,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   bool get _canContinue {
     if (_page == 0) return _nameController.text.trim().isNotEmpty;
-    return _clinicNameControllers.any((c) => c.text.trim().isNotEmpty);
+    return _clinics.any((c) => c.nameController.text.trim().isNotEmpty);
   }
 
   void _addClinic() {
     setState(() {
-      _clinicNameControllers.add(TextEditingController());
-      _clinicAddressControllers.add(TextEditingController());
+      _clinics.add(_ClinicFormControllers());
     });
   }
 
   void _removeClinic(int index) {
     setState(() {
-      _clinicNameControllers.removeAt(index).dispose();
-      _clinicAddressControllers.removeAt(index).dispose();
+      _clinics.removeAt(index).dispose();
     });
   }
 
   Future<void> _finish() async {
     setState(() => _saving = true);
 
-    final clinics = <DraftClinic>[];
-    for (var i = 0; i < _clinicNameControllers.length; i++) {
-      clinics.add(DraftClinic(
-        name: _clinicNameControllers[i].text,
-        address: _clinicAddressControllers[i].text,
-      ));
-    }
+    final draftClinics = _clinics.map((c) => c.toDraft()).toList();
 
     await ref.read(onboardingControllerProvider).complete(
           doctorName: _nameController.text,
-          clinics: clinics,
-          revenueGoal: _revenueGoal,
-          patientGoal: _patientGoal,
+          clinics: draftClinics,
         );
 
     if (mounted) context.go('/dashboard');
@@ -127,9 +130,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    // Page 1 is visible immediately at build time, so this is safe as a
-    // direct request rather than needing the same post-transition dance as
-    // the clinics page below.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _nameFocus.requestFocus();
     });
@@ -186,9 +186,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     onChanged: _refresh,
                     onDemoSelected: _saving ? null : _loadSampleData,
                     onSubmitted: () {
-                      // Matches the Continue button's own guard - Enter must
-                      // not advance past an empty name any more than a tap
-                      // would.
                       if (!_canContinue) return;
                       _pageController.nextPage(
                         duration: Motion.base,
@@ -197,18 +194,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     },
                   ),
                   _ClinicsPage(
-                    nameControllers: _clinicNameControllers,
-                    addressControllers: _clinicAddressControllers,
+                    clinics: _clinics,
                     firstNameFocus: _clinicNameFocus,
                     firstAreaFocus: _areaFocus,
-                    revenueFocus: _revenueFocus,
-                    patientFocus: _patientFocus,
-                    revenueGoal: _revenueGoal,
-                    patientGoal: _patientGoal,
-                    revenueController: _revenueController,
-                    patientController: _patientController,
-                    onRevenueChanged: (v) => setState(() => _revenueGoal = v),
-                    onPatientChanged: (v) => setState(() => _patientGoal = v),
                     onAddClinic: _addClinic,
                     onRemoveClinic: _removeClinic,
                     onChanged: _refresh,
@@ -307,16 +295,12 @@ class _NamePage extends StatelessWidget {
         CustomTextField(
           controller: controller,
           label: 'Your name',
-          // A sample name reads as a real default and has to be cleared before
-          // typing. The label already says what goes here.
-          hint: '',
+          hint: 'e.g. Dr. Md. Saifuddin',
           prefixIcon: Icons.person_outline,
           onChanged: (_) => onChanged(),
           focusNode: focusNode,
           autofocus: true,
           textInputAction: TextInputAction.next,
-          // Matches what tapping Continue does, so the keyboard's own action
-          // key is not a dead end next to a button that works.
           onFieldSubmitted: (_) => onSubmitted(),
         ),
         if (onDemoSelected != null) ...[
@@ -333,36 +317,18 @@ class _NamePage extends StatelessWidget {
 }
 
 class _ClinicsPage extends StatelessWidget {
-  final List<TextEditingController> nameControllers;
-  final List<TextEditingController> addressControllers;
+  final List<_ClinicFormControllers> clinics;
   final FocusNode firstNameFocus;
   final FocusNode firstAreaFocus;
-  final FocusNode revenueFocus;
-  final FocusNode patientFocus;
-  final double revenueGoal;
-  final int patientGoal;
-  final TextEditingController revenueController;
-  final TextEditingController patientController;
-  final ValueChanged<double> onRevenueChanged;
-  final ValueChanged<int> onPatientChanged;
   final VoidCallback onAddClinic;
   final ValueChanged<int> onRemoveClinic;
   final VoidCallback onChanged;
   final VoidCallback onSubmitted;
 
   const _ClinicsPage({
-    required this.nameControllers,
-    required this.addressControllers,
+    required this.clinics,
     required this.firstNameFocus,
     required this.firstAreaFocus,
-    required this.revenueFocus,
-    required this.patientFocus,
-    required this.revenueGoal,
-    required this.patientGoal,
-    required this.revenueController,
-    required this.patientController,
-    required this.onRevenueChanged,
-    required this.onPatientChanged,
     required this.onAddClinic,
     required this.onRemoveClinic,
     required this.onChanged,
@@ -372,6 +338,7 @@ class _ClinicsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
@@ -380,56 +347,146 @@ class _ClinicsPage extends StatelessWidget {
         Text('Your clinics', style: theme.textTheme.headlineSmall),
         const SizedBox(height: Spacing.sm),
         Text(
-          'Every patient, memo and expense belongs to a clinic, so the app can '
-          'tell you which one is actually profitable.',
+          'Set up your clinic profile, fees, open days, and monthly targets. '
+          'You can change these anytime in Settings.',
           style: theme.textTheme.labelMedium,
         ),
         const SizedBox(height: Spacing.lg),
 
-        for (var i = 0; i < nameControllers.length; i++) ...[
-          Row(
-            children: [
-              Expanded(
-                child: CustomTextField(
-                  controller: nameControllers[i],
-                  label: 'Clinic ${i + 1}',
-                  hint: '',
-                  prefixIcon: Icons.local_hospital_outlined,
-                  onChanged: (_) => onChanged(),
-                  // Only clinic 1 carries the node the page hands autofocus
-                  // to; clinic 2+ come from "Add another clinic" and are
-                  // never the page's first field.
-                  focusNode: i == 0 ? firstNameFocus : null,
-                  textInputAction: TextInputAction.next,
-                  onFieldSubmitted: i == 0
-                      ? (_) => firstAreaFocus.requestFocus()
-                      : null,
-                ),
+        for (var i = 0; i < clinics.length; i++) ...[
+          Card(
+            elevation: 0,
+            color: scheme.surfaceContainerLow,
+            shape: RoundedRectangleBorder(
+              borderRadius: Radii.mdAll,
+              side: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.5),
               ),
-              if (nameControllers.length > 1)
-                Padding(
-                  padding: const EdgeInsets.only(top: Spacing.lg),
-                  child: IconButton(
-                    icon: const Icon(Icons.close),
-                    tooltip: 'Remove',
-                    onPressed: () => onRemoveClinic(i),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(Spacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.local_hospital_outlined,
+                          color: scheme.primary, size: 20),
+                      const SizedBox(width: Spacing.sm),
+                      Text(
+                        'Clinic ${i + 1}',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: scheme.primary,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (clinics.length > 1)
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 18),
+                          tooltip: 'Remove',
+                          onPressed: () => onRemoveClinic(i),
+                        ),
+                    ],
                   ),
-                ),
-            ],
+                  const SizedBox(height: Spacing.sm),
+                  CustomTextField(
+                    controller: clinics[i].nameController,
+                    label: 'Clinic Name *',
+                    hint: 'e.g. City Care Homeopathy',
+                    prefixIcon: Icons.business_outlined,
+                    onChanged: (_) => onChanged(),
+                    focusNode: i == 0 ? firstNameFocus : null,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: i == 0
+                        ? (_) => firstAreaFocus.requestFocus()
+                        : null,
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                  CustomTextField(
+                    controller: clinics[i].addressController,
+                    label: 'Address / Location (Optional)',
+                    hint: 'e.g. Main Market, City Center',
+                    prefixIcon: Icons.place_outlined,
+                    focusNode: i == 0 ? firstAreaFocus : null,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                  CustomTextField(
+                    controller: clinics[i].phoneController,
+                    label: 'Phone Number (Optional)',
+                    hint: 'e.g. +91 98765 43210',
+                    prefixIcon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextField(
+                          controller: clinics[i].rentController,
+                          label: 'Fixed Rent (₹)',
+                          hint: '5000',
+                          prefixIcon: Icons.home_work_outlined,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                        ),
+                      ),
+                      const SizedBox(width: Spacing.md),
+                      Expanded(
+                        child: CustomTextField(
+                          controller: clinics[i].feeController,
+                          label: 'Consultation Fee (₹)',
+                          hint: '300',
+                          prefixIcon: Icons.currency_rupee,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  DaySelectorField(
+                    label: 'Open Days',
+                    value: clinics[i].openDays,
+                    onChanged: (v) {
+                      clinics[i].openDays = v;
+                      onChanged();
+                    },
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextField(
+                          controller: clinics[i].revGoalController,
+                          label: 'Monthly Revenue Goal (₹)',
+                          hint: '30000',
+                          prefixIcon: Icons.trending_up,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                        ),
+                      ),
+                      const SizedBox(width: Spacing.md),
+                      Expanded(
+                        child: CustomTextField(
+                          controller: clinics[i].patGoalController,
+                          label: 'Monthly New Patients',
+                          hint: '10',
+                          prefixIcon: Icons.person_add_outlined,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => onSubmitted(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: Spacing.sm),
-          CustomTextField(
-            controller: addressControllers[i],
-            label: 'Area (optional)',
-            hint: '',
-            prefixIcon: Icons.place_outlined,
-            focusNode: i == 0 ? firstAreaFocus : null,
-            textInputAction: TextInputAction.next,
-            onFieldSubmitted: i == 0
-                ? (_) => revenueFocus.requestFocus()
-                : null,
-          ),
-          const SizedBox(height: Spacing.lg),
+          const SizedBox(height: Spacing.md),
         ],
 
         Align(
@@ -440,136 +497,7 @@ class _ClinicsPage extends StatelessWidget {
             label: const Text('Add another clinic'),
           ),
         ),
-
-        const SizedBox(height: Spacing.xl),
-        Text('Monthly goals', style: theme.textTheme.titleMedium),
-        const SizedBox(height: Spacing.sm),
-        Text(
-          'The dashboard measures every month against these. They can be '
-          'changed any time in Settings.',
-          style: theme.textTheme.labelMedium,
-        ),
-        const SizedBox(height: Spacing.lg),
-
-        _GoalField(
-          label: 'Revenue target',
-          controller: revenueController,
-          prefixIcon: Icons.currency_rupee,
-          value: revenueGoal,
-          min: kRevenueGoalMin,
-          max: kRevenueGoalMax,
-          divisions: 39,
-          valueLabel: Formatters.formatCurrency(revenueGoal),
-          focusNode: revenueFocus,
-          textInputAction: TextInputAction.next,
-          onFieldSubmitted: () => patientFocus.requestFocus(),
-          onChanged: (v) {
-            revenueController.text = v.round().toString();
-            onRevenueChanged(v);
-          },
-          onTyped: (raw) {
-            final parsed = double.tryParse(raw);
-            if (parsed == null) return;
-            onRevenueChanged(parsed.clamp(kRevenueGoalMin, kRevenueGoalMax));
-          },
-        ),
-        const SizedBox(height: Spacing.xl),
-        _GoalField(
-          label: 'New patients target',
-          controller: patientController,
-          prefixIcon: Icons.person_add_outlined,
-          value: patientGoal.toDouble(),
-          min: kPatientGoalMin.toDouble(),
-          max: kPatientGoalMax.toDouble(),
-          divisions: kPatientGoalMax - kPatientGoalMin,
-          valueLabel: '$patientGoal per month',
-          focusNode: patientFocus,
-          // Last field on the page: Enter here does what "Get started" does.
-          textInputAction: TextInputAction.done,
-          onFieldSubmitted: onSubmitted,
-          onChanged: (v) {
-            patientController.text = v.round().toString();
-            onPatientChanged(v.round());
-          },
-          onTyped: (raw) {
-            final parsed = int.tryParse(raw);
-            if (parsed == null) return;
-            onPatientChanged(parsed.clamp(kPatientGoalMin, kPatientGoalMax));
-          },
-        ),
         const SizedBox(height: Spacing.xxl),
-      ],
-    );
-  }
-}
-
-/// Number field with a slider beneath it.
-///
-/// Both edit the same value: the slider is fast for a rough figure, the field
-/// is exact when the doctor already knows the number he wants.
-class _GoalField extends StatelessWidget {
-  final String label;
-  final TextEditingController controller;
-  final IconData prefixIcon;
-  final double value;
-  final double min;
-  final double max;
-  final int divisions;
-  final String valueLabel;
-  final ValueChanged<double> onChanged;
-  final ValueChanged<String> onTyped;
-  final FocusNode? focusNode;
-  final TextInputAction? textInputAction;
-  final VoidCallback? onFieldSubmitted;
-
-  const _GoalField({
-    required this.label,
-    required this.controller,
-    required this.prefixIcon,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.divisions,
-    required this.valueLabel,
-    required this.onChanged,
-    required this.onTyped,
-    this.focusNode,
-    this.textInputAction,
-    this.onFieldSubmitted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CustomTextField(
-          controller: controller,
-          label: label,
-          prefixIcon: prefixIcon,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged: onTyped,
-          focusNode: focusNode,
-          textInputAction: textInputAction,
-          onFieldSubmitted: onFieldSubmitted == null
-              ? null
-              : (_) => onFieldSubmitted!(),
-        ),
-        Slider(
-          value: value.clamp(min, max),
-          min: min,
-          max: max,
-          divisions: divisions,
-          label: valueLabel,
-          onChanged: onChanged,
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: Spacing.md),
-          child: Text(valueLabel, style: theme.textTheme.labelMedium),
-        ),
       ],
     );
   }

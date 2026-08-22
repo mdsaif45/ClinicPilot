@@ -177,7 +177,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Security & Privacy'), findsOneWidget);
+      expect(find.text('SECURITY & PRIVACY'), findsOneWidget);
       expect(find.text('Enable App Lock'), findsOneWidget);
 
       await tester.tap(find.text('Enable App Lock'));

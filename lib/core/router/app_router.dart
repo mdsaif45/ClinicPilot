@@ -268,18 +268,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
 
     if (isTablet) {
       return Scaffold(
-        appBar: isDashboard
-            ? AppBar(
-                elevation: 0,
-                scrolledUnderElevation: 1,
-                backgroundColor: scheme.surface,
-                foregroundColor: scheme.onSurface,
-                titleSpacing: Spacing.sm,
-                title: const ClinicSwitcher(),
-              )
-            : null,
         body: SafeArea(
-          top: !isDashboard,
           bottom: false,
           child: Row(
             children: [
@@ -320,8 +309,28 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
               ),
               const VerticalDivider(thickness: 1, width: 1),
               Expanded(
-                child: ResponsiveContent(
-                  child: navigationShell,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (isDashboard)
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          Spacing.lg,
+                          Spacing.md,
+                          Spacing.lg,
+                          0,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: ClinicSwitcher(),
+                        ),
+                      ),
+                    Expanded(
+                      child: ResponsiveContent(
+                        child: navigationShell,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
