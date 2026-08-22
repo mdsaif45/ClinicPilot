@@ -77,11 +77,30 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     return (c + m + o) - d;
   }
 
+  bool _autoSyncPaidAmount = true;
+
+  void _onFeeChanged() {
+    setState(() {
+      if (_autoSyncPaidAmount) {
+        _paidAmountController.text = _total.toStringAsFixed(0);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final clinicsAsync = ref.watch(clinicsStreamProvider);
 
     final clinics = clinicsAsync.value ?? [];
+
+    if (_selectedClinicId == null && clinics.length == 1) {
+      _selectedClinicId = clinics.first.id;
+      final cl = clinics.first;
+      _consultationController.text = cl.defaultConsultationFee.toStringAsFixed(0);
+      if (_autoSyncPaidAmount) {
+        _paidAmountController.text = _total.toStringAsFixed(0);
+      }
+    }
 
     // A memo has to belong to a clinic - without one, the fee fields below
     // fill in for nothing, since the write can never succeed.
@@ -108,9 +127,12 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     }
 
     final currentTotal = _total;
-    if (_paidAmountController.text.isEmpty) {
+    if (_paidAmountController.text.isEmpty && _autoSyncPaidAmount) {
       _paidAmountController.text = currentTotal.toStringAsFixed(0);
     }
+
+    final paidNum = double.tryParse(_paidAmountController.text) ?? currentTotal;
+    final pendingDue = currentTotal - paidNum;
 
     return AppFormDialog(
       title: 'Create Cash Memo',
@@ -155,6 +177,9 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                   final cl = clinics.firstWhere((c) => c.id == val);
                   _consultationController.text =
                       cl.defaultConsultationFee.toStringAsFixed(0);
+                  if (_autoSyncPaidAmount) {
+                    _paidAmountController.text = _total.toStringAsFixed(0);
+                  }
                 });
               },
             ),
@@ -179,7 +204,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
               label: 'Consultation Fee (Rs)',
               prefixIcon: Icons.currency_rupee,
               keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => _onFeeChanged(),
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -187,7 +212,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
               label: 'Medicine Fee (Rs)',
               prefixIcon: Icons.medication,
               keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => _onFeeChanged(),
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -195,7 +220,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
               label: 'Other Charges (Rs)',
               prefixIcon: Icons.add_circle_outline,
               keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => _onFeeChanged(),
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -203,15 +228,59 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
               label: 'Discount (Rs)',
               prefixIcon: Icons.discount,
               keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => _onFeeChanged(),
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
               controller: _paidAmountController,
-              label: 'Paid Amount (Rs)',
+              label: 'Paid Amount (Rs) *',
+              hint: 'Amount collected today',
               prefixIcon: Icons.payments,
               keyboardType: TextInputType.number,
+              onChanged: (v) {
+                setState(() {
+                  _autoSyncPaidAmount = false;
+                });
+              },
             ),
+            const SizedBox(height: Spacing.xs),
+            Wrap(
+              spacing: Spacing.xs,
+              runSpacing: Spacing.xs,
+              children: [
+                ActionChip(
+                  label: const Text('Full Payment'),
+                  avatar: const Icon(Icons.check, size: 14),
+                  onPressed: () {
+                    setState(() {
+                      _autoSyncPaidAmount = true;
+                      _paidAmountController.text = currentTotal.toStringAsFixed(0);
+                    });
+                  },
+                ),
+                ActionChip(
+                  label: const Text('Unpaid / Full Due (Rs 0)'),
+                  avatar: const Icon(Icons.pending_actions, size: 14),
+                  onPressed: () {
+                    setState(() {
+                      _autoSyncPaidAmount = false;
+                      _paidAmountController.text = '0';
+                    });
+                  },
+                ),
+              ],
+            ),
+            if (pendingDue > 0) ...[
+              const SizedBox(height: Spacing.xs),
+              Text(
+                'Note: Rs ${pendingDue.toStringAsFixed(0)} will be recorded as Pending Due balance for this patient.',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ],
             const SizedBox(height: Spacing.lg),
             Container(
               padding: const EdgeInsets.all(Spacing.md),
