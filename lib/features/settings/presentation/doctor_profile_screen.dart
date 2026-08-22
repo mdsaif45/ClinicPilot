@@ -199,7 +199,10 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.profile.name);
+    final initialName = widget.profile.name.isNotEmpty
+        ? widget.profile.name
+        : 'Dr. ';
+    _nameController = TextEditingController(text: initialName);
     _emailController = TextEditingController(text: widget.profile.email);
     _phoneController = TextEditingController(text: widget.profile.phone);
     _qualificationController = TextEditingController(text: widget.profile.qualification);
@@ -273,15 +276,18 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
             CustomTextField(
               controller: _nameController,
               label: 'Doctor Full Name *',
-              hint: 'e.g. Dr. Md. Saifuddin',
               prefixIcon: Icons.person_outline,
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return 'Required';
+                final trimmed = v.trim();
+                if (trimmed == 'Dr.' || trimmed == 'Dr') return 'Please enter your full name';
+                return null;
+              },
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
               controller: _emailController,
               label: 'Email Address',
-              hint: 'e.g. doctor@gmail.com',
               prefixIcon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
             ),
@@ -289,7 +295,6 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
             CustomTextField(
               controller: _phoneController,
               label: 'Phone Number',
-              hint: 'e.g. 9830012345',
               prefixIcon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
             ),
@@ -297,14 +302,12 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
             CustomTextField(
               controller: _qualificationController,
               label: 'Qualifications / Degrees',
-              hint: 'e.g. BHMS, MD (Hom.)',
               prefixIcon: Icons.school_outlined,
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
               controller: _regNumberController,
               label: 'Medical Registration No.',
-              hint: 'e.g. WBMC-12345',
               prefixIcon: Icons.badge_outlined,
             ),
           ],

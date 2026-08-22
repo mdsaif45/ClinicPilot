@@ -64,7 +64,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
-  final _nameController = TextEditingController();
+  final _nameController = TextEditingController(text: 'Dr. ');
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _qualificationController = TextEditingController();
@@ -111,7 +111,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   bool get _canContinue {
-    if (_page == 0) return _nameController.text.trim().isNotEmpty;
+    if (_page == 0) {
+      final name = _nameController.text.trim();
+      return name.isNotEmpty && name != 'Dr.' && name != 'Dr';
+    }
     return _clinics.any((c) => c.nameController.text.trim().isNotEmpty);
   }
 
@@ -154,6 +157,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
+    _nameController.selection = TextSelection.fromPosition(
+      TextPosition(offset: _nameController.text.length),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _nameFocus.requestFocus();
     });
@@ -355,7 +361,6 @@ class _DoctorProfilePage extends StatelessWidget {
         CustomTextField(
           controller: nameController,
           label: 'Doctor Full Name *',
-          hint: 'e.g. Dr. Md. Saifuddin',
           prefixIcon: Icons.person_outline,
           onChanged: (_) => onChanged(),
           focusNode: nameFocus,
@@ -371,7 +376,6 @@ class _DoctorProfilePage extends StatelessWidget {
               child: CustomTextField(
                 controller: emailController,
                 label: 'Email Address',
-                hint: 'e.g. doctor@gmail.com',
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 onChanged: (_) => onChanged(),
@@ -385,7 +389,6 @@ class _DoctorProfilePage extends StatelessWidget {
               child: CustomTextField(
                 controller: phoneController,
                 label: 'Phone Number',
-                hint: 'e.g. 9830012345',
                 prefixIcon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
                 onChanged: (_) => onChanged(),
@@ -404,7 +407,6 @@ class _DoctorProfilePage extends StatelessWidget {
               child: CustomTextField(
                 controller: qualificationController,
                 label: 'Qualifications / Degrees',
-                hint: 'e.g. BHMS, MD (Hom.)',
                 prefixIcon: Icons.school_outlined,
                 onChanged: (_) => onChanged(),
                 focusNode: qualificationFocus,
@@ -417,7 +419,6 @@ class _DoctorProfilePage extends StatelessWidget {
               child: CustomTextField(
                 controller: regNumberController,
                 label: 'Registration No.',
-                hint: 'e.g. WBMC-12345',
                 prefixIcon: Icons.badge_outlined,
                 onChanged: (_) => onChanged(),
                 focusNode: regNumberFocus,
