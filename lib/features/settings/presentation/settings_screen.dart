@@ -320,21 +320,37 @@ class _DoctorProfileHeader extends ConsumerWidget {
     final scheme = theme.colorScheme;
     final profile = ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
 
-    final displayName = profile.name.isNotEmpty ? profile.name : 'Set up Doctor Profile';
+    final displayName = profile.name.isNotEmpty ? profile.name : 'Doctor Profile';
     final initial = profile.name.isNotEmpty
         ? profile.name.replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '').trim()
         : 'D';
     final avatarLetter = initial.isNotEmpty ? initial[0].toUpperCase() : 'D';
 
-    final subtitle = profile.email.isNotEmpty
-        ? profile.email
-        : (profile.phone.isNotEmpty
-            ? profile.phone
-            : 'Tap to view credentials & contact info');
+    final subtitleParts = <String>[];
+    if (profile.qualification.isNotEmpty) {
+      subtitleParts.add(profile.qualification);
+    }
+    if (profile.email.isNotEmpty) {
+      subtitleParts.add(profile.email);
+    } else if (profile.phone.isNotEmpty) {
+      subtitleParts.add(profile.phone);
+    }
+
+    final subtitle = subtitleParts.isNotEmpty
+        ? subtitleParts.join(' • ')
+        : 'Tap to view credentials & contact info';
 
     return AppCard(
-      margin: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.xs, Spacing.lg, Spacing.sm),
-      padding: const EdgeInsets.all(Spacing.md),
+      margin: const EdgeInsets.fromLTRB(
+        Spacing.lg,
+        Spacing.sm,
+        Spacing.lg,
+        Spacing.xs,
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.md,
+      ),
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const DoctorProfileScreen()),
@@ -343,13 +359,14 @@ class _DoctorProfileHeader extends ConsumerWidget {
       child: Row(
         children: [
           CircleAvatar(
-            radius: 26,
+            radius: 28,
             backgroundColor: scheme.primaryContainer,
             child: Text(
               avatarLetter,
               style: theme.textTheme.titleLarge?.copyWith(
                 color: scheme.primary,
                 fontWeight: FontWeight.bold,
+                fontSize: 22,
               ),
             ),
           ),
@@ -360,15 +377,17 @@ class _DoctorProfileHeader extends ConsumerWidget {
               children: [
                 Text(
                   displayName,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
                   subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,
+                    fontSize: 13,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -376,10 +395,11 @@ class _DoctorProfileHeader extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(width: Spacing.xs),
           Icon(
             Icons.chevron_right,
-            size: 22,
-            color: scheme.onSurfaceVariant,
+            size: 20,
+            color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
           ),
         ],
       ),
