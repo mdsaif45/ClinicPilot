@@ -32,11 +32,16 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
 
   final List<String> _categories = [
     'Medicine Purchase',
+    'Packaging & Dispensing',
+    'Staff Salary',
     'Rent',
     'Electricity',
-    'Assistant Salary',
-    'Camp Expense',
-    'Packaging',
+    'Camp',
+    'Marketing',
+    'Furniture',
+    'Internet',
+    'Travel',
+    'Personal',
     'Miscellaneous',
   ];
 
