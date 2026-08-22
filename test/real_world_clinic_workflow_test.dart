@@ -239,9 +239,9 @@ void main() {
             severity: 'Severe',
           ),
         ],
-        hpi: 'Pain began 2 years ago, gradually worsening. Known Type 2 Diabetes.',
-        pastHistory: 'Rectal abscess surgically drained 5 years ago.',
-        familyHistory: 'Father had Diabetes and Hypertension.',
+        hpi: const HpiDetails(progression: 'Pain began 2 years ago, gradually worsening. Known Type 2 Diabetes.'),
+        pastHistory: const PastHistoryDetails(surgeries: 'Rectal abscess surgically drained 5 years ago.'),
+        familyHistory: const FamilyHistoryDetails(father: 'Father had Diabetes and Hypertension.'),
         physicalGenerals: const PhysicalGenerals(
           thermal: 'Hot',
           weatherPreference: 'Winter',
@@ -276,7 +276,14 @@ void main() {
           selectedRemedy: 'Thuja Occidentalis',
           potency: '200C',
         ),
-        baselinePrescription: 'Thuja Occidentalis 200C - 4 globules in morning on empty tongue for 3 days.',
+        baselinePrescription: const PrescriptionPlanDetails(
+          remedyName: 'Thuja Occidentalis',
+          potency: '200C',
+          dosageForm: 'Globules',
+          doseCount: '4 pills',
+          frequency: 'OD',
+          duration: '3 days',
+        ),
         outcome: 'Under Active Treatment',
       );
 
