@@ -9,7 +9,6 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/period_selector.dart';
 import '../../dashboard/presentation/widgets/clinic_health_score_card.dart';
-import '../../dashboard/presentation/widgets/daily_insight_card.dart';
 import '../providers/growth_provider.dart';
 import '../providers/profit_provider.dart';
 import '../providers/review_provider.dart';
@@ -137,7 +136,6 @@ class GrowthHubScreen extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(0, Spacing.md, 0, Spacing.xxl),
       children: [
         const ClinicHealthScoreCard(),
-        const DailyInsightCard(),
         const PeriodSelector(),
         _MenuCard(
           icon: Icons.trending_up,
@@ -156,15 +154,6 @@ class GrowthHubScreen extends ConsumerWidget {
               ? null
               : Formatters.formatCurrency(profit.netProfit),
           onTap: () => context.push('/growth/profit'),
-        ),
-        _MenuCard(
-          icon: Icons.star_outline,
-          title: 'Google Reviews & Reputation',
-          subtitle: 'Track positive patient reviews and 5-star Google rating',
-          trailing: reviewCount > 0
-              ? '$reviewCount reviews • ${avgRating.toStringAsFixed(1)} ★'
-              : 'View stats',
-          onTap: () => _showGoogleReviewsSheet(context, reviews),
         ),
         _MenuCard(
           icon: Icons.compare_arrows,
@@ -195,6 +184,15 @@ class GrowthHubScreen extends ConsumerWidget {
           title: 'Referral Partner CRM',
           subtitle: 'Pharmacies, labs, physios & local healthcare partner outreach',
           onTap: () => context.push('/growth/referral-crm'),
+        ),
+        _MenuCard(
+          icon: Icons.star_outline,
+          title: 'Google Reviews & Reputation',
+          subtitle: 'Track positive patient reviews and 5-star Google rating',
+          trailing: reviewCount > 0
+              ? '$reviewCount reviews • ${avgRating.toStringAsFixed(1)} ★'
+              : 'View stats',
+          onTap: () => _showGoogleReviewsSheet(context, reviews),
         ),
       ],
     );

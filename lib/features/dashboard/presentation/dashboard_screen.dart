@@ -16,6 +16,7 @@ import '../../patients/presentation/add_patient_dialog.dart';
 import '../../patients/providers/recall_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../providers/dashboard_provider.dart';
+import 'widgets/daily_insight_card.dart';
 import 'widgets/goal_tracker_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -283,6 +284,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: Spacing.lg),
+              const DailyInsightCard(),
             ],
           ),
         ),
