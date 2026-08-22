@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../design/tokens.dart';
+import '../services/app_haptics.dart';
 
 /// One tab of a [SegmentedTabs].
 class SegmentedTab {
@@ -15,11 +16,12 @@ class SegmentedTab {
   });
 }
 
-/// A row of icon pills with a single body that swaps beneath them.
+/// A row of icon pills with a single body that swaps beneath them and supports
+/// horizontal swiping left and right between tabs.
 ///
 /// This is how a screen surfaces a lot of data without pushing the user through
 /// extra navigation: everything about one entity stays on one page, one tap
-/// away. The label is exposed to screen readers via [Tooltip]/semantics even
+/// or swipe away. The label is exposed to screen readers via [Tooltip]/semantics even
 /// though only the icon is drawn.
 class SegmentedTabs extends StatefulWidget {
   final List<SegmentedTab> tabs;
@@ -37,6 +39,65 @@ class SegmentedTabs extends StatefulWidget {
 
 class _SegmentedTabsState extends State<SegmentedTabs> {
   late int _index = widget.initialIndex.clamp(0, widget.tabs.length - 1);
+  final ScrollController _pillScrollController = ScrollController();
+  final List<GlobalKey> _pillKeys = [];
+  double _dragDistance = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pillKeys.addAll(List.generate(widget.tabs.length, (_) => GlobalKey()));
+  }
+
+  @override
+  void didUpdateWidget(SegmentedTabs oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tabs.length != widget.tabs.length) {
+      _pillKeys.clear();
+      _pillKeys.addAll(List.generate(widget.tabs.length, (_) => GlobalKey()));
+    }
+  }
+
+  @override
+  void dispose() {
+    _pillScrollController.dispose();
+    super.dispose();
+  }
+
+  void _selectTab(int i) {
+    if (i < 0 || i >= widget.tabs.length) return;
+    if (_index == i) return;
+    setState(() => _index = i);
+    AppHaptics.selection();
+    _scrollToPill(i);
+  }
+
+  void _scrollToPill(int i) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || i >= _pillKeys.length) return;
+      final pillContext = _pillKeys[i].currentContext;
+      if (pillContext != null) {
+        Scrollable.ensureVisible(
+          pillContext,
+          duration: Motion.base,
+          curve: Motion.curve,
+          alignment: 0.5,
+        );
+      }
+    });
+  }
+
+  void _nextTab() {
+    if (_index < widget.tabs.length - 1) {
+      _selectTab(_index + 1);
+    }
+  }
+
+  void _prevTab() {
+    if (_index > 0) {
+      _selectTab(_index - 1);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,23 +107,25 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SingleChildScrollView(
+          controller: _pillScrollController,
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
           child: Row(
             children: [
               for (var i = 0; i < widget.tabs.length; i++)
                 Padding(
+                  key: i < _pillKeys.length ? _pillKeys[i] : null,
                   padding: const EdgeInsets.only(right: Spacing.sm),
                   child: _TabPill(
                     tab: widget.tabs[i],
                     selected: i == _index,
-                    onTap: () => setState(() => _index = i),
+                    onTap: () => _selectTab(i),
                   ),
                 ),
             ],
           ),
         ),
-        // Fixed gap, and the body swaps instantly.
+        // Fixed gap, and the body swaps instantly on tap or swipe.
         //
         // The pill morph carries the feedback on its own. Animating the panel
         // as well made each tab's content start from a different height and
@@ -72,7 +135,26 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
         // The gap lives here rather than inside each tab so every panel begins
         // at exactly the same offset, whatever widget it happens to start with.
         const SizedBox(height: Spacing.lg),
-        Builder(builder: widget.tabs[_index].builder),
+        GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onHorizontalDragStart: (_) => _dragDistance = 0.0,
+          onHorizontalDragUpdate: (details) {
+            _dragDistance += details.primaryDelta ?? 0.0;
+          },
+          onHorizontalDragEnd: (details) {
+            final velocity = details.primaryVelocity ?? 0.0;
+            if (velocity < -150 || _dragDistance < -50) {
+              _nextTab();
+            } else if (velocity > 150 || _dragDistance > 50) {
+              _prevTab();
+            }
+            _dragDistance = 0.0;
+          },
+          child: KeyedSubtree(
+            key: ValueKey<int>(_index),
+            child: Builder(builder: widget.tabs[_index].builder),
+          ),
+        ),
       ],
     );
   }

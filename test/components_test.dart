@@ -169,6 +169,35 @@ void main() {
       expect(find.text('LIST BODY'), findsOneWidget);
     });
 
+    testWidgets('swipes left and right to switch tabs', (t) async {
+      await t.pumpWidget(wrap(SegmentedTabs(tabs: [
+        SegmentedTab(
+          icon: Icons.info,
+          label: 'Info',
+          builder: (_) => const SizedBox(width: 300, height: 300, child: Text('INFO BODY')),
+        ),
+        SegmentedTab(
+          icon: Icons.list,
+          label: 'List',
+          builder: (_) => const SizedBox(width: 300, height: 300, child: Text('LIST BODY')),
+        ),
+      ])));
+
+      expect(find.text('INFO BODY'), findsOneWidget);
+
+      // Swipe left on body -> move to List tab
+      await t.drag(find.text('INFO BODY'), const Offset(-300, 0));
+      await t.pumpAndSettle();
+
+      expect(find.text('LIST BODY'), findsOneWidget);
+
+      // Swipe right on body -> move back to Info tab
+      await t.drag(find.text('LIST BODY'), const Offset(300, 0));
+      await t.pumpAndSettle();
+
+      expect(find.text('INFO BODY'), findsOneWidget);
+    });
+
     testWidgets('empty tabs renders nothing', (t) async {
       await t.pumpWidget(wrap(const SegmentedTabs(tabs: [])));
       expect(find.byType(Icon), findsNothing);
