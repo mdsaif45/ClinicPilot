@@ -15,6 +15,7 @@ import '../../expenses/presentation/add_expense_dialog.dart';
 import '../../patients/presentation/add_patient_dialog.dart';
 import '../../patients/providers/recall_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
+import '../../settings/providers/doctor_profile_provider.dart';
 import '../providers/dashboard_provider.dart';
 import 'widgets/daily_insight_card.dart';
 import 'widgets/goal_tracker_card.dart';
@@ -63,11 +64,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         children: [
                           Text(
                             () {
-                              final name =
-                                  ref.watch(doctorNameProvider).value ?? '';
-                              return name.isEmpty
+                              final profile =
+                                  ref.watch(doctorProfileStreamProvider).value;
+                              final greetingName = profile?.greetingName ?? '';
+                              final name = greetingName.isNotEmpty
+                                  ? greetingName
+                                  : (ref.watch(doctorNameProvider).value ?? '');
+                              final cleanName = () {
+                                if (name.isEmpty) return '';
+                                final stripped = name
+                                    .replaceFirst(
+                                        RegExp(r'^Dr\.?\s*',
+                                            caseSensitive: false),
+                                        '')
+                                    .trim();
+                                if (stripped.isEmpty) return name;
+                                final parts =
+                                    stripped.split(RegExp(r'\s+'));
+                                return 'Dr. ${parts.last}';
+                              }();
+                              return cleanName.isEmpty
                                   ? '${Formatters.greeting(now)} 👋'
-                                  : '${Formatters.greeting(now)}, $name 👋';
+                                  : '${Formatters.greeting(now)}, $cleanName 👋';
                             }(),
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
