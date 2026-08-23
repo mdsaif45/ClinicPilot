@@ -3,19 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
-import '../../../core/services/app_haptics.dart';
-import '../../../core/services/sample_data_seeder.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/day_selector_field.dart';
 import '../providers/onboarding_provider.dart';
-
-/// First-run setup: who the doctor is, and their clinic details.
-class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({super.key});
-
-  @override
-  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
-}
 
 class _ClinicFormControllers {
   final TextEditingController nameController;
@@ -61,10 +53,26 @@ class _ClinicFormControllers {
   }
 }
 
+class OnboardingScreen extends ConsumerStatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
-  final _nameController = TextEditingController();
+  final _nameController = TextEditingController(text: 'Dr. ');
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _qualificationController = TextEditingController();
+  final _regNumberController = TextEditingController();
+
   final _nameFocus = FocusNode();
+  final _emailFocus = FocusNode();
+  final _phoneFocus = FocusNode();
+  final _qualificationFocus = FocusNode();
+  final _regNumberFocus = FocusNode();
 
   final _clinics = <_ClinicFormControllers>[
     _ClinicFormControllers(),
@@ -75,13 +83,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   int _page = 0;
   bool _saving = false;
-  bool _focusClinicsPage = false;
+  bool _hasVisitedClinics = false;
 
   @override
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _qualificationController.dispose();
+    _regNumberController.dispose();
+
     _nameFocus.dispose();
+    _emailFocus.dispose();
+    _phoneFocus.dispose();
+    _qualificationFocus.dispose();
+    _regNumberFocus.dispose();
+
     _clinicNameFocus.dispose();
     _areaFocus.dispose();
     for (final c in _clinics) {
@@ -91,7 +109,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   bool get _canContinue {
-    if (_page == 0) return _nameController.text.trim().isNotEmpty;
+    if (_page == 0) {
+      final name = _nameController.text.trim();
+      return name.isNotEmpty && name != 'Dr.' && name != 'Dr';
+    }
     return _clinics.any((c) => c.nameController.text.trim().isNotEmpty);
   }
 
@@ -113,23 +134,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final draftClinics = _clinics.map((c) => c.toDraft()).toList();
 
     await ref.read(onboardingControllerProvider).complete(
-          doctorName: _nameController.text,
+          doctorName: _nameController.text.trim(),
+          doctorEmail: _emailController.text.trim(),
+          doctorPhone: _phoneController.text.trim(),
+          doctorQualification: _qualificationController.text.trim(),
+          doctorRegNumber: _regNumberController.text.trim(),
           clinics: draftClinics,
         );
 
     if (mounted) context.go('/dashboard');
   }
 
-  Future<void> _loadSampleData() async {
-    setState(() => _saving = true);
-    await SampleDataSeeder.seedRealisticData(ref);
-    AppHaptics.success();
-    if (mounted) context.go('/dashboard');
-  }
-
   @override
   void initState() {
     super.initState();
+    _nameController.selection = TextSelection.fromPosition(
+      TextPosition(offset: _nameController.text.length),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _nameFocus.requestFocus();
     });
@@ -158,7 +179,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             color: i <= _page
                                 ? theme.colorScheme.primary
                                 : theme.colorScheme.surfaceContainerHighest,
-                            borderRadius: Radii.smAll,
+                            borderRadius: Radii.pillAll,
                           ),
                         ),
                       ),
@@ -170,27 +191,35 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (i) {
-                  setState(() => _page = i);
-                  if (i == 1 && !_focusClinicsPage) {
-                    setState(() => _focusClinicsPage = true);
+                onPageChanged: (p) {
+                  setState(() => _page = p);
+                  if (p == 1 && !_hasVisitedClinics) {
+                    _hasVisitedClinics = true;
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) _clinicNameFocus.requestFocus();
                     });
                   }
                 },
                 children: [
-                  _NamePage(
-                    controller: _nameController,
-                    focusNode: _nameFocus,
+                  _DoctorProfilePage(
+                    nameController: _nameController,
+                    emailController: _emailController,
+                    phoneController: _phoneController,
+                    qualificationController: _qualificationController,
+                    regNumberController: _regNumberController,
+                    nameFocus: _nameFocus,
+                    emailFocus: _emailFocus,
+                    phoneFocus: _phoneFocus,
+                    qualificationFocus: _qualificationFocus,
+                    regNumberFocus: _regNumberFocus,
                     onChanged: _refresh,
-                    onDemoSelected: _saving ? null : _loadSampleData,
                     onSubmitted: () {
-                      if (!_canContinue) return;
-                      _pageController.nextPage(
-                        duration: Motion.base,
-                        curve: Motion.curve,
-                      );
+                      if (_canContinue) {
+                        _pageController.nextPage(
+                          duration: Motion.base,
+                          curve: Motion.curve,
+                        );
+                      }
                     },
                   ),
                   _ClinicsPage(
@@ -212,17 +241,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Row(
                 children: [
                   if (_page > 0)
-                    TextButton(
+                    AppButton.text(
+                      label: 'Back',
                       onPressed: _saving
                           ? null
                           : () => _pageController.previousPage(
                                 duration: Motion.base,
                                 curve: Motion.curve,
                               ),
-                      child: const Text('Back'),
                     ),
                   const Spacer(),
-                  FilledButton(
+                  AppButton.primary(
+                    label: _page == 0 ? 'Continue' : 'Get started',
+                    loading: _saving,
                     onPressed: !_canContinue || _saving
                         ? null
                         : () {
@@ -235,13 +266,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               _finish();
                             }
                           },
-                    child: _saving
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(_page == 0 ? 'Continue' : 'Get started'),
                   ),
                 ],
               ),
@@ -255,19 +279,35 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void _refresh() => setState(() {});
 }
 
-class _NamePage extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode focusNode;
+class _DoctorProfilePage extends StatelessWidget {
+  final TextEditingController nameController;
+  final TextEditingController emailController;
+  final TextEditingController phoneController;
+  final TextEditingController qualificationController;
+  final TextEditingController regNumberController;
+
+  final FocusNode nameFocus;
+  final FocusNode emailFocus;
+  final FocusNode phoneFocus;
+  final FocusNode qualificationFocus;
+  final FocusNode regNumberFocus;
+
   final VoidCallback onChanged;
   final VoidCallback onSubmitted;
-  final VoidCallback? onDemoSelected;
 
-  const _NamePage({
-    required this.controller,
-    required this.focusNode,
+  const _DoctorProfilePage({
+    required this.nameController,
+    required this.emailController,
+    required this.phoneController,
+    required this.qualificationController,
+    required this.regNumberController,
+    required this.nameFocus,
+    required this.emailFocus,
+    required this.phoneFocus,
+    required this.qualificationFocus,
+    required this.regNumberFocus,
     required this.onChanged,
     required this.onSubmitted,
-    this.onDemoSelected,
   });
 
   @override
@@ -275,42 +315,107 @@ class _NamePage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.lg,
+        Spacing.md,
+        Spacing.lg,
+        Spacing.xxl,
+      ),
       children: [
-        const SizedBox(height: Spacing.xl),
+        const SizedBox(height: Spacing.sm),
         Text('Welcome to ClinicPilot',
             style: theme.textTheme.headlineMedium),
-        const SizedBox(height: Spacing.sm),
+        const SizedBox(height: Spacing.xs),
         Text(
           'Know. Grow. Repeat.',
           style: theme.textTheme.titleMedium
               ?.copyWith(color: theme.colorScheme.primary),
         ),
-        const SizedBox(height: Spacing.xxl),
+        const SizedBox(height: Spacing.lg),
         Text(
-          'What should the app call you?',
-          style: theme.textTheme.titleMedium,
+          'Set up your Doctor Profile',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: Spacing.xs),
+        Text(
+          'Your profile information is stored safely on this device.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: Spacing.lg),
         CustomTextField(
-          controller: controller,
-          label: 'Your name',
-          hint: 'e.g. Dr. Md. Saifuddin',
+          controller: nameController,
+          label: 'Doctor Full Name *',
           prefixIcon: Icons.person_outline,
           onChanged: (_) => onChanged(),
-          focusNode: focusNode,
+          focusNode: nameFocus,
           autofocus: true,
           textInputAction: TextInputAction.next,
-          onFieldSubmitted: (_) => onSubmitted(),
+          onFieldSubmitted: (_) => emailFocus.requestFocus(),
         ),
-        if (onDemoSelected != null) ...[
-          const SizedBox(height: Spacing.xl),
-          OutlinedButton.icon(
-            onPressed: onDemoSelected,
-            icon: const Icon(Icons.auto_awesome, size: 18),
-            label: const Text('Explore with Sample Practice Data'),
-          ),
-        ],
+        const SizedBox(height: Spacing.md),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: CustomTextField(
+                controller: emailController,
+                label: 'Email Address',
+                prefixIcon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                onChanged: (_) => onChanged(),
+                focusNode: emailFocus,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => phoneFocus.requestFocus(),
+              ),
+            ),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: CustomTextField(
+                controller: phoneController,
+                label: 'Phone Number',
+                prefixIcon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                onChanged: (_) => onChanged(),
+                focusNode: phoneFocus,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => qualificationFocus.requestFocus(),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: Spacing.md),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: CustomTextField(
+                controller: qualificationController,
+                label: 'Qualifications / Degrees',
+                prefixIcon: Icons.school_outlined,
+                onChanged: (_) => onChanged(),
+                focusNode: qualificationFocus,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => regNumberFocus.requestFocus(),
+              ),
+            ),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: CustomTextField(
+                controller: regNumberController,
+                label: 'Registration No.',
+                prefixIcon: Icons.badge_outlined,
+                onChanged: (_) => onChanged(),
+                focusNode: regNumberFocus,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => onSubmitted(),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -338,167 +443,209 @@ class _ClinicsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.lg,
+        Spacing.md,
+        Spacing.lg,
+        Spacing.xxl,
+      ),
       children: [
-        const SizedBox(height: Spacing.xl),
-        Text('Your clinics', style: theme.textTheme.headlineSmall),
         const SizedBox(height: Spacing.sm),
+        Text('Where do you practice?',
+            style: theme.textTheme.headlineMedium),
+        const SizedBox(height: Spacing.xs),
         Text(
-          'Set up your clinic profile, fees, open days, and monthly targets. '
-          'You can change these anytime in Settings.',
-          style: theme.textTheme.labelMedium,
+          'Set up your clinics with rent, consultation fees & targets.',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: Spacing.lg),
-
         for (var i = 0; i < clinics.length; i++) ...[
-          Card(
-            elevation: 0,
-            color: scheme.surfaceContainerLow,
-            shape: RoundedRectangleBorder(
-              borderRadius: Radii.mdAll,
-              side: BorderSide(
-                color: scheme.outlineVariant.withValues(alpha: 0.5),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(Spacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.local_hospital_outlined,
-                          color: scheme.primary, size: 20),
-                      const SizedBox(width: Spacing.sm),
-                      Text(
-                        'Clinic ${i + 1}',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: scheme.primary,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (clinics.length > 1)
-                        IconButton(
-                          icon: const Icon(Icons.close, size: 18),
-                          tooltip: 'Remove',
-                          onPressed: () => onRemoveClinic(i),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  CustomTextField(
-                    controller: clinics[i].nameController,
-                    label: 'Clinic Name *',
-                    hint: 'e.g. City Care Homeopathy',
-                    prefixIcon: Icons.business_outlined,
-                    onChanged: (_) => onChanged(),
-                    focusNode: i == 0 ? firstNameFocus : null,
-                    textInputAction: TextInputAction.next,
-                    onFieldSubmitted: i == 0
-                        ? (_) => firstAreaFocus.requestFocus()
-                        : null,
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  CustomTextField(
-                    controller: clinics[i].addressController,
-                    label: 'Address / Location (Optional)',
-                    hint: 'e.g. Main Market, City Center',
-                    prefixIcon: Icons.place_outlined,
-                    focusNode: i == 0 ? firstAreaFocus : null,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  CustomTextField(
-                    controller: clinics[i].phoneController,
-                    label: 'Phone Number (Optional)',
-                    hint: 'e.g. +91 98765 43210',
-                    prefixIcon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: Spacing.md),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          controller: clinics[i].rentController,
-                          label: 'Fixed Rent (₹)',
-                          hint: '5000',
-                          prefixIcon: Icons.home_work_outlined,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                        ),
-                      ),
-                      const SizedBox(width: Spacing.md),
-                      Expanded(
-                        child: CustomTextField(
-                          controller: clinics[i].feeController,
-                          label: 'Consultation Fee (₹)',
-                          hint: '300',
-                          prefixIcon: Icons.currency_rupee,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: Spacing.md),
-                  DaySelectorField(
-                    label: 'Open Days',
-                    value: clinics[i].openDays,
-                    onChanged: (v) {
-                      clinics[i].openDays = v;
-                      onChanged();
-                    },
-                  ),
-                  const SizedBox(height: Spacing.md),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          controller: clinics[i].revGoalController,
-                          label: 'Monthly Revenue Goal (₹)',
-                          hint: '30000',
-                          prefixIcon: Icons.trending_up,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                        ),
-                      ),
-                      const SizedBox(width: Spacing.md),
-                      Expanded(
-                        child: CustomTextField(
-                          controller: clinics[i].patGoalController,
-                          label: 'Monthly New Patients',
-                          hint: '10',
-                          prefixIcon: Icons.person_add_outlined,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => onSubmitted(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          _ClinicCard(
+            index: i,
+            controllers: clinics[i],
+            nameFocus: i == 0 ? firstNameFocus : null,
+            areaFocus: i == 0 ? firstAreaFocus : null,
+            canRemove: clinics.length > 1,
+            onRemove: () => onRemoveClinic(i),
+            onChanged: onChanged,
+            onSubmitted: onSubmitted,
+            isLast: i == clinics.length - 1,
           ),
           const SizedBox(height: Spacing.md),
         ],
-
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: onAddClinic,
-            icon: const Icon(Icons.add),
-            label: const Text('Add another clinic'),
-          ),
+        AppButton.tonal(
+          label: 'Add Another Clinic',
+          icon: Icons.add,
+          fullWidth: true,
+          onPressed: onAddClinic,
         ),
-        const SizedBox(height: Spacing.xxl),
       ],
+    );
+  }
+}
+
+class _ClinicCard extends StatelessWidget {
+  final int index;
+  final _ClinicFormControllers controllers;
+  final FocusNode? nameFocus;
+  final FocusNode? areaFocus;
+  final bool canRemove;
+  final VoidCallback onRemove;
+  final VoidCallback onChanged;
+  final VoidCallback onSubmitted;
+  final bool isLast;
+
+  const _ClinicCard({
+    required this.index,
+    required this.controllers,
+    this.nameFocus,
+    this.areaFocus,
+    required this.canRemove,
+    required this.onRemove,
+    required this.onChanged,
+    required this.onSubmitted,
+    required this.isLast,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AppCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(Spacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Clinic ${index + 1}',
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const Spacer(),
+              if (canRemove)
+                IconButton(
+                  icon: Icon(Icons.close,
+                      size: 20, color: theme.colorScheme.error),
+                  onPressed: onRemove,
+                  tooltip: 'Remove clinic',
+                ),
+            ],
+          ),
+          const SizedBox(height: Spacing.md),
+          CustomTextField(
+            controller: controllers.nameController,
+            label: 'Clinic Name',
+            hint: 'e.g. City Care Clinic',
+            prefixIcon: Icons.local_hospital_outlined,
+            onChanged: (_) => onChanged(),
+            focusNode: nameFocus,
+            autofocus: index == 0,
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (_) => areaFocus?.requestFocus(),
+          ),
+          const SizedBox(height: Spacing.md),
+          CustomTextField(
+            controller: controllers.addressController,
+            label: 'Address / Area (Optional)',
+            hint: 'e.g. Central Park Market',
+            prefixIcon: Icons.place_outlined,
+            onChanged: (_) => onChanged(),
+            focusNode: areaFocus,
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: Spacing.md),
+          CustomTextField(
+            controller: controllers.phoneController,
+            label: 'Clinic Phone (Optional)',
+            hint: 'e.g. 9830012345',
+            prefixIcon: Icons.phone_outlined,
+            keyboardType: TextInputType.phone,
+            onChanged: (_) => onChanged(),
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: Spacing.md),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: CustomTextField(
+                  controller: controllers.rentController,
+                  label: 'Monthly Rent (₹)',
+                  prefixIcon: Icons.home_work_outlined,
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => onChanged(),
+                  textInputAction: TextInputAction.next,
+                ),
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: CustomTextField(
+                  controller: controllers.feeController,
+                  label: 'Default Fee (₹)',
+                  prefixIcon: Icons.currency_rupee,
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => onChanged(),
+                  textInputAction: TextInputAction.next,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.md),
+          DaySelectorField(
+            label: 'Practice Days',
+            value: controllers.openDays,
+            onChanged: (v) {
+              controllers.openDays = v;
+              onChanged();
+            },
+          ),
+          const SizedBox(height: Spacing.lg),
+          Text(
+            'MONTHLY PRACTICE TARGETS',
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.1,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: Spacing.sm),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: CustomTextField(
+                  controller: controllers.revGoalController,
+                  label: 'Revenue Goal (₹)',
+                  prefixIcon: Icons.currency_rupee,
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => onChanged(),
+                  textInputAction: TextInputAction.next,
+                ),
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: CustomTextField(
+                  controller: controllers.patGoalController,
+                  label: 'New Patients Goal',
+                  prefixIcon: Icons.person_add_outlined,
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => onChanged(),
+                  textInputAction:
+                      isLast ? TextInputAction.done : TextInputAction.next,
+                  onFieldSubmitted: isLast ? (_) => onSubmitted() : null,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

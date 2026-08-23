@@ -107,6 +107,10 @@ class OnboardingController {
   /// Writes everything the flow collected, then marks it done in one transaction.
   Future<void> complete({
     required String doctorName,
+    String doctorEmail = '',
+    String doctorPhone = '',
+    String doctorQualification = '',
+    String doctorRegNumber = '',
     required List<DraftClinic> clinics,
     double? revenueGoal,
     int? patientGoal,
@@ -115,6 +119,18 @@ class OnboardingController {
 
     await _db.transaction(() async {
       await _write(_db, kDoctorNameKey, doctorName.trim());
+      if (doctorEmail.trim().isNotEmpty) {
+        await _write(_db, 'doctor_email', doctorEmail.trim());
+      }
+      if (doctorPhone.trim().isNotEmpty) {
+        await _write(_db, 'doctor_phone', doctorPhone.trim());
+      }
+      if (doctorQualification.trim().isNotEmpty) {
+        await _write(_db, 'doctor_qualification', doctorQualification.trim());
+      }
+      if (doctorRegNumber.trim().isNotEmpty) {
+        await _write(_db, 'doctor_reg_number', doctorRegNumber.trim());
+      }
 
       String? firstId;
       for (final c in clinics) {
