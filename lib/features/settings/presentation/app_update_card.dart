@@ -175,7 +175,7 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
             if (downloadState.status == DownloadStatus.downloading) {
               final pct = (downloadState.progress * 100).toStringAsFixed(0);
               final downloadedMb = _formatSize(downloadState.downloadedBytes);
-              final totalMb = _formatSize(release.apkSizeBytes);
+              final totalMb = _formatSize(downloadState.totalBytes);
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,7 +365,8 @@ class _AppUpdateCardState extends ConsumerState<AppUpdateCard> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${_formatSize(release.apkSizeBytes)} · released ${_formatDaysAgo(release.publishedAt)}',
+                            '${_formatSize(ref.watch(matchedApkProvider(release)).value?.sizeBytes ?? release.apkSizeBytes)} · '
+                            'released ${_formatDaysAgo(release.publishedAt)}',
                             style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                           ),
                         ],

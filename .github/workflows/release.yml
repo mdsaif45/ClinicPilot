@@ -63,22 +63,29 @@ jobs:
             echo "::warning::No keystore secrets found - APK will be DEBUG-SIGNED and cannot upgrade a release-signed install"
           fi
 
-      - name: Build Android APK
-        run: flutter build apk --release
+      # One APK per CPU architecture instead of a single universal one - the
+      # native sqlite3/sqlcipher libraries are bundled per-ABI, and shipping
+      # only the ABI a phone actually needs is most of that saved size.
+      - name: Build Android APK (split per ABI)
+        run: flutter build apk --release --split-per-abi
 
-      # "app-release.apk" is meaningless once a few are sitting in a Downloads
-      # folder. update_service.dart selects the first asset ending in .apk, so
-      # the name itself is free to change.
-      - name: Rename APK with version
+      # update_service.dart matches on the {arch} segment of this name
+      # against AndroidDeviceInfo.supportedAbis, so the naming here and the
+      # matching there must stay in step.
+      - name: Rename APKs with version and architecture
         run: |
           VERSION="${{ github.ref_name }}"
           case "$VERSION" in
             v*) : ;;
             *)  VERSION="dev-${GITHUB_SHA::7}" ;;
           esac
-          mv build/app/outputs/flutter-apk/app-release.apk \
-             "build/app/outputs/flutter-apk/ClinicPilot-${VERSION}.apk"
-          echo "Renamed to ClinicPilot-${VERSION}.apk"
+          cd build/app/outputs/flutter-apk
+          for f in app-*-release.apk; do
+            arch="${f#app-}"
+            arch="${arch%-release.apk}"
+            mv "$f" "ClinicPilot-${VERSION}-${arch}-release.apk"
+            echo "Renamed to ClinicPilot-${VERSION}-${arch}-release.apk"
+          done
 
       # Always available, even for workflow_dispatch runs with no tag
       - name: Upload APK artifact

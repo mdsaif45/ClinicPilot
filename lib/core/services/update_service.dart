@@ -1,18 +1,38 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 
+/// One .apk asset attached to a release - a split-per-abi build attaches
+/// three (arm64-v8a, armeabi-v7a, x86_64), named
+/// ClinicPilot-{tag}-{arch}-release.apk.
+class ApkAsset {
+  final String name;
+  final String downloadUrl;
+  final int sizeBytes;
+
+  const ApkAsset({
+    required this.name,
+    required this.downloadUrl,
+    required this.sizeBytes,
+  });
+}
+
 class AppRelease {
   final String version;      // normalised, no leading 'v'  e.g. "0.3.0"
   final String tagName;      // raw tag                     e.g. "v0.3.0"
   final String notes;        // release body markdown
-  final String? apkUrl;      // browser_download_url of the .apk asset
-  final int apkSizeBytes;
   final DateTime publishedAt;
+
+  /// Every .apk asset on the release, unfiltered. Picking the one that
+  /// matches this device happens separately (see [UpdateService._pickApk]) -
+  /// a release can be parsed and cached without knowing what phone will read
+  /// it back.
+  final List<ApkAsset> apkAssets;
 
   /// The payload this was parsed from, so a release can be cached and rebuilt
   /// without a second network call.
@@ -22,11 +42,18 @@ class AppRelease {
     required this.version,
     required this.tagName,
     required this.notes,
-    this.apkUrl,
-    required this.apkSizeBytes,
+    required this.apkAssets,
     required this.publishedAt,
     this.rawJson = const {},
   });
+
+  /// The single asset a pre-split-per-abi caller (or a test) expects - the
+  /// first apk attached, or null if none. Prefer [UpdateService]'s ABI-aware
+  /// selection for an actual download.
+  ApkAsset? get firstApk => apkAssets.isEmpty ? null : apkAssets.first;
+
+  String? get apkUrl => firstApk?.downloadUrl;
+  int get apkSizeBytes => firstApk?.sizeBytes ?? 0;
 
   factory AppRelease.fromGitHubJson(Map<String, dynamic> json) {
     final rawTag = json['tag_name'] as String? ?? '';
@@ -37,17 +64,20 @@ class AppRelease {
         ? (DateTime.tryParse(publishedAtStr) ?? DateTime.now())
         : DateTime.now();
 
-    String? apkUrl;
-    int apkSizeBytes = 0;
-
+    final apkAssets = <ApkAsset>[];
     final assets = json['assets'] as List<dynamic>? ?? [];
     for (final asset in assets) {
       if (asset is Map<String, dynamic>) {
         final name = asset['name'] as String? ?? '';
         if (name.toLowerCase().endsWith('.apk')) {
-          apkUrl = asset['browser_download_url'] as String?;
-          apkSizeBytes = (asset['size'] as num?)?.toInt() ?? 0;
-          break;
+          final url = asset['browser_download_url'] as String?;
+          if (url != null) {
+            apkAssets.add(ApkAsset(
+              name: name,
+              downloadUrl: url,
+              sizeBytes: (asset['size'] as num?)?.toInt() ?? 0,
+            ));
+          }
         }
       }
     }
@@ -56,8 +86,7 @@ class AppRelease {
       version: version,
       tagName: rawTag,
       notes: notes,
-      apkUrl: apkUrl,
-      apkSizeBytes: apkSizeBytes,
+      apkAssets: apkAssets,
       rawJson: json,
       publishedAt: publishedAt,
     );
@@ -70,12 +99,64 @@ class UpdateService {
 
   final http.Client _client;
   final PackageInfo? _overridePackageInfo;
+  final List<String>? _overrideSupportedAbis;
 
   UpdateService({
     http.Client? client,
     PackageInfo? overridePackageInfo,
+    List<String>? overrideSupportedAbis,
   })  : _client = client ?? http.Client(),
-        _overridePackageInfo = overridePackageInfo;
+        _overridePackageInfo = overridePackageInfo,
+        _overrideSupportedAbis = overrideSupportedAbis;
+
+  /// The running device's ABIs, most-preferred first (e.g.
+  /// ['arm64-v8a', 'armeabi-v7a', 'armeabi']) - what a split-per-abi release
+  /// asset is matched against. Empty (never null) off Android, so asset
+  /// selection falls back to "just pick one" rather than throwing.
+  Future<List<String>> _supportedAbis() async {
+    if (_overrideSupportedAbis != null) return _overrideSupportedAbis;
+    if (!Platform.isAndroid) return const [];
+    try {
+      final info = await DeviceInfoPlugin().androidInfo;
+      return info.supportedAbis;
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Picks the asset matching this device out of every apk a release
+  /// attaches. A split-per-abi release names each
+  /// ClinicPilot-{tag}-{arch}-release.apk; the {arch} segment is matched
+  /// against the device's own supported-ABI list, most-preferred ABI first,
+  /// so a v7 device on an arm64 phone loses to the 64-bit build it actually
+  /// prefers.
+  ///
+  /// Falls back to the first attached apk when nothing matches - an older
+  /// release built as one universal APK, or a device whose ABI list could
+  /// not be read - so an update is still offered rather than silently
+  /// disappearing.
+  static ApkAsset? pickApkForAbis(
+    List<ApkAsset> assets,
+    List<String> supportedAbis,
+  ) {
+    if (assets.isEmpty) return null;
+    for (final abi in supportedAbis) {
+      for (final asset in assets) {
+        if (asset.name.toLowerCase().contains(abi.toLowerCase())) {
+          return asset;
+        }
+      }
+    }
+    return assets.first;
+  }
+
+  /// The asset this device should download from [release] - resolves the
+  /// device's real ABI list and matches it against every apk the release
+  /// attaches.
+  Future<ApkAsset?> pickApk(AppRelease release) async {
+    final abis = await _supportedAbis();
+    return pickApkForAbis(release.apkAssets, abis);
+  }
 
   /// Compares two version strings semantically.
   /// Returns 1 if a > b, -1 if a < b, 0 if a == b.
@@ -165,19 +246,21 @@ class UpdateService {
     }
   }
 
-  /// Downloads the APK from release.apkUrl emitting progress (0.0 to 1.0) and returns local path.
+  /// Downloads the apk asset matching this device's ABI, emitting progress
+  /// (0.0 to 1.0), and returns the local path.
   Stream<double> downloadApkStream(
     AppRelease release, {
     required Function(String filePath) onComplete,
     required Function(Object error) onError,
   }) async* {
-    if (release.apkUrl == null) {
+    final asset = await pickApk(release);
+    if (asset == null) {
       onError('No download URL available for release.');
       return;
     }
 
     try {
-      final request = http.Request('GET', Uri.parse(release.apkUrl!));
+      final request = http.Request('GET', Uri.parse(asset.downloadUrl));
       final response = await _client.send(request).timeout(const Duration(seconds: 60));
 
       if (response.statusCode != 200) {
@@ -185,7 +268,7 @@ class UpdateService {
         return;
       }
 
-      final contentLength = response.contentLength ?? release.apkSizeBytes;
+      final contentLength = response.contentLength ?? asset.sizeBytes;
       final tempDir = await getTemporaryDirectory();
       final saveFile = File('${tempDir.path}/clinicpilot-update-${release.version}.apk');
 
@@ -209,20 +292,21 @@ class UpdateService {
     }
   }
 
-  /// Convenience method for downloading APK with progress callback.
+  /// Convenience method for downloading the ABI-matched APK with a progress callback.
   Future<String?> downloadApk(
     AppRelease release, {
     void Function(double progress)? onProgress,
   }) async {
-    if (release.apkUrl == null) return null;
+    final asset = await pickApk(release);
+    if (asset == null) return null;
 
     try {
-      final request = http.Request('GET', Uri.parse(release.apkUrl!));
+      final request = http.Request('GET', Uri.parse(asset.downloadUrl));
       final response = await _client.send(request).timeout(const Duration(seconds: 60));
 
       if (response.statusCode != 200) return null;
 
-      final contentLength = response.contentLength ?? release.apkSizeBytes;
+      final contentLength = response.contentLength ?? asset.sizeBytes;
       final tempDir = await getTemporaryDirectory();
       final saveFile = File('${tempDir.path}/clinicpilot-update-${release.version}.apk');
 

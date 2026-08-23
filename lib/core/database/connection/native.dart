@@ -4,7 +4,8 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+import 'package:sqlite3/open.dart' as sqlite3_open;
+import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 
 import '../../services/database_encryption_service.dart';
 
@@ -13,7 +14,8 @@ QueryExecutor openConnection({DatabaseEncryptionService? encryptionService}) {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'clinic_pilot.sqlite'));
     if (Platform.isAndroid) {
-      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
+      await applyWorkaroundToOpenSqlCipherOnOldAndroidVersions();
+      sqlite3_open.open.overrideFor(sqlite3_open.OperatingSystem.android, openCipherOnAndroid);
     }
     final cachebase = await getTemporaryDirectory();
     sqlite3.tempDirectory = cachebase.path;

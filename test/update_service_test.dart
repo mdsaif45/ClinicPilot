@@ -162,6 +162,51 @@ void main() {
       expect(release, isNull);
     });
 
+    test('Split-per-abi release parses all three apk assets', () async {
+      const splitReleaseJson = '''
+      {
+        "tag_name": "v0.8.0",
+        "body": "Split per ABI",
+        "published_at": "2026-08-20T12:00:00Z",
+        "assets": [
+          {
+            "name": "ClinicPilot-v0.8.0-armeabi-v7a-release.apk",
+            "browser_download_url": "https://example.com/armeabi-v7a.apk",
+            "size": 12000000
+          },
+          {
+            "name": "ClinicPilot-v0.8.0-arm64-v8a-release.apk",
+            "browser_download_url": "https://example.com/arm64-v8a.apk",
+            "size": 13000000
+          },
+          {
+            "name": "ClinicPilot-v0.8.0-x86_64-release.apk",
+            "browser_download_url": "https://example.com/x86_64.apk",
+            "size": 14000000
+          }
+        ]
+      }
+      ''';
+
+      final mockClient = MockClient((request) async {
+        return http.Response(splitReleaseJson, 200);
+      });
+
+      final service = UpdateService(
+        client: mockClient,
+        overridePackageInfo: mockPackageInfo,
+      );
+
+      final release = await service.checkForUpdate();
+      expect(release, isNotNull);
+      expect(release!.apkAssets, hasLength(3));
+      expect(release.apkAssets.map((a) => a.name), containsAll([
+        'ClinicPilot-v0.8.0-armeabi-v7a-release.apk',
+        'ClinicPilot-v0.8.0-arm64-v8a-release.apk',
+        'ClinicPilot-v0.8.0-x86_64-release.apk',
+      ]));
+    });
+
     test('Same or older version remote -> returns null', () async {
       const olderReleaseJson = '''
       {
@@ -189,6 +234,69 @@ void main() {
 
       final release = await service.checkForUpdate();
       expect(release, isNull);
+    });
+  });
+
+  group('UpdateService.pickApkForAbis - split-per-abi asset selection', () {
+    const armeabi = ApkAsset(
+      name: 'ClinicPilot-v0.8.0-armeabi-v7a-release.apk',
+      downloadUrl: 'https://example.com/armeabi-v7a.apk',
+      sizeBytes: 12000000,
+    );
+    const arm64 = ApkAsset(
+      name: 'ClinicPilot-v0.8.0-arm64-v8a-release.apk',
+      downloadUrl: 'https://example.com/arm64-v8a.apk',
+      sizeBytes: 13000000,
+    );
+    const x86_64 = ApkAsset(
+      name: 'ClinicPilot-v0.8.0-x86_64-release.apk',
+      downloadUrl: 'https://example.com/x86_64.apk',
+      sizeBytes: 14000000,
+    );
+    final assets = [armeabi, arm64, x86_64];
+
+    test('arm64 device picks the arm64-v8a asset', () {
+      final picked = UpdateService.pickApkForAbis(assets, ['arm64-v8a', 'armeabi-v7a']);
+      expect(picked, same(arm64));
+    });
+
+    test('32-bit-only device picks the armeabi-v7a asset', () {
+      final picked = UpdateService.pickApkForAbis(assets, ['armeabi-v7a', 'armeabi']);
+      expect(picked, same(armeabi));
+    });
+
+    test('x86_64 emulator picks the x86_64 asset', () {
+      final picked = UpdateService.pickApkForAbis(assets, ['x86_64']);
+      expect(picked, same(x86_64));
+    });
+
+    test('unknown ABI falls back to the first asset rather than nothing', () {
+      final picked = UpdateService.pickApkForAbis(assets, ['riscv64']);
+      expect(picked, same(armeabi));
+    });
+
+    test('empty ABI list falls back to the first asset', () {
+      final picked = UpdateService.pickApkForAbis(assets, []);
+      expect(picked, same(armeabi));
+    });
+
+    test('empty asset list returns null', () {
+      final picked = UpdateService.pickApkForAbis([], ['arm64-v8a']);
+      expect(picked, isNull);
+    });
+
+    test('pickApk resolves via the overridden ABI list end-to-end', () async {
+      final service = UpdateService(overrideSupportedAbis: ['arm64-v8a']);
+      final release = AppRelease(
+        version: '0.8.0',
+        tagName: 'v0.8.0',
+        notes: '',
+        apkAssets: assets,
+        publishedAt: DateTime(2026, 8, 20),
+      );
+
+      final picked = await service.pickApk(release);
+      expect(picked, same(arm64));
     });
   });
 }
