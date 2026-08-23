@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
-import '../../../core/services/app_haptics.dart';
-import '../../../core/services/sample_data_seeder.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/custom_text_field.dart';
@@ -147,13 +145,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (mounted) context.go('/dashboard');
   }
 
-  Future<void> _loadSampleData() async {
-    setState(() => _saving = true);
-    await SampleDataSeeder.seedRealisticData(ref);
-    AppHaptics.success();
-    if (mounted) context.go('/dashboard');
-  }
-
   @override
   void initState() {
     super.initState();
@@ -222,7 +213,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     qualificationFocus: _qualificationFocus,
                     regNumberFocus: _regNumberFocus,
                     onChanged: _refresh,
-                    onDemoSelected: _saving ? null : _loadSampleData,
                     onSubmitted: () {
                       if (_canContinue) {
                         _pageController.nextPage(
@@ -304,7 +294,6 @@ class _DoctorProfilePage extends StatelessWidget {
 
   final VoidCallback onChanged;
   final VoidCallback onSubmitted;
-  final VoidCallback? onDemoSelected;
 
   const _DoctorProfilePage({
     required this.nameController,
@@ -319,7 +308,6 @@ class _DoctorProfilePage extends StatelessWidget {
     required this.regNumberFocus,
     required this.onChanged,
     required this.onSubmitted,
-    this.onDemoSelected,
   });
 
   @override
@@ -428,15 +416,6 @@ class _DoctorProfilePage extends StatelessWidget {
             ),
           ],
         ),
-        if (onDemoSelected != null) ...[
-          const SizedBox(height: Spacing.xl),
-          AppButton.outlined(
-            label: 'Explore with Sample Practice Data',
-            icon: Icons.auto_awesome,
-            fullWidth: true,
-            onPressed: onDemoSelected,
-          ),
-        ],
       ],
     );
   }
