@@ -239,7 +239,7 @@ class _DownloadButton extends ConsumerWidget {
           const SizedBox(height: Spacing.sm),
           Text(
             '${(state.progress * 100).toStringAsFixed(0)}% of '
-            '${(release.apkSizeBytes / 1048576).toStringAsFixed(1)} MB',
+            '${(state.totalBytes / 1048576).toStringAsFixed(1)} MB',
             style: theme.textTheme.labelMedium,
           ),
         ],
@@ -272,6 +272,16 @@ class _DownloadButton extends ConsumerWidget {
       );
     }
 
+    final matchedApk = ref.watch(matchedApkProvider(release));
+    final sizeLabel = matchedApk.when(
+      data: (asset) {
+        final bytes = asset?.sizeBytes ?? release.apkSizeBytes;
+        return '${(bytes / 1048576).toStringAsFixed(1)} MB';
+      },
+      loading: () => '',
+      error: (_, __) => '${(release.apkSizeBytes / 1048576).toStringAsFixed(1)} MB',
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -287,8 +297,9 @@ class _DownloadButton extends ConsumerWidget {
           onPressed: () => notifier.startDownload(release),
           icon: const Icon(Icons.download),
           label: Text(
-            'Download v${release.version} · '
-            '${(release.apkSizeBytes / 1048576).toStringAsFixed(1)} MB',
+            sizeLabel.isEmpty
+                ? 'Download v${release.version}'
+                : 'Download v${release.version} · $sizeLabel',
           ),
         ),
       ],

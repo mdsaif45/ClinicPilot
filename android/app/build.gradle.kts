@@ -16,7 +16,7 @@ plugins {
 
 android {
     namespace = "com.clinicpilot.clinic_pilot"
-    compileSdk = 35
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -29,8 +29,11 @@ android {
 
     defaultConfig {
         applicationId = "com.clinicpilot.clinic_pilot"
-        minSdk = 21
-        targetSdk = 35
+        // flutter_secure_storage (device-backed encryption for the local
+        // database key) requires 23. Below this, an install/update would
+        // fail at the manifest-merge step, not just silently misbehave.
+        minSdk = 23
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

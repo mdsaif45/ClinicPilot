@@ -12,12 +12,28 @@ final availableUpdateProvider = FutureProvider<AppRelease?>((ref) async {
   return await service.checkForUpdate();
 });
 
+/// The apk asset this device would actually download for [release] - a
+/// split-per-abi release attaches three, and only one matches. UI showing a
+/// size or "download available" before the download starts must read this
+/// rather than [AppRelease.apkUrl]/[AppRelease.apkSizeBytes], which just
+/// reflect whichever asset GitHub listed first.
+final matchedApkProvider =
+    FutureProvider.family<ApkAsset?, AppRelease>((ref, release) async {
+  final service = ref.watch(updateServiceProvider);
+  return await service.pickApk(release);
+});
+
 enum DownloadStatus { idle, downloading, ready, error }
 
 class UpdateDownloadState {
   final DownloadStatus status;
   final double progress; // 0.0 to 1.0
   final int downloadedBytes;
+
+  /// Size of the apk asset actually matched to this device's ABI - not
+  /// necessarily [AppRelease.apkSizeBytes], which is just whichever asset
+  /// GitHub happened to list first on a split-per-abi release.
+  final int totalBytes;
   final String? downloadedFilePath;
   final String? errorMessage;
 
@@ -25,6 +41,7 @@ class UpdateDownloadState {
     this.status = DownloadStatus.idle,
     this.progress = 0.0,
     this.downloadedBytes = 0,
+    this.totalBytes = 0,
     this.downloadedFilePath,
     this.errorMessage,
   });
@@ -33,6 +50,7 @@ class UpdateDownloadState {
     DownloadStatus? status,
     double? progress,
     int? downloadedBytes,
+    int? totalBytes,
     String? downloadedFilePath,
     String? errorMessage,
   }) {
@@ -40,6 +58,7 @@ class UpdateDownloadState {
       status: status ?? this.status,
       progress: progress ?? this.progress,
       downloadedBytes: downloadedBytes ?? this.downloadedBytes,
+      totalBytes: totalBytes ?? this.totalBytes,
       downloadedFilePath: downloadedFilePath ?? this.downloadedFilePath,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -60,6 +79,13 @@ class UpdateDownloadNotifier extends StateNotifier<UpdateDownloadState> {
       progress: 0.0,
     );
 
+    // Resolved once up front so the progress-bytes math below matches
+    // whichever asset downloadApkStream actually ends up fetching for this
+    // device, not just whatever GitHub listed first.
+    unawaited(_updateService.pickApk(release).then((asset) {
+      state = state.copyWith(totalBytes: asset?.sizeBytes ?? release.apkSizeBytes);
+    }));
+
     _downloadSub?.cancel();
     _downloadSub = _updateService.downloadApkStream(
       release,
@@ -78,7 +104,7 @@ class UpdateDownloadNotifier extends StateNotifier<UpdateDownloadState> {
       },
     ).listen(
       (progress) {
-        final downloadedBytes = (progress * release.apkSizeBytes).round();
+        final downloadedBytes = (progress * state.totalBytes).round();
         state = state.copyWith(
           progress: progress,
           downloadedBytes: downloadedBytes,
