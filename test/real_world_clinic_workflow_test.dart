@@ -174,14 +174,14 @@ void main() {
       expect(find.textContaining('300'), findsWidgets);
 
       final fields = find.byType(TextFormField);
-      // Index 1: Medicine Fee -> 200
-      await tester.enterText(fields.at(1), '200');
+      // Index 2: Medicine Fee -> 200 (Index 0 is DateField, Index 1 is Consultation Fee)
+      await tester.enterText(fields.at(2), '200');
       await tester.pumpAndSettle();
 
       expect(find.textContaining('500'), findsWidgets);
 
-      // Index 4: Paid Amount -> 300
-      await tester.enterText(fields.at(4), '300');
+      // Index 5: Paid Amount -> 300
+      await tester.enterText(fields.at(5), '300');
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Note: Rs 200 will be recorded as Pending Due balance'), findsOneWidget);

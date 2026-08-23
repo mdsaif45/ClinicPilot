@@ -188,37 +188,11 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
               onChanged: (val) =>
                   setState(() => _outcome = val.isEmpty ? null : val),
             ),
-            const SizedBox(height: Spacing.md),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.event_repeat_outlined),
-              title: const Text('Next follow-up'),
-              subtitle: Text(
-                _nextFollowUpDate == null
-                    ? 'Not scheduled'
-                    : Formatters.formatDate(_nextFollowUpDate!),
-              ),
-              trailing: _nextFollowUpDate == null
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.clear),
-                      tooltip: 'Clear',
-                      onPressed: () =>
-                          setState(() => _nextFollowUpDate = null),
-                    ),
-              onTap: () async {
-                final now = DateTime.now();
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate:
-                      _nextFollowUpDate ?? now.add(const Duration(days: 30)),
-                  firstDate: now,
-                  lastDate: now.add(const Duration(days: 730)),
-                );
-                if (picked != null) {
-                  setState(() => _nextFollowUpDate = picked);
-                }
-              },
+            DateField(
+              label: 'Next Follow-up (Optional)',
+              prefixIcon: Icons.event_repeat_outlined,
+              value: _nextFollowUpDate,
+              onChanged: (d) => setState(() => _nextFollowUpDate = d),
             ),
           ],
         ),

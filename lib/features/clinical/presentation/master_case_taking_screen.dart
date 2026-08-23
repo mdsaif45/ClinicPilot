@@ -1,3 +1,5 @@
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/date_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -653,11 +655,11 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
 
     // 1. Identification
     if (record.identification.regNo.isNotEmpty) _regNoController.text = record.identification.regNo;
-    if (record.identification.firstVisitDate.isNotEmpty) _firstVisitDateController.text = record.identification.firstVisitDate;
+    if (record.identification.firstVisitDate.isNotEmpty) _firstVisitDateController.text = Formatters.displayFromDbDate(record.identification.firstVisitDate);
     if (record.identification.patientName.isNotEmpty) _patientNameController.text = record.identification.patientName;
     if (record.identification.age.isNotEmpty) _ageController.text = record.identification.age;
     if (record.identification.gender.isNotEmpty) _genderController.text = record.identification.gender;
-    if (record.identification.dob.isNotEmpty) _dobController.text = record.identification.dob;
+    if (record.identification.dob.isNotEmpty) _dobController.text = Formatters.displayFromDbDate(record.identification.dob);
     if (record.identification.occupation.isNotEmpty) _occupationController.text = record.identification.occupation;
     if (record.identification.address.isNotEmpty) _addressController.text = record.identification.address;
     if (record.identification.phone.isNotEmpty) _phoneController.text = record.identification.phone;
@@ -894,7 +896,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     _diagClinicalRemarksController.text = record.clinicalAssessment.clinicalRemarks;
 
     // 15. Prescription
-    _rxPrescriptionDateController.text = record.baselinePrescription.prescriptionDate;
+    _rxPrescriptionDateController.text = Formatters.displayFromDbDate(record.baselinePrescription.prescriptionDate);
     _rxRemedyController.text = record.baselinePrescription.remedyName;
     _rxPotencyController.text = record.baselinePrescription.potency;
     _rxDoseController.text = record.baselinePrescription.dose;
@@ -910,7 +912,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     _rxPrescriptionNotesController.text = record.baselinePrescription.prescriptionNotes;
 
     // 16. Investigations
-    _invInvestigationDateController.text = record.investigations.investigationDate;
+    _invInvestigationDateController.text = Formatters.displayFromDbDate(record.investigations.investigationDate);
     _invInvestigationNameController.text = record.investigations.investigationName;
     _invTypePanelController.text = record.investigations.typePanel;
     _invResultValueController.text = record.investigations.resultValue;
@@ -922,7 +924,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     _invReportReferenceController.text = record.investigations.reportReference;
 
     // 17. Follow-up
-    _fuFollowUpDateController.text = record.followUpDetails.followUpDate;
+    _fuFollowUpDateController.text = Formatters.displayFromDbDate(record.followUpDetails.followUpDate);
     _fuIntervalSincePreviousVisitController.text = record.followUpDetails.intervalSincePreviousVisit;
     _fuOverallResponseController.text = record.followUpDetails.overallResponse;
     _fuChiefComplaintChangesController.text = record.followUpDetails.chiefComplaintChanges;
@@ -940,7 +942,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     _fuFollowUpPrescriptionController.text = record.followUpDetails.followUpPrescription;
     _fuPotencyController.text = record.followUpDetails.potency;
     _fuDoseRepetitionController.text = record.followUpDetails.doseRepetition;
-    _fuNextFollowUpController.text = record.followUpDetails.nextFollowUp;
+    _fuNextFollowUpController.text = Formatters.displayFromDbDate(record.followUpDetails.nextFollowUp);
     _fuFollowUpRemarksController.text = record.followUpDetails.followUpRemarks.isNotEmpty ? record.followUpDetails.followUpRemarks : record.followUpNotes;
 
     // 18. Outcome
@@ -1027,11 +1029,11 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
       recordDate: DateTime.now(),
       identification: PatientIdentificationDetails(
         regNo: _regNoController.text.trim(),
-        firstVisitDate: _firstVisitDateController.text.trim(),
+        firstVisitDate: Formatters.toDbDateString(_firstVisitDateController.text),
         patientName: _patientNameController.text.trim(),
         age: _ageController.text.trim(),
         gender: _genderController.text.trim(),
-        dob: _dobController.text.trim(),
+        dob: Formatters.toDbDateString(_dobController.text),
         occupation: _occupationController.text.trim(),
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
@@ -1258,7 +1260,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
         clinicalRemarks: _diagClinicalRemarksController.text.trim(),
       ),
       baselinePrescription: PrescriptionPlanDetails(
-        prescriptionDate: _rxPrescriptionDateController.text.trim(),
+        prescriptionDate: Formatters.toDbDateString(_rxPrescriptionDateController.text),
         remedyName: _rxRemedyController.text.trim(),
         potency: _rxPotencyController.text.trim(),
         dose: _rxDoseController.text.trim(),
@@ -1274,7 +1276,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
         prescriptionNotes: _rxPrescriptionNotesController.text.trim(),
       ),
       investigations: InvestigationsPlanDetails(
-        investigationDate: _invInvestigationDateController.text.trim(),
+        investigationDate: Formatters.toDbDateString(_invInvestigationDateController.text),
         investigationName: _invInvestigationNameController.text.trim(),
         typePanel: _invTypePanelController.text.trim(),
         resultValue: _invResultValueController.text.trim(),
@@ -1286,7 +1288,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
         reportReference: _invReportReferenceController.text.trim(),
       ),
       followUpDetails: FollowUpDetails(
-        followUpDate: _fuFollowUpDateController.text.trim(),
+        followUpDate: Formatters.toDbDateString(_fuFollowUpDateController.text),
         intervalSincePreviousVisit: _fuIntervalSincePreviousVisitController.text.trim(),
         overallResponse: _fuOverallResponseController.text.trim(),
         chiefComplaintChanges: _fuChiefComplaintChangesController.text.trim(),
@@ -1304,7 +1306,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
         followUpPrescription: _fuFollowUpPrescriptionController.text.trim(),
         potency: _fuPotencyController.text.trim(),
         doseRepetition: _fuDoseRepetitionController.text.trim(),
-        nextFollowUp: _fuNextFollowUpController.text.trim(),
+        nextFollowUp: Formatters.toDbDateString(_fuNextFollowUpController.text),
         followUpRemarks: _fuFollowUpRemarksController.text.trim(),
       ),
       followUpNotes: _fuFollowUpRemarksController.text.trim(),
@@ -1357,33 +1359,13 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           _populateFromExisting(existingRecord);
         }
 
-        final p = widget.patient;
-        final patientMeta = [
-          p.name,
-          if (p.patientCode.isNotEmpty) p.patientCode,
-          '${p.age}y',
-          p.gender,
-        ].join(' • ');
-
         final allCollapsed = _collapsedSections.length == _sectionTitles.length;
 
         return Scaffold(
           appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Case Taking',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                Text(
-                  patientMeta,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            title: const Text(
+              'Case Taking',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             actions: [
               IconButton(
@@ -1491,7 +1473,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
               children: [
                 Expanded(child: _buildInput(_regNoController, 'Registration No.', Icons.numbers)),
                 const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_firstVisitDateController, 'First Visit Date', Icons.calendar_today_outlined)),
+                Expanded(child: DateField(controller: _firstVisitDateController, label: 'First Visit Date')),
               ],
             ),
             const SizedBox(height: Spacing.md),
@@ -1536,7 +1518,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
             const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(child: _buildInput(_dobController, 'Date of Birth', Icons.event_outlined)),
+                Expanded(child: DateField(controller: _dobController, label: 'Date of Birth')),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_occupationController, 'Occupation', Icons.work_outline)),
               ],
@@ -2340,7 +2322,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           children: [
             Row(
               children: [
-                Expanded(child: _buildInput(_rxPrescriptionDateController, 'Prescription Date', Icons.event)),
+                Expanded(child: DateField(controller: _rxPrescriptionDateController, label: 'Prescription Date')),
                 const SizedBox(width: Spacing.md),
                 Expanded(flex: 2, child: _buildInput(_rxRemedyController, 'Remedy Prescribed', Icons.healing)),
                 const SizedBox(width: Spacing.md),
@@ -2393,7 +2375,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           children: [
             Row(
               children: [
-                Expanded(child: _buildInput(_invInvestigationDateController, 'Investigation Date', Icons.event)),
+                Expanded(child: DateField(controller: _invInvestigationDateController, label: 'Investigation Date')),
                 const SizedBox(width: Spacing.md),
                 Expanded(flex: 2, child: _buildInput(_invInvestigationNameController, 'Test / Panel Name', Icons.science)),
               ],
@@ -2448,7 +2430,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           children: [
             Row(
               children: [
-                Expanded(child: _buildInput(_fuFollowUpDateController, 'Follow-Up Date', Icons.event)),
+                Expanded(child: DateField(controller: _fuFollowUpDateController, label: 'Follow-Up Date')),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_fuIntervalSincePreviousVisitController, 'Interval', Icons.hourglass_bottom)),
                 const SizedBox(width: Spacing.md),
@@ -2512,7 +2494,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
             const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(child: _buildInput(_fuNextFollowUpController, 'Next Follow-Up Target', Icons.event_repeat)),
+                Expanded(child: DateField(controller: _fuNextFollowUpController, label: 'Next Follow-Up Target')),
                 const SizedBox(width: Spacing.md),
                 Expanded(flex: 2, child: _buildInput(_fuFollowUpRemarksController, 'Follow-Up Remarks & Notes', Icons.comment)),
               ],

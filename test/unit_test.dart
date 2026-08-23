@@ -8,6 +8,8 @@ import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/utils/formatters.dart';
 import 'package:clinic_pilot/core/providers/period_provider.dart';
 
+import 'package:clinic_pilot/core/utils/date_input_formatter.dart';
+
 void main() {
   group('Formatters Unit Tests', () {
     test('formatCurrency formats Indian Rupees correctly', () {
@@ -24,6 +26,39 @@ void main() {
     test('formatMonthYear formats month and year correctly', () {
       final date = DateTime(2026, 8, 15);
       expect(Formatters.formatMonthYear(date), 'August 2026');
+    });
+
+    test('formatDdMmYyyy formats date as DD/MM/YYYY', () {
+      final date = DateTime(2026, 8, 23);
+      expect(Formatters.formatDdMmYyyy(date), '23/08/2026');
+    });
+
+    test('toDbDate and toDbDateString format as YYYYMMDD', () {
+      final date = DateTime(2026, 8, 23);
+      expect(Formatters.toDbDate(date), '20260823');
+      expect(Formatters.toDbDateString('23/08/2026'), '20260823');
+      expect(Formatters.toDbDateString('2026-08-23'), '20260823');
+      expect(Formatters.toDbDateString('20260823'), '20260823');
+    });
+
+    test('displayFromDbDate converts YYYYMMDD to DD/MM/YYYY', () {
+      expect(Formatters.displayFromDbDate('20260823'), '23/08/2026');
+      expect(Formatters.displayFromDbDate('2026-08-23'), '23/08/2026');
+    });
+
+    test('DateInputFormatter auto-inserts slash separators', () {
+      const formatter = DateInputFormatter();
+      final result1 = formatter.formatEditUpdate(
+        TextEditingValue.empty,
+        const TextEditingValue(text: '23'),
+      );
+      expect(result1.text, '23');
+
+      final result2 = formatter.formatEditUpdate(
+        const TextEditingValue(text: '23'),
+        const TextEditingValue(text: '23082026'),
+      );
+      expect(result2.text, '23/08/2026');
     });
   });
 
