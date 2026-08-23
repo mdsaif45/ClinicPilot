@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:excel/excel.dart' as xlsx;
 
 import '../database/app_database.dart';
 
@@ -19,21 +20,13 @@ class ExportResult {
   });
 }
 
-/// Builds CSV backups of the clinic database.
-///
-/// The doctor is told to export before the one-time uninstall that release
-/// signing forces, so this has to produce a real, complete file — a stub that
-/// merely reports success would destroy patient data at exactly the moment the
-/// backup is relied on.
+/// Builds Excel (XLSX) and CSV backups of the clinic database.
 class ExportService {
   final AppDatabase _db;
 
   const ExportService(this._db);
 
   /// Escapes a single CSV field.
-  ///
-  /// Clinic data routinely contains commas (addresses) and apostrophes
-  /// (names), and notes can contain newlines, so quoting is not optional.
   static String _cell(Object? value) {
     if (value == null) return '';
     final s = value.toString();
@@ -47,10 +40,176 @@ class ExportService {
 
   static String _date(DateTime? d) => d == null ? '' : d.toIso8601String();
 
+  static xlsx.CellValue? _cellValue(Object? value) {
+    return switch (value) {
+      null => null,
+      int v => xlsx.IntCellValue(v),
+      double v => xlsx.DoubleCellValue(v),
+      DateTime v => xlsx.DateTimeCellValue.fromDateTime(v),
+      bool v => xlsx.BoolCellValue(v),
+      _ => xlsx.TextCellValue(value.toString()),
+    };
+  }
+
+  static void _styleHeaderRow(xlsx.Sheet sheet, int colCount) {
+    for (var col = 0; col < colCount; col++) {
+      final cell = sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0));
+      cell.cellStyle = xlsx.CellStyle(
+        bold: true,
+        fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
+      );
+    }
+  }
+
+  /// Builds a complete Excel workbook with dedicated sheets for each data domain.
+  Future<List<int>> buildXlsx() async {
+    final excel = xlsx.Excel.createExcel();
+    excel.rename('Sheet1', 'Clinics');
+
+    // 1. Clinics Sheet
+    final clinicsSheet = excel['Clinics'];
+    final clinicHeaders = ['Clinic ID', 'Clinic Name', 'Address', 'Phone', 'Monthly Rent', 'Open Days'];
+    clinicsSheet.appendRow(clinicHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(clinicsSheet, clinicHeaders.length);
+
+    final clinics = await (_db.select(_db.clinics)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final c in clinics) {
+      clinicsSheet.appendRow([
+        _cellValue(c.id),
+        _cellValue(c.name),
+        _cellValue(c.address ?? ''),
+        _cellValue(c.phone ?? ''),
+        _cellValue(c.monthlyRent),
+        _cellValue(c.openDays),
+      ]);
+    }
+
+    // 2. Patients Sheet
+    final patientsSheet = excel['Patients'];
+    final patientHeaders = [
+      'Patient Code', 'Name', 'Phone', 'WhatsApp', 'Age', 'Gender',
+      'Area', 'Address', 'Occupation', 'Primary Clinic ID',
+      'Primary Disease', 'Referral Source', 'Notes', 'Created At',
+    ];
+    patientsSheet.appendRow(patientHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(patientsSheet, patientHeaders.length);
+
+    final patients = await (_db.select(_db.patients)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final p in patients) {
+      patientsSheet.appendRow([
+        _cellValue(p.patientCode),
+        _cellValue(p.name),
+        _cellValue(p.phone),
+        _cellValue(p.whatsapp ?? ''),
+        _cellValue(p.age),
+        _cellValue(p.gender),
+        _cellValue(p.area ?? ''),
+        _cellValue(p.address ?? ''),
+        _cellValue(p.occupation ?? ''),
+        _cellValue(p.primaryClinicId),
+        _cellValue(p.primaryDisease ?? ''),
+        _cellValue(p.referralSource ?? ''),
+        _cellValue(p.notes ?? ''),
+        _cellValue(p.createdAt),
+      ]);
+    }
+
+    // 3. Visits Sheet
+    final visitsSheet = excel['Visits'];
+    final visitHeaders = [
+      'Visit ID', 'Patient ID', 'Clinic ID', 'Visit Type', 'Consultation Type',
+      'Disease', 'Chief Complaint', 'Referral Source', 'Outcome',
+      'Visit Date', 'Next Follow-up', 'Notes',
+    ];
+    visitsSheet.appendRow(visitHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(visitsSheet, visitHeaders.length);
+
+    final visits = await (_db.select(_db.visits)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final v in visits) {
+      visitsSheet.appendRow([
+        _cellValue(v.id),
+        _cellValue(v.patientId),
+        _cellValue(v.clinicId),
+        _cellValue(v.visitType),
+        _cellValue(v.consultationType),
+        _cellValue(v.disease),
+        _cellValue(v.chiefComplaint ?? ''),
+        _cellValue(v.referralSource ?? ''),
+        _cellValue(v.outcome ?? ''),
+        _cellValue(v.visitDate),
+        _cellValue(v.nextFollowUpDate),
+        _cellValue(v.notes ?? ''),
+      ]);
+    }
+
+    // 4. Cash Memos Sheet
+    final memosSheet = excel['Cash Memos'];
+    final memoHeaders = [
+      'Memo Number', 'Patient ID', 'Clinic ID', 'Visit ID',
+      'Consultation Fee', 'Medicine Fee', 'Other Fee', 'Discount',
+      'Total', 'Paid Amount', 'Payment Method', 'Notes', 'Date',
+    ];
+    memosSheet.appendRow(memoHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(memosSheet, memoHeaders.length);
+
+    final memos = await (_db.select(_db.cashMemos)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final m in memos) {
+      memosSheet.appendRow([
+        _cellValue(m.memoNumber),
+        _cellValue(m.patientId),
+        _cellValue(m.clinicId),
+        _cellValue(m.visitId),
+        _cellValue(m.consultationFee),
+        _cellValue(m.medicineFee),
+        _cellValue(m.otherFee),
+        _cellValue(m.discount),
+        _cellValue(m.total),
+        _cellValue(m.paidAmount),
+        _cellValue(m.paymentMethod),
+        _cellValue(m.notes ?? ''),
+        _cellValue(m.memoDate),
+      ]);
+    }
+
+    // 5. Expenses Sheet
+    final expensesSheet = excel['Expenses'];
+    final expenseHeaders = [
+      'Expense ID', 'Clinic ID', 'Category', 'Subcategory', 'Amount',
+      'Payment Method', 'Recurring', 'Notes', 'Date',
+    ];
+    expensesSheet.appendRow(expenseHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(expensesSheet, expenseHeaders.length);
+
+    final expenses = await (_db.select(_db.expenses)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final e in expenses) {
+      expensesSheet.appendRow([
+        _cellValue(e.id),
+        _cellValue(e.clinicId),
+        _cellValue(e.category),
+        _cellValue(e.subcategory ?? ''),
+        _cellValue(e.amount),
+        _cellValue(e.paymentMethod),
+        _cellValue(e.isRecurring),
+        _cellValue(e.notes ?? ''),
+        _cellValue(e.date),
+      ]);
+    }
+
+    final encoded = excel.encode();
+    return encoded ?? [];
+  }
+
   /// Produces the full backup as a single CSV document.
-  ///
-  /// Sections are separated by a blank line and a header row, so one file
-  /// carries every table while staying readable in a spreadsheet.
   Future<String> buildCsv() async {
     final buffer = StringBuffer();
 
@@ -154,11 +313,12 @@ class ExportService {
   }
 
   /// Suggested filename, stamped so successive backups do not overwrite.
-  static String suggestedFileName(DateTime now) {
+  static String suggestedFileName(DateTime now, {String extension = 'xlsx'}) {
     String two(int v) => v.toString().padLeft(2, '0');
+    final ext = extension.startsWith('.') ? extension.substring(1) : extension;
     return 'clinicpilot-backup-'
         '${now.year}${two(now.month)}${two(now.day)}-'
-        '${two(now.hour)}${two(now.minute)}.csv';
+        '${two(now.hour)}${two(now.minute)}.$ext';
   }
 
   static List<int> encode(String csv) => utf8.encode(csv);

@@ -1,33 +1,30 @@
-import 'dart:io' show File, Platform;
+import 'dart:io' show File;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../../core/database/database_provider.dart';
+import '../../../core/design/tokens.dart';
 import '../../../core/services/export_service.dart';
+import '../../../core/services/file_saver/file_saver.dart';
 import '../../../core/services/import_template_service.dart';
 import '../../../core/services/sample_data_seeder.dart';
-import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/app_card.dart';
-import '../providers/doctor_profile_provider.dart';
-import 'doctor_profile_screen.dart';
+import '../../../core/widgets/app_list_tile.dart';
 import '../../clinics/presentation/clinics_screen.dart';
 import '../../clinics/providers/clinic_provider.dart';
-
-import 'app_version_screen.dart';
-import 'import_preview_screen.dart';
+import '../../security/presentation/security_settings_card.dart';
+import '../providers/doctor_profile_provider.dart';
 import '../providers/release_provider.dart';
 import '../providers/update_provider.dart';
 import 'appearance_section.dart';
-import '../../security/presentation/security_settings_card.dart';
+import 'app_version_screen.dart';
+import 'import_preview_screen.dart';
 
 /// Whether the database is empty - the gate on the whole import feature.
 final _isDatabaseEmptyProvider = FutureProvider<bool>((ref) async {
@@ -35,6 +32,17 @@ final _isDatabaseEmptyProvider = FutureProvider<bool>((ref) async {
   final rows = await ExportService(db).countRows();
   return rows == 0;
 });
+
+enum BackupFormat {
+  xlsx('Excel Workbook (.xlsx)', 'Recommended (Default) • Separate tabs for Clinics, Patients, Visits, Memos & Expenses', Icons.grid_on_outlined),
+  csv('CSV Archive (.csv)', 'Universal plain text format compatible with all spreadsheet apps', Icons.table_chart_outlined);
+
+  final String label;
+  final String description;
+  final IconData icon;
+
+  const BackupFormat(this.label, this.description, this.icon);
+}
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -127,7 +135,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               AppListTile(
                 icon: Icons.download_outlined,
                 title: 'Export backup',
-                subtitle: 'Choose where to save a CSV of all records',
+                subtitle: 'Choose Excel (default) or CSV format',
                 onTap: _exportData,
               ),
               if (isEmpty) ...[
@@ -138,10 +146,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onTap: _downloadImportTemplate,
                 ),
                 AppListTile(
-                  icon: Icons.upload_outlined,
-                  title: 'Import from template',
-                  subtitle: 'Pick a filled-in template to restore from',
-                  onTap: _pickImportFile,
+                  icon: Icons.upload_file_outlined,
+                  title: 'Import practice data',
+                  subtitle: 'Populate from a filled spreadsheet template',
+                  onTap: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final nav = Navigator.of(context);
+
+                    try {
+                      final res = await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['xlsx'],
+                        withData: true,
+                      );
+                      if (res == null || res.files.isEmpty) return;
+                      final picked = res.files.first;
+                      final fileBytes = picked.bytes ?? (picked.path != null ? await File(picked.path!).readAsBytes() : null);
+                      if (fileBytes == null) return;
+
+                      final clinicList = ref.read(clinicsStreamProvider).value ?? [];
+                      final clinicIdsByName = {for (final c in clinicList) c.name: c.id};
+
+                      if (!mounted) return;
+                      final imported = await nav.push<bool>(
+                        MaterialPageRoute(
+                          builder: (_) => ImportPreviewScreen(
+                            bytes: fileBytes,
+                            clinicIdsByName: clinicIdsByName,
+                          ),
+                        ),
+                      );
+
+                      if (imported == true) {
+                        ref.invalidate(_isDatabaseEmptyProvider);
+                        ref.invalidate(clinicsStreamProvider);
+                        messenger.showSnackBar(
+                          const SnackBar(content: Text('Practice data imported successfully.')),
+                        );
+                      }
+                    } catch (e) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text('Could not read file: $e')),
+                      );
+                    }
+                  },
                 ),
               ],
             ],
@@ -188,12 +236,99 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<BackupFormat?> _pickBackupFormat(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return showModalBottomSheet<BackupFormat>(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, Spacing.xs, 0, Spacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Spacing.xl),
+                child: Text(
+                  'Choose Export Format',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: Spacing.sm),
+              for (final format in BackupFormat.values)
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: Spacing.xl,
+                    vertical: Spacing.xs,
+                  ),
+                  leading: CircleAvatar(
+                    backgroundColor: format == BackupFormat.xlsx
+                        ? scheme.primaryContainer
+                        : scheme.surfaceContainerHighest,
+                    foregroundColor: format == BackupFormat.xlsx
+                        ? scheme.primary
+                        : scheme.onSurfaceVariant,
+                    child: Icon(format.icon),
+                  ),
+                  title: Row(
+                    children: [
+                      Text(
+                        format.label,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      if (format == BackupFormat.xlsx) ...[
+                        const SizedBox(width: Spacing.xs),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: scheme.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'DEFAULT',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  subtitle: Text(
+                    format.description,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  onTap: () => Navigator.of(ctx).pop(format),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _exportData() async {
     final messenger = ScaffoldMessenger.of(context);
     final service = ExportService(ref.read(databaseProvider));
 
     try {
+      final chosenFormat = await _pickBackupFormat(context);
+      if (chosenFormat == null || !mounted) return;
+
       final rows = await service.countRows();
+      if (!mounted) return;
       if (rows == 0) {
         messenger.showSnackBar(
           const SnackBar(content: Text('Nothing to export yet.')),
@@ -201,41 +336,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return;
       }
 
-      final csv = await service.buildCsv();
-      final bytes = Uint8List.fromList(ExportService.encode(csv));
-      final fileName = ExportService.suggestedFileName(DateTime.now());
+      final now = DateTime.now();
+      List<int> bytes;
+      String fileName;
+      String mimeType;
 
-      if (kIsWeb) {
-        await FilePicker.platform.saveFile(
-          dialogTitle: 'Save backup CSV',
-          fileName: fileName,
-          bytes: bytes,
-          type: FileType.custom,
-          allowedExtensions: ['csv'],
-        );
-      } else if (Platform.isAndroid || Platform.isIOS) {
-        final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/$fileName');
-        await file.writeAsBytes(bytes);
-        await Share.shareXFiles(
-          [XFile(file.path, mimeType: 'text/csv')],
-          subject: 'ClinicPilot backup ${Formatters.formatDate(DateTime.now())}',
-        );
+      if (chosenFormat == BackupFormat.xlsx) {
+        bytes = await service.buildXlsx();
+        fileName = ExportService.suggestedFileName(now, extension: 'xlsx');
+        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       } else {
-        final path = await FilePicker.platform.saveFile(
-          dialogTitle: 'Save backup CSV',
-          fileName: fileName,
-          type: FileType.custom,
-          allowedExtensions: ['csv'],
-        );
-        if (path != null) {
-          final file = File(path);
-          await file.writeAsBytes(bytes);
-          messenger.showSnackBar(
-            SnackBar(content: Text('Backup saved to $path')),
-          );
-        }
+        final csv = await service.buildCsv();
+        bytes = ExportService.encode(csv);
+        fileName = ExportService.suggestedFileName(now, extension: 'csv');
+        mimeType = 'text/csv';
       }
+
+      if (!mounted) return;
+      final savedPath = await FileSaverService.save(
+        context: context,
+        bytes: bytes,
+        fileName: fileName,
+        mimeType: mimeType,
+        dialogTitle: 'Save practice backup',
+        shareSubject: 'ClinicPilot Backup ${Formatters.formatDate(now)}',
+      );
+
+      if (savedPath == null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Export cancelled.')),
+        );
+        return;
+      }
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Exported $rows records to $fileName'),
+        ),
+      );
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(content: Text('Export failed: $e')),
@@ -246,86 +384,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _downloadImportTemplate() async {
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final bytes = Uint8List.fromList(ImportTemplateService.build());
+      final bytes = ImportTemplateService.build();
       const fileName = 'clinicpilot-import-template.xlsx';
-
-      if (kIsWeb) {
-        await FilePicker.platform.saveFile(
-          dialogTitle: 'Save import template',
-          fileName: fileName,
-          bytes: bytes,
-          type: FileType.custom,
-          allowedExtensions: ['xlsx'],
-        );
-      } else if (Platform.isAndroid || Platform.isIOS) {
-        final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/$fileName');
-        await file.writeAsBytes(bytes);
-        await Share.shareXFiles(
-          [XFile(file.path, mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')],
-          subject: 'ClinicPilot import template',
-        );
-      } else {
-        final path = await FilePicker.platform.saveFile(
-          dialogTitle: 'Save import template',
-          fileName: fileName,
-          type: FileType.custom,
-          allowedExtensions: ['xlsx'],
-        );
-        if (path != null) {
-          final file = File(path);
-          await file.writeAsBytes(bytes);
-          messenger.showSnackBar(
-            SnackBar(content: Text('Template saved to $path')),
-          );
-        }
-      }
-    } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Template download failed: $e')),
-      );
-    }
-  }
-
-  Future<void> _pickImportFile() async {
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx', 'csv'],
-        withData: true,
-      );
-      if (result == null || result.files.isEmpty) return;
-
-      final picked = result.files.single;
-      final Uint8List bytes;
-      if (picked.bytes != null) {
-        bytes = picked.bytes!;
-      } else if (picked.path != null) {
-        final file = File(picked.path!);
-        bytes = await file.readAsBytes();
-      } else {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Could not read selected file.')),
-        );
-        return;
-      }
-
-      final clinics = await ref.read(clinicsStreamProvider.future);
-      final clinicIdsByName = {for (final c in clinics) c.name.toLowerCase().trim(): c.id};
+      const mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
       if (!mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ImportPreviewScreen(
-            bytes: bytes,
-            clinicIdsByName: clinicIdsByName,
-          ),
-        ),
+      final savedPath = await FileSaverService.save(
+        context: context,
+        bytes: bytes,
+        fileName: fileName,
+        mimeType: mimeType,
+        dialogTitle: 'Save import template',
+        shareSubject: 'ClinicPilot Import Template',
       );
+
+      if (savedPath != null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Import template saved.')),
+        );
+      }
     } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Failed to read file: $e')),
+        SnackBar(content: Text('Could not download template: $e')),
       );
     }
   }
@@ -336,57 +416,41 @@ class _DoctorProfileHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final profile = ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
 
-    final displayName = profile.name.isNotEmpty ? profile.name : 'Doctor Profile';
+    final displayName = profile.displayName;
     final initial = profile.name.isNotEmpty
-        ? profile.name.replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '').trim()
-        : 'D';
+        ? profile.name.replaceFirst(RegExp(r'^Dr\\.?\\s*', caseSensitive: false), '').trim()
+        : (profile.firstName.isNotEmpty
+            ? profile.firstName.replaceFirst(RegExp(r'^Dr\\.?\\s*', caseSensitive: false), '').trim()
+            : 'D');
     final avatarLetter = initial.isNotEmpty ? initial[0].toUpperCase() : 'D';
-
-    final subtitleParts = <String>[];
-    if (profile.qualification.isNotEmpty) {
-      subtitleParts.add(profile.qualification);
-    }
-    if (profile.email.isNotEmpty) {
-      subtitleParts.add(profile.email);
-    } else if (profile.phone.isNotEmpty) {
-      subtitleParts.add(profile.phone);
-    }
-
-    final subtitle = subtitleParts.isNotEmpty
-        ? subtitleParts.join(' • ')
-        : 'Tap to view credentials & contact info';
 
     return AppCard(
       margin: const EdgeInsets.fromLTRB(
         Spacing.lg,
-        Spacing.sm,
-        Spacing.lg,
         Spacing.xs,
+        Spacing.lg,
+        Spacing.md,
       ),
       padding: const EdgeInsets.symmetric(
         horizontal: Spacing.md,
-        vertical: Spacing.md,
+        vertical: Spacing.sm,
       ),
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const DoctorProfileScreen()),
-        );
-      },
+      onTap: () => context.push('/settings/profile'),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 28,
+            radius: 24,
             backgroundColor: scheme.primaryContainer,
+            foregroundColor: scheme.primary,
             child: Text(
               avatarLetter,
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: scheme.primary,
+              style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                fontSize: 22,
+                color: scheme.primary,
               ),
             ),
           ),
@@ -397,29 +461,26 @@ class _DoctorProfileHeader extends ConsumerWidget {
               children: [
                 Text(
                   displayName,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
-                  subtitle,
+                  profile.qualification.isNotEmpty
+                      ? profile.qualification
+                      : 'Tap to view credentials & contact info',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,
-                    fontSize: 13,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: Spacing.xs),
           Icon(
             Icons.chevron_right,
+            color: scheme.onSurfaceVariant,
             size: 20,
-            color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
           ),
         ],
       ),

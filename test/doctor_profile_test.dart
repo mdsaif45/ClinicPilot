@@ -165,6 +165,7 @@ void main() {
       await container.read(doctorProfileNotifierProvider.notifier).updateProfile(
         name: 'Dr. Alice Smith',
         email: 'alice@practice.com',
+        qualification: 'BHMS, MD',
       );
 
       await t.pumpWidget(
@@ -180,7 +181,7 @@ void main() {
       await t.pumpAndSettle();
 
       expect(find.text('Dr. Alice Smith'), findsOneWidget);
-      expect(find.text('alice@practice.com'), findsOneWidget);
+      expect(find.text('BHMS, MD'), findsOneWidget);
     });
   });
 }

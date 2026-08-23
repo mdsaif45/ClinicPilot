@@ -36,18 +36,24 @@ void main() {
         ));
   }
 
-  test('suggested filename is timestamped and ends in .csv', () {
-    final name = ExportService.suggestedFileName(DateTime(2026, 8, 12, 9, 5));
-    expect(name, 'clinicpilot-backup-20260812-0905.csv');
+  test('suggested filename is timestamped and supports .xlsx and .csv', () {
+    final defaultName = ExportService.suggestedFileName(DateTime(2026, 8, 12, 9, 5));
+    expect(defaultName, 'clinicpilot-backup-20260812-0905.xlsx');
+
+    final csvName = ExportService.suggestedFileName(DateTime(2026, 8, 12, 9, 5), extension: 'csv');
+    expect(csvName, 'clinicpilot-backup-20260812-0905.csv');
   });
 
-  test('exports seeded clinics', () async {
+  test('exports seeded clinics to CSV and XLSX', () async {
     final csv = await service.buildCsv();
     expect(csv, contains('# CLINICS'));
     expect(csv, contains('# PATIENTS'));
     expect(csv, contains('# VISITS'));
     expect(csv, contains('# CASH MEMOS'));
     expect(csv, contains('# EXPENSES'));
+
+    final xlsxBytes = await service.buildXlsx();
+    expect(xlsxBytes, isNotEmpty);
   });
 
   test('patient rows appear in the export', () async {
