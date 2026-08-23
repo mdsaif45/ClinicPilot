@@ -48,13 +48,16 @@ class ClinicsScreen extends ConsumerWidget {
             return const Center(child: Text('No clinics configured.'));
           }
 
+          final effectiveActiveId =
+              activeId ?? (clinics.isNotEmpty ? clinics.first.id : null);
+
           return ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
             itemCount: clinics.length,
             separatorBuilder: (_, __) => const SizedBox(height: Spacing.sm),
             itemBuilder: (context, index) {
               final clinic = clinics[index];
-              final isActive = clinic.id == activeId;
+              final isActive = clinic.id == effectiveActiveId;
 
               return Container(
                 decoration: BoxDecoration(
@@ -69,7 +72,7 @@ class ClinicsScreen extends ConsumerWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
                   leading: Radio<String>(
                     value: clinic.id,
-                    groupValue: activeId,
+                    groupValue: effectiveActiveId,
                     activeColor: scheme.primary,
                     onChanged: (val) {
                       if (val != null) {

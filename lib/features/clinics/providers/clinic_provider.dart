@@ -30,6 +30,15 @@ class ActiveClinicIdNotifier extends StateNotifier<String?> {
     final setting = await query.getSingleOrNull();
     if (setting != null && setting.value.isNotEmpty) {
       state = setting.value;
+    } else {
+      final firstClinic = await (_db.select(_db.clinics)
+            ..where((tbl) => tbl.isDeleted.equals(false))
+            ..limit(1))
+          .getSingleOrNull();
+      if (firstClinic != null) {
+        state = firstClinic.id;
+        await setClinicId(firstClinic.id);
+      }
     }
   }
 

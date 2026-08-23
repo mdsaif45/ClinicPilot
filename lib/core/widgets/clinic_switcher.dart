@@ -14,14 +14,6 @@ import '../../features/clinics/providers/clinic_provider.dart';
 class ClinicSwitcher extends ConsumerWidget {
   const ClinicSwitcher({super.key});
 
-  static Color _colourOf(String hex, Color fallback) {
-    try {
-      return Color(int.parse(hex.replaceAll('#', '0xFF')));
-    } catch (_) {
-      return fallback;
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final active = ref.watch(activeClinicProvider);
@@ -90,15 +82,10 @@ class ClinicSwitcher extends ConsumerWidget {
             const SizedBox(height: Spacing.sm),
             for (final c in clinics)
               ListTile(
-                leading: Container(
-                  width: 14,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: _colourOf(c.colorHex, scheme.tertiary),
-                    shape: BoxShape.circle,
-                  ),
+                title: Text(
+                  c.name,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                title: Text(c.name),
                 subtitle: (c.address == null || (c.address as String).isEmpty)
                     ? null
                     : Text(c.address as String),

@@ -170,6 +170,15 @@ class SampleDataSeeder {
           ),
         );
 
+    // Save active clinic
+    await db.into(db.settings).insertOnConflictUpdate(
+          SettingsCompanion.insert(
+            key: 'active_clinic_id',
+            value: clinic1Id,
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+
     // 3. 10 Patients
     final now = DateTime.now();
 
