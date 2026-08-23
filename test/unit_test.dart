@@ -9,6 +9,9 @@ import 'package:clinic_pilot/core/utils/formatters.dart';
 import 'package:clinic_pilot/core/providers/period_provider.dart';
 
 import 'package:clinic_pilot/core/utils/date_input_formatter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:clinic_pilot/core/database/database_provider.dart';
+import 'package:clinic_pilot/core/services/sample_data_seeder.dart';
 
 void main() {
   group('Formatters Unit Tests', () {
@@ -561,6 +564,39 @@ void main() {
       final daysInMonth = DateUtils.getDaysInMonth(range.start.year, range.start.month);
       final prorated = monthlyRent * (daysInPeriod / daysInMonth);
       expect(prorated, equals(4000.0));
+    });
+
+    test('SampleDataSeeder seeds Dr. MD Zaid, 3 clinics, 10 patients with case taking, 15 visits, 20 footfalls, 15 cash memos, 20 expenses', () async {
+      final container = ProviderContainer(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await SampleDataSeeder.seedRealisticData(container);
+
+      final clinics = await db.select(db.clinics).get();
+      final patients = await db.select(db.patients).get();
+      final caseRecords = await db.select(db.patientCaseRecords).get();
+      final complaints = await db.select(db.complaints).get();
+      final prescriptions = await db.select(db.prescriptions).get();
+      final investigations = await db.select(db.investigations).get();
+      final visits = await db.select(db.visits).get();
+      final footfalls = await db.select(db.footfalls).get();
+      final cashMemos = await db.select(db.cashMemos).get();
+      final expenses = await db.select(db.expenses).get();
+
+      expect(clinics.length, equals(3));
+      expect(patients.length, equals(10));
+      expect(caseRecords.length, equals(10));
+      expect(complaints.length, equals(10));
+      expect(prescriptions.length, equals(10));
+      expect(investigations.length, equals(10));
+      expect(visits.length, equals(15)); // 10 new + 5 follow-ups
+      expect(footfalls.length, equals(20));
+      expect(cashMemos.length, equals(15));
+      expect(expenses.length, equals(20));
     });
   });
 }
