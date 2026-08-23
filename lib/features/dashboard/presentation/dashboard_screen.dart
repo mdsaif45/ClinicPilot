@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/animated_counter.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/metric_card.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
@@ -167,25 +167,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               // 3. Today's Clinic Snapshot
               const SectionHeader(title: 'Today'),
               _TileRow(children: [
-                _MiniTile(
+                MetricCard(
                   label: "Today's Patients",
                   value: '${stats.todayPatients}',
                   numericValue: stats.todayPatients.toDouble(),
-                  tone: _Tone.neutral,
+                  icon: Icons.person_outline,
+                  tone: MetricTone.neutral,
                 ),
-                _MiniTile(
+                MetricCard(
                   label: "Today's Revenue",
                   value: Formatters.formatCurrency(stats.todayRevenue),
                   numericValue: stats.todayRevenue,
-                  tone: _Tone.positive,
+                  icon: Icons.currency_rupee,
+                  tone: MetricTone.positive,
                 ),
-                _MiniTile(
+                MetricCard(
                   label: "Today's Profit",
                   value: Formatters.formatCurrency(stats.todayNetProfit),
                   numericValue: stats.todayNetProfit,
+                  icon: Icons.currency_rupee,
                   tone: stats.todayNetProfit < 0
-                      ? _Tone.negative
-                      : _Tone.positive,
+                      ? MetricTone.negative
+                      : MetricTone.positive,
                 ),
               ]),
 
@@ -199,25 +202,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 actionIcon: _showGoals ? Icons.expand_less : Icons.expand_more,
               ),
               _TileRow(children: [
-                _MiniTile(
+                MetricCard(
                   label: 'Revenue',
                   value: Formatters.formatCurrency(stats.monthlyRevenue),
                   numericValue: stats.monthlyRevenue,
-                  tone: _Tone.positive,
+                  icon: Icons.currency_rupee,
+                  tone: MetricTone.positive,
                 ),
-                _MiniTile(
+                MetricCard(
                   label: 'Expenses',
                   value: Formatters.formatCurrency(stats.monthlyExpense),
                   numericValue: stats.monthlyExpense,
-                  tone: _Tone.negative,
+                  icon: Icons.cancel_outlined,
+                  tone: MetricTone.negative,
                 ),
-                _MiniTile(
+                MetricCard(
                   label: 'Net Profit',
                   value: Formatters.formatCurrency(stats.monthlyNetProfit),
                   numericValue: stats.monthlyNetProfit,
+                  icon: Icons.currency_rupee,
                   tone: stats.monthlyNetProfit < 0
-                      ? _Tone.negative
-                      : _Tone.positive,
+                      ? MetricTone.negative
+                      : MetricTone.positive,
                 ),
               ]),
 
@@ -230,20 +236,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               // 6. Patients Summary
               const SectionHeader(title: 'Patients Summary'),
               _TileRow(children: [
-                _MiniTile(
+                MetricCard(
                   label: 'Total Patients',
                   value: '${stats.totalPatients}',
-                  tone: _Tone.neutral,
+                  icon: Icons.person_add_outlined,
+                  tone: MetricTone.neutral,
                 ),
-                _MiniTile(
+                MetricCard(
                   label: 'New This Month',
                   value: '${stats.monthlyNewPatients}',
-                  tone: _Tone.neutral,
+                  icon: Icons.person_add_outlined,
+                  tone: MetricTone.neutral,
                 ),
-                _MiniTile(
+                MetricCard(
                   label: 'Repeat This Month',
                   value: '${stats.monthlyRepeatPatients}',
-                  tone: _Tone.neutral,
+                  icon: Icons.person_add_outlined,
+                  tone: MetricTone.neutral,
                 ),
               ]),
 
@@ -312,8 +321,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-enum _Tone { positive, negative, neutral }
-
 class _TileRow extends StatelessWidget {
   final List<Widget> children;
 
@@ -329,87 +336,6 @@ class _TileRow extends StatelessWidget {
             if (i > 0) const SizedBox(width: Spacing.md),
             Expanded(child: children[i]),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-class _MiniTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final double? numericValue;
-  final _Tone tone;
-
-  const _MiniTile({
-    required this.label,
-    required this.value,
-    this.numericValue,
-    required this.tone,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    final (bg, border, text) = switch (tone) {
-      _Tone.positive => (
-          scheme.primaryContainer.withValues(alpha: 0.35),
-          scheme.primary.withValues(alpha: 0.2),
-          scheme.primary,
-        ),
-      _Tone.negative => (
-          scheme.errorContainer.withValues(alpha: 0.35),
-          scheme.error.withValues(alpha: 0.2),
-          scheme.error,
-        ),
-      _Tone.neutral => (
-          scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          scheme.outlineVariant.withValues(alpha: 0.3),
-          scheme.onSurface,
-        ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.all(Spacing.md),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: Radii.mdAll,
-        border: Border.all(color: border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: Spacing.xs),
-          if (numericValue != null)
-            AnimatedCounter(
-              value: numericValue!,
-              formatter: (_) => value,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: text,
-              ),
-            )
-          else
-            Text(
-              value,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: text,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
         ],
       ),
     );

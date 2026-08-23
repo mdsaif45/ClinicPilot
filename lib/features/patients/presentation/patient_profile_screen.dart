@@ -804,10 +804,11 @@ class _FollowUpsTab extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: Spacing.sm),
-            IconButton(
-              icon: const Icon(Icons.chat_outlined),
+            IconButton.outlined(
+              icon: const Icon(Icons.chat_outlined, size: 18),
               tooltip: 'Send WhatsApp reminder',
               onPressed: () {
+                AppHaptics.selection();
                 ContactService.openWhatsApp(
                   phone: v.patient.whatsapp ?? v.patient.phone,
                   message: ContactService.followUpMessage(
@@ -815,6 +816,15 @@ class _FollowUpsTab extends ConsumerWidget {
                     clinicName: v.clinic.name,
                   ),
                 );
+              },
+            ),
+            const SizedBox(width: Spacing.xs),
+            IconButton.outlined(
+              icon: const Icon(Icons.phone_outlined, size: 18),
+              tooltip: 'Call Patient',
+              onPressed: () {
+                AppHaptics.selection();
+                ContactService.call(v.patient.phone);
               },
             ),
           ],

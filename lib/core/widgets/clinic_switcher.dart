@@ -39,6 +39,19 @@ class ClinicSwitcher extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              padding: const EdgeInsets.all(Spacing.xs),
+              decoration: BoxDecoration(
+                color: scheme.primaryContainer.withValues(alpha: 0.5),
+                borderRadius: Radii.smAll,
+              ),
+              child: Icon(
+                Icons.local_hospital_outlined,
+                color: scheme.primary,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: Spacing.sm),
             Flexible(
               child: Text(
                 active.name,
@@ -50,8 +63,10 @@ class ClinicSwitcher extends ConsumerWidget {
                 ),
               ),
             ),
-            if (clinics.length > 1)
+            if (clinics.length > 1) ...[
+              const SizedBox(width: Spacing.xs),
               Icon(Icons.expand_more, color: onBar, size: 20),
+            ],
           ],
         ),
       ),

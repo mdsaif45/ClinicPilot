@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
 import '../../../core/services/contact_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
@@ -142,36 +143,42 @@ class _RecallCard extends StatelessWidget {
           ),
           const SizedBox(height: Spacing.xs),
           Text(
-            '${p.patientCode} · ${entry.visit.disease} · ${entry.clinic.name}',
+            '${entry.visit.disease} · ${entry.clinic.name}',
             style: theme.textTheme.labelMedium,
             overflow: TextOverflow.ellipsis,
           ),
+          const SizedBox(height: 2),
           Text(
             'Last visit ${Formatters.formatDate(entry.visit.visitDate)}',
-            style: theme.textTheme.labelSmall,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
           ),
-          const SizedBox(height: Spacing.md),
+          const SizedBox(height: Spacing.sm),
           Row(
             children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => ContactService.call(p.phone),
-                  icon: const Icon(Icons.call_outlined, size: 18),
-                  label: const Text('Call'),
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  onPressed: () => WhatsAppTemplatePickerSheet.show(
+              const Spacer(),
+              IconButton.outlined(
+                onPressed: () {
+                  AppHaptics.selection();
+                  WhatsAppTemplatePickerSheet.show(
                     context,
                     patient: p,
                     clinicName: entry.clinic.name,
                     dueDate: entry.visit.nextFollowUpDate,
-                  ),
-                  icon: const Icon(Icons.chat_outlined, size: 18),
-                  label: const Text('WhatsApp'),
-                ),
+                  );
+                },
+                icon: const Icon(Icons.chat_outlined, size: 18),
+                tooltip: 'WhatsApp reminder',
+              ),
+              const SizedBox(width: Spacing.sm),
+              IconButton.outlined(
+                onPressed: () {
+                  AppHaptics.selection();
+                  ContactService.call(p.phone);
+                },
+                icon: const Icon(Icons.phone_outlined, size: 18),
+                tooltip: 'Call patient',
               ),
             ],
           ),

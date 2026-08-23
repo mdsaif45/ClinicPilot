@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../design/breakpoints.dart';
 import '../design/tokens.dart';
+import '../services/app_haptics.dart';
 import '../widgets/animated_nav_icon.dart';
 import '../widgets/clinic_switcher.dart';
 import '../widgets/floating_bottom_nav_bar.dart';
@@ -357,6 +358,38 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
               foregroundColor: scheme.onSurface,
               titleSpacing: Spacing.sm,
               title: const ClinicSwitcher(),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: Spacing.sm),
+                  child: IconButton(
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(Icons.notifications_none_outlined, size: 24),
+                        Positioned(
+                          right: 1,
+                          top: 1,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: scheme.error,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    tooltip: 'Notifications',
+                    onPressed: () {
+                      AppHaptics.selection();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No unread alerts.')),
+                      );
+                    },
+                  ),
+                ),
+              ],
             )
           : null,
       body: SafeArea(top: !isDashboard, bottom: false, child: navigationShell),
