@@ -5,6 +5,7 @@ import '../design/breakpoints.dart';
 import '../design/tokens.dart';
 import '../widgets/animated_nav_icon.dart';
 import '../widgets/clinic_switcher.dart';
+import '../widgets/floating_bottom_nav_bar.dart';
 import '../../features/clinics/presentation/clinics_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/finances/presentation/finances_screen.dart';
@@ -359,9 +360,8 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
             )
           : null,
       body: SafeArea(top: !isDashboard, bottom: false, child: navigationShell),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex.clamp(0, 3),
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      bottomNavigationBar: FloatingBottomNavBar(
+        selectedIndex: navigationShell.currentIndex.clamp(0, 4),
         onDestinationSelected: (index) {
           if (index == 4) {
             context.push('/settings');
@@ -379,23 +379,20 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         },
         destinations: [
           for (final d in _destinations)
-            NavigationDestination(
-              icon: d.index == 4 && updateWaiting
-                  ? Badge(
-                      smallSize: 8,
-                      backgroundColor: scheme.tertiary,
-                      child: AnimatedNavIcon(
-                        icon: d.icon,
-                        selectedIcon: d.selectedIcon,
-                        selected: navigationShell.currentIndex == d.index,
+            FloatingNavDestination(
+              icon: d.icon,
+              selectedIcon: d.selectedIcon,
+              label: d.label,
+              badge: d.index == 4 && updateWaiting
+                  ? Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: scheme.tertiary,
+                        shape: BoxShape.circle,
                       ),
                     )
-                  : AnimatedNavIcon(
-                      icon: d.icon,
-                      selectedIcon: d.selectedIcon,
-                      selected: navigationShell.currentIndex == d.index,
-                    ),
-              label: d.label,
+                  : null,
             ),
         ],
       ),
