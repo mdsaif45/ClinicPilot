@@ -187,14 +187,8 @@ void main() {
 
       expect(find.text('INFO BODY'), findsOneWidget);
 
-      // Swipe left on body -> move to List tab
+      // Swiping on body does not change tab (drag disabled)
       await t.drag(find.text('INFO BODY'), const Offset(-300, 0));
-      await t.pumpAndSettle();
-
-      expect(find.text('LIST BODY'), findsOneWidget);
-
-      // Swipe right on body -> move back to Info tab
-      await t.drag(find.text('LIST BODY'), const Offset(300, 0));
       await t.pumpAndSettle();
 
       expect(find.text('INFO BODY'), findsOneWidget);

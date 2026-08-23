@@ -64,43 +64,45 @@ class FloatingBottomNavBar extends StatelessWidget {
             ? scheme.onSurfaceVariant
             : scheme.onInverseSurface.withValues(alpha: 0.85));
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: margin,
-        child: Container(
-          height: 64,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: barBg,
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.25),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: scheme.shadow.withValues(alpha: 0.22),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+    return RepaintBoundary(
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: margin,
+          child: Container(
+            height: 64,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: barBg,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: 0.25),
+                width: 1,
               ),
-            ],
-          ),
-          padding: padding,
-          child: Row(
-            children: [
-              for (int i = 0; i < destinations.length; i++)
-                Expanded(
-                  child: _FloatingNavItem(
-                    destination: destinations[i],
-                    isSelected: selectedIndex == i,
-                    activeHighlightColor: activeHighlight,
-                    activeColor: active,
-                    inactiveColor: inactive,
-                    onTap: () => onDestinationSelected(i),
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: scheme.shadow.withValues(alpha: 0.22),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
-            ],
+              ],
+            ),
+            padding: padding,
+            child: Row(
+              children: [
+                for (int i = 0; i < destinations.length; i++)
+                  Expanded(
+                    child: _FloatingNavItem(
+                      destination: destinations[i],
+                      isSelected: selectedIndex == i,
+                      activeHighlightColor: activeHighlight,
+                      activeColor: active,
+                      inactiveColor: inactive,
+                      onTap: () => onDestinationSelected(i),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -127,71 +129,75 @@ class _FloatingNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        splashColor: activeColor.withValues(alpha: 0.15),
-        highlightColor: Colors.transparent,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeInOut,
-          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(
-            color: isSelected ? activeHighlightColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                height: 24,
-                width: 24,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    AnimatedScale(
-                      scale: isSelected ? 1.05 : 1.0,
-                      duration: const Duration(milliseconds: 180),
-                      child: Icon(
-                        isSelected
-                            ? (destination.selectedIcon ?? destination.icon)
-                            : destination.icon,
-                        size: 21,
-                        color: isSelected ? activeColor : inactiveColor,
+    return RepaintBoundary(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          splashColor: activeColor.withValues(alpha: 0.15),
+          highlightColor: Colors.transparent,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            decoration: BoxDecoration(
+              color: isSelected ? activeHighlightColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      AnimatedScale(
+                        scale: isSelected ? 1.05 : 1.0,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOutCubic,
+                        child: Icon(
+                          isSelected
+                              ? (destination.selectedIcon ?? destination.icon)
+                              : destination.icon,
+                          size: 21,
+                          color: isSelected ? activeColor : inactiveColor,
+                        ),
                       ),
-                    ),
-                    if (destination.badge != null)
-                      Positioned(
-                        top: -2,
-                        right: -4,
-                        child: destination.badge!,
-                      ),
-                  ],
+                      if (destination.badge != null)
+                        Positioned(
+                          top: -2,
+                          right: -4,
+                          child: destination.badge!,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 3),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 180),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? activeColor : inactiveColor,
-                  letterSpacing: 0.1,
-                  height: 1.1,
+                const SizedBox(height: 3),
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? activeColor : inactiveColor,
+                    letterSpacing: 0.1,
+                    height: 1.1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  child: Text(
+                    destination.label,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                child: Text(
-                  destination.label,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

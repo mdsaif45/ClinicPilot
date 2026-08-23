@@ -41,7 +41,6 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
   late int _index = widget.initialIndex.clamp(0, widget.tabs.length - 1);
   final ScrollController _pillScrollController = ScrollController();
   final List<GlobalKey> _pillKeys = [];
-  double _dragDistance = 0.0;
 
   @override
   void initState() {
@@ -87,18 +86,6 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
     });
   }
 
-  void _nextTab() {
-    if (_index < widget.tabs.length - 1) {
-      _selectTab(_index + 1);
-    }
-  }
-
-  void _prevTab() {
-    if (_index > 0) {
-      _selectTab(_index - 1);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.tabs.isEmpty) return const SizedBox.shrink();
@@ -125,35 +112,10 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
             ],
           ),
         ),
-        // Fixed gap, and the body swaps instantly on tap or swipe.
-        //
-        // The pill morph carries the feedback on its own. Animating the panel
-        // as well made each tab's content start from a different height and
-        // settle at a different moment, so the spacing under the selector
-        // looked inconsistent from tab to tab.
-        //
-        // The gap lives here rather than inside each tab so every panel begins
-        // at exactly the same offset, whatever widget it happens to start with.
         const SizedBox(height: Spacing.lg),
-        GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onHorizontalDragStart: (_) => _dragDistance = 0.0,
-          onHorizontalDragUpdate: (details) {
-            _dragDistance += details.primaryDelta ?? 0.0;
-          },
-          onHorizontalDragEnd: (details) {
-            final velocity = details.primaryVelocity ?? 0.0;
-            if (velocity < -150 || _dragDistance < -50) {
-              _nextTab();
-            } else if (velocity > 150 || _dragDistance > 50) {
-              _prevTab();
-            }
-            _dragDistance = 0.0;
-          },
-          child: KeyedSubtree(
-            key: ValueKey<int>(_index),
-            child: Builder(builder: widget.tabs[_index].builder),
-          ),
+        KeyedSubtree(
+          key: ValueKey<int>(_index),
+          child: Builder(builder: widget.tabs[_index].builder),
         ),
       ],
     );

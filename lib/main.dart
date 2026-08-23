@@ -1,3 +1,4 @@
+import 'dart:ui' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,25 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/security/presentation/lock_screen.dart';
 import 'features/settings/providers/theme_provider.dart';
+
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
+      };
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics(
+      parent: AlwaysScrollableScrollPhysics(),
+    );
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,6 +90,7 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
         blackVariant: prefs.blackVariant,
       ),
       themeMode: ThemeMode.light,
+      scrollBehavior: const AppScrollBehavior(),
       routerConfig: router,
       builder: (context, child) {
         if (lockState.isLocked) {

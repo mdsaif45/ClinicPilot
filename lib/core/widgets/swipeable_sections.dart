@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../design/tokens.dart';
 import 'section_switch.dart';
 
 /// [SectionSwitch] plus the pages it switches between, connected two ways:
@@ -53,11 +52,7 @@ class _SwipeableSectionsState extends State<SwipeableSections> {
 
   void _goTo(int i) {
     setState(() => _index = i);
-    _controller.animateToPage(
-      i,
-      duration: Motion.slow,
-      curve: Motion.curve,
-    );
+    _controller.jumpToPage(i);
   }
 
   @override
@@ -73,9 +68,7 @@ class _SwipeableSectionsState extends State<SwipeableSections> {
         Expanded(
           child: PageView(
             controller: _controller,
-            // The label bar is the primary indicator of which page is open;
-            // this only needs to keep it in sync when a swipe (rather than a
-            // tap) changes the page.
+            physics: const NeverScrollableScrollPhysics(),
             onPageChanged: (i) => setState(() => _index = i),
             children: widget.children,
           ),
