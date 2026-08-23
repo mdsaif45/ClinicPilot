@@ -11,13 +11,15 @@ import 'edit_expense_dialog.dart';
 /// Category icons, so a row can be identified without reading its label.
 IconData expenseCategoryIcon(String category) => switch (category) {
       'Rent' => Icons.home_outlined,
-      'Electricity' => Icons.bolt_outlined,
+      'Electricity' || 'Utilities' => Icons.bolt_outlined,
       'Staff Salary' || 'Assistant Salary' => Icons.badge_outlined,
-      'Medicine Purchase' => Icons.medication_outlined,
+      'Medicine Purchase' || 'Medicine' => Icons.medication_outlined,
       'Packaging & Dispensing' || 'Packaging' => Icons.inventory_2_outlined,
       'Furniture' => Icons.chair_outlined,
       'Marketing' => Icons.campaign_outlined,
       'Camp' || 'Camp Expense' => Icons.festival_outlined,
+      'Equipment' => Icons.medical_services_outlined,
+      'Maintenance' => Icons.build_outlined,
       'Internet' => Icons.wifi,
       'Travel' => Icons.directions_car_outlined,
       'Personal' => Icons.person_outline,
@@ -37,9 +39,12 @@ class ExpensesScreen extends ConsumerWidget {
     'Packaging & Dispensing',
     'Staff Salary',
     'Rent',
-    'Electricity',
     'Camp',
     'Marketing',
+    'Equipment',
+    'Utilities',
+    'Maintenance',
+    'Electricity',
     'Furniture',
     'Internet',
     'Travel',
@@ -95,22 +100,25 @@ class ExpensesScreen extends ConsumerWidget {
                       const SizedBox(width: Spacing.sm),
                   itemBuilder: (context, i) {
                     final c = _categories[i];
+                    final isSelected = c == 'All'
+                        ? (selectedCategory == null || selectedCategory == 'All')
+                        : selectedCategory == c;
                     return ChoiceChip(
                       label: Text(c),
-                      selected: selectedCategory == c,
+                      selected: isSelected,
                       showCheckmark: false,
                       visualDensity: VisualDensity.compact,
                       shape: RoundedRectangleBorder(
                         borderRadius: Radii.mdAll,
                         side: BorderSide(
-                          color: selectedCategory == c
+                          color: isSelected
                               ? theme.colorScheme.primary
                               : theme.colorScheme.outlineVariant,
                         ),
                       ),
                       onSelected: (_) => ref
                           .read(expenseCategoryFilterProvider.notifier)
-                          .state = c,
+                          .state = c == 'All' ? null : c,
                     );
                   },
                 ),
