@@ -3,12 +3,15 @@ import 'dart:io' show File;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/database/database_provider.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/export_service.dart';
 import '../../../core/services/file_saver/file_saver.dart';
+import '../../../core/services/sample_data_seeder.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/section_header.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import 'import_preview_screen.dart';
 import 'periodic_backups_screen.dart';
@@ -192,6 +195,106 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                 builder: (_) => const PeriodicBackupsScreen(),
               ),
             ),
+          ),
+          const Divider(height: 1),
+
+          const SizedBox(height: Spacing.xl),
+
+          // Testing Section
+          const SectionHeader(
+            title: 'Testing',
+            subtitle: 'Development and test utilities (excluded in production)',
+          ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: Spacing.lg,
+              vertical: Spacing.xs,
+            ),
+            leading: CircleAvatar(
+              backgroundColor: scheme.primaryContainer,
+              foregroundColor: scheme.primary,
+              child: const Icon(Icons.auto_awesome, size: 20),
+            ),
+            title: Text(
+              'Load Demo Practice Data',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: Spacing.xs),
+              child: Text(
+                'Populate realistic patients, case records, and finances',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            onTap: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              await SampleDataSeeder.seedRealisticData(ref);
+              messenger.showSnackBar(
+                const SnackBar(content: Text('Realistic practice demo data loaded!')),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: Spacing.lg,
+              vertical: Spacing.xs,
+            ),
+            leading: CircleAvatar(
+              backgroundColor: scheme.errorContainer,
+              foregroundColor: scheme.error,
+              child: const Icon(Icons.delete_sweep_outlined, size: 20),
+            ),
+            title: Text(
+              'Clear All Practice Data',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: scheme.error,
+              ),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: Spacing.xs),
+              child: Text(
+                'Wipe all records and start fresh onboarding',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            onTap: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Reset All Practice Data?'),
+                  content: const Text(
+                    'This will delete all patients, visits, cash memos, expenses, and clinics, resetting the app to a clean initial state. This action cannot be undone.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(ctx).colorScheme.error,
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text('Reset Everything'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await ref.read(databaseProvider).clearAllPracticeData();
+                if (context.mounted) {
+                  context.go('/onboarding');
+                }
+              }
+            },
           ),
         ],
       ),

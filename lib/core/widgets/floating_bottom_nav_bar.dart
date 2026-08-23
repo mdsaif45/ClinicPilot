@@ -42,7 +42,7 @@ class FloatingBottomNavBar extends StatelessWidget {
     this.activeColor,
     this.inactiveColor,
     this.margin = const EdgeInsets.fromLTRB(Spacing.md, 0, Spacing.md, Spacing.md),
-    this.padding = const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+    this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
   });
 
   @override
@@ -56,8 +56,8 @@ class FloatingBottomNavBar extends StatelessWidget {
         (isDark ? scheme.surfaceContainerHigh : scheme.inverseSurface);
     final activeHighlight = activeHighlightColor ??
         (isDark
-            ? scheme.primary.withValues(alpha: 0.22)
-            : scheme.onInverseSurface.withValues(alpha: 0.18));
+            ? scheme.primary.withValues(alpha: 0.24)
+            : scheme.onInverseSurface.withValues(alpha: 0.20));
     final active = activeColor ?? (isDark ? scheme.primary : scheme.inversePrimary);
     final inactive = inactiveColor ??
         (isDark
@@ -70,6 +70,7 @@ class FloatingBottomNavBar extends StatelessWidget {
         padding: margin,
         child: Container(
           height: 64,
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: barBg,
             borderRadius: BorderRadius.circular(32),
@@ -136,8 +137,8 @@ class _FloatingNavItem extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
             color: isSelected ? activeHighlightColor : Colors.transparent,
             borderRadius: BorderRadius.circular(24),

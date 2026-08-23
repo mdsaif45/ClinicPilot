@@ -119,7 +119,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
           SettingsGroup(
-            title: 'Data',
+            title: 'Backup & Restore',
             children: [
               AppListTile(
                 icon: Icons.history,
@@ -132,66 +132,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
               ),
-              AppListTile(
-                icon: Icons.download_outlined,
-                title: 'Export backup',
-                subtitle: 'Choose Excel (default) or CSV format',
-                onTap: _exportData,
-              ),
-              if (isEmpty) ...[
-                AppListTile(
-                  icon: Icons.description_outlined,
-                  title: 'Download import template',
-                  subtitle: 'A blank spreadsheet to fill in and import back',
-                  onTap: _downloadImportTemplate,
-                ),
-                AppListTile(
-                  icon: Icons.upload_file_outlined,
-                  title: 'Import practice data',
-                  subtitle: 'Populate from a filled spreadsheet template',
-                  onTap: () async {
-                    final messenger = ScaffoldMessenger.of(context);
-                    final nav = Navigator.of(context);
-
-                    try {
-                      final res = await FilePicker.platform.pickFiles(
-                        type: FileType.custom,
-                        allowedExtensions: ['xlsx'],
-                        withData: true,
-                      );
-                      if (res == null || res.files.isEmpty) return;
-                      final picked = res.files.first;
-                      final fileBytes = picked.bytes ?? (picked.path != null ? await File(picked.path!).readAsBytes() : null);
-                      if (fileBytes == null) return;
-
-                      final clinicList = ref.read(clinicsStreamProvider).value ?? [];
-                      final clinicIdsByName = {for (final c in clinicList) c.name: c.id};
-
-                      if (!mounted) return;
-                      final imported = await nav.push<bool>(
-                        MaterialPageRoute(
-                          builder: (_) => ImportPreviewScreen(
-                            bytes: fileBytes,
-                            clinicIdsByName: clinicIdsByName,
-                          ),
-                        ),
-                      );
-
-                      if (imported == true) {
-                        ref.invalidate(_isDatabaseEmptyProvider);
-                        ref.invalidate(clinicsStreamProvider);
-                        messenger.showSnackBar(
-                          const SnackBar(content: Text('Practice data imported successfully.')),
-                        );
-                      }
-                    } catch (e) {
-                      messenger.showSnackBar(
-                        SnackBar(content: Text('Could not read file: $e')),
-                      );
-                    }
-                  },
-                ),
-              ],
             ],
           ),
           const SecuritySettingsCard(),
@@ -229,58 +169,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 );
               }),
-            ],
-          ),
-          SettingsGroup(
-            title: 'Testing',
-            children: [
-              AppListTile(
-                icon: Icons.auto_awesome,
-                title: 'Load Demo Practice Data',
-                subtitle: 'Populate realistic patients, case records, and finances',
-                onTap: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  await SampleDataSeeder.seedRealisticData(ref);
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text('Realistic practice demo data loaded!')),
-                  );
-                },
-              ),
-              AppListTile(
-                icon: Icons.delete_sweep_outlined,
-                title: 'Clear All Practice Data',
-                subtitle: 'Wipe all records and start fresh onboarding',
-                onTap: () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Reset All Practice Data?'),
-                      content: const Text(
-                        'This will delete all patients, visits, cash memos, expenses, and clinics, resetting the app to a clean initial state. This action cannot be undone.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(false),
-                          child: const Text('Cancel'),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Theme.of(ctx).colorScheme.error,
-                          ),
-                          onPressed: () => Navigator.of(ctx).pop(true),
-                          child: const Text('Reset Everything'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed == true) {
-                    await ref.read(databaseProvider).clearAllPracticeData();
-                    if (context.mounted) {
-                      context.go('/onboarding');
-                    }
-                  }
-                },
-              ),
             ],
           ),
         ],
