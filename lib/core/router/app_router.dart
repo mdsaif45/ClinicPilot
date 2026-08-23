@@ -120,19 +120,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/settings',
-                builder: (context, state) => const SettingsScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'profile',
-                    builder: (context, state) => const DoctorProfileScreen(),
-                  ),
-                ],
-              ),
-            ],
+        ],
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'profile',
+            builder: (context, state) => const DoctorProfileScreen(),
           ),
         ],
       ),
@@ -280,9 +276,13 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
           child: Row(
             children: [
               NavigationRail(
-                selectedIndex: navigationShell.currentIndex,
+                selectedIndex: navigationShell.currentIndex.clamp(0, 3),
                 labelType: NavigationRailLabelType.all,
                 onDestinationSelected: (index) {
+                  if (index == 4) {
+                    context.push('/settings');
+                    return;
+                  }
                   final alwaysReset = index == _growthIndex;
                   navigationShell.goBranch(
                     index,
@@ -359,9 +359,13 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
           : null,
       body: SafeArea(top: !isDashboard, bottom: false, child: navigationShell),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
+        selectedIndex: navigationShell.currentIndex.clamp(0, 3),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
+          if (index == 4) {
+            context.push('/settings');
+            return;
+          }
           // Growth is a menu of sub-screens. A shell branch normally restores
           // whichever sub-route was last open, which would mean that once a
           // section had been visited the tab could never return to its menu.
