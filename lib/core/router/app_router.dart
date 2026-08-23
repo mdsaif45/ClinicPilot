@@ -206,12 +206,12 @@ class _NavDestination {
 }
 
 const _destinations = [
-  _NavDestination(0, Icons.dashboard_outlined, Icons.dashboard, 'Dashboard'),
-  _NavDestination(1, Icons.people_outline, Icons.people, 'Patients'),
+  _NavDestination(0, Icons.grid_view_outlined, Icons.grid_view_outlined, 'Dashboard'),
+  _NavDestination(1, Icons.people_alt_outlined, Icons.people_alt_outlined, 'Patients'),
   _NavDestination(2, Icons.account_balance_wallet_outlined,
-      Icons.account_balance_wallet, 'Finances'),
-  _NavDestination(3, Icons.trending_up_outlined, Icons.trending_up, 'Growth'),
-  _NavDestination(4, Icons.settings_outlined, Icons.settings, 'Settings'),
+      Icons.account_balance_wallet_outlined, 'Finances'),
+  _NavDestination(3, Icons.insights_outlined, Icons.insights_outlined, 'Growth'),
+  _NavDestination(4, Icons.settings_outlined, Icons.settings_outlined, 'Settings'),
 ];
 
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {

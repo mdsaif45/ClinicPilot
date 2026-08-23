@@ -20,7 +20,7 @@ class FloatingNavDestination {
 /// A modern, premium floating pill bottom navigation bar.
 ///
 /// Encapsulates navigation items in a floating capsule container with
-/// rounded active highlights, smooth transitions, and badge support.
+/// inset rounded active highlights, consistent icon weighting, and high contrast.
 class FloatingBottomNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
@@ -42,7 +42,7 @@ class FloatingBottomNavBar extends StatelessWidget {
     this.activeColor,
     this.inactiveColor,
     this.margin = const EdgeInsets.fromLTRB(Spacing.md, 0, Spacing.md, Spacing.md),
-    this.padding = const EdgeInsets.symmetric(horizontal: Spacing.xs, vertical: Spacing.xs),
+    this.padding = const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
   });
 
   @override
@@ -51,18 +51,18 @@ class FloatingBottomNavBar extends StatelessWidget {
     final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    // Resolves entirely from theme ColorScheme with zero hardcoded literals
+    // Resolves entirely from theme ColorScheme with high contrast WCAG standards
     final barBg = backgroundColor ??
         (isDark ? scheme.surfaceContainerHigh : scheme.inverseSurface);
     final activeHighlight = activeHighlightColor ??
         (isDark
             ? scheme.primary.withValues(alpha: 0.22)
-            : scheme.onInverseSurface.withValues(alpha: 0.16));
+            : scheme.onInverseSurface.withValues(alpha: 0.18));
     final active = activeColor ?? (isDark ? scheme.primary : scheme.inversePrimary);
     final inactive = inactiveColor ??
         (isDark
             ? scheme.onSurfaceVariant
-            : scheme.onInverseSurface.withValues(alpha: 0.72));
+            : scheme.onInverseSurface.withValues(alpha: 0.85));
 
     return SafeArea(
       top: false,
@@ -79,7 +79,7 @@ class FloatingBottomNavBar extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: scheme.shadow.withValues(alpha: 0.20),
+                color: scheme.shadow.withValues(alpha: 0.22),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -87,7 +87,6 @@ class FloatingBottomNavBar extends StatelessWidget {
           ),
           padding: padding,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               for (int i = 0; i < destinations.length; i++)
                 Expanded(
@@ -135,9 +134,10 @@ class _FloatingNavItem extends StatelessWidget {
         splashColor: activeColor.withValues(alpha: 0.15),
         highlightColor: Colors.transparent,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
             color: isSelected ? activeHighlightColor : Colors.transparent,
             borderRadius: BorderRadius.circular(24),
@@ -146,41 +146,49 @@ class _FloatingNavItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  AnimatedScale(
-                    scale: isSelected ? 1.08 : 1.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      isSelected
-                          ? (destination.selectedIcon ?? destination.icon)
-                          : destination.icon,
-                      size: 20,
-                      color: isSelected ? activeColor : inactiveColor,
+              SizedBox(
+                height: 24,
+                width: 24,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    AnimatedScale(
+                      scale: isSelected ? 1.05 : 1.0,
+                      duration: const Duration(milliseconds: 180),
+                      child: Icon(
+                        isSelected
+                            ? (destination.selectedIcon ?? destination.icon)
+                            : destination.icon,
+                        size: 21,
+                        color: isSelected ? activeColor : inactiveColor,
+                      ),
                     ),
-                  ),
-                  if (destination.badge != null)
-                    Positioned(
-                      top: -3,
-                      right: -6,
-                      child: destination.badge!,
-                    ),
-                ],
+                    if (destination.badge != null)
+                      Positioned(
+                        top: -2,
+                        right: -4,
+                        child: destination.badge!,
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(height: 3),
               AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 180),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected ? activeColor : inactiveColor,
                   letterSpacing: 0.1,
+                  height: 1.1,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                child: Text(destination.label),
+                child: Text(
+                  destination.label,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),
