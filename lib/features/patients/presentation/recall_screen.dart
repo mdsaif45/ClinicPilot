@@ -57,8 +57,19 @@ class RecallScreen extends ConsumerWidget {
                 for (final e in lists.overdue) _RecallCard(entry: e),
               ],
               if (lists.dueSoon.isNotEmpty) ...[
-                const SectionHeader(title: 'Due this week'),
+                SectionHeader(
+                  title: 'Due this week',
+                  subtitle: '${lists.dueSoon.length} '
+                      '${lists.dueSoon.length == 1 ? 'patient' : 'patients'}',
+                ),
                 for (final e in lists.dueSoon) _RecallCard(entry: e),
+              ],
+              if (lists.upcoming.isNotEmpty) ...[
+                SectionHeader(
+                  title: 'Upcoming Follow-ups',
+                  subtitle: '${lists.upcoming.length} scheduled',
+                ),
+                for (final e in lists.upcoming) _RecallCard(entry: e),
               ],
               if (lists.lapsed.isNotEmpty) ...[
                 SectionHeader(

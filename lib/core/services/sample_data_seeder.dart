@@ -599,7 +599,20 @@ class SampleDataSeeder {
     // 4. 15 Visits (10 New Initial Visits + 5 Follow-Up Visits)
     final visits = <String, String>{}; // key: visitKey, val: visitId
 
-    // 10 New Visits
+    // 10 New Visits with realistic follow-up schedule
+    final initialNextFollowUps = [
+      now.subtract(const Duration(days: 3)), // P0 (overridden by follow-up)
+      now, // P1 (overridden by follow-up)
+      now.subtract(const Duration(days: 5)), // P2 (Overdue)
+      now.add(const Duration(days: 2)), // P3 (overridden by follow-up)
+      now, // P4 (Due today)
+      now.add(const Duration(days: 5)), // P5 (overridden by follow-up)
+      now.add(const Duration(days: 12)), // P6 (overridden by follow-up)
+      now.add(const Duration(days: 3)), // P7 (Due this week)
+      now.add(const Duration(days: 15)), // P8 (Upcoming)
+      now.add(const Duration(days: 20)), // P9 (Upcoming)
+    ];
+
     for (int i = 0; i < 10; i++) {
       final p = patientsData[i];
       final vId = IdGenerator.generate();
@@ -615,7 +628,7 @@ class SampleDataSeeder {
               visitDate: now.subtract(Duration(days: 30 - i * 2)),
               consultationType: const Value('clinic'),
               outcome: const Value('improved'),
-              nextFollowUpDate: Value(now.add(Duration(days: 7 + i * 2))),
+              nextFollowUpDate: Value(initialNextFollowUps[i]),
             ),
           );
     }
@@ -623,6 +636,14 @@ class SampleDataSeeder {
     // 5 Follow-Up Visits for Repeat Patients (P0, P1, P3, P5, P6)
     final followUpIndices = [0, 1, 3, 5, 6];
     final followUpOutcomes = ['improved', 'recovered', 'improved', 'improved', 'no_change'];
+    final followUpNextDates = [
+      now.subtract(const Duration(days: 3)), // P0: Overdue by 3 days
+      now, // P1: Due today
+      now.add(const Duration(days: 2)), // P3: Due in 2 days (this week)
+      now.add(const Duration(days: 5)), // P5: Due in 5 days (this week)
+      now.add(const Duration(days: 12)), // P6: Due in 12 days (upcoming)
+    ];
+
     for (int j = 0; j < followUpIndices.length; j++) {
       final pIndex = followUpIndices[j];
       final p = patientsData[pIndex];
@@ -639,7 +660,7 @@ class SampleDataSeeder {
               visitDate: now.subtract(Duration(days: 10 - j * 2)),
               consultationType: const Value('clinic'),
               outcome: Value(followUpOutcomes[j]),
-              nextFollowUpDate: Value(now.add(Duration(days: 14 + j * 3))),
+              nextFollowUpDate: Value(followUpNextDates[j]),
             ),
           );
     }

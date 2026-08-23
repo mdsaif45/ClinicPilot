@@ -26,6 +26,7 @@ class RecallEntry {
 class RecallLists {
   final List<RecallEntry> overdue;
   final List<RecallEntry> dueSoon;
+  final List<RecallEntry> upcoming;
 
   /// Patients with no follow-up scheduled who have not been seen for a while.
   /// They never appear in a date-driven list, yet they are the ones quietly
@@ -35,10 +36,11 @@ class RecallLists {
   const RecallLists({
     required this.overdue,
     required this.dueSoon,
+    this.upcoming = const [],
     required this.lapsed,
   });
 
-  int get total => overdue.length + dueSoon.length + lapsed.length;
+  int get total => overdue.length + dueSoon.length + upcoming.length + lapsed.length;
 }
 
 /// How long without a visit before a patient counts as lapsed.
@@ -97,6 +99,7 @@ final recallListProvider = StreamProvider<RecallLists>((ref) {
 
     final overdue = <RecallEntry>[];
     final dueSoon = <RecallEntry>[];
+    final upcoming = <RecallEntry>[];
     final lapsed = <RecallEntry>[];
 
     for (final patientId in patients.keys) {
@@ -121,8 +124,11 @@ final recallListProvider = StreamProvider<RecallLists>((ref) {
         if (days >= 0) {
           overdue.add(entry);
         } else if (days >= -7) {
-          // Only the coming week, so the list stays a to-do rather than a diary.
+          // Due in the coming 7 days
           dueSoon.add(entry);
+        } else if (days >= -30) {
+          // Scheduled within the coming 30 days
+          upcoming.add(entry);
         }
         continue;
       }
@@ -147,8 +153,9 @@ final recallListProvider = StreamProvider<RecallLists>((ref) {
     // Longest waiting first — those are the ones closest to being lost.
     overdue.sort((a, b) => b.daysOverdue.compareTo(a.daysOverdue));
     dueSoon.sort((a, b) => a.daysOverdue.compareTo(b.daysOverdue));
+    upcoming.sort((a, b) => a.daysOverdue.compareTo(b.daysOverdue));
     lapsed.sort((a, b) => b.daysOverdue.compareTo(a.daysOverdue));
 
-    return RecallLists(overdue: overdue, dueSoon: dueSoon, lapsed: lapsed);
+    return RecallLists(overdue: overdue, dueSoon: dueSoon, upcoming: upcoming, lapsed: lapsed);
   });
 });
