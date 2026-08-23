@@ -1,7 +1,7 @@
+import '../utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
 import '../database/database_provider.dart';
@@ -11,7 +11,7 @@ import '../../features/onboarding/providers/onboarding_provider.dart';
 class SampleDataSeeder {
   static Future<void> seedRealisticData(WidgetRef ref) async {
     final db = ref.read(databaseProvider);
-    const uuid = Uuid();
+    
 
     // 1. Settings & Onboarding
     await db.into(db.settings).insertOnConflictUpdate(
@@ -51,8 +51,8 @@ class SampleDataSeeder {
     } catch (_) {}
 
     // 2. Clinics
-    const clinic1Id = 'clinic_main';
-    const clinic2Id = 'clinic_branch';
+    const clinic1Id = '01918a30c00171a0b123456789abcdef';
+    const clinic2Id = '01918a30c00271a0b123456789abcdef';
 
     await db.into(db.clinics).insertOnConflictUpdate(
           ClinicsCompanion.insert(
@@ -80,7 +80,7 @@ class SampleDataSeeder {
     final now = DateTime.now();
 
     // Patient 1: Md. Saifuddin
-    const p1Id = 'patient_001';
+    const p1Id = '01918a30p00171a0b123456789abcdef';
     await db.into(db.patients).insertOnConflictUpdate(
           PatientsCompanion.insert(
             id: p1Id,
@@ -100,7 +100,7 @@ class SampleDataSeeder {
         );
 
     // Patient 2: Zahida Parveen
-    const p2Id = 'patient_002';
+    const p2Id = '01918a30p00271a0b123456789abcdef';
     await db.into(db.patients).insertOnConflictUpdate(
           PatientsCompanion.insert(
             id: p2Id,
@@ -119,7 +119,7 @@ class SampleDataSeeder {
         );
 
     // Patient 3: Habibul Rahman
-    const p3Id = 'patient_003';
+    const p3Id = '01918a30p00371a0b123456789abcdef';
     await db.into(db.patients).insertOnConflictUpdate(
           PatientsCompanion.insert(
             id: p3Id,
@@ -138,7 +138,7 @@ class SampleDataSeeder {
         );
 
     // 4. Visits
-    const v1Id = 'visit_001';
+    const v1Id = '01918a30v00171a0b123456789abcdef';
     await db.into(db.visits).insertOnConflictUpdate(
           VisitsCompanion.insert(
             id: v1Id,
@@ -152,7 +152,7 @@ class SampleDataSeeder {
           ),
         );
 
-    const v2Id = 'visit_002';
+    const v2Id = '01918a30v00271a0b123456789abcdef';
     await db.into(db.visits).insertOnConflictUpdate(
           VisitsCompanion.insert(
             id: v2Id,
@@ -169,7 +169,7 @@ class SampleDataSeeder {
     // 5. Cash Memos (Full & Partial Payments)
     await db.into(db.cashMemos).insertOnConflictUpdate(
           CashMemosCompanion.insert(
-            id: 'memo_001',
+            id: '01918a30m00171a0b123456789abcdef',
             memoNumber: 'CM-2026-00001',
             patientId: p1Id,
             clinicId: const Value(clinic1Id),
@@ -187,7 +187,7 @@ class SampleDataSeeder {
 
     await db.into(db.cashMemos).insertOnConflictUpdate(
           CashMemosCompanion.insert(
-            id: 'memo_002',
+            id: '01918a30m00271a0b123456789abcdef',
             memoNumber: 'CM-2026-00002',
             patientId: p2Id,
             clinicId: const Value(clinic1Id),
@@ -204,7 +204,7 @@ class SampleDataSeeder {
 
     await db.into(db.cashMemos).insertOnConflictUpdate(
           CashMemosCompanion.insert(
-            id: 'memo_003',
+            id: '01918a30m00371a0b123456789abcdef',
             memoNumber: 'CM-2026-00003',
             patientId: p3Id,
             clinicId: const Value(clinic2Id),
@@ -221,7 +221,7 @@ class SampleDataSeeder {
     // 6. Expenses across categories
     await db.into(db.expenses).insertOnConflictUpdate(
           ExpensesCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             clinicId: clinic1Id,
             category: 'Medicine Purchase',
             amount: 4500.0,
@@ -233,7 +233,7 @@ class SampleDataSeeder {
 
     await db.into(db.expenses).insertOnConflictUpdate(
           ExpensesCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             clinicId: clinic1Id,
             category: 'Packaging & Dispensing',
             amount: 850.0,
@@ -245,7 +245,7 @@ class SampleDataSeeder {
 
     await db.into(db.expenses).insertOnConflictUpdate(
           ExpensesCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             clinicId: clinic1Id,
             category: 'Staff Salary',
             amount: 6000.0,
@@ -257,7 +257,7 @@ class SampleDataSeeder {
 
     await db.into(db.expenses).insertOnConflictUpdate(
           ExpensesCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             clinicId: clinic1Id,
             category: 'Electricity',
             amount: 1250.0,
@@ -269,7 +269,7 @@ class SampleDataSeeder {
     // 7. Master Case Taking (16 Sections) for Patient 1
     // 7. Master Case Taking (19 Sections) for Patient 1 (Md. Saifuddin)
     final masterRecord = MasterCaseRecordData(
-      id: uuid.v4(),
+      id: IdGenerator.generate(),
       patientId: p1Id,
       recordDate: now.subtract(const Duration(days: 14)),
       identification: const PatientIdentificationDetails(
@@ -404,7 +404,7 @@ class SampleDataSeeder {
     // 8. Relational Complaints
     await db.into(db.complaints).insertOnConflictUpdate(
           ComplaintsCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             patientId: p1Id,
             visitId: const Value(v1Id),
             complaintIndex: const Value(1),
@@ -424,7 +424,7 @@ class SampleDataSeeder {
     // 9. Relational Prescriptions
     await db.into(db.prescriptions).insertOnConflictUpdate(
           PrescriptionsCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             patientId: p1Id,
             visitId: const Value(v1Id),
             remedyIndex: const Value(1),
@@ -441,7 +441,7 @@ class SampleDataSeeder {
 
     await db.into(db.prescriptions).insertOnConflictUpdate(
           PrescriptionsCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             patientId: p1Id,
             visitId: const Value(v1Id),
             remedyIndex: const Value(2),
@@ -458,7 +458,7 @@ class SampleDataSeeder {
     // 10. Lab Investigations (Auto-flagged)
     await db.into(db.investigations).insertOnConflictUpdate(
           InvestigationsCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             patientId: p1Id,
             testCategory: const Value('Diabetes / Glycemia'),
             testName: 'Fasting Blood Sugar (FBS)',
@@ -474,7 +474,7 @@ class SampleDataSeeder {
 
     await db.into(db.investigations).insertOnConflictUpdate(
           InvestigationsCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             patientId: p1Id,
             testCategory: const Value('Diabetes / Glycemia'),
             testName: 'HbA1c (Glycated Hemoglobin)',
@@ -491,7 +491,7 @@ class SampleDataSeeder {
     // 11. Referral Contacts CRM
     await db.into(db.referralContacts).insertOnConflictUpdate(
           ReferralContactsCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             name: 'City Diagnostic Center',
             category: const Value('Diagnostic Lab'),
             contactPerson: const Value('Dr. R. K. Pathak'),
@@ -506,7 +506,7 @@ class SampleDataSeeder {
 
     await db.into(db.referralContacts).insertOnConflictUpdate(
           ReferralContactsCompanion.insert(
-            id: uuid.v4(),
+            id: IdGenerator.generate(),
             name: 'Care Pharmacy & Surgical',
             category: const Value('Pharmacy'),
             contactPerson: const Value('Sunil Kumar'),

@@ -55,6 +55,8 @@ class ExportService {
     for (var col = 0; col < colCount; col++) {
       final cell = sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0));
       cell.cellStyle = xlsx.CellStyle(
+        backgroundColorHex: xlsx.ExcelColor.fromHexString('#1976D2'),
+        fontColorHex: xlsx.ExcelColor.fromHexString('#FFFFFF'),
         bold: true,
         fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
       );
@@ -66,16 +68,25 @@ class ExportService {
     final excel = xlsx.Excel.createExcel();
     excel.rename('Sheet1', 'Clinics');
 
+    // Preload clinics and patients maps for human-readable cross-referencing
+    final allClinics = await (_db.select(_db.clinics)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    final clinicNameById = {for (final c in allClinics) c.id: c.name};
+
+    final allPatients = await (_db.select(_db.patients)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    final patientNameById = {for (final p in allPatients) p.id: p.name};
+    final patientCodeById = {for (final p in allPatients) p.id: p.patientCode};
+
     // 1. Clinics Sheet
     final clinicsSheet = excel['Clinics'];
     final clinicHeaders = ['Clinic ID', 'Clinic Name', 'Address', 'Phone', 'Monthly Rent', 'Open Days'];
     clinicsSheet.appendRow(clinicHeaders.map((h) => xlsx.TextCellValue(h)).toList());
     _styleHeaderRow(clinicsSheet, clinicHeaders.length);
 
-    final clinics = await (_db.select(_db.clinics)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
-    for (final c in clinics) {
+    for (final c in allClinics) {
       clinicsSheet.appendRow([
         _cellValue(c.id),
         _cellValue(c.name),
@@ -89,19 +100,19 @@ class ExportService {
     // 2. Patients Sheet
     final patientsSheet = excel['Patients'];
     final patientHeaders = [
-      'Patient Code', 'Name', 'Phone', 'WhatsApp', 'Age', 'Gender',
-      'Area', 'Address', 'Occupation', 'Primary Clinic ID',
+      'Patient ID', 'Patient Code', 'Serial No.', 'Name', 'Phone', 'WhatsApp', 'Age', 'Gender',
+      'Area', 'Address', 'Occupation', 'Clinic Name',
       'Primary Disease', 'Referral Source', 'Notes', 'Created At',
     ];
     patientsSheet.appendRow(patientHeaders.map((h) => xlsx.TextCellValue(h)).toList());
     _styleHeaderRow(patientsSheet, patientHeaders.length);
 
-    final patients = await (_db.select(_db.patients)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
-    for (final p in patients) {
+    for (final p in allPatients) {
+      final clinicName = clinicNameById[p.primaryClinicId] ?? p.primaryClinicId;
       patientsSheet.appendRow([
+        _cellValue(p.id),
         _cellValue(p.patientCode),
+        _cellValue(p.serialNo),
         _cellValue(p.name),
         _cellValue(p.phone),
         _cellValue(p.whatsapp ?? ''),
@@ -110,7 +121,7 @@ class ExportService {
         _cellValue(p.area ?? ''),
         _cellValue(p.address ?? ''),
         _cellValue(p.occupation ?? ''),
-        _cellValue(p.primaryClinicId),
+        _cellValue(clinicName),
         _cellValue(p.primaryDisease ?? ''),
         _cellValue(p.referralSource ?? ''),
         _cellValue(p.notes ?? ''),
@@ -121,7 +132,7 @@ class ExportService {
     // 3. Visits Sheet
     final visitsSheet = excel['Visits'];
     final visitHeaders = [
-      'Visit ID', 'Patient ID', 'Clinic ID', 'Visit Type', 'Consultation Type',
+      'Visit ID', 'Patient Code', 'Patient Name', 'Clinic', 'Visit Type', 'Consultation Type',
       'Disease', 'Chief Complaint', 'Referral Source', 'Outcome',
       'Visit Date', 'Next Follow-up', 'Notes',
     ];
@@ -132,10 +143,14 @@ class ExportService {
           ..where((t) => t.isDeleted.equals(false)))
         .get();
     for (final v in visits) {
+      final pCode = patientCodeById[v.patientId] ?? v.patientId;
+      final pName = patientNameById[v.patientId] ?? '';
+      final cName = clinicNameById[v.clinicId] ?? v.clinicId;
       visitsSheet.appendRow([
         _cellValue(v.id),
-        _cellValue(v.patientId),
-        _cellValue(v.clinicId),
+        _cellValue(pCode),
+        _cellValue(pName),
+        _cellValue(cName),
         _cellValue(v.visitType),
         _cellValue(v.consultationType),
         _cellValue(v.disease),
@@ -151,7 +166,7 @@ class ExportService {
     // 4. Cash Memos Sheet
     final memosSheet = excel['Cash Memos'];
     final memoHeaders = [
-      'Memo Number', 'Patient ID', 'Clinic ID', 'Visit ID',
+      'Memo Number', 'Patient Code', 'Patient Name', 'Clinic',
       'Consultation Fee', 'Medicine Fee', 'Other Fee', 'Discount',
       'Total', 'Paid Amount', 'Payment Method', 'Notes', 'Date',
     ];
@@ -162,11 +177,14 @@ class ExportService {
           ..where((t) => t.isDeleted.equals(false)))
         .get();
     for (final m in memos) {
+      final pCode = patientCodeById[m.patientId] ?? m.patientId;
+      final pName = patientNameById[m.patientId] ?? '';
+      final cName = clinicNameById[m.clinicId] ?? m.clinicId;
       memosSheet.appendRow([
         _cellValue(m.memoNumber),
-        _cellValue(m.patientId),
-        _cellValue(m.clinicId),
-        _cellValue(m.visitId),
+        _cellValue(pCode),
+        _cellValue(pName),
+        _cellValue(cName),
         _cellValue(m.consultationFee),
         _cellValue(m.medicineFee),
         _cellValue(m.otherFee),
@@ -182,7 +200,7 @@ class ExportService {
     // 5. Expenses Sheet
     final expensesSheet = excel['Expenses'];
     final expenseHeaders = [
-      'Expense ID', 'Clinic ID', 'Category', 'Subcategory', 'Amount',
+      'Expense ID', 'Clinic', 'Category', 'Subcategory', 'Amount',
       'Payment Method', 'Recurring', 'Notes', 'Date',
     ];
     expensesSheet.appendRow(expenseHeaders.map((h) => xlsx.TextCellValue(h)).toList());
@@ -192,14 +210,15 @@ class ExportService {
           ..where((t) => t.isDeleted.equals(false)))
         .get();
     for (final e in expenses) {
+      final cName = clinicNameById[e.clinicId] ?? e.clinicId;
       expensesSheet.appendRow([
         _cellValue(e.id),
-        _cellValue(e.clinicId),
+        _cellValue(cName),
         _cellValue(e.category),
         _cellValue(e.subcategory ?? ''),
         _cellValue(e.amount),
         _cellValue(e.paymentMethod),
-        _cellValue(e.isRecurring),
+        _cellValue(e.isRecurring ? 'Yes' : 'No'),
         _cellValue(e.notes ?? ''),
         _cellValue(e.date),
       ]);
@@ -231,13 +250,13 @@ class ExportService {
       ..writeln()
       ..writeln('# PATIENTS')
       ..writeln(_row([
-        'patient_code', 'name', 'phone', 'whatsapp', 'age', 'gender',
+        'id', 'patient_code', 'serial_no', 'name', 'phone', 'whatsapp', 'age', 'gender',
         'area', 'address', 'occupation', 'primary_clinic_id',
         'primary_disease', 'referral_source', 'notes', 'created_at',
       ]));
     for (final p in patients) {
       buffer.writeln(_row([
-        p.patientCode, p.name, p.phone, p.whatsapp, p.age, p.gender,
+        p.id, p.patientCode, p.serialNo, p.name, p.phone, p.whatsapp, p.age, p.gender,
         p.area, p.address, p.occupation, p.primaryClinicId,
         p.primaryDisease, p.referralSource, p.notes, _date(p.createdAt),
       ]));
@@ -294,7 +313,7 @@ class ExportService {
     for (final e in expenses) {
       buffer.writeln(_row([
         e.id, e.clinicId, e.category, e.subcategory, e.amount,
-        e.paymentMethod, e.isRecurring, e.notes, _date(e.date),
+        e.paymentMethod, e.isRecurring ? 'Yes' : 'No', e.notes, _date(e.date),
       ]));
     }
 

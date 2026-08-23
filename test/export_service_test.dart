@@ -98,4 +98,27 @@ void main() {
     final bytes = ExportService.encode('naam, ₹500');
     expect(bytes, isNotEmpty);
   });
+
+  test('expenses recurring column formats as Yes/No in export', () async {
+    await db.into(db.expenses).insert(ExpensesCompanion.insert(
+          id: 'exp1',
+          clinicId: 'clinic_old',
+          category: 'Electricity',
+          amount: 1200.0,
+          isRecurring: const Value(true),
+          date: DateTime(2026, 8, 1),
+        ));
+    await db.into(db.expenses).insert(ExpensesCompanion.insert(
+          id: 'exp2',
+          clinicId: 'clinic_old',
+          category: 'Medicine Purchase',
+          amount: 3500.0,
+          isRecurring: const Value(false),
+          date: DateTime(2026, 8, 2),
+        ));
+
+    final csv = await service.buildCsv();
+    expect(csv, contains('Electricity,,1200.0,Cash,Yes'));
+    expect(csv, contains('Medicine Purchase,,3500.0,Cash,No'));
+  });
 }

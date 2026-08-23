@@ -1,6 +1,6 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
 import '../database/database_provider.dart';
@@ -43,8 +43,7 @@ const List<String> kDefaultHomeopathicDiseases = [
 
 class MasterDiseaseService {
   final AppDatabase _db;
-  static const _uuid = Uuid();
-  bool _initialized = false;
+  static   bool _initialized = false;
 
   MasterDiseaseService(this._db);
 
@@ -71,7 +70,7 @@ class MasterDiseaseService {
           INSERT OR IGNORE INTO master_diseases (id, name, normalized_name, usage_count, created_at)
           VALUES (?, ?, ?, 1, ?)
         ''', [
-          _uuid.v4(),
+          IdGenerator.generate(),
           norm,
           norm.toLowerCase(),
           DateTime.now().toIso8601String(),
@@ -131,7 +130,7 @@ class MasterDiseaseService {
       VALUES (?, ?, ?, 1, ?)
       ON CONFLICT(name) DO UPDATE SET usage_count = usage_count + 1
     ''', [
-      _uuid.v4(),
+      IdGenerator.generate(),
       normalized,
       normalized.toLowerCase(),
       DateTime.now().toIso8601String(),

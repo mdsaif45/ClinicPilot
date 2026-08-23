@@ -1,10 +1,9 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-const _uuid = Uuid();
 
 class VisitWithDetails {
   final Visit visit;
@@ -89,7 +88,7 @@ class VisitNotifier extends StateNotifier<AsyncValue<void>> {
     final priorVisits = await countQuery.get();
     final visitType = priorVisits.isEmpty ? 'new' : 'repeat';
 
-    final id = _uuid.v4();
+    final id = IdGenerator.generate();
     final companion = VisitsCompanion.insert(
       id: id,
       patientId: patientId,

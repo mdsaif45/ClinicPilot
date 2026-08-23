@@ -1,10 +1,9 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-const _uuid = Uuid();
 
 final expenseCategoryFilterProvider = StateProvider<String?>((ref) => null);
 
@@ -61,7 +60,7 @@ class ExpenseNotifier extends StateNotifier<AsyncValue<void>> {
     state = await AsyncValue.guard(() async {
       await _db.into(_db.expenses).insert(
             ExpensesCompanion.insert(
-              id: _uuid.v4(),
+              id: IdGenerator.generate(),
               clinicId: clinicId,
               category: category,
               subcategory: Value(subcategory),
