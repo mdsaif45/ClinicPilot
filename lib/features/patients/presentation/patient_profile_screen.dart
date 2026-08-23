@@ -70,7 +70,6 @@ class PatientProfileScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: EntityHeader(
               title: patient.name,
-              subtitle: '${patient.patientCode} · #${patient.serialNo}',
               avatarText: patient.name,
               heroTag: 'patient-avatar-${patient.id}',
               leading: IconButton(
@@ -258,8 +257,16 @@ class _InfoTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        InfoRow(label: 'Serial No.', value: patient.serialNo),
-        InfoRow(label: 'Patient code', value: patient.patientCode),
+        InfoRow(
+          label: 'Serial No.',
+          value: patient.serialNo,
+          icon: Icons.tag,
+        ),
+        InfoRow(
+          label: 'Patient code',
+          value: patient.patientCode,
+          icon: Icons.badge_outlined,
+        ),
         InfoRow(
           label: 'Phone',
           value: patient.phone,
@@ -277,23 +284,46 @@ class _InfoTab extends StatelessWidget {
             dueDate: nextFollowUp,
           ),
         ),
-        InfoRow(label: 'Age', value: '${patient.age}'),
-        InfoRow(label: 'Gender', value: patient.gender),
-        InfoRow(label: 'Area', value: patient.area),
-        InfoRow(label: 'Address', value: patient.address),
-        InfoRow(label: 'Occupation', value: patient.occupation),
+        InfoRow(
+          label: 'Age',
+          value: '${patient.age}',
+          icon: Icons.cake_outlined,
+        ),
+        InfoRow(
+          label: 'Gender',
+          value: patient.gender,
+          icon: Icons.person_outline,
+        ),
+        InfoRow(
+          label: 'Area',
+          value: patient.area,
+          icon: Icons.location_city_outlined,
+        ),
+        InfoRow(
+          label: 'Address',
+          value: patient.address,
+          icon: Icons.home_outlined,
+        ),
+        InfoRow(
+          label: 'Occupation',
+          value: patient.occupation,
+          icon: Icons.work_outline,
+        ),
         InfoRow(
           label: 'First seen',
           value: Formatters.formatDate(patient.createdAt),
+          icon: Icons.event_available_outlined,
         ),
         InfoRow(
           label: 'Last visit',
           value: lastVisit == null ? null : Formatters.formatDate(lastVisit),
+          icon: Icons.history_outlined,
         ),
         InfoRow(
           label: 'Next follow-up',
           value:
               nextFollowUp == null ? null : Formatters.formatDate(nextFollowUp),
+          icon: Icons.alarm_outlined,
         ),
         InfoRow(
           label: 'Google Review',
@@ -311,7 +341,11 @@ class _InfoTab extends StatelessWidget {
             ),
           ),
         ),
-        InfoRow(label: 'Notes', value: patient.notes),
+        InfoRow(
+          label: 'Notes',
+          value: patient.notes,
+          icon: Icons.notes_outlined,
+        ),
       ],
     );
   }

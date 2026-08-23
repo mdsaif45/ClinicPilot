@@ -109,7 +109,8 @@ void main() {
 
     // Header checks
     expect(find.text('Saifuddin'), findsWidgets);
-    expect(find.text('P-2026-00001 · #101'), findsOneWidget);
+    expect(find.text('P-2026-00001'), findsOneWidget);
+    expect(find.text('101'), findsOneWidget);
     expect(find.text('Main Clinic Dhanbad'), findsWidgets);
     expect(find.text('Dhanbad'), findsWidgets);
     expect(find.text('Male, 28y'), findsOneWidget);
