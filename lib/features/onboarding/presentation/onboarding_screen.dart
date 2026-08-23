@@ -116,9 +116,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_page == 0) {
       final fn = _firstNameController.text.trim();
       final ln = _lastNameController.text.trim();
-      final hasFn = fn.isNotEmpty && fn != 'Dr.' && fn != 'Dr';
+      final hasFn = fn.isNotEmpty &&
+          fn.toLowerCase() != 'dr.' &&
+          fn.toLowerCase() != 'dr' &&
+          fn.toLowerCase() != 'dr. ';
       final hasLn = ln.isNotEmpty;
-      return hasFn || hasLn;
+      return hasFn && hasLn;
     }
     return _clinics.any((c) => c.nameController.text.trim().isNotEmpty);
   }
@@ -379,7 +382,7 @@ class _DoctorProfilePage extends StatelessWidget {
             Expanded(
               child: CustomTextField(
                 controller: lastNameController,
-                label: 'Last Name',
+                label: 'Last Name *',
                 onChanged: (_) => onChanged(),
                 focusNode: lastNameFocus,
                 textInputAction: TextInputAction.next,

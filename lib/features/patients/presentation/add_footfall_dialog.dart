@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
+import '../../../core/services/master_disease_service.dart';
 import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/disease_autocomplete_field.dart';
 import '../../../core/widgets/picker_field.dart';
@@ -54,19 +55,22 @@ class _AddFootfallDialogState extends ConsumerState<AddFootfallDialog> {
     AppHaptics.medium();
 
     try {
+      final disease = _diseaseController.text.trim();
       await ref.read(footfallNotifierProvider.notifier).addFootfall(
             clinicId: _clinicId!,
             name: _nameController.text.trim(),
             phone: _phoneController.text.trim().isEmpty
                 ? null
                 : _phoneController.text.trim(),
-            disease: _diseaseController.text.trim().isEmpty
-                ? null
-                : _diseaseController.text.trim(),
+            disease: disease.isEmpty ? null : disease,
             notes: _notesController.text.trim().isEmpty
                 ? null
                 : _notesController.text.trim(),
           );
+
+      if (disease.isNotEmpty) {
+        ref.read(masterDiseaseServiceProvider).recordDisease(disease);
+      }
 
       AppHaptics.success();
       if (mounted) Navigator.of(context).pop(true);
@@ -121,7 +125,6 @@ class _AddFootfallDialogState extends ConsumerState<AddFootfallDialog> {
               controller: _nameController,
               decoration: const InputDecoration(
                 labelText: 'Visitor Name *',
-                hintText: 'e.g. Rahul Sharma',
                 prefixIcon: Icon(Icons.person_outline),
               ),
               validator: (v) =>
@@ -133,7 +136,6 @@ class _AddFootfallDialogState extends ConsumerState<AddFootfallDialog> {
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
                 labelText: 'Phone Number',
-                hintText: '10-digit mobile number',
                 prefixIcon: Icon(Icons.phone_outlined),
               ),
             ),
@@ -141,7 +143,6 @@ class _AddFootfallDialogState extends ConsumerState<AddFootfallDialog> {
             DiseaseAutocompleteField(
               controller: _diseaseController,
               label: 'Inquiry / Chief Complaint',
-              hint: 'e.g. Skin Allergy, Hairfall, Joint Pain',
             ),
             const SizedBox(height: Spacing.md),
             TextFormField(
@@ -149,7 +150,6 @@ class _AddFootfallDialogState extends ConsumerState<AddFootfallDialog> {
               maxLines: 2,
               decoration: const InputDecoration(
                 labelText: 'Notes',
-                hintText: 'e.g. Inquired about consultation fees and timings',
               ),
             ),
           ],

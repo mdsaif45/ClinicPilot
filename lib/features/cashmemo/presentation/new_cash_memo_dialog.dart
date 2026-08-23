@@ -234,7 +234,6 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
             CustomTextField(
               controller: _paidAmountController,
               label: 'Paid Amount (Rs) *',
-              hint: 'Amount collected today',
               prefixIcon: Icons.payments,
               keyboardType: TextInputType.number,
               onChanged: (v) {

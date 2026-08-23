@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/services/master_disease_service.dart';
+
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
@@ -237,10 +239,13 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
     setState(() => _submitting = true);
 
     try {
+      final dName = Formatters.toTitleCase(_diseaseController.text);
+      if (dName.isNotEmpty) { ref.read(masterDiseaseServiceProvider).recordDisease(dName); }
       await ref.read(visitNotifierProvider.notifier).addVisit(
             patientId: widget.patient.id,
             clinicId: _selectedClinicId!,
             disease: Formatters.toTitleCase(_diseaseController.text),
+
             chiefComplaint: _chiefComplaintController.text.trim().isEmpty
                 ? null
                 : _chiefComplaintController.text.trim(),

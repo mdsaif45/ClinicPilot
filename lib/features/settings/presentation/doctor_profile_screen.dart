@@ -287,9 +287,12 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
                     prefixIcon: Icons.person_outline,
                     validator: (v) {
                       final fn = v?.trim() ?? '';
-                      final ln = _lastNameController.text.trim();
-                      if (fn.isEmpty && ln.isEmpty) return 'Required';
-                      if ((fn == 'Dr.' || fn == 'Dr') && ln.isEmpty) return 'Required';
+                      if (fn.isEmpty ||
+                          fn.toLowerCase() == 'dr.' ||
+                          fn.toLowerCase() == 'dr' ||
+                          fn.toLowerCase() == 'dr. ') {
+                        return 'First name required';
+                      }
                       return null;
                     },
                   ),
@@ -298,7 +301,12 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
                 Expanded(
                   child: CustomTextField(
                     controller: _lastNameController,
-                    label: 'Last Name',
+                    label: 'Last Name *',
+                    validator: (v) {
+                      final ln = v?.trim() ?? '';
+                      if (ln.isEmpty) return 'Last name required';
+                      return null;
+                    },
                   ),
                 ),
               ],

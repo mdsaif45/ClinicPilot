@@ -50,7 +50,8 @@ void main() {
     await pump(tester);
     await tester.pump();
 
-    await tester.enterText(find.byType(TextField).first, 'Dr. Rao');
+    await tester.enterText(find.byType(TextField).first, 'Dr. Sarah');
+    await tester.enterText(find.byType(TextField).at(1), 'Rao');
     await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
@@ -63,7 +64,8 @@ void main() {
     await pump(tester);
     await tester.pump();
 
-    await tester.enterText(find.byType(TextField).first, 'Dr. Rao');
+    await tester.enterText(find.byType(TextField).first, 'Dr. Sarah');
+    await tester.enterText(find.byType(TextField).at(1), 'Rao');
     await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
@@ -83,7 +85,8 @@ void main() {
     await pump(tester);
     await tester.pump();
 
-    await tester.enterText(find.byType(TextField).first, 'Dr. Rao');
+    await tester.enterText(find.byType(TextField).first, 'Dr. Sarah');
+    await tester.enterText(find.byType(TextField).at(1), 'Rao');
     await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
