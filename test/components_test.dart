@@ -254,9 +254,9 @@ void main() {
   });
 
   group('DateField', () {
-    testWidgets('renders label and shortcut buttons', (t) async {
+    testWidgets('renders label and handles manual entry and formatting', (t) async {
       DateTime? selected;
-      final now = DateTime.now();
+      final now = DateTime(2026, 8, 23);
       await t.pumpWidget(wrap(DateField(
         label: 'Date of Visit',
         value: now,
@@ -264,11 +264,14 @@ void main() {
       )));
 
       expect(find.text('Date of Visit'), findsOneWidget);
-      expect(find.text('Today'), findsWidgets);
-      expect(find.text('Yesterday'), findsOneWidget);
+      expect(find.text('23/08/2026'), findsOneWidget);
+      expect(find.byIcon(Icons.calendar_month_outlined), findsOneWidget);
 
-      await t.tap(find.text('Yesterday'));
-      expect(selected, isNotNull);
+      await t.enterText(find.byType(TextFormField), '15052026');
+      await t.pumpAndSettle();
+
+      expect(find.text('15/05/2026'), findsOneWidget);
+      expect(selected, DateTime(2026, 5, 15));
     });
   });
 

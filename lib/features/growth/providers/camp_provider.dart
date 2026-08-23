@@ -1,12 +1,11 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
-const _uuid = Uuid();
 
 class CampWithAnalytics {
   final Camp camp;
@@ -152,7 +151,7 @@ class CampNotifier extends StateNotifier<AsyncValue<void>> {
     String? notes,
   }) async {
     state = const AsyncLoading();
-    final id = _uuid.v4();
+    final id = IdGenerator.generate();
     final now = DateTime.now();
 
     final companion = CampsCompanion.insert(

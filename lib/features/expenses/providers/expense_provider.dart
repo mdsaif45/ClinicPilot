@@ -1,10 +1,9 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-const _uuid = Uuid();
 
 final expenseCategoryFilterProvider = StateProvider<String?>((ref) => null);
 
@@ -26,8 +25,22 @@ final expensesStreamProvider = StreamProvider<List<ExpenseWithClinic>>((ref) {
     innerJoin(db.clinics, db.clinics.id.equalsExp(db.expenses.clinicId)),
   ])..where(db.expenses.isDeleted.equals(false));
 
-  if (categoryFilter != null && categoryFilter.isNotEmpty) {
-    query = query..where(db.expenses.category.equals(categoryFilter));
+  if (categoryFilter != null && categoryFilter.isNotEmpty && categoryFilter != 'All') {
+    final List<String> matchingCategories;
+    if (categoryFilter == 'Medicine Purchase' || categoryFilter == 'Medicine') {
+      matchingCategories = ['Medicine Purchase', 'Medicine'];
+    } else if (categoryFilter == 'Packaging & Dispensing' || categoryFilter == 'Packaging') {
+      matchingCategories = ['Packaging & Dispensing', 'Packaging'];
+    } else if (categoryFilter == 'Electricity' || categoryFilter == 'Utilities') {
+      matchingCategories = ['Electricity', 'Utilities'];
+    } else if (categoryFilter == 'Camp' || categoryFilter == 'Camp Expense') {
+      matchingCategories = ['Camp', 'Camp Expense'];
+    } else if (categoryFilter == 'Staff Salary' || categoryFilter == 'Assistant Salary') {
+      matchingCategories = ['Staff Salary', 'Assistant Salary'];
+    } else {
+      matchingCategories = [categoryFilter];
+    }
+    query = query..where(db.expenses.category.isIn(matchingCategories));
   }
 
   return (query..orderBy([OrderingTerm.desc(db.expenses.date)]))
@@ -61,7 +74,7 @@ class ExpenseNotifier extends StateNotifier<AsyncValue<void>> {
     state = await AsyncValue.guard(() async {
       await _db.into(_db.expenses).insert(
             ExpensesCompanion.insert(
-              id: _uuid.v4(),
+              id: IdGenerator.generate(),
               clinicId: clinicId,
               category: category,
               subcategory: Value(subcategory),

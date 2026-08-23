@@ -1,11 +1,10 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:excel/excel.dart' as xlsx;
-import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
 import 'import_template_service.dart';
 
-const _uuid = Uuid();
 
 /// One row that could not be imported, with enough context to find and fix
 /// it in the spreadsheet.
@@ -565,7 +564,7 @@ class ImportService {
     await _db.transaction(() async {
       for (var i = 0; i < result.patients.length; i++) {
         final p = result.patients[i];
-        final id = _uuid.v4();
+        final id = IdGenerator.generate();
         final code = 'P-$year-${(i + 1).toString().padLeft(5, '0')}';
         patientIds[key(p.serialNo, p.clinicId)] = id;
 
@@ -590,7 +589,7 @@ class ImportService {
       for (final v in result.visits) {
         final patientId = patientIds[key(v.patientSerialNo, v.clinicId)]!;
         await _db.into(_db.visits).insert(VisitsCompanion.insert(
-              id: _uuid.v4(),
+              id: IdGenerator.generate(),
               patientId: patientId,
               clinicId: v.clinicId,
               visitType: v.visitType,
@@ -607,8 +606,8 @@ class ImportService {
         final total =
             (m.consultationFee + m.medicineFee + m.otherFee) - m.discount;
         await _db.into(_db.cashMemos).insert(CashMemosCompanion.insert(
-              id: _uuid.v4(),
-              memoNumber: 'CM-IMPORT-${_uuid.v4().substring(0, 8)}',
+              id: IdGenerator.generate(),
+              memoNumber: 'CM-IMPORT-${IdGenerator.generate().substring(0, 8)}',
               patientId: patientId,
               clinicId: Value(m.clinicId),
               consultationFee: Value(m.consultationFee),
@@ -625,7 +624,7 @@ class ImportService {
 
       for (final e in result.expenses) {
         await _db.into(_db.expenses).insert(ExpensesCompanion.insert(
-              id: _uuid.v4(),
+              id: IdGenerator.generate(),
               clinicId: e.clinicId,
               category: e.category,
               subcategory: Value(e.subcategory),

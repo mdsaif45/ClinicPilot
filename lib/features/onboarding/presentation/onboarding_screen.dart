@@ -62,13 +62,15 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
-  final _nameController = TextEditingController(text: 'Dr. ');
+  final _firstNameController = TextEditingController(text: 'Dr. ');
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _qualificationController = TextEditingController();
   final _regNumberController = TextEditingController();
 
-  final _nameFocus = FocusNode();
+  final _firstNameFocus = FocusNode();
+  final _lastNameFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _phoneFocus = FocusNode();
   final _qualificationFocus = FocusNode();
@@ -88,13 +90,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void dispose() {
     _pageController.dispose();
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _qualificationController.dispose();
     _regNumberController.dispose();
 
-    _nameFocus.dispose();
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
     _emailFocus.dispose();
     _phoneFocus.dispose();
     _qualificationFocus.dispose();
@@ -110,8 +114,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   bool get _canContinue {
     if (_page == 0) {
-      final name = _nameController.text.trim();
-      return name.isNotEmpty && name != 'Dr.' && name != 'Dr';
+      final fn = _firstNameController.text.trim();
+      final ln = _lastNameController.text.trim();
+      final hasFn = fn.isNotEmpty &&
+          fn.toLowerCase() != 'dr.' &&
+          fn.toLowerCase() != 'dr' &&
+          fn.toLowerCase() != 'dr. ';
+      final hasLn = ln.isNotEmpty;
+      return hasFn && hasLn;
     }
     return _clinics.any((c) => c.nameController.text.trim().isNotEmpty);
   }
@@ -134,7 +144,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final draftClinics = _clinics.map((c) => c.toDraft()).toList();
 
     await ref.read(onboardingControllerProvider).complete(
-          doctorName: _nameController.text.trim(),
+          doctorFirstName: _firstNameController.text.trim(),
+          doctorLastName: _lastNameController.text.trim(),
           doctorEmail: _emailController.text.trim(),
           doctorPhone: _phoneController.text.trim(),
           doctorQualification: _qualificationController.text.trim(),
@@ -148,11 +159,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController.selection = TextSelection.fromPosition(
-      TextPosition(offset: _nameController.text.length),
+    _firstNameController.selection = TextSelection.fromPosition(
+      TextPosition(offset: _firstNameController.text.length),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _nameFocus.requestFocus();
+      if (mounted) _firstNameFocus.requestFocus();
     });
   }
 
@@ -202,12 +213,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 },
                 children: [
                   _DoctorProfilePage(
-                    nameController: _nameController,
+                    firstNameController: _firstNameController,
+                    lastNameController: _lastNameController,
                     emailController: _emailController,
                     phoneController: _phoneController,
                     qualificationController: _qualificationController,
                     regNumberController: _regNumberController,
-                    nameFocus: _nameFocus,
+                    firstNameFocus: _firstNameFocus,
+                    lastNameFocus: _lastNameFocus,
                     emailFocus: _emailFocus,
                     phoneFocus: _phoneFocus,
                     qualificationFocus: _qualificationFocus,
@@ -280,13 +293,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 }
 
 class _DoctorProfilePage extends StatelessWidget {
-  final TextEditingController nameController;
+  final TextEditingController firstNameController;
+  final TextEditingController lastNameController;
   final TextEditingController emailController;
   final TextEditingController phoneController;
   final TextEditingController qualificationController;
   final TextEditingController regNumberController;
 
-  final FocusNode nameFocus;
+  final FocusNode firstNameFocus;
+  final FocusNode lastNameFocus;
   final FocusNode emailFocus;
   final FocusNode phoneFocus;
   final FocusNode qualificationFocus;
@@ -296,12 +311,14 @@ class _DoctorProfilePage extends StatelessWidget {
   final VoidCallback onSubmitted;
 
   const _DoctorProfilePage({
-    required this.nameController,
+    required this.firstNameController,
+    required this.lastNameController,
     required this.emailController,
     required this.phoneController,
     required this.qualificationController,
     required this.regNumberController,
-    required this.nameFocus,
+    required this.firstNameFocus,
+    required this.lastNameFocus,
     required this.emailFocus,
     required this.phoneFocus,
     required this.qualificationFocus,
@@ -346,15 +363,33 @@ class _DoctorProfilePage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Spacing.lg),
-        CustomTextField(
-          controller: nameController,
-          label: 'Doctor Full Name *',
-          prefixIcon: Icons.person_outline,
-          onChanged: (_) => onChanged(),
-          focusNode: nameFocus,
-          autofocus: true,
-          textInputAction: TextInputAction.next,
-          onFieldSubmitted: (_) => emailFocus.requestFocus(),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: CustomTextField(
+                controller: firstNameController,
+                label: 'First Name *',
+                prefixIcon: Icons.person_outline,
+                onChanged: (_) => onChanged(),
+                focusNode: firstNameFocus,
+                autofocus: true,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => lastNameFocus.requestFocus(),
+              ),
+            ),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: CustomTextField(
+                controller: lastNameController,
+                label: 'Last Name *',
+                onChanged: (_) => onChanged(),
+                focusNode: lastNameFocus,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => emailFocus.requestFocus(),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: Spacing.md),
         Row(
@@ -542,7 +577,6 @@ class _ClinicCard extends StatelessWidget {
           CustomTextField(
             controller: controllers.nameController,
             label: 'Clinic Name',
-            hint: 'e.g. City Care Clinic',
             prefixIcon: Icons.local_hospital_outlined,
             onChanged: (_) => onChanged(),
             focusNode: nameFocus,
@@ -554,7 +588,6 @@ class _ClinicCard extends StatelessWidget {
           CustomTextField(
             controller: controllers.addressController,
             label: 'Address / Area (Optional)',
-            hint: 'e.g. Central Park Market',
             prefixIcon: Icons.place_outlined,
             onChanged: (_) => onChanged(),
             focusNode: areaFocus,
@@ -564,7 +597,6 @@ class _ClinicCard extends StatelessWidget {
           CustomTextField(
             controller: controllers.phoneController,
             label: 'Clinic Phone (Optional)',
-            hint: 'e.g. 9830012345',
             prefixIcon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
             onChanged: (_) => onChanged(),

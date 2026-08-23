@@ -1,11 +1,10 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-const _uuid = Uuid();
 
 final patientComplaintsProvider =
     StreamProvider.family<List<Complaint>, String>((ref, patientId) {
@@ -47,7 +46,7 @@ class ComplaintNotifier extends StateNotifier<AsyncValue<void>> {
     String? notes,
   }) async {
     state = const AsyncLoading();
-    final id = _uuid.v4();
+    final id = IdGenerator.generate();
     final now = DateTime.now();
 
     final companion = ComplaintsCompanion.insert(

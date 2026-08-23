@@ -1,10 +1,9 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-const _uuid = Uuid();
 
 final patientSearchQueryProvider = StateProvider<String>((ref) => '');
 
@@ -103,7 +102,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     final nextNum = (allPatients.length + 1).toString().padLeft(5, '0');
     final patientCode = 'P-$year-$nextNum';
 
-    final patientId = _uuid.v4();
+    final patientId = IdGenerator.generate();
     final now = DateTime.now();
 
     final companion = PatientsCompanion.insert(
@@ -133,7 +132,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
       await _db.into(_db.patients).insert(companion);
 
       // Register initial visit (visitType = 'new')
-      final visitId = _uuid.v4();
+      final visitId = IdGenerator.generate();
       await _db.into(_db.visits).insert(
             VisitsCompanion.insert(
               id: visitId,

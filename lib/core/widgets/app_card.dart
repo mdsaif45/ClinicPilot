@@ -13,6 +13,7 @@ class AppCard extends StatelessWidget {
   final Color? borderColor;
   final double? elevation;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
   const AppCard({
     super.key,
@@ -24,6 +25,7 @@ class AppCard extends StatelessWidget {
     this.borderColor,
     this.elevation,
     this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -42,6 +44,7 @@ class AppCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: r,
           child: Container(
             decoration: BoxDecoration(

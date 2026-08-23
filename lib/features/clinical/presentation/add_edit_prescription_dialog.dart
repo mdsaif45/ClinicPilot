@@ -212,7 +212,6 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
                       controller: _doseController,
                       decoration: const InputDecoration(
                         labelText: 'Dose',
-                        hintText: 'e.g. 4 pills, 5 drops',
                       ),
                     ),
                   ),
@@ -266,7 +265,6 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
                       controller: _durationController,
                       decoration: const InputDecoration(
                         labelText: 'Duration',
-                        hintText: 'e.g. 7 days, 15 days',
                       ),
                     ),
                   ),
@@ -276,7 +274,6 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
                       controller: _instructionsController,
                       decoration: const InputDecoration(
                         labelText: 'Timing / Instructions',
-                        hintText: 'e.g. Morning empty stomach',
                       ),
                     ),
                   ),
@@ -290,7 +287,6 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
                 maxLines: 2,
                 decoration: const InputDecoration(
                   labelText: 'Dietary Restrictions / Restrictions Advice',
-                  hintText: 'e.g. Avoid raw onions, garlic, camphor, strong coffee and menthol',
                 ),
               ),
             ],

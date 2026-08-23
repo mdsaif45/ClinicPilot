@@ -137,36 +137,6 @@ class FootfallsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      if (f.footfall.disease != null &&
-                          f.footfall.disease!.isNotEmpty) ...[
-                        const SizedBox(height: Spacing.sm),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.medical_services_outlined,
-                              size: 14,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: Spacing.xs),
-                            Text(
-                              f.footfall.disease!,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (f.footfall.notes != null &&
-                          f.footfall.notes!.isNotEmpty) ...[
-                        const SizedBox(height: Spacing.xs),
-                        Text(
-                          f.footfall.notes!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: Spacing.md),
                       Row(
                         children: [

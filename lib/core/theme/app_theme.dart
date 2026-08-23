@@ -33,7 +33,16 @@ class AppTheme {
       dynamicSchemeVariant: palette.variant,
     );
 
-    if (brightness == Brightness.dark && blackVariant) {
+    if (brightness == Brightness.light) {
+      scheme = scheme.copyWith(
+        surface: const Color(0xFFFFFFFF),
+        surfaceContainerLowest: const Color(0xFFFFFFFF),
+        surfaceContainerLow: const Color(0xFFF8FAF9),
+        surfaceContainer: const Color(0xFFF0F4F1),
+        surfaceContainerHigh: const Color(0xFFE6EDE8),
+        surfaceContainerHighest: const Color(0xFFDCE5DF),
+      );
+    } else if (brightness == Brightness.dark && blackVariant) {
       scheme = scheme.copyWith(
         surface: const Color(0xFF000000),
         surfaceContainerLowest: const Color(0xFF000000),

@@ -8,6 +8,11 @@ import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/utils/formatters.dart';
 import 'package:clinic_pilot/core/providers/period_provider.dart';
 
+import 'package:clinic_pilot/core/utils/date_input_formatter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:clinic_pilot/core/database/database_provider.dart';
+import 'package:clinic_pilot/core/services/sample_data_seeder.dart';
+
 void main() {
   group('Formatters Unit Tests', () {
     test('formatCurrency formats Indian Rupees correctly', () {
@@ -24,6 +29,39 @@ void main() {
     test('formatMonthYear formats month and year correctly', () {
       final date = DateTime(2026, 8, 15);
       expect(Formatters.formatMonthYear(date), 'August 2026');
+    });
+
+    test('formatDdMmYyyy formats date as DD/MM/YYYY', () {
+      final date = DateTime(2026, 8, 23);
+      expect(Formatters.formatDdMmYyyy(date), '23/08/2026');
+    });
+
+    test('toDbDate and toDbDateString format as YYYYMMDD', () {
+      final date = DateTime(2026, 8, 23);
+      expect(Formatters.toDbDate(date), '20260823');
+      expect(Formatters.toDbDateString('23/08/2026'), '20260823');
+      expect(Formatters.toDbDateString('2026-08-23'), '20260823');
+      expect(Formatters.toDbDateString('20260823'), '20260823');
+    });
+
+    test('displayFromDbDate converts YYYYMMDD to DD/MM/YYYY', () {
+      expect(Formatters.displayFromDbDate('20260823'), '23/08/2026');
+      expect(Formatters.displayFromDbDate('2026-08-23'), '23/08/2026');
+    });
+
+    test('DateInputFormatter auto-inserts slash separators', () {
+      const formatter = DateInputFormatter();
+      final result1 = formatter.formatEditUpdate(
+        TextEditingValue.empty,
+        const TextEditingValue(text: '23'),
+      );
+      expect(result1.text, '23');
+
+      final result2 = formatter.formatEditUpdate(
+        const TextEditingValue(text: '23'),
+        const TextEditingValue(text: '23082026'),
+      );
+      expect(result2.text, '23/08/2026');
     });
   });
 
@@ -526,6 +564,41 @@ void main() {
       final daysInMonth = DateUtils.getDaysInMonth(range.start.year, range.start.month);
       final prorated = monthlyRent * (daysInPeriod / daysInMonth);
       expect(prorated, equals(4000.0));
+    });
+
+    test('SampleDataSeeder seeds Dr. MD Zaid, 3 clinics, 10 patients with case taking, 15 visits, 20 footfalls, 15 cash memos, 20 expenses', () async {
+      final container = ProviderContainer(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await SampleDataSeeder.seedRealisticData(container);
+
+      final clinics = await db.select(db.clinics).get();
+      final patients = await db.select(db.patients).get();
+      final caseRecords = await db.select(db.patientCaseRecords).get();
+      final complaints = await db.select(db.complaints).get();
+      final prescriptions = await db.select(db.prescriptions).get();
+      final investigations = await db.select(db.investigations).get();
+      final visits = await db.select(db.visits).get();
+      final footfalls = await db.select(db.footfalls).get();
+      final cashMemos = await db.select(db.cashMemos).get();
+      final expenses = await db.select(db.expenses).get();
+      final referralPartners = await db.select(db.referralContacts).get();
+
+      expect(clinics.length, equals(3));
+      expect(patients.length, equals(10));
+      expect(caseRecords.length, equals(10));
+      expect(complaints.length, equals(10));
+      expect(prescriptions.length, equals(10));
+      expect(investigations.length, equals(10));
+      expect(visits.length, equals(15)); // 10 new + 5 follow-ups
+      expect(footfalls.length, equals(20));
+      expect(cashMemos.length, equals(15));
+      expect(expenses.length, equals(20));
+      expect(referralPartners.length, equals(6));
     });
   });
 }

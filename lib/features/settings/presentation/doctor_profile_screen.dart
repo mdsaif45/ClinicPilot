@@ -134,7 +134,7 @@ class DoctorProfileScreen extends ConsumerWidget {
                 title: 'Qualifications / Degrees',
                 subtitle: profile.qualification.isNotEmpty
                     ? profile.qualification
-                    : 'Not set (e.g. BHMS, MD)',
+                    : 'Not set',
                 onTap: () => _openEditDialog(context, profile),
               ),
               AppListTile(
@@ -142,7 +142,7 @@ class DoctorProfileScreen extends ConsumerWidget {
                 title: 'Medical Registration No.',
                 subtitle: profile.regNumber.isNotEmpty
                     ? profile.regNumber
-                    : 'Not set (e.g. WBMC-12345)',
+                    : 'Not set',
                 onTap: () => _openEditDialog(context, profile),
               ),
               AppListTile(
@@ -188,7 +188,8 @@ class EditDoctorProfileDialog extends ConsumerStatefulWidget {
 
 class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialog> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
   late TextEditingController _qualificationController;
@@ -199,10 +200,11 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
   @override
   void initState() {
     super.initState();
-    final initialName = widget.profile.name.isNotEmpty
-        ? widget.profile.name
-        : 'Dr. ';
-    _nameController = TextEditingController(text: initialName);
+    final initialFirst = widget.profile.firstName.isNotEmpty
+        ? widget.profile.firstName
+        : (widget.profile.name.isNotEmpty ? widget.profile.name : 'Dr. ');
+    _firstNameController = TextEditingController(text: initialFirst);
+    _lastNameController = TextEditingController(text: widget.profile.lastName);
     _emailController = TextEditingController(text: widget.profile.email);
     _phoneController = TextEditingController(text: widget.profile.phone);
     _qualificationController = TextEditingController(text: widget.profile.qualification);
@@ -211,7 +213,8 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _qualificationController.dispose();
@@ -227,7 +230,8 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
 
     try {
       await ref.read(doctorProfileNotifierProvider.notifier).updateProfile(
-            name: _nameController.text.trim(),
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
             email: _emailController.text.trim(),
             phone: _phoneController.text.trim(),
             qualification: _qualificationController.text.trim(),
@@ -273,16 +277,39 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CustomTextField(
-              controller: _nameController,
-              label: 'Doctor Full Name *',
-              prefixIcon: Icons.person_outline,
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Required';
-                final trimmed = v.trim();
-                if (trimmed == 'Dr.' || trimmed == 'Dr') return 'Please enter your full name';
-                return null;
-              },
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: CustomTextField(
+                    controller: _firstNameController,
+                    label: 'First Name *',
+                    prefixIcon: Icons.person_outline,
+                    validator: (v) {
+                      final fn = v?.trim() ?? '';
+                      if (fn.isEmpty ||
+                          fn.toLowerCase() == 'dr.' ||
+                          fn.toLowerCase() == 'dr' ||
+                          fn.toLowerCase() == 'dr. ') {
+                        return 'First name required';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: CustomTextField(
+                    controller: _lastNameController,
+                    label: 'Last Name *',
+                    validator: (v) {
+                      final ln = v?.trim() ?? '';
+                      if (ln.isEmpty) return 'Last name required';
+                      return null;
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(

@@ -1,12 +1,11 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../models/case_record_models.dart';
 
-const _uuid = Uuid();
 
 final patientCaseRecordProvider =
     StreamProvider.family<MasterCaseRecordData?, String>((ref, patientId) {
@@ -55,7 +54,7 @@ class CaseRecordNotifier extends StateNotifier<AsyncValue<void>> {
 
   Future<String> saveCaseRecord(MasterCaseRecordData data) async {
     state = const AsyncLoading();
-    final id = data.id ?? _uuid.v4();
+    final id = data.id ?? IdGenerator.generate();
     final now = DateTime.now();
 
     final companion = PatientCaseRecordsCompanion(

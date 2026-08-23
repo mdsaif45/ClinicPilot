@@ -145,7 +145,6 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
               controller: _nameController,
               decoration: const InputDecoration(
                 labelText: 'Camp Name *',
-                hintText: 'e.g. Annual Free Eye & Health Camp',
                 prefixIcon: Icon(Icons.campaign_outlined),
               ),
               validator: (v) =>
@@ -164,7 +163,6 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
               controller: _locationController,
               decoration: const InputDecoration(
                 labelText: 'Location / Venue',
-                hintText: 'e.g. Community Hall, Ward 78',
                 prefixIcon: Icon(Icons.location_on_outlined),
               ),
             ),
@@ -177,7 +175,6 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Total Cost (₹)',
-                      hintText: 'e.g. 2500',
                       prefixIcon: Icon(Icons.currency_rupee),
                     ),
                   ),
@@ -189,7 +186,6 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Attendance',
-                      hintText: 'e.g. 80',
                       prefixIcon: Icon(Icons.people_outline),
                     ),
                   ),
@@ -214,7 +210,6 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
               maxLines: 2,
               decoration: const InputDecoration(
                 labelText: 'Notes',
-                hintText: 'e.g. Medicines distributed, volunteer partners',
               ),
             ),
           ],

@@ -1,6 +1,6 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
@@ -10,7 +10,6 @@ import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/day_selector_field.dart';
 import '../providers/clinic_provider.dart';
 
-const _uuid = Uuid();
 
 class AddEditClinicDialog extends ConsumerStatefulWidget {
   final Clinic? clinic;
@@ -230,7 +229,7 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
 
     final notifier = ref.read(clinicNotifierProvider.notifier);
     final db = ref.read(databaseProvider);
-    final String clinicId = widget.clinic?.id ?? _uuid.v4();
+    final String clinicId = widget.clinic?.id ?? IdGenerator.generate();
 
     try {
       if (widget.clinic != null) {

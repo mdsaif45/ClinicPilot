@@ -63,6 +63,17 @@ class AppButton extends StatelessWidget {
     final shape = RoundedRectangleBorder(borderRadius: Radii.mdAll);
     const minHeight = 46.0;
 
+    final Color textColor = switch (_variant) {
+      _ButtonVariant.primary =>
+        isDestructive ? scheme.onError : scheme.onPrimary,
+      _ButtonVariant.tonal => isDestructive
+          ? scheme.onErrorContainer
+          : scheme.onSecondaryContainer,
+      _ButtonVariant.outlined =>
+        isDestructive ? scheme.error : scheme.primary,
+      _ButtonVariant.text => isDestructive ? scheme.error : scheme.primary,
+    };
+
     Widget childContent;
     if (loading) {
       childContent = SizedBox(
@@ -70,9 +81,7 @@ class AppButton extends StatelessWidget {
         height: 18,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          color: _variant == _ButtonVariant.primary
-              ? scheme.onPrimary
-              : scheme.primary,
+          color: textColor,
         ),
       );
     } else {
@@ -81,13 +90,14 @@ class AppButton extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 18),
+            Icon(icon, size: 18, color: textColor),
             const SizedBox(width: Spacing.sm),
           ],
           Text(
             label,
             style: theme.textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.w600,
+              color: textColor,
             ),
           ),
         ],
@@ -100,8 +110,8 @@ class AppButton extends StatelessWidget {
       case _ButtonVariant.primary:
         buttonWidget = FilledButton(
           style: FilledButton.styleFrom(
-            backgroundColor: isDestructive ? scheme.error : null,
-            foregroundColor: isDestructive ? scheme.onError : null,
+            backgroundColor: isDestructive ? scheme.error : scheme.primary,
+            foregroundColor: textColor,
             minimumSize: Size(fullWidth ? double.infinity : 0, minHeight),
             shape: shape,
             padding: const EdgeInsets.symmetric(
@@ -117,6 +127,7 @@ class AppButton extends StatelessWidget {
       case _ButtonVariant.tonal:
         buttonWidget = FilledButton.tonal(
           style: FilledButton.styleFrom(
+            foregroundColor: textColor,
             minimumSize: Size(fullWidth ? double.infinity : 0, minHeight),
             shape: shape,
             padding: const EdgeInsets.symmetric(
@@ -132,6 +143,7 @@ class AppButton extends StatelessWidget {
       case _ButtonVariant.outlined:
         buttonWidget = OutlinedButton(
           style: OutlinedButton.styleFrom(
+            foregroundColor: textColor,
             minimumSize: Size(fullWidth ? double.infinity : 0, minHeight),
             shape: shape,
             side: BorderSide(
@@ -152,7 +164,7 @@ class AppButton extends StatelessWidget {
       case _ButtonVariant.text:
         buttonWidget = TextButton(
           style: TextButton.styleFrom(
-            foregroundColor: isDestructive ? scheme.error : null,
+            foregroundColor: textColor,
             minimumSize: Size(fullWidth ? double.infinity : 0, minHeight),
             shape: shape,
             padding: const EdgeInsets.symmetric(

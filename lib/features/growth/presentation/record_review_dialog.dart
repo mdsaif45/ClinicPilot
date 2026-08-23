@@ -125,7 +125,6 @@ class _RecordReviewDialogState extends ConsumerState<RecordReviewDialog> {
             maxLines: 2,
             decoration: const InputDecoration(
               labelText: 'Feedback / Note (optional)',
-              hintText: 'e.g. Left 5-star review on Google Maps',
             ),
           ),
         ],

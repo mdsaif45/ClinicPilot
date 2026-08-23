@@ -13,6 +13,9 @@ class AppListTile extends StatelessWidget {
   final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
+  final Color? iconColor;
+  final Color? leadingBackgroundColor;
+  final Color? titleColor;
 
   const AppListTile({
     super.key,
@@ -21,12 +24,19 @@ class AppListTile extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onTap,
+    this.iconColor,
+    this.leadingBackgroundColor,
+    this.titleColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+
+    final effectiveIconColor = iconColor ?? scheme.primary;
+    final effectiveLeadingBg = leadingBackgroundColor ??
+        scheme.surfaceContainerHighest.withValues(alpha: 0.6);
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
@@ -37,16 +47,17 @@ class AppListTile extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+          color: effectiveLeadingBg,
           borderRadius: Radii.smAll,
         ),
-        child: Icon(icon, size: 20, color: scheme.primary),
+        child: Icon(icon, size: 20, color: effectiveIconColor),
       ),
       title: Text(
         title,
         style: theme.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
           fontSize: 15,
+          color: titleColor,
         ),
       ),
       subtitle: subtitle == null
@@ -67,6 +78,203 @@ class AppListTile extends StatelessWidget {
                 )
               : null),
       onTap: onTap,
+    );
+  }
+}
+
+/// A switch row inside a [SettingsGroup] matching [AppListTile] metrics.
+class AppSwitchTile extends StatelessWidget {
+  final IconData? icon;
+  final String title;
+  final String? subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final Color? iconColor;
+  final Color? leadingBackgroundColor;
+
+  const AppSwitchTile({
+    super.key,
+    this.icon,
+    required this.title,
+    this.subtitle,
+    required this.value,
+    required this.onChanged,
+    this.iconColor,
+    this.leadingBackgroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    final effectiveIconColor = iconColor ?? scheme.primary;
+    final effectiveLeadingBg = leadingBackgroundColor ??
+        scheme.surfaceContainerHighest.withValues(alpha: 0.6);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.xs,
+      ),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: effectiveLeadingBg,
+                borderRadius: Radii.smAll,
+              ),
+              child: Icon(icon, size: 20, color: effectiveIconColor),
+            ),
+            const SizedBox(width: Spacing.md),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: Spacing.sm),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A slider row inside a [SettingsGroup] matching [AppListTile] metrics.
+class AppSliderTile extends StatelessWidget {
+  final IconData? icon;
+  final String title;
+  final String? subtitle;
+  final double value;
+  final double min;
+  final double max;
+  final int? divisions;
+  final String Function(double)? valueLabel;
+  final ValueChanged<double> onChanged;
+  final Color? iconColor;
+  final Color? leadingBackgroundColor;
+
+  const AppSliderTile({
+    super.key,
+    this.icon,
+    required this.title,
+    this.subtitle,
+    required this.value,
+    required this.min,
+    required this.max,
+    this.divisions,
+    this.valueLabel,
+    required this.onChanged,
+    this.iconColor,
+    this.leadingBackgroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    final effectiveIconColor = iconColor ?? scheme.primary;
+    final effectiveLeadingBg = leadingBackgroundColor ??
+        scheme.surfaceContainerHighest.withValues(alpha: 0.6);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.sm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (icon != null) ...[
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: effectiveLeadingBg,
+                    borderRadius: Radii.smAll,
+                  ),
+                  child: Icon(icon, size: 20, color: effectiveIconColor),
+                ),
+                const SizedBox(width: Spacing.md),
+              ],
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  valueLabel != null ? valueLabel!(value) : '${value.round()}',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: Spacing.xs),
+            Padding(
+              padding: EdgeInsets.only(left: icon != null ? 52 : 0),
+              child: Text(
+                subtitle!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: Spacing.xs),
+          Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
     );
   }
 }

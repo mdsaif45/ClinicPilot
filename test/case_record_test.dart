@@ -1,6 +1,7 @@
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
+import 'package:clinic_pilot/core/widgets/app_card.dart';
 import 'package:clinic_pilot/features/clinical/models/case_record_models.dart';
 import 'package:clinic_pilot/features/clinical/presentation/master_case_taking_screen.dart';
 import 'package:drift/native.dart';
@@ -106,26 +107,23 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Complete Case Taking'), findsWidgets);
-      expect(find.text('1. Patient Identification'), findsOneWidget);
+      expect(find.text('Case Taking'), findsOneWidget);
+      expect(find.text('Patient Identification'), findsOneWidget);
+      expect(find.text('Save Case'), findsOneWidget);
 
-      final scrollable = find.byType(Scrollable).first;
+      final scrollable = find.byType(Scrollable).at(1);
 
-      final physicalFinder = find.text('8. Physical Generals – Complete');
+      final physicalFinder = find.widgetWithText(AppCard, 'Physical Generals');
       await tester.scrollUntilVisible(physicalFinder, 300, scrollable: scrollable);
       expect(physicalFinder, findsOneWidget);
 
-      final mentalFinder = find.text('9. Mental Generals – Complete');
+      final mentalFinder = find.widgetWithText(AppCard, 'Mental & Emotional Generals');
       await tester.scrollUntilVisible(mentalFinder, 300, scrollable: scrollable);
       expect(mentalFinder, findsOneWidget);
 
-      final miasmFinder = find.text('12. Miasmatic Analysis');
+      final miasmFinder = find.widgetWithText(AppCard, 'Miasmatic Analysis');
       await tester.scrollUntilVisible(miasmFinder, 300, scrollable: scrollable);
       expect(miasmFinder, findsOneWidget);
-
-      final saveButtonFinder = find.text('Save Master Case Record');
-      await tester.scrollUntilVisible(saveButtonFinder, 300, scrollable: scrollable);
-      expect(saveButtonFinder, findsOneWidget);
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -74,7 +75,21 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
         if (lockState.isLocked) {
           return const LockScreen();
         }
-        return child ?? const SizedBox.shrink();
+        final appChild = child ?? const SizedBox.shrink();
+        return CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.escape): () {
+              final nav = rootNavigatorKey.currentState;
+              if (nav != null && nav.canPop()) {
+                nav.maybePop();
+              }
+            },
+          },
+          child: Focus(
+            autofocus: true,
+            child: appChild,
+          ),
+        );
       },
     );
   }
