@@ -60,11 +60,13 @@ void main() {
       final controller = TextEditingController();
 
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: Scaffold(
-            body: DiseaseAutocompleteField(
-              controller: controller,
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: Scaffold(
+              body: DiseaseAutocompleteField(
+                controller: controller,
+              ),
             ),
           ),
         ),

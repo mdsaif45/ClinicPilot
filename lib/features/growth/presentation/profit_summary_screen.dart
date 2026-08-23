@@ -191,8 +191,46 @@ class ProfitSummaryScreen extends ConsumerWidget {
         .toList()
       ..sort((a, b) => a.x.compareTo(b.x));
 
+    final values = spots.map((s) => s.y).toList();
+    final minY = values.isEmpty
+        ? 0.0
+        : (values.reduce((a, b) => a < b ? a : b) < 0
+            ? values.reduce((a, b) => a < b ? a : b) * 1.15
+            : 0.0);
+    final maxY = values.isEmpty
+        ? 1000.0
+        : (values.reduce((a, b) => a > b ? a : b) * 1.15);
+
     return LineChartData(
-      gridData: const FlGridData(show: true, drawVerticalLine: false),
+      minY: minY,
+      maxY: maxY > minY ? maxY : minY + 100,
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: false,
+        getDrawingHorizontalLine: (value) => FlLine(
+          color: scheme.outlineVariant.withValues(alpha: 0.35),
+          strokeWidth: 1,
+          dashArray: [4, 4],
+        ),
+      ),
+      lineTouchData: LineTouchData(
+        handleBuiltInTouches: true,
+        touchTooltipData: LineTouchTooltipData(
+          getTooltipColor: (_) => scheme.inverseSurface,
+          tooltipRoundedRadius: 8,
+          getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
+            final isPositive = s.y >= 0;
+            return LineTooltipItem(
+              'Day ${s.x.toInt()}: ${Formatters.formatCurrency(s.y)}',
+              TextStyle(
+                color: isPositive ? scheme.primaryContainer : scheme.errorContainer,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            );
+          }).toList(),
+        ),
+      ),
       titlesData: FlTitlesData(
         topTitles:
             const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -201,11 +239,22 @@ class ProfitSummaryScreen extends ConsumerWidget {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 44,
-            getTitlesWidget: (v, _) => Text(
-              v.toInt().toString(),
-              style: Theme.of(context).textTheme.labelSmall,
-            ),
+            reservedSize: 48,
+            getTitlesWidget: (v, _) {
+              if (v == 0) return Text('0', style: Theme.of(context).textTheme.labelSmall);
+              final isNeg = v < 0;
+              final absV = v.abs();
+              final k = absV >= 1000
+                  ? '${(absV / 1000).toStringAsFixed(absV % 1000 == 0 ? 0 : 1)}k'
+                  : absV.toInt().toString();
+              return Text(
+                '${isNeg ? "-" : ""}₹$k',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 10,
+                    ),
+              );
+            },
           ),
         ),
         bottomTitles: AxisTitles(
@@ -215,7 +264,9 @@ class ProfitSummaryScreen extends ConsumerWidget {
             interval: 5,
             getTitlesWidget: (v, _) => Text(
               v.toInt().toString(),
-              style: Theme.of(context).textTheme.labelSmall,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
             ),
           ),
         ),
@@ -225,11 +276,29 @@ class ProfitSummaryScreen extends ConsumerWidget {
         LineChartBarData(
           spots: spots.isEmpty ? [const FlSpot(1, 0)] : spots,
           isCurved: true,
+          curveSmoothness: 0.35,
           color: scheme.primary,
           barWidth: 3,
+          isStrokeCapRound: true,
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+              radius: 4,
+              color: scheme.primary,
+              strokeWidth: 2,
+              strokeColor: scheme.surface,
+            ),
+          ),
           belowBarData: BarAreaData(
             show: true,
-            color: scheme.primary.withValues(alpha: 0.15),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                scheme.primary.withValues(alpha: 0.25),
+                scheme.primary.withValues(alpha: 0.0),
+              ],
+            ),
           ),
         ),
       ],

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../design/breakpoints.dart';
 import '../design/tokens.dart';
+import '../services/app_haptics.dart';
 import '../widgets/animated_nav_icon.dart';
 import '../widgets/clinic_switcher.dart';
+import '../widgets/floating_bottom_nav_bar.dart';
 import '../../features/clinics/presentation/clinics_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/finances/presentation/finances_screen.dart';
@@ -28,6 +30,8 @@ import '../../features/settings/providers/release_provider.dart';
 import '../../features/settings/providers/update_provider.dart';
 import '../services/update_service.dart';
 
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   // The redirect reads onboardingCompleteProvider, which resolves
   // asynchronously. Without this the first evaluation sees null, lets the
@@ -42,6 +46,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   } catch (_) {}
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     refreshListenable: _ProviderRefresh(ref, onboardingCompleteProvider),
     initialLocation: isDone ? '/dashboard' : '/onboarding',
     // First run has no clinic to attribute anything to, so the app cannot do
@@ -91,48 +96,42 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/growth',
                 builder: (context, state) => const GrowthHubScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'overview',
-                    builder: (context, state) => const GrowthScreen(),
-                  ),
-                  GoRoute(
-                    path: 'profit',
-                    builder: (context, state) => const ProfitSummaryScreen(),
-                  ),
-                  GoRoute(
-                    path: 'referral',
-                    builder: (context, state) => const ReferralSourceScreen(),
-                  ),
-                  GoRoute(
-                    path: 'camps',
-                    builder: (context, state) => const CampManagerScreen(),
-                  ),
-                  GoRoute(
-                    path: 'diseases',
-                    builder: (context, state) => const DiseaseAnalyticsScreen(),
-                  ),
-                  GoRoute(
-                    path: 'referral-crm',
-                    builder: (context, state) => const ReferralCrmScreen(),
-                  ),
-                ],
               ),
             ],
           ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/settings',
-                builder: (context, state) => const SettingsScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'profile',
-                    builder: (context, state) => const DoctorProfileScreen(),
-                  ),
-                ],
-              ),
-            ],
+        ],
+      ),
+      GoRoute(
+        path: '/growth/overview',
+        builder: (context, state) => const GrowthScreen(),
+      ),
+      GoRoute(
+        path: '/growth/profit',
+        builder: (context, state) => const ProfitSummaryScreen(),
+      ),
+      GoRoute(
+        path: '/growth/referral',
+        builder: (context, state) => const ReferralSourceScreen(),
+      ),
+      GoRoute(
+        path: '/growth/camps',
+        builder: (context, state) => const CampManagerScreen(),
+      ),
+      GoRoute(
+        path: '/growth/diseases',
+        builder: (context, state) => const DiseaseAnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/growth/referral-crm',
+        builder: (context, state) => const ReferralCrmScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'profile',
+            builder: (context, state) => const DoctorProfileScreen(),
           ),
         ],
       ),
@@ -208,12 +207,12 @@ class _NavDestination {
 }
 
 const _destinations = [
-  _NavDestination(0, Icons.dashboard_outlined, Icons.dashboard, 'Dashboard'),
-  _NavDestination(1, Icons.people_outline, Icons.people, 'Patients'),
+  _NavDestination(0, Icons.grid_view_outlined, Icons.grid_view_outlined, 'Dashboard'),
+  _NavDestination(1, Icons.people_alt_outlined, Icons.people_alt_outlined, 'Patients'),
   _NavDestination(2, Icons.account_balance_wallet_outlined,
-      Icons.account_balance_wallet, 'Finances'),
-  _NavDestination(3, Icons.trending_up_outlined, Icons.trending_up, 'Growth'),
-  _NavDestination(4, Icons.settings_outlined, Icons.settings, 'Settings'),
+      Icons.account_balance_wallet_outlined, 'Finances'),
+  _NavDestination(3, Icons.insights_outlined, Icons.insights_outlined, 'Growth'),
+  _NavDestination(4, Icons.settings_outlined, Icons.settings_outlined, 'Settings'),
 ];
 
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
@@ -280,9 +279,13 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
           child: Row(
             children: [
               NavigationRail(
-                selectedIndex: navigationShell.currentIndex,
+                selectedIndex: navigationShell.currentIndex.clamp(0, 3),
                 labelType: NavigationRailLabelType.all,
                 onDestinationSelected: (index) {
+                  if (index == 4) {
+                    context.push('/settings');
+                    return;
+                  }
                   final alwaysReset = index == _growthIndex;
                   navigationShell.goBranch(
                     index,
@@ -355,13 +358,48 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
               foregroundColor: scheme.onSurface,
               titleSpacing: Spacing.sm,
               title: const ClinicSwitcher(),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: Spacing.sm),
+                  child: IconButton(
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(Icons.notifications_none_outlined, size: 24),
+                        Positioned(
+                          right: 1,
+                          top: 1,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: scheme.error,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    tooltip: 'Notifications',
+                    onPressed: () {
+                      AppHaptics.selection();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No unread alerts.')),
+                      );
+                    },
+                  ),
+                ),
+              ],
             )
           : null,
       body: SafeArea(top: !isDashboard, bottom: false, child: navigationShell),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      bottomNavigationBar: FloatingBottomNavBar(
+        selectedIndex: navigationShell.currentIndex.clamp(0, 4),
         onDestinationSelected: (index) {
+          if (index == 4) {
+            context.push('/settings');
+            return;
+          }
           // Growth is a menu of sub-screens. A shell branch normally restores
           // whichever sub-route was last open, which would mean that once a
           // section had been visited the tab could never return to its menu.
@@ -374,23 +412,20 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         },
         destinations: [
           for (final d in _destinations)
-            NavigationDestination(
-              icon: d.index == 4 && updateWaiting
-                  ? Badge(
-                      smallSize: 8,
-                      backgroundColor: scheme.tertiary,
-                      child: AnimatedNavIcon(
-                        icon: d.icon,
-                        selectedIcon: d.selectedIcon,
-                        selected: navigationShell.currentIndex == d.index,
+            FloatingNavDestination(
+              icon: d.icon,
+              selectedIcon: d.selectedIcon,
+              label: d.label,
+              badge: d.index == 4 && updateWaiting
+                  ? Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: scheme.tertiary,
+                        shape: BoxShape.circle,
                       ),
                     )
-                  : AnimatedNavIcon(
-                      icon: d.icon,
-                      selectedIcon: d.selectedIcon,
-                      selected: navigationShell.currentIndex == d.index,
-                    ),
-              label: d.label,
+                  : null,
             ),
         ],
       ),

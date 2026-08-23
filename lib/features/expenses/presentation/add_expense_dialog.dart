@@ -184,7 +184,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
             ),
             const SizedBox(height: Spacing.md),
             CheckboxListTile(
-              title: const Text('Recurring Fixed Cost (e.g. Rent)'),
+              title: const Text('Recurring Fixed Cost (Monthly Rent / Utilities)'),
               value: _isRecurring,
               onChanged: (val) => setState(() => _isRecurring = val ?? false),
               controlAffinity: ListTileControlAffinity.leading,

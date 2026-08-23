@@ -21,8 +21,8 @@ void main() {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
 
       final path = entity.path.replaceAll(r'\', '/');
-      // Generated code mirrors the schema and holds no literals of its own.
-      if (path.endsWith('.g.dart')) continue;
+      // Generated code and explicit demo data seeder hold test/demo records.
+      if (path.endsWith('.g.dart') || path.endsWith('sample_data_seeder.dart')) continue;
 
       final lines = entity.readAsLinesSync();
       for (var i = 0; i < lines.length; i++) {

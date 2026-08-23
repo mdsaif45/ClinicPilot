@@ -1,20 +1,12 @@
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../services/file_saver/file_saver.dart';
 import '../services/list_export_service.dart';
 import '../services/list_pdf_export_service.dart';
 import 'export_format_sheet.dart';
 
 /// Writes export bytes to a doctor-chosen location and offers to share it.
-///
-/// Format-agnostic - the row-set export on Patients/Finances and the
-/// single-summary export on Growth both end here regardless of whether they
-/// built CSV or XLSX bytes, so "where the file goes" only has one
-/// implementation to get right.
 Future<void> saveExportFile(
   BuildContext context, {
   required List<int> bytes,
@@ -25,35 +17,38 @@ Future<void> saveExportFile(
   final messenger = ScaffoldMessenger.of(context);
 
   try {
-    // Same saveFile flow as the Settings backup: writes directly on
-    // Android, returns a location elsewhere that this then writes to.
-    final path = await FilePicker.platform.saveFile(
-      dialogTitle: 'Save export',
+    final mimeType = switch (extension.toLowerCase()) {
+      'csv' => 'text/csv',
+      'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'pdf' => 'application/pdf',
+      _ => 'application/octet-stream',
+    };
+
+    final savedPath = await FileSaverService.save(
+      context: context,
+      bytes: bytes,
       fileName: fileName,
-      bytes: Uint8List.fromList(bytes),
-      type: FileType.custom,
-      allowedExtensions: [extension],
+      mimeType: mimeType,
+      dialogTitle: 'Save export',
+      shareSubject: 'ClinicPilot Export $fileName',
     );
 
-    if (path == null) {
+    if (savedPath == null) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Export cancelled.')),
       );
       return;
     }
 
-    if (!kIsWeb &&
-        (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-      await File(path).writeAsBytes(bytes, flush: true);
-    }
-
     messenger.showSnackBar(
       SnackBar(
         content: Text('Exported $rowCount rows to $fileName'),
-        action: SnackBarAction(
-          label: 'Share',
-          onPressed: () => Share.shareXFiles([XFile(path)]),
-        ),
+        action: savedPath.isNotEmpty && !savedPath.startsWith('http')
+            ? SnackBarAction(
+                label: 'Share',
+                onPressed: () => Share.shareXFiles([XFile(savedPath)]),
+              )
+            : null,
       ),
     );
   } catch (e) {
@@ -63,11 +58,6 @@ Future<void> saveExportFile(
 
 /// Icon button that exports a screen's current row set, in a format the
 /// doctor picks from a sheet.
-///
-/// Deliberately per-screen rather than one export button for the whole app:
-/// the rows are whatever that screen is showing right now - a search filter
-/// on Patients, a category filter on Expenses - so the file matches what the
-/// doctor is actually looking at, not the entire table.
 class ExportAction<T> extends StatelessWidget {
   final String screenSlug;
   final String title;

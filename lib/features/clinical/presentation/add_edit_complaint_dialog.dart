@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/master_disease_service.dart';
+
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
@@ -137,6 +139,12 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
       }
 
       AppHaptics.success();
+
+      final cName = _nameController.text.trim();
+      if (cName.isNotEmpty) {
+        ref.read(masterDiseaseServiceProvider).recordDisease(cName);
+      }
+
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       AppHaptics.error();
@@ -203,8 +211,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                     child: DiseaseAutocompleteField(
                       controller: _nameController,
                       label: 'Complaint / Condition *',
-                      hint: 'e.g. Right Hip Osteoarthritis',
-                      validator: (v) =>
+                                            validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Please enter complaint' : null,
                     ),
                   ),
@@ -220,8 +227,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _locationController,
                       decoration: const InputDecoration(
                         labelText: 'Location',
-                        hintText: 'e.g. Right hip, knee joint',
-                      ),
+                                              ),
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
@@ -251,8 +257,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _onsetController,
                       decoration: const InputDecoration(
                         labelText: 'Onset',
-                        hintText: 'e.g. Gradual / Sudden',
-                      ),
+                                              ),
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
@@ -261,8 +266,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _durationController,
                       decoration: const InputDecoration(
                         labelText: 'Duration',
-                        hintText: 'e.g. 6 months, 3 years',
-                      ),
+                                              ),
                     ),
                   ),
                 ],
@@ -277,8 +281,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _sensationController,
                       decoration: const InputDecoration(
                         labelText: 'Sensation / Character',
-                        hintText: 'e.g. Stitching, drawing, burning',
-                      ),
+                                              ),
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
@@ -287,8 +290,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _extensionController,
                       decoration: const InputDecoration(
                         labelText: 'Extension / Radiation',
-                        hintText: 'e.g. Down to calf muscles',
-                      ),
+                                              ),
                     ),
                   ),
                 ],
@@ -303,8 +305,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _aggController,
                       decoration: const InputDecoration(
                         labelText: 'Aggravation (<)',
-                        hintText: 'e.g. Cold air, morning, walking',
-                        prefixIcon: Icon(Icons.arrow_upward, size: 16),
+                                                prefixIcon: Icon(Icons.arrow_upward, size: 16),
                       ),
                     ),
                   ),
@@ -314,8 +315,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _amelController,
                       decoration: const InputDecoration(
                         labelText: 'Amelioration (>)',
-                        hintText: 'e.g. Warmth, rest, pressure',
-                        prefixIcon: Icon(Icons.arrow_downward, size: 16),
+                                                prefixIcon: Icon(Icons.arrow_downward, size: 16),
                       ),
                     ),
                   ),
@@ -331,8 +331,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _concomitantsController,
                       decoration: const InputDecoration(
                         labelText: 'Concomitants',
-                        hintText: 'e.g. Flatulence, nausea',
-                      ),
+                                              ),
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
@@ -341,8 +340,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _causationController,
                       decoration: const InputDecoration(
                         labelText: 'Causation',
-                        hintText: 'e.g. After lifting weight',
-                      ),
+                                              ),
                     ),
                   ),
                 ],
@@ -357,8 +355,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                       controller: _periodicityController,
                       decoration: const InputDecoration(
                         labelText: 'Periodicity',
-                        hintText: 'e.g. Nightly, in winter',
-                      ),
+                                              ),
                     ),
                   ),
                   const SizedBox(width: Spacing.md),

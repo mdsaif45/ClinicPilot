@@ -335,4 +335,26 @@ class AppDatabase extends _$AppDatabase {
       ON patients (primary_clinic_id, serial_no)
     ''');
   }
+  /// Completely resets all practice tables, patients, clinics, and settings for a clean restart.
+  Future<void> clearAllPracticeData() async {
+    await transaction(() async {
+      await delete(prescriptions).go();
+      await delete(investigations).go();
+      await delete(complaints).go();
+      await delete(patientCaseRecords).go();
+      await delete(reviewRequests).go();
+      await delete(footfalls).go();
+      await delete(camps).go();
+      await delete(referralContacts).go();
+      await delete(expenses).go();
+      await delete(cashMemos).go();
+      await delete(visits).go();
+      await delete(patients).go();
+      await delete(clinics).go();
+      await delete(settings).go();
+      try {
+        await customStatement('DELETE FROM master_diseases;');
+      } catch (_) {}
+    });
+  }
 }

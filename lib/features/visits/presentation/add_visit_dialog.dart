@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/services/master_disease_service.dart';
+
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
@@ -186,37 +188,11 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
               onChanged: (val) =>
                   setState(() => _outcome = val.isEmpty ? null : val),
             ),
-            const SizedBox(height: Spacing.md),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.event_repeat_outlined),
-              title: const Text('Next follow-up'),
-              subtitle: Text(
-                _nextFollowUpDate == null
-                    ? 'Not scheduled'
-                    : Formatters.formatDate(_nextFollowUpDate!),
-              ),
-              trailing: _nextFollowUpDate == null
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.clear),
-                      tooltip: 'Clear',
-                      onPressed: () =>
-                          setState(() => _nextFollowUpDate = null),
-                    ),
-              onTap: () async {
-                final now = DateTime.now();
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate:
-                      _nextFollowUpDate ?? now.add(const Duration(days: 30)),
-                  firstDate: now,
-                  lastDate: now.add(const Duration(days: 730)),
-                );
-                if (picked != null) {
-                  setState(() => _nextFollowUpDate = picked);
-                }
-              },
+            DateField(
+              label: 'Next Follow-up (Optional)',
+              prefixIcon: Icons.event_repeat_outlined,
+              value: _nextFollowUpDate,
+              onChanged: (d) => setState(() => _nextFollowUpDate = d),
             ),
           ],
         ),
@@ -237,10 +213,13 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
     setState(() => _submitting = true);
 
     try {
+      final dName = Formatters.toTitleCase(_diseaseController.text);
+      if (dName.isNotEmpty) { ref.read(masterDiseaseServiceProvider).recordDisease(dName); }
       await ref.read(visitNotifierProvider.notifier).addVisit(
             patientId: widget.patient.id,
             clinicId: _selectedClinicId!,
             disease: Formatters.toTitleCase(_diseaseController.text),
+
             chiefComplaint: _chiefComplaintController.text.trim().isEmpty
                 ? null
                 : _chiefComplaintController.text.trim(),

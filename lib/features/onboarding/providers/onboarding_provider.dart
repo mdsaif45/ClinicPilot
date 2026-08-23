@@ -1,7 +1,7 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
@@ -106,7 +106,9 @@ class OnboardingController {
 
   /// Writes everything the flow collected, then marks it done in one transaction.
   Future<void> complete({
-    required String doctorName,
+    String? doctorFirstName,
+    String? doctorLastName,
+    String doctorName = '',
     String doctorEmail = '',
     String doctorPhone = '',
     String doctorQualification = '',
@@ -115,10 +117,24 @@ class OnboardingController {
     double? revenueGoal,
     int? patientGoal,
   }) async {
-    const uuid = Uuid();
+    final fn = doctorFirstName?.trim() ?? '';
+    final ln = doctorLastName?.trim() ?? '';
+    var finalName = doctorName.trim();
+    if (finalName.isEmpty) {
+      if (fn.isNotEmpty && ln.isNotEmpty) {
+        finalName = '$fn $ln';
+      } else if (fn.isNotEmpty) {
+        finalName = fn;
+      } else if (ln.isNotEmpty) {
+        finalName = 'Dr. $ln';
+      }
+    }
 
+    
     await _db.transaction(() async {
-      await _write(_db, kDoctorNameKey, doctorName.trim());
+      if (fn.isNotEmpty) await _write(_db, 'doctor_first_name', fn);
+      if (ln.isNotEmpty) await _write(_db, 'doctor_last_name', ln);
+      await _write(_db, kDoctorNameKey, finalName);
       if (doctorEmail.trim().isNotEmpty) {
         await _write(_db, 'doctor_email', doctorEmail.trim());
       }
@@ -135,7 +151,7 @@ class OnboardingController {
       String? firstId;
       for (final c in clinics) {
         if (c.name.trim().isEmpty) continue;
-        final id = uuid.v4();
+        final id = IdGenerator.generate();
         firstId ??= id;
         await _db.into(_db.clinics).insert(
               ClinicsCompanion.insert(

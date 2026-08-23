@@ -1,8 +1,11 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/database/database_provider.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
 import '../../../core/services/contact_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
@@ -70,7 +73,6 @@ class PatientProfileScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: EntityHeader(
               title: patient.name,
-              subtitle: '${patient.patientCode} · #${patient.serialNo}',
               avatarText: patient.name,
               heroTag: 'patient-avatar-${patient.id}',
               leading: IconButton(
@@ -258,8 +260,16 @@ class _InfoTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        InfoRow(label: 'Serial No.', value: patient.serialNo),
-        InfoRow(label: 'Patient code', value: patient.patientCode),
+        InfoRow(
+          label: 'Serial No.',
+          value: patient.serialNo,
+          icon: Icons.tag,
+        ),
+        InfoRow(
+          label: 'Patient code',
+          value: patient.patientCode,
+          icon: Icons.badge_outlined,
+        ),
         InfoRow(
           label: 'Phone',
           value: patient.phone,
@@ -277,23 +287,46 @@ class _InfoTab extends StatelessWidget {
             dueDate: nextFollowUp,
           ),
         ),
-        InfoRow(label: 'Age', value: '${patient.age}'),
-        InfoRow(label: 'Gender', value: patient.gender),
-        InfoRow(label: 'Area', value: patient.area),
-        InfoRow(label: 'Address', value: patient.address),
-        InfoRow(label: 'Occupation', value: patient.occupation),
+        InfoRow(
+          label: 'Age',
+          value: '${patient.age}',
+          icon: Icons.cake_outlined,
+        ),
+        InfoRow(
+          label: 'Gender',
+          value: patient.gender,
+          icon: Icons.person_outline,
+        ),
+        InfoRow(
+          label: 'Area',
+          value: patient.area,
+          icon: Icons.location_city_outlined,
+        ),
+        InfoRow(
+          label: 'Address',
+          value: patient.address,
+          icon: Icons.home_outlined,
+        ),
+        InfoRow(
+          label: 'Occupation',
+          value: patient.occupation,
+          icon: Icons.work_outline,
+        ),
         InfoRow(
           label: 'First seen',
           value: Formatters.formatDate(patient.createdAt),
+          icon: Icons.event_available_outlined,
         ),
         InfoRow(
           label: 'Last visit',
           value: lastVisit == null ? null : Formatters.formatDate(lastVisit),
+          icon: Icons.history_outlined,
         ),
         InfoRow(
           label: 'Next follow-up',
           value:
               nextFollowUp == null ? null : Formatters.formatDate(nextFollowUp),
+          icon: Icons.alarm_outlined,
         ),
         InfoRow(
           label: 'Google Review',
@@ -311,13 +344,17 @@ class _InfoTab extends StatelessWidget {
             ),
           ),
         ),
-        InfoRow(label: 'Notes', value: patient.notes),
+        InfoRow(
+          label: 'Notes',
+          value: patient.notes,
+          icon: Icons.notes_outlined,
+        ),
       ],
     );
   }
 }
 
-class _VisitsTab extends StatelessWidget {
+class _VisitsTab extends ConsumerWidget {
   final List<VisitWithDetails> visits;
 
   const _VisitsTab({required this.visits});
@@ -356,7 +393,7 @@ class _VisitsTab extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (visits.isEmpty) {
       return const EmptyState(
         icon: Icons.timeline,
@@ -379,6 +416,41 @@ class _VisitsTab extends StatelessWidget {
               Spacing.lg,
               Spacing.md,
             ),
+            onLongPress: () async {
+              AppHaptics.medium();
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Delete Visit Entry?'),
+                  content: Text(
+                    'Are you sure you want to delete the visit recorded on ${Formatters.formatDate(v.visit.visitDate)} for ${v.visit.disease}? This action cannot be undone.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(ctx).colorScheme.error,
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text('Delete Entry'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed == true) {
+                final db = ref.read(databaseProvider);
+                await (db.delete(db.visits)..where((t) => t.id.equals(v.visit.id))).go();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Visit entry deleted.')),
+                  );
+                }
+              }
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -612,13 +684,13 @@ class _InsightsTab extends StatelessWidget {
 /// visits.nextFollowUpDate has been in the schema since v2 with nowhere to
 /// show it, so an overdue patient was invisible unless the doctor happened to
 /// open the right visit.
-class _FollowUpsTab extends StatelessWidget {
+class _FollowUpsTab extends ConsumerWidget {
   final List<VisitWithDetails> visits;
 
   const _FollowUpsTab({required this.visits});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -661,6 +733,43 @@ class _FollowUpsTab extends StatelessWidget {
           Spacing.lg,
           Spacing.md,
         ),
+        onLongPress: () async {
+          AppHaptics.medium();
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Remove Scheduled Follow-up?'),
+              content: Text(
+                'Remove follow-up scheduled for ${Formatters.formatDate(due)} (${v.visit.disease})?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(ctx).colorScheme.error,
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: const Text('Remove Follow-up'),
+                ),
+              ],
+            ),
+          );
+
+          if (confirmed == true) {
+            final db = ref.read(databaseProvider);
+            await (db.update(db.visits)..where((t) => t.id.equals(v.visit.id))).write(
+              const VisitsCompanion(nextFollowUpDate: Value(null)),
+            );
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Scheduled follow-up removed.')),
+              );
+            }
+          }
+        },
         child: Row(
           children: [
             Icon(
@@ -695,10 +804,11 @@ class _FollowUpsTab extends StatelessWidget {
               ),
             ),
             const SizedBox(width: Spacing.sm),
-            IconButton(
-              icon: const Icon(Icons.chat_outlined),
+            IconButton.outlined(
+              icon: const Icon(Icons.chat_outlined, size: 18),
               tooltip: 'Send WhatsApp reminder',
               onPressed: () {
+                AppHaptics.selection();
                 ContactService.openWhatsApp(
                   phone: v.patient.whatsapp ?? v.patient.phone,
                   message: ContactService.followUpMessage(
@@ -706,6 +816,15 @@ class _FollowUpsTab extends StatelessWidget {
                     clinicName: v.clinic.name,
                   ),
                 );
+              },
+            ),
+            const SizedBox(width: Spacing.xs),
+            IconButton.outlined(
+              icon: const Icon(Icons.phone_outlined, size: 18),
+              tooltip: 'Call Patient',
+              onPressed: () {
+                AppHaptics.selection();
+                ContactService.call(v.patient.phone);
               },
             ),
           ],
@@ -807,7 +926,7 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                       : Icons.visibility_outlined,
                   fullWidth: true,
                   onPressed: () {
-                    Navigator.of(context).push(
+                    Navigator.of(context, rootNavigator: true).push(
                       MaterialPageRoute(
                         builder: (_) => MasterCaseTakingScreen(patient: patient),
                       ),

@@ -61,6 +61,28 @@ void main() {
       expect(updated.qualification, 'BHMS, MD (Hom.), PhD');
     });
 
+    test('supports first and last name separation and greetingName getter', () async {
+      final container = ProviderContainer(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+        ],
+      );
+
+      final notifier = container.read(doctorProfileNotifierProvider.notifier);
+
+      await notifier.updateProfile(
+        firstName: 'Dr. Md.',
+        lastName: 'Saifuddin',
+        email: 'saif@example.com',
+      );
+
+      final profile = await container.read(doctorProfileStreamProvider.future);
+      expect(profile.firstName, 'Dr. Md.');
+      expect(profile.lastName, 'Saifuddin');
+      expect(profile.displayName, 'Dr. Md. Saifuddin');
+      expect(profile.greetingName, 'Dr. Saifuddin');
+    });
+
     test('onboarding completes with full doctor profile', () async {
       final container = ProviderContainer(
         overrides: [
@@ -143,6 +165,7 @@ void main() {
       await container.read(doctorProfileNotifierProvider.notifier).updateProfile(
         name: 'Dr. Alice Smith',
         email: 'alice@practice.com',
+        qualification: 'BHMS, MD',
       );
 
       await t.pumpWidget(
@@ -158,7 +181,7 @@ void main() {
       await t.pumpAndSettle();
 
       expect(find.text('Dr. Alice Smith'), findsOneWidget);
-      expect(find.text('alice@practice.com'), findsOneWidget);
+      expect(find.text('BHMS, MD'), findsOneWidget);
     });
   });
 }

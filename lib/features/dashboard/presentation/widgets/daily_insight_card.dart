@@ -27,7 +27,14 @@ class DailyInsightCard extends ConsumerWidget {
       ),
       onTap: () {
         AppHaptics.selection();
-        context.push(insight.actionRoute);
+        if (insight.actionRoute == '/growth' ||
+            insight.actionRoute == '/patients' ||
+            insight.actionRoute == '/finances' ||
+            insight.actionRoute == '/dashboard') {
+          context.go(insight.actionRoute);
+        } else {
+          context.push(insight.actionRoute);
+        }
       },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

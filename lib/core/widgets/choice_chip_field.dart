@@ -38,24 +38,20 @@ class ChoiceChipField<T> extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Spacing.xs),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final o in options)
-                Padding(
-                  padding: const EdgeInsets.only(right: Spacing.sm),
-                  child: ChoiceChip(
-                    label: Text(labelOf(o)),
-                    avatar: iconOf?.call(o) == null
-                        ? null
-                        : Icon(iconOf!(o), size: 16),
-                    selected: o == value,
-                    onSelected: (_) => onChanged(o),
-                  ),
-                ),
-            ],
-          ),
+        Wrap(
+          spacing: Spacing.xs,
+          runSpacing: Spacing.xs,
+          children: [
+            for (final o in options)
+              ChoiceChip(
+                label: Text(labelOf(o)),
+                avatar: iconOf?.call(o) == null
+                    ? null
+                    : Icon(iconOf!(o), size: 16),
+                selected: o == value,
+                onSelected: (_) => onChanged(o),
+              ),
+          ],
         ),
       ],
     );

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
+import '../../../core/services/master_disease_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_form_dialog.dart';
@@ -150,7 +151,6 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             CustomTextField(
               controller: _serialController,
               label: 'Serial No.',
-              hint: 'As in the register',
               prefixIcon: Icons.tag,
               onChanged: (_) => setState(() {}),
               validator: (v) {
@@ -295,6 +295,9 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 disease: disease,
                 referralSource: _referralSource,
               );
+      if (disease.isNotEmpty) {
+        ref.read(masterDiseaseServiceProvider).recordDisease(disease);
+      }
       AppHaptics.success();
       if (mounted) Navigator.of(context).pop(patient.id);
     } catch (e) {

@@ -124,7 +124,6 @@ class _AddEditReferralContactDialogState
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Partner / Organization Name *',
-                  hintText: 'e.g. Apollo Pharmacy, Thyrocare Lab',
                   prefixIcon: Icon(Icons.store_outlined),
                 ),
                 validator: (v) =>
@@ -152,7 +151,6 @@ class _AddEditReferralContactDialogState
                 controller: _personController,
                 decoration: const InputDecoration(
                   labelText: 'Contact Person / Manager',
-                  hintText: 'e.g. Mr. Sharma / Chief Pharmacist',
                   prefixIcon: Icon(Icons.person_outline),
                 ),
               ),
@@ -163,7 +161,6 @@ class _AddEditReferralContactDialogState
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
                   labelText: 'Phone Number',
-                  hintText: 'e.g. 9876543210',
                   prefixIcon: Icon(Icons.phone_outlined),
                 ),
               ),
@@ -173,7 +170,6 @@ class _AddEditReferralContactDialogState
                 controller: _addressController,
                 decoration: const InputDecoration(
                   labelText: 'Address / Locality',
-                  hintText: 'e.g. Main Market, Near City Hospital',
                   prefixIcon: Icon(Icons.location_on_outlined),
                 ),
               ),
@@ -184,7 +180,6 @@ class _AddEditReferralContactDialogState
                 maxLines: 2,
                 decoration: const InputDecoration(
                   labelText: 'Partnership Notes',
-                  hintText: 'e.g. Visited on Monday, agreed to keep clinic pamphlets at counter.',
                 ),
               ),
             ],

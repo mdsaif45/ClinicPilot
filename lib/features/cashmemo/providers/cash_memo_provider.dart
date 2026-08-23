@@ -1,10 +1,9 @@
+import 'package:clinic_pilot/core/utils/id_generator.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-const _uuid = Uuid();
 
 class CashMemoWithDetails {
   final CashMemo memo;
@@ -76,7 +75,7 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
     final nextNum = (allMemos.length + 1).toString().padLeft(5, '0');
     final memoNumber = 'CM-$year-$nextNum';
 
-    final memoId = _uuid.v4();
+    final memoId = IdGenerator.generate();
     final companion = CashMemosCompanion.insert(
       id: memoId,
       memoNumber: memoNumber,
