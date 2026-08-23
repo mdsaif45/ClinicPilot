@@ -91,36 +91,34 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/growth',
                 builder: (context, state) => const GrowthHubScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'overview',
-                    builder: (context, state) => const GrowthScreen(),
-                  ),
-                  GoRoute(
-                    path: 'profit',
-                    builder: (context, state) => const ProfitSummaryScreen(),
-                  ),
-                  GoRoute(
-                    path: 'referral',
-                    builder: (context, state) => const ReferralSourceScreen(),
-                  ),
-                  GoRoute(
-                    path: 'camps',
-                    builder: (context, state) => const CampManagerScreen(),
-                  ),
-                  GoRoute(
-                    path: 'diseases',
-                    builder: (context, state) => const DiseaseAnalyticsScreen(),
-                  ),
-                  GoRoute(
-                    path: 'referral-crm',
-                    builder: (context, state) => const ReferralCrmScreen(),
-                  ),
-                ],
               ),
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/growth/overview',
+        builder: (context, state) => const GrowthScreen(),
+      ),
+      GoRoute(
+        path: '/growth/profit',
+        builder: (context, state) => const ProfitSummaryScreen(),
+      ),
+      GoRoute(
+        path: '/growth/referral',
+        builder: (context, state) => const ReferralSourceScreen(),
+      ),
+      GoRoute(
+        path: '/growth/camps',
+        builder: (context, state) => const CampManagerScreen(),
+      ),
+      GoRoute(
+        path: '/growth/diseases',
+        builder: (context, state) => const DiseaseAnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/growth/referral-crm',
+        builder: (context, state) => const ReferralCrmScreen(),
       ),
       GoRoute(
         path: '/settings',
