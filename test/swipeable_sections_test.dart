@@ -36,34 +36,17 @@ void main() {
     expect(pageView.controller!.page, 1.0);
   });
 
-  testWidgets('swiping left moves to the second page and updates the label',
+  testWidgets('swiping does not change page (swipe disabled by design)',
       (tester) async {
     await tester.pumpWidget(harness());
 
-    // fling rather than drag: a plain drag() doesn't reliably carry enough
-    // velocity to cross the page-turn threshold, which is a property of the
-    // gesture simulation, not of PageView - a real swipe has velocity.
     await tester.fling(find.byType(PageView), const Offset(-400, 0), 800);
-    await tester.pumpAndSettle();
-
-    final pageView = tester.widget<PageView>(find.byType(PageView));
-    expect(pageView.controller!.page, 1.0);
-
-    // The label bar has to agree with what a swipe just did, not only with
-    // what a tap did - onPageChanged is what keeps it in sync.
-    final switcher = tester.widget<SectionSwitch>(find.byType(SectionSwitch));
-    expect(switcher.index, 1);
-  });
-
-  testWidgets('swiping back right returns to the first page', (tester) async {
-    await tester.pumpWidget(harness());
-
-    await tester.fling(find.byType(PageView), const Offset(-400, 0), 800);
-    await tester.pumpAndSettle();
-    await tester.fling(find.byType(PageView), const Offset(400, 0), 800);
     await tester.pumpAndSettle();
 
     final pageView = tester.widget<PageView>(find.byType(PageView));
     expect(pageView.controller!.page, 0.0);
+
+    final switcher = tester.widget<SectionSwitch>(find.byType(SectionSwitch));
+    expect(switcher.index, 0);
   });
 }
