@@ -577,7 +577,6 @@ class _ClinicCard extends StatelessWidget {
           CustomTextField(
             controller: controllers.nameController,
             label: 'Clinic Name',
-            hint: 'e.g. City Care Clinic',
             prefixIcon: Icons.local_hospital_outlined,
             onChanged: (_) => onChanged(),
             focusNode: nameFocus,
@@ -589,7 +588,6 @@ class _ClinicCard extends StatelessWidget {
           CustomTextField(
             controller: controllers.addressController,
             label: 'Address / Area (Optional)',
-            hint: 'e.g. Central Park Market',
             prefixIcon: Icons.place_outlined,
             onChanged: (_) => onChanged(),
             focusNode: areaFocus,
@@ -599,7 +597,6 @@ class _ClinicCard extends StatelessWidget {
           CustomTextField(
             controller: controllers.phoneController,
             label: 'Clinic Phone (Optional)',
-            hint: 'e.g. 9830012345',
             prefixIcon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
             onChanged: (_) => onChanged(),
