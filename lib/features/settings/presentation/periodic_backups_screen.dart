@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../core/design/tokens.dart';
-import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_list_tile.dart';
 
 class PeriodicBackupsScreen extends StatefulWidget {
   const PeriodicBackupsScreen({super.key});
@@ -110,163 +110,79 @@ class _PeriodicBackupsScreenState extends State<PeriodicBackupsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Periodic backups'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(Spacing.lg),
+        padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
         children: [
-          // Top Switch Header Card
-          AppCard(
-            color: _enabled
-                ? scheme.primaryContainer.withValues(alpha: 0.40)
-                : scheme.surfaceContainerHighest.withValues(alpha: 0.35),
-            padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.lg,
-              vertical: Spacing.md,
-            ),
-            child: Row(
+          SettingsGroup(
+            title: 'Schedule',
+            children: [
+              AppSwitchTile(
+                icon: Icons.autorenew_outlined,
+                title: 'Enable periodic backups',
+                subtitle: _enabled
+                    ? 'Automated backups active'
+                    : 'Turn on to run backups automatically',
+                value: _enabled,
+                onChanged: (val) {
+                  setState(() {
+                    _enabled = val;
+                    _save();
+                  });
+                },
+              ),
+            ],
+          ),
+          if (_enabled)
+            SettingsGroup(
+              title: 'Preferences',
               children: [
-                Expanded(
-                  child: Text(
-                    'Enable periodic backups',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                AppListTile(
+                  icon: Icons.folder_outlined,
+                  title: 'Backups output directory',
+                  subtitle: _directory,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _pickDirectory,
                 ),
-                Switch(
-                  value: _enabled,
+                AppListTile(
+                  icon: Icons.schedule_outlined,
+                  title: 'Backup creation frequency',
+                  subtitle: _frequency,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _showFrequencyDialog,
+                ),
+                AppSwitchTile(
+                  icon: Icons.auto_delete_outlined,
+                  title: 'Delete old backups',
+                  subtitle: 'Automatically delete old backup files to save storage space',
+                  value: _deleteOld,
                   onChanged: (val) {
                     setState(() {
-                      _enabled = val;
+                      _deleteOld = val;
+                      _save();
+                    });
+                  },
+                ),
+                AppSliderTile(
+                  icon: Icons.storage_outlined,
+                  title: 'Max number of backups',
+                  value: _maxBackups,
+                  min: 1,
+                  max: 50,
+                  divisions: 49,
+                  valueLabel: (v) => '${v.round()}',
+                  onChanged: (val) {
+                    setState(() {
+                      _maxBackups = val;
                       _save();
                     });
                   },
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: Spacing.xl),
-
-          if (_enabled) ...[
-            // Output Directory
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'Backups output directory',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: Spacing.xs),
-                child: Text(
-                  _directory,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              onTap: _pickDirectory,
-            ),
-            const Divider(),
-
-            // Backup Frequency
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'Backup creation frequency',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: Spacing.xs),
-                child: Text(
-                  _frequency,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              onTap: _showFrequencyDialog,
-            ),
-            const Divider(),
-
-            // Delete old backups
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'Delete old backups',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: Spacing.xs),
-                child: Text(
-                  'Automatically delete old backup files to save storage space',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              value: _deleteOld,
-              onChanged: (val) {
-                setState(() {
-                  _deleteOld = val;
-                  _save();
-                });
-              },
-            ),
-            const Divider(),
-
-            // Max Number of Backups
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Max number of backups',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        '${_maxBackups.round()}',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: scheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  Slider(
-                    value: _maxBackups,
-                    min: 1,
-                    max: 50,
-                    divisions: 49,
-                    onChanged: (val) {
-                      setState(() {
-                        _maxBackups = val;
-                        _save();
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
