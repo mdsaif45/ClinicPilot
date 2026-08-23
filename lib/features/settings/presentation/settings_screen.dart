@@ -138,6 +138,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: 'Choose Excel (default) or CSV format',
                 onTap: _exportData,
               ),
+              AppListTile(
+                icon: Icons.delete_sweep_outlined,
+                title: 'Clear All Practice Data',
+                subtitle: 'Wipe all records and start fresh onboarding',
+                onTap: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Reset All Practice Data?'),
+                      content: const Text(
+                        'This will delete all patients, visits, cash memos, expenses, and clinics, resetting the app to a clean initial state. This action cannot be undone.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(ctx).colorScheme.error,
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text('Reset Everything'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) {
+                    await ref.read(databaseProvider).clearAllPracticeData();
+                    if (context.mounted) {
+                      context.go('/onboarding');
+                    }
+                  }
+                },
+              ),
               if (isEmpty) ...[
                 AppListTile(
                   icon: Icons.description_outlined,
