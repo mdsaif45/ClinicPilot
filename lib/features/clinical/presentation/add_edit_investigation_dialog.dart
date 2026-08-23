@@ -223,7 +223,6 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Test Parameter Name *',
-                  hintText: 'e.g. Fasting Blood Sugar (FBS), Serum Creatinine',
                   prefixIcon: Icon(Icons.biotech_outlined),
                 ),
                 validator: (v) =>
@@ -339,7 +338,6 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                       controller: _minController,
                       decoration: const InputDecoration(
                         labelText: 'Ref Range Min',
-                        hintText: 'e.g. 70',
                       ),
                     ),
                   ),
@@ -349,7 +347,6 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                       controller: _maxController,
                       decoration: const InputDecoration(
                         labelText: 'Ref Range Max',
-                        hintText: 'e.g. 100',
                       ),
                     ),
                   ),
@@ -362,7 +359,6 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                 controller: _labController,
                 decoration: const InputDecoration(
                   labelText: 'Diagnostic Lab / Center Name',
-                  hintText: 'e.g. Lal PathLabs, Thyrocare, SRL',
                   prefixIcon: Icon(Icons.local_hospital_outlined),
                 ),
               ),
@@ -373,7 +369,6 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                 maxLines: 2,
                 decoration: const InputDecoration(
                   labelText: 'Clinical Interpretation / Remarks',
-                  hintText: 'e.g. FBS significantly elevated, needs dietary control',
                 ),
               ),
             ],

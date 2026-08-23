@@ -28,6 +28,8 @@ import '../../features/settings/providers/release_provider.dart';
 import '../../features/settings/providers/update_provider.dart';
 import '../services/update_service.dart';
 
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   // The redirect reads onboardingCompleteProvider, which resolves
   // asynchronously. Without this the first evaluation sees null, lets the
@@ -42,6 +44,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   } catch (_) {}
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     refreshListenable: _ProviderRefresh(ref, onboardingCompleteProvider),
     initialLocation: isDone ? '/dashboard' : '/onboarding',
     // First run has no clinic to attribute anything to, so the app cannot do

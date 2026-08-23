@@ -779,5 +779,96 @@ class SampleDataSeeder {
             ),
           );
     }
+
+    // 8. Referral Network CRM Partners
+    final referralPartners = [
+      {
+        'name': 'City Care Pharmacy & Chemist',
+        'person': 'Arif Munshi',
+        'category': 'Pharmacy',
+        'phone': '9830114477',
+        'address': '12 Central Avenue, Near City Care Clinic',
+        'visits': 3,
+        'referrals': 8,
+        'daysAgo': 10,
+        'notes': 'Active pharmacy partner. Stocking dilutions and referring patients for arthritis & chronic care.',
+      },
+      {
+        'name': 'Apex Diagnostic & Pathology Center',
+        'person': 'Dr. S. K. Roy (Pathologist)',
+        'category': 'Diagnostic Lab',
+        'phone': '9830225588',
+        'address': '78 Park Street, Ground Floor',
+        'visits': 2,
+        'referrals': 6,
+        'daysAgo': 12,
+        'notes': 'Conducts AEC, Thyroid panels, and Blood glucose tests for practice patients.',
+      },
+      {
+        'name': 'Lake View Physiotherapy Clinic',
+        'person': 'Dr. Priya Sen (PT)',
+        'category': 'Physiotherapy',
+        'phone': '9830336699',
+        'address': '18 Lake Road, Suite 3B',
+        'visits': 2,
+        'referrals': 4,
+        'daysAgo': 15,
+        'notes': 'Mutual referral for cervical spondylosis and joint pain rehabilitation.',
+      },
+      {
+        'name': 'HealthPlus Dental & Oral Care',
+        'person': 'Dr. Anisur Rahman (BDS)',
+        'category': 'Dentist',
+        'phone': '9830447700',
+        'address': '24/1 Ripon Street',
+        'visits': 1,
+        'referrals': 3,
+        'daysAgo': 18,
+        'notes': 'Referred recurrent aphthae and trigeminal neuralgia cases for homoeopathy.',
+      },
+      {
+        'name': 'Pulse Fitness & Yoga Studio',
+        'person': 'Coach Vikram Singh',
+        'category': 'Gym / Fitness',
+        'phone': '9830558811',
+        'address': '52 Ballygunge Circular Rd',
+        'visits': 1,
+        'referrals': 5,
+        'daysAgo': 20,
+        'notes': 'Recommends homeopathic lifestyle management for obesity and PCOS members.',
+      },
+      {
+        'name': 'Suraksha Specialist Polyclinic',
+        'person': 'Dr. R. Bannerjee (MD General Medicine)',
+        'category': 'Specialist Doctor',
+        'phone': '9830669922',
+        'address': '102 Southern Avenue',
+        'visits': 2,
+        'referrals': 4,
+        'daysAgo': 7,
+        'notes': 'Co-manages chronic allergy, asthma, and skin cases with homoeopathy.',
+      },
+    ];
+
+    for (final partner in referralPartners) {
+      final daysAgo = partner['daysAgo'] as int;
+      await db.into(db.referralContacts).insertOnConflictUpdate(
+            ReferralContactsCompanion.insert(
+              id: IdGenerator.generate(),
+              name: partner['name'] as String,
+              contactPerson: Value(partner['person'] as String?),
+              category: Value(partner['category'] as String),
+              phone: Value(partner['phone'] as String?),
+              address: Value(partner['address'] as String?),
+              visitCount: Value(partner['visits'] as int),
+              referralCount: Value(partner['referrals'] as int),
+              lastVisitedDate: Value(now.subtract(Duration(days: daysAgo))),
+              notes: Value(partner['notes'] as String?),
+              isActive: const Value(true),
+              createdAt: Value(now.subtract(Duration(days: daysAgo + 20))),
+              updatedAt: Value(now.subtract(Duration(days: daysAgo))),
+            ),
+          );
+    }
   }
 }

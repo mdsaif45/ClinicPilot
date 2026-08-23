@@ -586,6 +586,7 @@ void main() {
       final footfalls = await db.select(db.footfalls).get();
       final cashMemos = await db.select(db.cashMemos).get();
       final expenses = await db.select(db.expenses).get();
+      final referralPartners = await db.select(db.referralContacts).get();
 
       expect(clinics.length, equals(3));
       expect(patients.length, equals(10));
@@ -597,6 +598,7 @@ void main() {
       expect(footfalls.length, equals(20));
       expect(cashMemos.length, equals(15));
       expect(expenses.length, equals(20));
+      expect(referralPartners.length, equals(6));
     });
   });
 }
