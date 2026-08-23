@@ -103,7 +103,7 @@ class _RecallCard extends StatelessWidget {
         Spacing.lg,
         Spacing.md,
       ),
-      onTap: () => Navigator.of(context).push(
+      onTap: () => Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute(
           builder: (_) => PatientProfileScreen(patient: p),
         ),

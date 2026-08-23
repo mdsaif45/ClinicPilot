@@ -55,7 +55,9 @@ class MasterCaseTakingScreen extends ConsumerStatefulWidget {
 class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen> {
   bool _initialized = false;
   bool _saving = false;
-  final Set<int> _collapsedSections = {};
+  
+  // Default: keep 01 (index 0) expanded, collapse all other sections (1..18)
+  final Set<int> _collapsedSections = {for (int i = 1; i < 19; i++) i};
   late final List<GlobalKey> _sectionKeys;
 
   static const List<String> _sectionTitles = [
@@ -85,7 +87,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
   final _firstVisitDateController = TextEditingController();
   final _patientNameController = TextEditingController();
   final _ageController = TextEditingController();
-  final _genderController = TextEditingController();
+  final _genderController = TextEditingController(text: 'Male');
   final _dobController = TextEditingController();
   final _occupationController = TextEditingController();
   final _addressController = TextEditingController();
@@ -371,7 +373,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
   void _initializeDefaultData() {
     _patientNameController.text = widget.patient.name;
     _ageController.text = '${widget.patient.age}';
-    _genderController.text = widget.patient.gender;
+    _genderController.text = widget.patient.gender.isNotEmpty ? widget.patient.gender : 'Male';
     _phoneController.text = widget.patient.phone;
     if (widget.patient.patientCode.isNotEmpty) {
       _regNoController.text = widget.patient.patientCode;
@@ -978,6 +980,12 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
 
   void _jumpToSection(int index) {
     AppHaptics.selection();
+    // If target section is collapsed, expand it automatically on jump
+    if (_collapsedSections.contains(index)) {
+      setState(() {
+        _collapsedSections.remove(index);
+      });
+    }
     final keyContext = _sectionKeys[index].currentContext;
     if (keyContext != null) {
       Scrollable.ensureVisible(
@@ -1402,1085 +1410,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
 
               // Main Form ListView
               Expanded(
-                child: ListView(
+                child: ListView.builder(
                   padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.md, Spacing.md, Spacing.xxl),
-                  children: [
-                    // 1. PATIENT IDENTIFICATION
-                    _buildSectionCard(
-                      index: 0,
-                      sectionNum: '01',
-                      title: 'Patient Identification',
-                      icon: Icons.badge_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_regNoController, 'Registration No.', Icons.numbers)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_firstVisitDateController, 'First Visit Date', Icons.calendar_today_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_patientNameController, 'Patient Full Name', Icons.person_outline),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ageController, 'Age', Icons.cake_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_genderController, 'Gender', Icons.wc_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(
-                              child: PickerField<String>(
-                                label: 'Marital Status',
-                                value: _maritalStatus,
-                                options: const [
-                                  PickerOption(value: 'Single', label: 'Single'),
-                                  PickerOption(value: 'Married', label: 'Married'),
-                                  PickerOption(value: 'Divorced', label: 'Divorced'),
-                                  PickerOption(value: 'Widowed', label: 'Widowed'),
-                                  PickerOption(value: 'Other', label: 'Other'),
-                                ],
-                                onChanged: (v) => setState(() => _maritalStatus = v),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_dobController, 'Date of Birth', Icons.event_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_occupationController, 'Occupation', Icons.work_outline)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(flex: 2, child: _buildInput(_addressController, 'Address / Locality', Icons.home_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(flex: 2, child: _buildInput(_phoneController, 'Phone Number', Icons.phone_outlined)),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    // 2. CHIEF COMPLAINTS
-                    _buildSectionCard(
-                      index: 1,
-                      sectionNum: '02',
-                      title: 'Chief Complaints (${_complaints.length})',
-                      icon: Icons.healing_outlined,
-                      children: [
-                        for (int i = 0; i < _complaints.length; i++) ...[
-                          _buildComplaintCard(i),
-                          if (i < _complaints.length - 1) const SizedBox(height: Spacing.md),
-                        ],
-                        const SizedBox(height: Spacing.md),
-                        AppButton.outlined(
-                          label: 'Add Another Chief Complaint',
-                          icon: Icons.add,
-                          fullWidth: true,
-                          onPressed: _addComplaintBlock,
-                        ),
-                      ],
-                    ),
-
-                    // 3. ADDITIONAL COMPLAINTS
-                    _buildSectionCard(
-                      index: 2,
-                      sectionNum: '03',
-                      title: 'Additional Complaints',
-                      icon: Icons.note_add_outlined,
-                      children: [
-                        _buildInput(_additionalComplaintsController, 'Additional Complaints / Secondary Notes', Icons.notes_outlined, 3),
-                      ],
-                    ),
-
-                    // 4. HISTORY OF PRESENT ILLNESS (HPI)
-                    _buildSectionCard(
-                      index: 3,
-                      sectionNum: '04',
-                      title: 'History of Present Illness (HPI)',
-                      icon: Icons.timeline_outlined,
-                      children: [
-                        _buildInput(_hpiChronoDevController, 'Chronological Development', Icons.show_chart, 2),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_hpiFirstOccurrenceController, 'First Occurrence', Icons.history)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_hpiProgressionController, 'Progression & Pace', Icons.trending_up)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_hpiPreviousEpisodesController, 'Previous Episodes', Icons.repeat),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_hpiPreviousTreatmentController, 'Previous Treatment', Icons.medication_outlined),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_hpiResponseToTreatmentController, 'Response to Previous Treatment', Icons.feedback_outlined),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_hpiPrecipitatingFactorsController, 'Precipitating / Trigger Factors', Icons.psychology_outlined),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_hpiOtherRelevantHistoryController, 'Other Relevant History', Icons.info_outline),
-                      ],
-                    ),
-
-                    // 5. PAST MEDICAL HISTORY
-                    _buildSectionCard(
-                      index: 4,
-                      sectionNum: '05',
-                      title: 'Past Medical History',
-                      icon: Icons.medical_information_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pastChildhoodIllnessesController, 'Childhood Illnesses', Icons.child_care)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pastMajorIllnessesController, 'Major Illnesses', Icons.coronavirus_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pastChronicDiseasesController, 'Chronic Diseases', Icons.health_and_safety_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pastSurgeriesController, 'Operations / Surgeries', Icons.local_hospital_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pastInjuriesTraumaController, 'Injuries / Trauma', Icons.personal_injury_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pastHospitalisationsController, 'Hospitalisations', Icons.hotel_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pastInfectionsController, 'Infections', Icons.pest_control_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pastAllergiesController, 'Allergies', Icons.warning_amber_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pastPreviousMedicationsController, 'Previous Medications', Icons.medication)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pastPrevHomeopathicTreatmentController, 'Previous Homeopathy', Icons.science_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_pastOtherPastHistoryController, 'Other Past History', Icons.description_outlined),
-                      ],
-                    ),
-
-                    // 6. FAMILY HISTORY
-                    _buildSectionCard(
-                      index: 5,
-                      sectionNum: '06',
-                      title: 'Family History',
-                      icon: Icons.groups_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_familyFatherController, 'Father', Icons.person)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_familyMotherController, 'Mother', Icons.person_2)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_familySiblingsController, 'Siblings', Icons.group)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_familySpouseController, 'Spouse', Icons.favorite_border)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_familyChildrenController, 'Children', Icons.family_restroom)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_familyGrandparentsRelativesController, 'Grandparents & Other Relatives', Icons.elderly_outlined),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_familyHereditaryDiseasesController, 'Hereditary Diseases', Icons.biotech_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_familyMajorFamilialDiseasesController, 'Familial Diseases (HTN, DM, TB)', Icons.analytics_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_familyPsychiatricHistoryController, 'Psychiatric Family History', Icons.psychology_alt_outlined),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_familyOtherFamilyHistoryController, 'Other Family History', Icons.notes),
-                      ],
-                    ),
-
-                    // 7. INTRAUTERINE & DEVELOPMENTAL
-                    _buildSectionCard(
-                      index: 6,
-                      sectionNum: '07',
-                      title: 'Intrauterine & Developmental History',
-                      icon: Icons.child_friendly_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_devMaternalHealthController, 'Maternal Health in Pregnancy', Icons.pregnant_woman)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_devPregnancyComplicationsController, 'Pregnancy Complications', Icons.report_problem_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_devMaternalInfectionsController, 'Maternal Infections', Icons.bug_report_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_devMaternalMedicationsController, 'Maternal Medications', Icons.medication_liquid)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_devAntenatalCareController, 'Antenatal Care', Icons.medical_services_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_devNutritionDuringPregnancyController, 'Maternal Nutrition', Icons.restaurant)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_devGestationalAgeController, 'Gestational Age / Term', Icons.access_time)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_devBirthOrderController, 'Birth Order', Icons.format_list_numbered)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_devModeOfDeliveryController, 'Mode of Delivery', Icons.local_hospital)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_devBirthWeightController, 'Birth Weight', Icons.monitor_weight_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_devNeonatalHistoryController, 'Neonatal History / Cry', Icons.baby_changing_station)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_devBreastfeedingController, 'Breastfeeding History', Icons.water_drop_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_devDevelopmentalMilestonesController, 'Milestones (Teething, Walking, Talking)', Icons.emoji_events_outlined),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_devChildhoodDevelopmentController, 'Childhood Development', Icons.school_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_devOtherBirthDevelopmentalHistoryController, 'Other Developmental Notes', Icons.more_horiz)),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    // 8. PHYSICAL GENERALS
-                    _buildSectionCard(
-                      index: 7,
-                      sectionNum: '08',
-                      title: 'Physical Generals',
-                      icon: Icons.accessibility_new_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: PickerField<String>(
-                                label: 'Thermal State',
-                                value: _pgHotChillyController.text.isNotEmpty ? _pgHotChillyController.text : 'Ambithermal',
-                                options: const [
-                                  PickerOption(value: 'Chilly', label: 'Chilly (Sensitive to Cold)'),
-                                  PickerOption(value: 'Hot', label: 'Hot (Sensitive to Heat)'),
-                                  PickerOption(value: 'Ambithermal', label: 'Ambithermal (Equal)'),
-                                ],
-                                onChanged: (v) => setState(() => _pgHotChillyController.text = v),
-                              ),
-                            ),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgWeatherSeasonPreferenceController, 'Weather / Season Preference', Icons.wb_sunny_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_pgSensitivityToTemperatureController, 'Temperature Sensitivities', Icons.thermostat_outlined),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgAppetiteController, 'Appetite', Icons.restaurant_menu)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgHungerFastingController, 'Hunger & Fasting', Icons.hourglass_empty)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgThirstQuantityController, 'Thirst Quantity', Icons.local_drink)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgThirstFrequencyController, 'Thirst Frequency', Icons.timelapse)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgThirstTimingController, 'Thirst Timing', Icons.schedule)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgFoodDesiresController, 'Cravings / Desires', Icons.favorite)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgFoodAversionsController, 'Food Aversions', Icons.do_not_disturb)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_pgFoodIntolerancesController, 'Food Intolerances & Aggravations', Icons.no_food),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgStoolFrequencyController, 'Stool Frequency', Icons.repeat)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgStoolConsistencyController, 'Stool Consistency', Icons.grain)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgStoolColourOdourController, 'Stool Colour / Odour', Icons.palette_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_pgStoolDifficultiesModalitiesController, 'Stool Difficulties & Modalities', Icons.airline_seat_legroom_reduced),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgUrineFrequencyController, 'Urine Frequency', Icons.speed)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgUrineQuantityController, 'Urine Quantity', Icons.opacity)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgUrineColourOdourController, 'Urine Colour / Odour', Icons.water)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_pgUrinarySymptomsController, 'Urinary Symptoms', Icons.water_drop),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgPerspirationQuantityController, 'Perspiration Quantity', Icons.dew_point)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgPerspirationOdourController, 'Perspiration Odour', Icons.air)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_pgPerspirationTimingDistributionController, 'Perspiration Timing & Distribution', Icons.map_outlined),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgSleepQuantityController, 'Sleep Hours', Icons.bedtime)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgSleepQualityController, 'Sleep Quality', Icons.hotel)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgSleepPositionController, 'Sleep Position', Icons.airline_seat_flat)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgSleepOnsetController, 'Sleep Onset', Icons.nights_stay)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgSleepDisturbancesController, 'Sleep Disturbances', Icons.alarm_off)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgDreamsGeneralController, 'Dreams (General)', Icons.cloud_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgDreamsRecurrentPeculiarController, 'Recurrent / Peculiar Dreams', Icons.auto_awesome)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgEnergyVitalityController, 'Energy & Vitality', Icons.bolt)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgFatigueController, 'Fatigue Modalities', Icons.battery_alert)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgSexualHistoryController, 'Sexual History', Icons.favorite_outline)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgMenstrualHistoryController, 'Menstrual History', Icons.calendar_month)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgObstetricHistoryController, 'Obstetric History', Icons.child_care)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgSkinHairNailsController, 'Skin, Hair & Nails', Icons.face)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_pgGeneralDischargesController, 'General Discharges', Icons.waterfall_chart)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_pgOtherPhysicalGeneralsController, 'Other Physical Generals', Icons.more_horiz)),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    // 9. MENTAL & EMOTIONAL GENERALS
-                    _buildSectionCard(
-                      index: 8,
-                      sectionNum: '09',
-                      title: 'Mental & Emotional Generals',
-                      icon: Icons.psychology_outlined,
-                      children: [
-                        _buildInput(_mgGeneralMentalEmotionalStateController, 'General Mental & Emotional State', Icons.psychology, 2),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgDispositionController, 'Disposition / Nature', Icons.sentiment_satisfied)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgIrritabilityController, 'Irritability', Icons.sentiment_dissatisfied)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgAngerController, 'Anger & Temper', Icons.sentiment_very_dissatisfied)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgAnxietyController, 'Anxiety', Icons.healing)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgFearsController, 'Fears', Icons.visibility_off)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_mgSpecificFearsPhobiasController, 'Specific Fears & Phobias', Icons.warning),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgSadnessGriefController, 'Sadness & Grief', Icons.mood_bad)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgDepressionController, 'Depression', Icons.cloud)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgJealousyController, 'Jealousy & Envy', Icons.compare)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgSuspicionController, 'Suspicion', Icons.search)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgCompanyDesireAversionController, 'Company (Desire/Aversion)', Icons.groups)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgDesireForSolitudeController, 'Desire for Solitude', Icons.person_outline)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgDesireForAttentionConsolationController, 'Consolation Response', Icons.volunteer_activism)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgTalkativenessQuietnessController, 'Loquacity / Quietness', Icons.record_voice_over)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgConfidenceSelfEsteemController, 'Confidence / Self-Esteem', Icons.star_border)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgWillDeterminationController, 'Will & Determination', Icons.fitness_center)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgIndecisionController, 'Indecision & Doubt', Icons.help_outline)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgMemoryController, 'Memory & Recall', Icons.memory)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgConcentrationController, 'Concentration & Focus', Icons.center_focus_strong)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgWorkStudyResponseController, 'Work / Study Response', Icons.work_outline)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgRestlessnessController, 'Restlessness', Icons.directions_run)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgResponseToStressController, 'Stress Handling', Icons.spa)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgResponseToContradictionOppositionController, 'Reaction to Contradiction', Icons.gavel)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_mgResponseToReprimandController, 'Reaction to Reprimand', Icons.announcement)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_mgCompulsionsObsessionsController, 'Obsessions / Compulsions', Icons.sync)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_mgOtherCharacteristicMentalSymptomsController, 'Other Characteristic Mentals', Icons.psychology_alt),
-                      ],
-                    ),
-
-                    // 10. LIFESTYLE & HABITS
-                    _buildSectionCard(
-                      index: 9,
-                      sectionNum: '10',
-                      title: 'Lifestyle, Habits & Environment',
-                      icon: Icons.local_cafe_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_plDietController, 'Dietary Preference', Icons.restaurant)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_plMealPatternController, 'Meal Timings & Habits', Icons.schedule)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_plTeaCoffeeController, 'Tea / Coffee', Icons.coffee)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_plTobaccoController, 'Tobacco / Smoking', Icons.smoking_rooms)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_plAlcoholController, 'Alcohol Intake', Icons.local_bar)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_plOtherSubstanceUseController, 'Other Substance Use', Icons.medication)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_plPhysicalActivityController, 'Physical Activity', Icons.directions_walk)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_plOccupationWorkPatternController, 'Work Pattern & Shifts', Icons.work_history)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_plSedentaryBehaviourController, 'Sedentary Behaviour', Icons.chair)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_plSleepRoutineController, 'Sleep Routine', Icons.bedtime)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_plPersonalHygieneController, 'Personal Hygiene', Icons.clean_hands)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_plSocialHistoryController, 'Social & Living History', Icons.people_outline)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_plFinancialOccupationalStressorsController, 'Financial / Work Stressors', Icons.attach_money)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_plOtherHabitsController, 'Other Habits & Environment', Icons.more_horiz),
-                      ],
-                    ),
-
-                    // 11. CLINICAL EXAMINATION & VITALS
-                    _buildSectionCard(
-                      index: 10,
-                      sectionNum: '11',
-                      title: 'Clinical Examination & Vitals',
-                      icon: Icons.monitor_heart_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceGeneralAppearanceController, 'General Appearance', Icons.person)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceBuildNutritionController, 'Build & Nutrition', Icons.fitness_center)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceBloodPressureController, 'Blood Pressure (mmHg)', Icons.speed)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_cePulseController, 'Pulse (bpm)', Icons.favorite)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceTemperatureController, 'Temperature (°F)', Icons.thermostat)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceRespiratoryRateController, 'Resp Rate (/min)', Icons.air)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceSpO2Controller, 'SpO2 (%)', Icons.bubble_chart)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceWeightController, 'Weight (kg)', Icons.scale)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceHeightController, 'Height (cm)', Icons.height)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceBMIController, 'BMI', Icons.calculate)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_cePallorController, 'Pallor', Icons.circle_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceIcterusController, 'Icterus', Icons.circle_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceCyanosisController, 'Cyanosis', Icons.circle_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceClubbingController, 'Clubbing', Icons.circle_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceLymphadenopathyController, 'Lymphadenopathy', Icons.circle_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceOedemaController, 'Oedema', Icons.circle_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceCVSExaminationController, 'Cardiovascular (CVS)', Icons.monitor_heart)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceRespiratoryExaminationController, 'Respiratory (RS)', Icons.air)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceAbdominalExaminationController, 'Abdomen (GIT)', Icons.airline_seat_flat_angled)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceCNSExaminationController, 'Central Nervous (CNS)', Icons.psychology)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceMusculoskeletalExaminationController, 'Musculoskeletal', Icons.accessibility)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceSkinExaminationController, 'Skin & Nails', Icons.pan_tool)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_ceENTOralExaminationController, 'ENT & Oral Cavity', Icons.hearing)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_ceOtherExaminationFindingsController, 'Other Findings', Icons.more_horiz)),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    // 12. MIASMATIC ANALYSIS
-                    _buildSectionCard(
-                      index: 11,
-                      sectionNum: '12',
-                      title: 'Miasmatic Analysis',
-                      icon: Icons.bubble_chart_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: PickerField<String>(
-                                label: 'Dominant Miasm',
-                                value: _maPredominantMiasm,
-                                options: const [
-                                  PickerOption(value: 'Psora', label: 'Psora (Functional)'),
-                                  PickerOption(value: 'Sycosis', label: 'Sycosis (Productive/Proliferative)'),
-                                  PickerOption(value: 'Tubercular', label: 'Tubercular (Suppurative/Recurrent)'),
-                                  PickerOption(value: 'Syphilitic', label: 'Syphilitic (Destructive/Degenerative)'),
-                                  PickerOption(value: 'Mixed Miasm', label: 'Mixed / Complex Miasm'),
-                                ],
-                                onChanged: (v) => setState(() => _maPredominantMiasm = v),
-                              ),
-                            ),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_maSecondaryMixedMiasmController, 'Secondary / Mixed Miasm', Icons.shuffle)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_maPsoricFeaturesController, 'Psoric Features', Icons.circle)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_maSycoticFeaturesController, 'Sycotic Features', Icons.circle)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_maSyphiliticFeaturesController, 'Syphilitic Features', Icons.circle)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_maTubercularFeaturesController, 'Tubercular Features', Icons.circle)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_maCancerinicFeaturesController, 'Cancerinic Features', Icons.circle)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_maOtherMiasmaticIndicatorsController, 'Other Miasm Indicators', Icons.more_horiz)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_maCharacteristicSymptomsSupportingMiasmController, 'Characteristic Supporting Symptoms', Icons.check_circle_outline, 2),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_maFinalMiasmaticInterpretationController, 'Final Miasmatic Interpretation', Icons.auto_stories_outlined, 2),
-                      ],
-                    ),
-
-                    // 13. CASE TOTALITY & REPERTORISATION
-                    _buildSectionCard(
-                      index: 12,
-                      sectionNum: '13',
-                      title: 'Case Totality & Repertorisation',
-                      icon: Icons.menu_book_outlined,
-                      children: [
-                        _buildInput(_caTotalityOfSymptomsController, 'Totality of Symptoms', Icons.list_alt, 3),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_caCharacteristicSymptomsController, 'Characteristic Symptoms (PQRS)', Icons.star_outline, 2),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_caGeneralsController, 'Generals', Icons.public)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_caParticularsController, 'Particulars', Icons.pin_drop)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_caMentalGeneralsController, 'Mental Generals', Icons.psychology)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_caPhysicalGeneralsController, 'Physical Generals', Icons.accessibility)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_caModalitiesController, 'Modalities (< / >)', Icons.swap_vert)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_caConcomitantsController, 'Concomitants', Icons.link)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_caCausationController, 'Causation / Origin', Icons.lightbulb_outline)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_caRepertoryUsedController, 'Repertory Used', Icons.library_books)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_caRubricsSelectedController, 'Selected Rubrics', Icons.bookmarks_outlined, 2),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_caRepertorialResultController, 'Repertorial Result & Scores', Icons.assessment_outlined),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_caMateriaMedicaCorrelationController, 'Materia Medica Correlation', Icons.menu_book),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_caDifferentialRemediesController, 'Differential Remedies', Icons.compare_arrows),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_caFinalRemedySelectionRationaleController, 'Final Selection Rationale', Icons.thumb_up_alt_outlined, 2),
-                      ],
-                    ),
-
-                    // 14. CLINICAL ASSESSMENT & DIAGNOSIS
-                    _buildSectionCard(
-                      index: 13,
-                      sectionNum: '14',
-                      title: 'Clinical Assessment & Diagnosis',
-                      icon: Icons.fact_check_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_diagProvisionalDiagnosisController, 'Provisional Diagnosis', Icons.assignment_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_diagFinalWorkingDiagnosisController, 'Final Working Diagnosis', Icons.check_box_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_diagDifferentialDiagnosisController, 'Differential Diagnosis', Icons.mediation)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_diagComorbiditiesController, 'Comorbidities', Icons.health_and_safety)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_diagRedFlagsReferralIndicationsController, 'Red Flags & Referral Indications', Icons.warning_amber_rounded),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_diagClinicalRemarksController, 'Clinical Remarks & Observations', Icons.comment_outlined, 2),
-                      ],
-                    ),
-
-                    // 15. BASELINE PRESCRIPTION & MANAGEMENT
-                    _buildSectionCard(
-                      index: 14,
-                      sectionNum: '15',
-                      title: 'Baseline Prescription & Management',
-                      icon: Icons.medication_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_rxPrescriptionDateController, 'Prescription Date', Icons.event)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(flex: 2, child: _buildInput(_rxRemedyController, 'Remedy Prescribed', Icons.healing)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_rxPotencyController, 'Potency & Scale', Icons.science)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_rxDoseController, 'Dose', Icons.medical_information)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_rxRepetitionFrequencyController, 'Repetition Frequency', Icons.repeat)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_rxQuantityDispensedController, 'Quantity Dispensed', Icons.inventory_2_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_rxRouteController, 'Route', Icons.alt_route)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_rxPharmaceuticalFormController, 'Form (Globules/Drops)', Icons.medication_liquid)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_rxDietRegimenAdviceController, 'Diet & Regimen Advice', Icons.restaurant, 2),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_rxLifestyleAdviceController, 'Lifestyle & Auxiliary Advice', Icons.nature_people, 2),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_rxInvestigationsAdvisedController, 'Investigations Advised', Icons.science_outlined)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_rxReferralAdvisedController, 'Referral Advised', Icons.transfer_within_a_station)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_rxPrescriptionRationaleController, 'Prescription Rationale', Icons.psychology),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_rxPrescriptionNotesController, 'Prescription Notes', Icons.notes),
-                      ],
-                    ),
-
-                    // 16. INVESTIGATIONS & LAB FINDINGS
-                    _buildSectionCard(
-                      index: 15,
-                      sectionNum: '16',
-                      title: 'Investigations & Laboratory Findings',
-                      icon: Icons.biotech_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_invInvestigationDateController, 'Investigation Date', Icons.event)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(flex: 2, child: _buildInput(_invInvestigationNameController, 'Test / Panel Name', Icons.science)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_invTypePanelController, 'Type / Category', Icons.category)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_invResultValueController, 'Result Value', Icons.numbers)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_invUnitController, 'Unit', Icons.straighten)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_invReferenceRangeController, 'Reference Range', Icons.compare_arrows)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_invNormalAbnormalController, 'Status (Normal / Abnormal)', Icons.check_circle)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_invReportSummaryController, 'Report Summary', Icons.summarize, 2),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_invClinicalInterpretationController, 'Clinical Interpretation', Icons.insights),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_invReportReferenceController, 'Report / Lab Reference No.', Icons.tag),
-                      ],
-                    ),
-
-                    // 17. FOLLOW-UP DETAILS
-                    _buildSectionCard(
-                      index: 16,
-                      sectionNum: '17',
-                      title: 'Follow-Up Details',
-                      icon: Icons.update_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_fuFollowUpDateController, 'Follow-Up Date', Icons.event)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuIntervalSincePreviousVisitController, 'Interval', Icons.hourglass_bottom)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuOverallResponseController, 'Overall Response', Icons.thumb_up_alt_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_fuChiefComplaintChangesController, 'Chief Complaint Changes', Icons.change_circle_outlined, 2),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_fuImprovementController, 'Improvement Noted', Icons.trending_up)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuAggravationController, 'Aggravation Noted', Icons.trending_down)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_fuNewSymptomsController, 'New Symptoms Appeared', Icons.fiber_new_outlined),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_fuGeneralSymptomsChangeController, 'Generals Change', Icons.accessibility)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuMentalSymptomsChangeController, 'Mentals Change', Icons.psychology)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_fuSleepChangeController, 'Sleep Change', Icons.bedtime)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuAppetiteThirstChangeController, 'Appetite & Thirst Change', Icons.restaurant)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_fuStoolUrineChangeController, 'Bowels & Urine Change', Icons.water_drop)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuPerspirationChangeController, 'Perspiration Change', Icons.dew_point)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_fuEnergyChangeController, 'Energy Change', Icons.bolt)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuAdverseNewSymptomsController, 'Adverse / Unwanted Symptoms', Icons.warning_amber)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(flex: 2, child: _buildInput(_fuFollowUpPrescriptionController, 'Follow-Up Remedy', Icons.medication)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuPotencyController, 'Potency', Icons.science)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_fuDoseRepetitionController, 'Dose & Repetition', Icons.repeat)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_fuNextFollowUpController, 'Next Follow-Up Target', Icons.event_repeat)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(flex: 2, child: _buildInput(_fuFollowUpRemarksController, 'Follow-Up Remarks & Notes', Icons.comment)),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    // 18. OUTCOME & TREATMENT CLOSURE
-                    _buildSectionCard(
-                      index: 17,
-                      sectionNum: '18',
-                      title: 'Outcome & Treatment Closure',
-                      icon: Icons.task_alt_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: PickerField<String>(
-                                label: 'Final Treatment Status',
-                                value: _outFinalStatus,
-                                options: const [
-                                  PickerOption(value: 'Under Active Treatment', label: 'Under Active Treatment'),
-                                  PickerOption(value: 'Ongoing', label: 'Ongoing Active Treatment'),
-                                  PickerOption(value: 'Recovered / Cured', label: 'Recovered / Cured'),
-                                  PickerOption(value: 'Improved', label: 'Significantly Improved'),
-                                  PickerOption(value: 'No Change', label: 'No Significant Change'),
-                                  PickerOption(value: 'Worse', label: 'Worse / Deteriorated'),
-                                  PickerOption(value: 'Discontinued', label: 'Discontinued / Closed'),
-                                  PickerOption(value: 'Lost to Follow-up', label: 'Lost to Follow-Up'),
-                                ],
-                                onChanged: (v) => setState(() => _outFinalStatus = v),
-                              ),
-                            ),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_outDegreeOfImprovementController, 'Degree of Improvement (%)', Icons.percent)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_outTreatmentDurationController, 'Total Treatment Duration', Icons.timer)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_outReasonForDiscontinuationClosureController, 'Reason for Closure', Icons.cancel_outlined)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_outLostToFollowUpController, 'Lost to Follow-Up Details', Icons.person_off_outlined),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_outFinalOutcomeNotesController, 'Final Outcome Summary & Clinical Notes', Icons.notes_outlined, 3),
-                      ],
-                    ),
-
-                    // 19. DOCUMENTATION & ARCHIVE
-                    _buildSectionCard(
-                      index: 18,
-                      sectionNum: '19',
-                      title: 'Documentation & Archival Details',
-                      icon: Icons.inventory_outlined,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _buildInput(_docDataSourceController, 'Data Source / Register Type', Icons.source)),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(child: _buildInput(_docOriginalRegisterReferenceController, 'Original Register Ref', Icons.tag)),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_docTranscriptionNotesController, 'Transcription Notes', Icons.edit_note, 2),
-                        const SizedBox(height: Spacing.md),
-                        _buildInput(_docUnclearInformationController, 'Unclear / Discrepant Information', Icons.help_outline),
-                      ],
-                    ),
-                  ],
+                  itemCount: _sectionTitles.length,
+                  itemBuilder: (context, index) => _buildSectionByIndex(index),
                 ),
               ),
             ],
@@ -2543,6 +1476,1120 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
         },
       ),
     );
+  }
+
+  Widget _buildSectionByIndex(int index) {
+    switch (index) {
+      case 0:
+        return _buildSectionCard(
+          index: 0,
+          sectionNum: '01',
+          title: 'Patient Identification',
+          icon: Icons.badge_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_regNoController, 'Registration No.', Icons.numbers)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_firstVisitDateController, 'First Visit Date', Icons.calendar_today_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_patientNameController, 'Patient Full Name', Icons.person_outline),
+            const SizedBox(height: Spacing.md),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildInput(_ageController, 'Age', Icons.cake_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Gender',
+                    prefixIcon: Icons.wc_outlined,
+                    value: _genderController.text.isNotEmpty ? _genderController.text : 'Male',
+                    options: const [
+                      PickerOption(value: 'Male', label: 'Male'),
+                      PickerOption(value: 'Female', label: 'Female'),
+                      PickerOption(value: 'Other', label: 'Other'),
+                    ],
+                    onChanged: (v) => setState(() => _genderController.text = v),
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Marital Status',
+                    prefixIcon: Icons.favorite_border,
+                    value: _maritalStatus,
+                    options: const [
+                      PickerOption(value: 'Single', label: 'Single'),
+                      PickerOption(value: 'Married', label: 'Married'),
+                      PickerOption(value: 'Divorced', label: 'Divorced'),
+                      PickerOption(value: 'Widowed', label: 'Widowed'),
+                      PickerOption(value: 'Other', label: 'Other'),
+                    ],
+                    onChanged: (v) => setState(() => _maritalStatus = v),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_dobController, 'Date of Birth', Icons.event_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_occupationController, 'Occupation', Icons.work_outline)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(flex: 2, child: _buildInput(_addressController, 'Address / Locality', Icons.home_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(flex: 2, child: _buildInput(_phoneController, 'Phone Number', Icons.phone_outlined)),
+              ],
+            ),
+          ],
+        );
+
+      case 1:
+        return _buildSectionCard(
+          index: 1,
+          sectionNum: '02',
+          title: 'Chief Complaints (${_complaints.length})',
+          icon: Icons.healing_outlined,
+          children: [
+            for (int i = 0; i < _complaints.length; i++) ...[
+              _buildComplaintCard(i),
+              if (i < _complaints.length - 1) const SizedBox(height: Spacing.md),
+            ],
+            const SizedBox(height: Spacing.md),
+            AppButton.outlined(
+              label: 'Add Another Chief Complaint',
+              icon: Icons.add,
+              fullWidth: true,
+              onPressed: _addComplaintBlock,
+            ),
+          ],
+        );
+
+      case 2:
+        return _buildSectionCard(
+          index: 2,
+          sectionNum: '03',
+          title: 'Additional Complaints',
+          icon: Icons.note_add_outlined,
+          children: [
+            _buildInput(_additionalComplaintsController, 'Additional Complaints / Secondary Notes', Icons.notes_outlined, 3),
+          ],
+        );
+
+      case 3:
+        return _buildSectionCard(
+          index: 3,
+          sectionNum: '04',
+          title: 'History of Present Illness (HPI)',
+          icon: Icons.timeline_outlined,
+          children: [
+            _buildInput(_hpiChronoDevController, 'Chronological Development', Icons.show_chart, 2),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_hpiFirstOccurrenceController, 'First Occurrence', Icons.history)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_hpiProgressionController, 'Progression & Pace', Icons.trending_up)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_hpiPreviousEpisodesController, 'Previous Episodes', Icons.repeat),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_hpiPreviousTreatmentController, 'Previous Treatment', Icons.medication_outlined),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_hpiResponseToTreatmentController, 'Response to Previous Treatment', Icons.feedback_outlined),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_hpiPrecipitatingFactorsController, 'Precipitating / Trigger Factors', Icons.psychology_outlined),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_hpiOtherRelevantHistoryController, 'Other Relevant History', Icons.info_outline),
+          ],
+        );
+
+      case 4:
+        return _buildSectionCard(
+          index: 4,
+          sectionNum: '05',
+          title: 'Past Medical History',
+          icon: Icons.medical_information_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pastChildhoodIllnessesController, 'Childhood Illnesses', Icons.child_care)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pastMajorIllnessesController, 'Major Illnesses', Icons.coronavirus_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pastChronicDiseasesController, 'Chronic Diseases', Icons.health_and_safety_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pastSurgeriesController, 'Operations / Surgeries', Icons.local_hospital_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pastInjuriesTraumaController, 'Injuries / Trauma', Icons.personal_injury_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pastHospitalisationsController, 'Hospitalisations', Icons.hotel_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pastInfectionsController, 'Infections', Icons.pest_control_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pastAllergiesController, 'Allergies', Icons.warning_amber_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pastPreviousMedicationsController, 'Previous Medications', Icons.medication)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pastPrevHomeopathicTreatmentController, 'Previous Homeopathy', Icons.science_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pastOtherPastHistoryController, 'Other Past History', Icons.description_outlined),
+          ],
+        );
+
+      case 5:
+        return _buildSectionCard(
+          index: 5,
+          sectionNum: '06',
+          title: 'Family History',
+          icon: Icons.groups_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_familyFatherController, 'Father', Icons.person)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_familyMotherController, 'Mother', Icons.person_2)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_familySiblingsController, 'Siblings', Icons.group)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_familySpouseController, 'Spouse', Icons.favorite_border)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_familyChildrenController, 'Children', Icons.family_restroom)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_familyGrandparentsRelativesController, 'Grandparents & Other Relatives', Icons.elderly_outlined),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_familyHereditaryDiseasesController, 'Hereditary Diseases', Icons.biotech_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_familyMajorFamilialDiseasesController, 'Familial Diseases (HTN, DM, TB)', Icons.analytics_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_familyPsychiatricHistoryController, 'Psychiatric Family History', Icons.psychology_alt_outlined),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_familyOtherFamilyHistoryController, 'Other Family History', Icons.notes),
+          ],
+        );
+
+      case 6:
+        return _buildSectionCard(
+          index: 6,
+          sectionNum: '07',
+          title: 'Intrauterine & Developmental History',
+          icon: Icons.child_friendly_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_devMaternalHealthController, 'Maternal Health in Pregnancy', Icons.pregnant_woman)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_devPregnancyComplicationsController, 'Pregnancy Complications', Icons.report_problem_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_devMaternalInfectionsController, 'Maternal Infections', Icons.bug_report_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_devMaternalMedicationsController, 'Maternal Medications', Icons.medication_liquid)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_devAntenatalCareController, 'Antenatal Care', Icons.medical_services_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_devNutritionDuringPregnancyController, 'Maternal Nutrition', Icons.restaurant)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_devGestationalAgeController, 'Gestational Age / Term', Icons.access_time)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_devBirthOrderController, 'Birth Order', Icons.format_list_numbered)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_devModeOfDeliveryController, 'Mode of Delivery', Icons.local_hospital)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_devBirthWeightController, 'Birth Weight', Icons.monitor_weight_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_devNeonatalHistoryController, 'Neonatal History / Cry', Icons.baby_changing_station)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_devBreastfeedingController, 'Breastfeeding History', Icons.water_drop_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_devDevelopmentalMilestonesController, 'Milestones (Teething, Walking, Talking)', Icons.emoji_events_outlined),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_devChildhoodDevelopmentController, 'Childhood Development', Icons.school_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_devOtherBirthDevelopmentalHistoryController, 'Other Developmental Notes', Icons.more_horiz)),
+              ],
+            ),
+          ],
+        );
+
+      case 7:
+        return _buildSectionCard(
+          index: 7,
+          sectionNum: '08',
+          title: 'Physical Generals',
+          icon: Icons.accessibility_new_outlined,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Thermal State',
+                    value: _pgHotChillyController.text.isNotEmpty ? _pgHotChillyController.text : 'Ambithermal',
+                    options: const [
+                      PickerOption(value: 'Chilly', label: 'Chilly (Sensitive to Cold)'),
+                      PickerOption(value: 'Hot', label: 'Hot (Sensitive to Heat)'),
+                      PickerOption(value: 'Ambithermal', label: 'Ambithermal (Equal)'),
+                    ],
+                    onChanged: (v) => setState(() => _pgHotChillyController.text = v),
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgWeatherSeasonPreferenceController, 'Weather / Season Preference', Icons.wb_sunny_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgSensitivityToTemperatureController, 'Temperature Sensitivities', Icons.thermostat_outlined),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgAppetiteController, 'Appetite', Icons.restaurant_menu)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgHungerFastingController, 'Hunger & Fasting', Icons.hourglass_empty)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgThirstQuantityController, 'Thirst Quantity', Icons.local_drink)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgThirstFrequencyController, 'Thirst Frequency', Icons.timelapse)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgThirstTimingController, 'Thirst Timing', Icons.schedule)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgFoodDesiresController, 'Cravings / Desires', Icons.favorite)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgFoodAversionsController, 'Food Aversions', Icons.do_not_disturb)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgFoodIntolerancesController, 'Food Intolerances & Aggravations', Icons.no_food),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgStoolFrequencyController, 'Stool Frequency', Icons.repeat)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgStoolConsistencyController, 'Stool Consistency', Icons.grain)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgStoolColourOdourController, 'Stool Colour / Odour', Icons.palette_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgStoolDifficultiesModalitiesController, 'Stool Difficulties & Modalities', Icons.airline_seat_legroom_reduced),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgUrineFrequencyController, 'Urine Frequency', Icons.speed)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgUrineQuantityController, 'Urine Quantity', Icons.opacity)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgUrineColourOdourController, 'Urine Colour / Odour', Icons.water)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgUrinarySymptomsController, 'Urinary Symptoms', Icons.water_drop),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgPerspirationQuantityController, 'Perspiration Quantity', Icons.dew_point)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgPerspirationOdourController, 'Perspiration Odour', Icons.air)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgPerspirationTimingDistributionController, 'Perspiration Timing & Distribution', Icons.map_outlined),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgSleepQuantityController, 'Sleep Hours', Icons.bedtime)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgSleepQualityController, 'Sleep Quality', Icons.hotel)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgSleepPositionController, 'Sleep Position', Icons.airline_seat_flat)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgSleepOnsetController, 'Sleep Onset', Icons.nights_stay)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgSleepDisturbancesController, 'Sleep Disturbances', Icons.alarm_off)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgDreamsGeneralController, 'Dreams (General)', Icons.cloud_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgDreamsRecurrentPeculiarController, 'Recurrent / Peculiar Dreams', Icons.auto_awesome)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgEnergyVitalityController, 'Energy & Vitality', Icons.bolt)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgFatigueController, 'Fatigue Modalities', Icons.battery_alert)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgSexualHistoryController, 'Sexual History', Icons.favorite_outline)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgMenstrualHistoryController, 'Menstrual History', Icons.calendar_month)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgObstetricHistoryController, 'Obstetric History', Icons.child_care)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgSkinHairNailsController, 'Skin, Hair & Nails', Icons.face)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_pgGeneralDischargesController, 'General Discharges', Icons.waterfall_chart)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_pgOtherPhysicalGeneralsController, 'Other Physical Generals', Icons.more_horiz)),
+              ],
+            ),
+          ],
+        );
+
+      case 8:
+        return _buildSectionCard(
+          index: 8,
+          sectionNum: '09',
+          title: 'Mental & Emotional Generals',
+          icon: Icons.psychology_outlined,
+          children: [
+            _buildInput(_mgGeneralMentalEmotionalStateController, 'General Mental & Emotional State', Icons.psychology, 2),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgDispositionController, 'Disposition / Nature', Icons.sentiment_satisfied)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgIrritabilityController, 'Irritability', Icons.sentiment_dissatisfied)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgAngerController, 'Anger & Temper', Icons.sentiment_very_dissatisfied)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgAnxietyController, 'Anxiety', Icons.healing)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgFearsController, 'Fears', Icons.visibility_off)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_mgSpecificFearsPhobiasController, 'Specific Fears & Phobias', Icons.warning),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgSadnessGriefController, 'Sadness & Grief', Icons.mood_bad)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgDepressionController, 'Depression', Icons.cloud)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgJealousyController, 'Jealousy & Envy', Icons.compare)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgSuspicionController, 'Suspicion', Icons.search)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgCompanyDesireAversionController, 'Company (Desire/Aversion)', Icons.groups)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgDesireForSolitudeController, 'Desire for Solitude', Icons.person_outline)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgDesireForAttentionConsolationController, 'Consolation Response', Icons.volunteer_activism)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgTalkativenessQuietnessController, 'Loquacity / Quietness', Icons.record_voice_over)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgConfidenceSelfEsteemController, 'Confidence / Self-Esteem', Icons.star_border)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgWillDeterminationController, 'Will & Determination', Icons.fitness_center)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgIndecisionController, 'Indecision & Doubt', Icons.help_outline)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgMemoryController, 'Memory & Recall', Icons.memory)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgConcentrationController, 'Concentration & Focus', Icons.center_focus_strong)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgWorkStudyResponseController, 'Work / Study Response', Icons.work_outline)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgRestlessnessController, 'Restlessness', Icons.directions_run)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgResponseToStressController, 'Stress Handling', Icons.spa)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgResponseToContradictionOppositionController, 'Reaction to Contradiction', Icons.gavel)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_mgResponseToReprimandController, 'Reaction to Reprimand', Icons.announcement)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_mgCompulsionsObsessionsController, 'Obsessions / Compulsions', Icons.sync)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_mgOtherCharacteristicMentalSymptomsController, 'Other Characteristic Mentals', Icons.psychology_alt),
+          ],
+        );
+
+      case 9:
+        return _buildSectionCard(
+          index: 9,
+          sectionNum: '10',
+          title: 'Lifestyle, Habits & Environment',
+          icon: Icons.local_cafe_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_plDietController, 'Dietary Preference', Icons.restaurant)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_plMealPatternController, 'Meal Timings & Habits', Icons.schedule)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_plTeaCoffeeController, 'Tea / Coffee', Icons.coffee)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_plTobaccoController, 'Tobacco / Smoking', Icons.smoking_rooms)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_plAlcoholController, 'Alcohol Intake', Icons.local_bar)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_plOtherSubstanceUseController, 'Other Substance Use', Icons.medication)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_plPhysicalActivityController, 'Physical Activity', Icons.directions_walk)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_plOccupationWorkPatternController, 'Work Pattern & Shifts', Icons.work_history)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_plSedentaryBehaviourController, 'Sedentary Behaviour', Icons.chair)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_plSleepRoutineController, 'Sleep Routine', Icons.bedtime)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_plPersonalHygieneController, 'Personal Hygiene', Icons.clean_hands)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_plSocialHistoryController, 'Social & Living History', Icons.people_outline)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_plFinancialOccupationalStressorsController, 'Financial / Work Stressors', Icons.attach_money)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_plOtherHabitsController, 'Other Habits & Environment', Icons.more_horiz),
+          ],
+        );
+
+      case 10:
+        return _buildSectionCard(
+          index: 10,
+          sectionNum: '11',
+          title: 'Clinical Examination & Vitals',
+          icon: Icons.monitor_heart_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceGeneralAppearanceController, 'General Appearance', Icons.person)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceBuildNutritionController, 'Build & Nutrition', Icons.fitness_center)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceBloodPressureController, 'Blood Pressure (mmHg)', Icons.speed)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_cePulseController, 'Pulse (bpm)', Icons.favorite)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceTemperatureController, 'Temperature (°F)', Icons.thermostat)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceRespiratoryRateController, 'Resp Rate (/min)', Icons.air)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceSpO2Controller, 'SpO2 (%)', Icons.bubble_chart)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceWeightController, 'Weight (kg)', Icons.scale)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceHeightController, 'Height (cm)', Icons.height)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceBMIController, 'BMI', Icons.calculate)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_cePallorController, 'Pallor', Icons.circle_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceIcterusController, 'Icterus', Icons.circle_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceCyanosisController, 'Cyanosis', Icons.circle_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceClubbingController, 'Clubbing', Icons.circle_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceLymphadenopathyController, 'Lymphadenopathy', Icons.circle_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceOedemaController, 'Oedema', Icons.circle_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceCVSExaminationController, 'Cardiovascular (CVS)', Icons.monitor_heart)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceRespiratoryExaminationController, 'Respiratory (RS)', Icons.air)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceAbdominalExaminationController, 'Abdomen (GIT)', Icons.airline_seat_flat_angled)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceCNSExaminationController, 'Central Nervous (CNS)', Icons.psychology)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceMusculoskeletalExaminationController, 'Musculoskeletal', Icons.accessibility)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceSkinExaminationController, 'Skin & Nails', Icons.pan_tool)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_ceENTOralExaminationController, 'ENT & Oral Cavity', Icons.hearing)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceOtherExaminationFindingsController, 'Other Findings', Icons.more_horiz)),
+              ],
+            ),
+          ],
+        );
+
+      case 11:
+        return _buildSectionCard(
+          index: 11,
+          sectionNum: '12',
+          title: 'Miasmatic Analysis',
+          icon: Icons.bubble_chart_outlined,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Dominant Miasm',
+                    value: _maPredominantMiasm,
+                    options: const [
+                      PickerOption(value: 'Psora', label: 'Psora (Functional)'),
+                      PickerOption(value: 'Sycosis', label: 'Sycosis (Productive/Proliferative)'),
+                      PickerOption(value: 'Tubercular', label: 'Tubercular (Suppurative/Recurrent)'),
+                      PickerOption(value: 'Syphilitic', label: 'Syphilitic (Destructive/Degenerative)'),
+                      PickerOption(value: 'Mixed Miasm', label: 'Mixed / Complex Miasm'),
+                    ],
+                    onChanged: (v) => setState(() => _maPredominantMiasm = v),
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_maSecondaryMixedMiasmController, 'Secondary / Mixed Miasm', Icons.shuffle)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_maPsoricFeaturesController, 'Psoric Features', Icons.circle)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_maSycoticFeaturesController, 'Sycotic Features', Icons.circle)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_maSyphiliticFeaturesController, 'Syphilitic Features', Icons.circle)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_maTubercularFeaturesController, 'Tubercular Features', Icons.circle)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_maCancerinicFeaturesController, 'Cancerinic Features', Icons.circle)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_maOtherMiasmaticIndicatorsController, 'Other Miasm Indicators', Icons.more_horiz)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_maCharacteristicSymptomsSupportingMiasmController, 'Characteristic Supporting Symptoms', Icons.check_circle_outline, 2),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_maFinalMiasmaticInterpretationController, 'Final Miasmatic Interpretation', Icons.auto_stories_outlined, 2),
+          ],
+        );
+
+      case 12:
+        return _buildSectionCard(
+          index: 12,
+          sectionNum: '13',
+          title: 'Case Totality & Repertorisation',
+          icon: Icons.menu_book_outlined,
+          children: [
+            _buildInput(_caTotalityOfSymptomsController, 'Totality of Symptoms', Icons.list_alt, 3),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_caCharacteristicSymptomsController, 'Characteristic Symptoms (PQRS)', Icons.star_outline, 2),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_caGeneralsController, 'Generals', Icons.public)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_caParticularsController, 'Particulars', Icons.pin_drop)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_caMentalGeneralsController, 'Mental Generals', Icons.psychology)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_caPhysicalGeneralsController, 'Physical Generals', Icons.accessibility)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_caModalitiesController, 'Modalities (< / >)', Icons.swap_vert)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_caConcomitantsController, 'Concomitants', Icons.link)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_caCausationController, 'Causation / Origin', Icons.lightbulb_outline)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_caRepertoryUsedController, 'Repertory Used', Icons.library_books)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_caRubricsSelectedController, 'Selected Rubrics', Icons.bookmarks_outlined, 2),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_caRepertorialResultController, 'Repertorial Result & Scores', Icons.assessment_outlined),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_caMateriaMedicaCorrelationController, 'Materia Medica Correlation', Icons.menu_book),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_caDifferentialRemediesController, 'Differential Remedies', Icons.compare_arrows),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_caFinalRemedySelectionRationaleController, 'Final Selection Rationale', Icons.thumb_up_alt_outlined, 2),
+          ],
+        );
+
+      case 13:
+        return _buildSectionCard(
+          index: 13,
+          sectionNum: '14',
+          title: 'Clinical Assessment & Diagnosis',
+          icon: Icons.fact_check_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_diagProvisionalDiagnosisController, 'Provisional Diagnosis', Icons.assignment_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_diagFinalWorkingDiagnosisController, 'Final Working Diagnosis', Icons.check_box_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_diagDifferentialDiagnosisController, 'Differential Diagnosis', Icons.mediation)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_diagComorbiditiesController, 'Comorbidities', Icons.health_and_safety)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_diagRedFlagsReferralIndicationsController, 'Red Flags & Referral Indications', Icons.warning_amber_rounded),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_diagClinicalRemarksController, 'Clinical Remarks & Observations', Icons.comment_outlined, 2),
+          ],
+        );
+
+      case 14:
+        return _buildSectionCard(
+          index: 14,
+          sectionNum: '15',
+          title: 'Baseline Prescription & Management',
+          icon: Icons.medication_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_rxPrescriptionDateController, 'Prescription Date', Icons.event)),
+                const SizedBox(width: Spacing.md),
+                Expanded(flex: 2, child: _buildInput(_rxRemedyController, 'Remedy Prescribed', Icons.healing)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_rxPotencyController, 'Potency & Scale', Icons.science)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_rxDoseController, 'Dose', Icons.medical_information)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_rxRepetitionFrequencyController, 'Repetition Frequency', Icons.repeat)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_rxQuantityDispensedController, 'Quantity Dispensed', Icons.inventory_2_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_rxRouteController, 'Route', Icons.alt_route)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_rxPharmaceuticalFormController, 'Form (Globules/Drops)', Icons.medication_liquid)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_rxDietRegimenAdviceController, 'Diet & Regimen Advice', Icons.restaurant, 2),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_rxLifestyleAdviceController, 'Lifestyle & Auxiliary Advice', Icons.nature_people, 2),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_rxInvestigationsAdvisedController, 'Investigations Advised', Icons.science_outlined)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_rxReferralAdvisedController, 'Referral Advised', Icons.transfer_within_a_station)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_rxPrescriptionRationaleController, 'Prescription Rationale', Icons.psychology),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_rxPrescriptionNotesController, 'Prescription Notes', Icons.notes),
+          ],
+        );
+
+      case 15:
+        return _buildSectionCard(
+          index: 15,
+          sectionNum: '16',
+          title: 'Investigations & Laboratory Findings',
+          icon: Icons.biotech_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_invInvestigationDateController, 'Investigation Date', Icons.event)),
+                const SizedBox(width: Spacing.md),
+                Expanded(flex: 2, child: _buildInput(_invInvestigationNameController, 'Test / Panel Name', Icons.science)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_invTypePanelController, 'Type / Category', Icons.category)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_invResultValueController, 'Result Value', Icons.numbers)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_invUnitController, 'Unit', Icons.straighten)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildInput(_invReferenceRangeController, 'Reference Range', Icons.compare_arrows)),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Status',
+                    prefixIcon: Icons.check_circle_outline,
+                    value: _invNormalAbnormalController.text.isNotEmpty ? _invNormalAbnormalController.text : 'Normal',
+                    options: const [
+                      PickerOption(value: 'Normal', label: 'Normal'),
+                      PickerOption(value: 'Abnormal', label: 'Abnormal'),
+                      PickerOption(value: 'Borderline', label: 'Borderline'),
+                      PickerOption(value: 'Critical', label: 'Critical'),
+                    ],
+                    onChanged: (v) => setState(() => _invNormalAbnormalController.text = v),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_invReportSummaryController, 'Report Summary', Icons.summarize, 2),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_invClinicalInterpretationController, 'Clinical Interpretation', Icons.insights),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_invReportReferenceController, 'Report / Lab Reference No.', Icons.tag),
+          ],
+        );
+
+      case 16:
+        return _buildSectionCard(
+          index: 16,
+          sectionNum: '17',
+          title: 'Follow-Up Details',
+          icon: Icons.update_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_fuFollowUpDateController, 'Follow-Up Date', Icons.event)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuIntervalSincePreviousVisitController, 'Interval', Icons.hourglass_bottom)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuOverallResponseController, 'Overall Response', Icons.thumb_up_alt_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_fuChiefComplaintChangesController, 'Chief Complaint Changes', Icons.change_circle_outlined, 2),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_fuImprovementController, 'Improvement Noted', Icons.trending_up)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuAggravationController, 'Aggravation Noted', Icons.trending_down)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_fuNewSymptomsController, 'New Symptoms Appeared', Icons.fiber_new_outlined),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_fuGeneralSymptomsChangeController, 'Generals Change', Icons.accessibility)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuMentalSymptomsChangeController, 'Mentals Change', Icons.psychology)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_fuSleepChangeController, 'Sleep Change', Icons.bedtime)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuAppetiteThirstChangeController, 'Appetite & Thirst Change', Icons.restaurant)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_fuStoolUrineChangeController, 'Bowels & Urine Change', Icons.water_drop)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuPerspirationChangeController, 'Perspiration Change', Icons.dew_point)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_fuEnergyChangeController, 'Energy Change', Icons.bolt)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuAdverseNewSymptomsController, 'Adverse / Unwanted Symptoms', Icons.warning_amber)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(flex: 2, child: _buildInput(_fuFollowUpPrescriptionController, 'Follow-Up Remedy', Icons.medication)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuPotencyController, 'Potency', Icons.science)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_fuDoseRepetitionController, 'Dose & Repetition', Icons.repeat)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_fuNextFollowUpController, 'Next Follow-Up Target', Icons.event_repeat)),
+                const SizedBox(width: Spacing.md),
+                Expanded(flex: 2, child: _buildInput(_fuFollowUpRemarksController, 'Follow-Up Remarks & Notes', Icons.comment)),
+              ],
+            ),
+          ],
+        );
+
+      case 17:
+        return _buildSectionCard(
+          index: 17,
+          sectionNum: '18',
+          title: 'Outcome & Treatment Closure',
+          icon: Icons.task_alt_outlined,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Final Treatment Status',
+                    value: _outFinalStatus,
+                    options: const [
+                      PickerOption(value: 'Under Active Treatment', label: 'Under Active Treatment'),
+                      PickerOption(value: 'Ongoing', label: 'Ongoing Active Treatment'),
+                      PickerOption(value: 'Recovered / Cured', label: 'Recovered / Cured'),
+                      PickerOption(value: 'Improved', label: 'Significantly Improved'),
+                      PickerOption(value: 'No Change', label: 'No Significant Change'),
+                      PickerOption(value: 'Worse', label: 'Worse / Deteriorated'),
+                      PickerOption(value: 'Discontinued', label: 'Discontinued / Closed'),
+                      PickerOption(value: 'Lost to Follow-up', label: 'Lost to Follow-Up'),
+                    ],
+                    onChanged: (v) => setState(() => _outFinalStatus = v),
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_outDegreeOfImprovementController, 'Degree of Improvement (%)', Icons.percent)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_outTreatmentDurationController, 'Total Treatment Duration', Icons.timer)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_outReasonForDiscontinuationClosureController, 'Reason for Closure', Icons.cancel_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_outLostToFollowUpController, 'Lost to Follow-Up Details', Icons.person_off_outlined),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_outFinalOutcomeNotesController, 'Final Outcome Summary & Clinical Notes', Icons.notes_outlined, 3),
+          ],
+        );
+
+      case 18:
+        return _buildSectionCard(
+          index: 18,
+          sectionNum: '19',
+          title: 'Documentation & Archival Details',
+          icon: Icons.inventory_outlined,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildInput(_docDataSourceController, 'Data Source / Register Type', Icons.source)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_docOriginalRegisterReferenceController, 'Original Register Ref', Icons.tag)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_docTranscriptionNotesController, 'Transcription Notes', Icons.edit_note, 2),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_docUnclearInformationController, 'Unclear / Discrepant Information', Icons.help_outline),
+          ],
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   Widget _buildSectionCard({
@@ -2694,12 +2741,14 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           ),
           const SizedBox(height: Spacing.md),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _buildInput(entry.time, 'Time Modality', Icons.alarm_outlined)),
               const SizedBox(width: Spacing.md),
               Expanded(
                 child: PickerField<String>(
                   label: 'Severity',
+                  prefixIcon: Icons.speed,
                   value: entry.severity,
                   options: const [
                     PickerOption(value: 'Mild', label: 'Mild (1 - 3)'),
@@ -2719,19 +2768,45 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     );
   }
 
-  Widget _buildInput(TextEditingController controller, String label, [IconData? icon, int maxLines = 1]) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      style: const TextStyle(fontSize: 14),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(fontSize: 13),
-        prefixIcon: icon != null ? Icon(icon, size: 18) : null,
-        border: OutlineInputBorder(borderRadius: Radii.smAll),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
-      ),
+  Widget _buildInput(
+    TextEditingController controller,
+    String label, [
+    IconData? icon,
+    int maxLines = 1,
+  ]) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: scheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: Spacing.xs),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: scheme.onSurface,
+          ),
+          decoration: InputDecoration(
+            isDense: true,
+            prefixIcon: icon != null
+                ? Icon(icon, size: 20, color: scheme.onSurfaceVariant)
+                : null,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: Spacing.md,
+              vertical: 14,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

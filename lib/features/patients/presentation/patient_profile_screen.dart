@@ -807,7 +807,7 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                       : Icons.visibility_outlined,
                   fullWidth: true,
                   onPressed: () {
-                    Navigator.of(context).push(
+                    Navigator.of(context, rootNavigator: true).push(
                       MaterialPageRoute(
                         builder: (_) => MasterCaseTakingScreen(patient: patient),
                       ),

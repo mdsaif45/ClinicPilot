@@ -112,7 +112,7 @@ class _PatientRow extends ConsumerWidget {
     return ListTile(
       onTap: () {
         AppHaptics.light();
-        Navigator.of(context).push(
+        Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(
             builder: (_) => PatientProfileScreen(patient: patient),
           ),
@@ -159,16 +159,6 @@ class _PatientRow extends ConsumerWidget {
             Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),
             const SizedBox(width: Spacing.xs),
             Text(patient.phone, style: theme.textTheme.labelMedium),
-            const SizedBox(width: Spacing.md),
-            Expanded(
-              child: Text(
-                patient.serialNo.isEmpty
-                    ? patient.patientCode
-                    : 'Serial #${patient.serialNo} · ${patient.patientCode}',
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelSmall,
-              ),
-            ),
           ],
         ),
       ),
