@@ -24,6 +24,7 @@ import '../providers/release_provider.dart';
 import '../providers/update_provider.dart';
 import 'appearance_section.dart';
 import 'app_version_screen.dart';
+import 'backup_restore_screen.dart';
 import 'import_preview_screen.dart';
 
 /// Whether the database is empty - the gate on the whole import feature.
@@ -121,57 +122,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Data',
             children: [
               AppListTile(
-                icon: Icons.auto_awesome,
-                title: 'Load Demo Practice Data',
-                subtitle: 'Populate realistic patients, case records, and finances',
-                onTap: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  await SampleDataSeeder.seedRealisticData(ref);
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text('Realistic practice demo data loaded!')),
-                  );
-                },
+                icon: Icons.history,
+                title: 'Backup and restore',
+                subtitle: 'Create or restore a backup, Periodic backups',
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const BackupRestoreScreen(),
+                  ),
+                ),
               ),
               AppListTile(
                 icon: Icons.download_outlined,
                 title: 'Export backup',
                 subtitle: 'Choose Excel (default) or CSV format',
                 onTap: _exportData,
-              ),
-              AppListTile(
-                icon: Icons.delete_sweep_outlined,
-                title: 'Clear All Practice Data',
-                subtitle: 'Wipe all records and start fresh onboarding',
-                onTap: () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Reset All Practice Data?'),
-                      content: const Text(
-                        'This will delete all patients, visits, cash memos, expenses, and clinics, resetting the app to a clean initial state. This action cannot be undone.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(false),
-                          child: const Text('Cancel'),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Theme.of(ctx).colorScheme.error,
-                          ),
-                          onPressed: () => Navigator.of(ctx).pop(true),
-                          child: const Text('Reset Everything'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed == true) {
-                    await ref.read(databaseProvider).clearAllPracticeData();
-                    if (context.mounted) {
-                      context.go('/onboarding');
-                    }
-                  }
-                },
               ),
               if (isEmpty) ...[
                 AppListTile(
@@ -264,6 +229,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 );
               }),
+            ],
+          ),
+          SettingsGroup(
+            title: 'Testing',
+            children: [
+              AppListTile(
+                icon: Icons.auto_awesome,
+                title: 'Load Demo Practice Data',
+                subtitle: 'Populate realistic patients, case records, and finances',
+                onTap: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  await SampleDataSeeder.seedRealisticData(ref);
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text('Realistic practice demo data loaded!')),
+                  );
+                },
+              ),
+              AppListTile(
+                icon: Icons.delete_sweep_outlined,
+                title: 'Clear All Practice Data',
+                subtitle: 'Wipe all records and start fresh onboarding',
+                onTap: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Reset All Practice Data?'),
+                      content: const Text(
+                        'This will delete all patients, visits, cash memos, expenses, and clinics, resetting the app to a clean initial state. This action cannot be undone.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(ctx).colorScheme.error,
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text('Reset Everything'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) {
+                    await ref.read(databaseProvider).clearAllPracticeData();
+                    if (context.mounted) {
+                      context.go('/onboarding');
+                    }
+                  }
+                },
+              ),
             ],
           ),
         ],
