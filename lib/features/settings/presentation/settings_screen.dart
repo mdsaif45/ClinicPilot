@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/services/export_service.dart';
 import '../../../core/services/import_template_service.dart';
@@ -62,12 +63,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final clinics = ref.watch(clinicsStreamProvider).value ?? [];
-    final isEmptyAsync = ref.watch(_isDatabaseEmptyProvider);
-    final isEmpty = isEmptyAsync.value ?? false;
+    final isEmpty = ref.watch(_isDatabaseEmptyProvider).value ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
+        ),
+        title: Text(
+          'Settings',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
         children: [
