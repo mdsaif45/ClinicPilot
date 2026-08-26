@@ -64,6 +64,7 @@ class PatientProfileScreen extends ConsumerWidget {
     final visits = visitsAsync.value ?? [];
     final totalVisits = visits.length;
     final avgBill = totalVisits > 0 ? lifetimeRevenue / totalVisits : 0.0;
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: CustomScrollView(
@@ -120,38 +121,52 @@ class PatientProfileScreen extends ConsumerWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: Spacing.lg),
+              padding: const EdgeInsets.only(top: Spacing.md),
               child: MetricStrip(
                 metrics: [
-                  Metric(label: 'Visits', value: '$totalVisits'),
+                  Metric(
+                    label: 'Visits',
+                    value: '$totalVisits',
+                    icon: Icons.event_available_outlined,
+                    color: scheme.primary,
+                  ),
                   Metric(
                     label: 'Lifetime',
                     value: Formatters.formatCurrency(lifetimeRevenue),
+                    icon: Icons.account_balance_wallet_outlined,
+                    color: scheme.secondary,
                   ),
                   Metric(
                     label: 'Avg bill',
                     value: Formatters.formatCurrency(avgBill),
+                    icon: Icons.calculate_outlined,
+                    color: scheme.tertiary,
                   ),
                   Metric(
                     label: 'Pending',
                     value: Formatters.formatCurrency(totalPending),
                     signedAmount: totalPending > 0 ? -totalPending : 0,
+                    icon: Icons.pending_actions_outlined,
+                    color: totalPending > 0 ? scheme.error : null,
                   ),
                 ],
               ),
             ),
           ),
           SliverToBoxAdapter(
-            child: ChipRow(labels: [
-              if ((patient.primaryDisease ?? '').isNotEmpty)
-                patient.primaryDisease!,
-              if ((patient.referralSource ?? '').isNotEmpty)
-                patient.referralSource!,
-            ]),
+            child: Padding(
+              padding: const EdgeInsets.only(top: Spacing.sm),
+              child: ChipRow(labels: [
+                if ((patient.primaryDisease ?? '').isNotEmpty)
+                  patient.primaryDisease!,
+                if ((patient.referralSource ?? '').isNotEmpty)
+                  patient.referralSource!,
+              ]),
+            ),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(top: Spacing.lg, bottom: Spacing.xxl),
+              padding: const EdgeInsets.only(top: Spacing.md, bottom: 96),
               child: SegmentedTabs(
                 tabs: [
                   SegmentedTab(
@@ -257,9 +272,12 @@ class _InfoTab extends StatelessWidget {
       }
     }
 
+    final hasNotes = (patient.notes ?? '').trim().isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Identifiers
         InfoRow(
           label: 'Serial No.',
           value: patient.serialNo,
@@ -270,6 +288,12 @@ class _InfoTab extends StatelessWidget {
           value: patient.patientCode,
           icon: Icons.badge_outlined,
         ),
+
+        const SizedBox(height: Spacing.sm),
+        const Divider(height: 1, indent: Spacing.lg, endIndent: Spacing.lg),
+        const SizedBox(height: Spacing.sm),
+
+        // Communication
         InfoRow(
           label: 'Phone',
           value: patient.phone,
@@ -287,6 +311,12 @@ class _InfoTab extends StatelessWidget {
             dueDate: nextFollowUp,
           ),
         ),
+
+        const SizedBox(height: Spacing.sm),
+        const Divider(height: 1, indent: Spacing.lg, endIndent: Spacing.lg),
+        const SizedBox(height: Spacing.sm),
+
+        // Demographics & Location
         InfoRow(
           label: 'Age',
           value: '${patient.age}',
@@ -312,6 +342,12 @@ class _InfoTab extends StatelessWidget {
           value: patient.occupation,
           icon: Icons.work_outline,
         ),
+
+        const SizedBox(height: Spacing.sm),
+        const Divider(height: 1, indent: Spacing.lg, endIndent: Spacing.lg),
+        const SizedBox(height: Spacing.sm),
+
+        // Timeline & Follow-ups
         InfoRow(
           label: 'First seen',
           value: Formatters.formatDate(patient.createdAt),
@@ -328,6 +364,12 @@ class _InfoTab extends StatelessWidget {
               nextFollowUp == null ? null : Formatters.formatDate(nextFollowUp),
           icon: Icons.alarm_outlined,
         ),
+
+        const SizedBox(height: Spacing.sm),
+        const Divider(height: 1, indent: Spacing.lg, endIndent: Spacing.lg),
+        const SizedBox(height: Spacing.sm),
+
+        // Reviews & Notes
         InfoRow(
           label: 'Google Review',
           value: patient.reviewGiven
@@ -344,11 +386,12 @@ class _InfoTab extends StatelessWidget {
             ),
           ),
         ),
-        InfoRow(
-          label: 'Notes',
-          value: patient.notes,
-          icon: Icons.notes_outlined,
-        ),
+        if (hasNotes)
+          InfoRow(
+            label: 'Notes',
+            value: patient.notes,
+            icon: Icons.notes_outlined,
+          ),
       ],
     );
   }

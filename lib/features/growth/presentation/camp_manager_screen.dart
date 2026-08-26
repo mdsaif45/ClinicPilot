@@ -97,20 +97,28 @@ class CampManagerScreen extends ConsumerWidget {
                     Metric(
                       label: 'Camps',
                       value: '${stats.totalCamps}',
+                      icon: Icons.festival_outlined,
+                      color: scheme.primary,
                     ),
                     Metric(
                       label: 'Total Cost',
                       value: Formatters.formatCurrency(stats.totalCost),
+                      icon: Icons.money_off_csred_outlined,
+                      color: scheme.error,
                     ),
                     Metric(
                       label: 'Follow-up Rev',
                       value: Formatters.formatCurrency(stats.totalFollowUpRevenue),
                       signedAmount: stats.totalFollowUpRevenue,
+                      icon: Icons.account_balance_wallet_outlined,
+                      color: scheme.secondary,
                     ),
                     Metric(
                       label: 'Net ROI',
                       value: '${stats.aggregateRoi >= 0 ? '+' : ''}${stats.aggregateRoi.toStringAsFixed(0)}%',
                       signedAmount: stats.totalNetProfit,
+                      icon: Icons.trending_up_rounded,
+                      color: scheme.tertiary,
                     ),
                   ],
                 ),

@@ -39,7 +39,7 @@ class PatientsScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(
               Spacing.lg,
-              Spacing.md,
+              Spacing.lg,
               Spacing.lg,
               Spacing.sm,
             ),

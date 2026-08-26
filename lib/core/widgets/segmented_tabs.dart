@@ -96,6 +96,9 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
         SingleChildScrollView(
           controller: _pillScrollController,
           scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
           child: Row(
             children: [
@@ -112,7 +115,7 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
             ],
           ),
         ),
-        const SizedBox(height: Spacing.lg),
+        const SizedBox(height: Spacing.md),
         KeyedSubtree(
           key: ValueKey<int>(_index),
           child: Builder(builder: widget.tabs[_index].builder),
@@ -141,14 +144,17 @@ class _TabPill extends StatelessWidget {
     final duration = animate ? Motion.base : Duration.zero;
     final borderRadius = BorderRadius.circular(selected ? Radii.pill : Radii.md);
 
-    return Semantics(
-      label: tab.label,
-      selected: selected,
-      button: true,
-      // The selected tab expands to show its name beside the icon, so the
-      // panel below never needs a separate heading repeating it. Unselected
-      // tabs stay icon-only, which keeps five of them on a phone width.
-      child: AnimatedContainer(
+    return Tooltip(
+      message: tab.label,
+      waitDuration: const Duration(milliseconds: 400),
+      child: Semantics(
+        label: tab.label,
+        selected: selected,
+        button: true,
+        // The selected tab expands to show its name beside the icon, so the
+        // panel below never needs a separate heading repeating it. Unselected
+        // tabs stay icon-only, which keeps five of them on a phone width.
+        child: AnimatedContainer(
         duration: duration,
         curve: Motion.curve,
         height: 44,
@@ -205,6 +211,7 @@ class _TabPill extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

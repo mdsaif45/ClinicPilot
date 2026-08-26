@@ -46,34 +46,52 @@ class RecallScreen extends ConsumerWidget {
             );
           }
 
+          var hasRenderedFirstSection = false;
+
           return ListView(
-            padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
+            padding: const EdgeInsets.fromLTRB(0, Spacing.lg, 0, Spacing.xxl),
             children: [
               if (lists.overdue.isNotEmpty) ...[
                 SectionHeader(
+                  tightTop: !hasRenderedFirstSection,
                   title: 'Overdue',
                   subtitle: '${lists.overdue.length} '
                       '${lists.overdue.length == 1 ? 'patient' : 'patients'}',
                 ),
                 for (final e in lists.overdue) _RecallCard(entry: e),
+                ...(() {
+                  hasRenderedFirstSection = true;
+                  return const <Widget>[];
+                }()),
               ],
               if (lists.dueSoon.isNotEmpty) ...[
                 SectionHeader(
+                  tightTop: !hasRenderedFirstSection,
                   title: 'Due this week',
                   subtitle: '${lists.dueSoon.length} '
                       '${lists.dueSoon.length == 1 ? 'patient' : 'patients'}',
                 ),
                 for (final e in lists.dueSoon) _RecallCard(entry: e),
+                ...(() {
+                  hasRenderedFirstSection = true;
+                  return const <Widget>[];
+                }()),
               ],
               if (lists.upcoming.isNotEmpty) ...[
                 SectionHeader(
+                  tightTop: !hasRenderedFirstSection,
                   title: 'Upcoming Follow-ups',
                   subtitle: '${lists.upcoming.length} scheduled',
                 ),
                 for (final e in lists.upcoming) _RecallCard(entry: e),
+                ...(() {
+                  hasRenderedFirstSection = true;
+                  return const <Widget>[];
+                }()),
               ],
               if (lists.lapsed.isNotEmpty) ...[
                 SectionHeader(
+                  tightTop: !hasRenderedFirstSection,
                   title: 'Not seen recently',
                   subtitle: 'No follow-up was scheduled',
                 ),
