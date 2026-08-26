@@ -10,6 +10,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/disease_autocomplete_field.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
@@ -37,6 +38,7 @@ class AddPatientDialog extends ConsumerStatefulWidget {
 class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   final _formKey = GlobalKey<FormState>();
   final _serialController = TextEditingController();
+  DateTime _entryDate = DateTime.now();
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   final _whatsappController = TextEditingController();
@@ -160,6 +162,12 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 }
                 return null;
               },
+            ),
+            const SizedBox(height: Spacing.md),
+            DateField(
+              label: 'Patient Entry Date',
+              value: _entryDate,
+              onChanged: (d) => setState(() => _entryDate = d),
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -294,6 +302,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 serialNo: serialNo,
                 disease: disease,
                 referralSource: _referralSource,
+                entryDate: _entryDate,
               );
       if (disease.isNotEmpty) {
         ref.read(masterDiseaseServiceProvider).recordDisease(disease);

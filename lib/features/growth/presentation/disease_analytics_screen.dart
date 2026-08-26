@@ -74,19 +74,26 @@ class _DiseaseAnalyticsScreenState extends ConsumerState<DiseaseAnalyticsScreen>
                   Metric(
                     label: 'Conditions',
                     value: '${summary.totalConditions}',
+                    icon: Icons.coronavirus_outlined,
+                    color: scheme.primary,
                   ),
                   Metric(
                     label: 'Top Value',
                     value: summary.topRevenueDisease,
+                    icon: Icons.monetization_on_outlined,
+                    color: scheme.secondary,
                   ),
                   Metric(
                     label: 'Top Volume',
                     value: summary.topVolumeDisease,
+                    icon: Icons.bar_chart_outlined,
+                    color: scheme.tertiary,
                   ),
                   Metric(
                     label: 'Total Revenue',
                     value: Formatters.formatCurrency(summary.totalRevenue),
                     signedAmount: summary.totalRevenue,
+                    icon: Icons.payments_outlined,
                   ),
                 ],
               ),

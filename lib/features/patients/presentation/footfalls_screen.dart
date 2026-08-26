@@ -75,26 +75,37 @@ class FootfallsScreen extends ConsumerWidget {
           final stats = statsAsync.value;
 
           return ListView(
-            padding: const EdgeInsets.only(bottom: Spacing.xxl * 2),
+            padding: const EdgeInsets.fromLTRB(0, Spacing.lg, 0, Spacing.xxl * 2),
             children: [
               if (stats != null)
                 MetricStrip(
+                  margin: const EdgeInsets.fromLTRB(
+                    Spacing.lg,
+                    0,
+                    Spacing.lg,
+                    Spacing.md,
+                  ),
                   metrics: [
                     Metric(
-                      label: 'Walk-ins',
+                      label: 'Total Walk-ins',
                       value: '${stats.totalCount}',
+                      icon: Icons.directions_walk_rounded,
+                      color: scheme.primary,
                     ),
                     Metric(
                       label: 'Converted',
                       value: '${stats.convertedCount}',
+                      icon: Icons.how_to_reg_rounded,
+                      color: scheme.secondary,
                     ),
                     Metric(
                       label: 'Conversion',
                       value: '${stats.conversionRate.toStringAsFixed(0)}%',
+                      icon: Icons.trending_up_rounded,
+                      color: scheme.tertiary,
                     ),
                   ],
                 ),
-              const SizedBox(height: Spacing.sm),
               for (final f in footfalls)
                 AppCard(
                   margin: const EdgeInsets.fromLTRB(

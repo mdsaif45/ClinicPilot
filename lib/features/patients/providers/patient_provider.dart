@@ -93,17 +93,19 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     required String disease,
     String? referralSource,
     String? notes,
+    DateTime? entryDate,
   }) async {
     state = const AsyncLoading();
 
+    final entry = entryDate ?? DateTime.now();
+
     // Generate patient code P-2026-00001
-    final year = DateTime.now().year;
+    final year = entry.year;
     final allPatients = await (_db.select(_db.patients)).get();
     final nextNum = (allPatients.length + 1).toString().padLeft(5, '0');
     final patientCode = 'P-$year-$nextNum';
 
     final patientId = IdGenerator.generate();
-    final now = DateTime.now();
 
     final companion = PatientsCompanion.insert(
       id: patientId,
@@ -121,8 +123,8 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
       primaryDisease: Value(disease),
       referralSource: Value(referralSource),
       notes: Value(notes),
-      createdAt: Value(now),
-      updatedAt: Value(now),
+      createdAt: Value(entry),
+      updatedAt: Value(DateTime.now()),
     );
 
     // One transaction: the patient row has no FK on clinic, only the visit
@@ -142,8 +144,8 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
               consultationType: const Value('clinic'),
               disease: disease,
               referralSource: Value(referralSource),
-              visitDate: now,
-              createdAt: Value(now),
+              visitDate: entry,
+              createdAt: Value(entry),
             ),
           );
     });
@@ -166,6 +168,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     String? occupation,
     String? notes,
     required String serialNo,
+    DateTime? createdAt,
   }) async {
     state = const AsyncLoading();
     final result = await AsyncValue.guard(() async {
@@ -181,6 +184,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
           occupation: Value(occupation),
           notes: Value(notes),
           serialNo: Value(serialNo),
+          createdAt: createdAt != null ? Value(createdAt) : const Value.absent(),
           updatedAt: Value(DateTime.now()),
         ),
       );

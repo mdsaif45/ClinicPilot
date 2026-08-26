@@ -7,6 +7,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../providers/patient_provider.dart';
 
@@ -23,6 +24,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _serialController;
+  late DateTime _entryDate;
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _whatsappController;
@@ -41,6 +43,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   void initState() {
     super.initState();
     _serialController = TextEditingController(text: widget.patient.serialNo);
+    _entryDate = widget.patient.createdAt;
     _nameController = TextEditingController(text: widget.patient.name);
     _phoneController = TextEditingController(text: widget.patient.phone);
     _whatsappController =
@@ -123,6 +126,12 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
                 }
                 return null;
               },
+            ),
+            const SizedBox(height: Spacing.md),
+            DateField(
+              label: 'Patient Entry Date',
+              value: _entryDate,
+              onChanged: (d) => setState(() => _entryDate = d),
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -227,6 +236,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
             occupation: _occupationController.text.trim().isEmpty ? null : _occupationController.text.trim(),
             notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
             serialNo: _serialController.text.trim(),
+            createdAt: _entryDate,
           );
     } catch (e) {
       if (mounted) {
