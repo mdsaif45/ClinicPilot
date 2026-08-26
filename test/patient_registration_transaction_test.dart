@@ -44,4 +44,33 @@ void main() {
     final visits = await db.select(db.visits).get();
     expect(visits, isEmpty);
   });
+
+  test('patient registered with custom entry date records historical date on patient and initial visit', () async {
+    // Add clinic first
+    await db.into(db.clinics).insert(
+          ClinicsCompanion.insert(
+            id: 'clinic_test',
+            name: 'Clinic Test',
+          ),
+        );
+
+    final historicalDate = DateTime(2023, 5, 15);
+    final patient = await notifier.registerPatient(
+      name: 'Historical Patient',
+      phone: '9800000001',
+      age: 45,
+      gender: 'Female',
+      primaryClinicId: 'clinic_test',
+      serialNo: 'H-101',
+      disease: 'Migraine',
+      entryDate: historicalDate,
+    );
+
+    expect(patient.createdAt, equals(historicalDate));
+    expect(patient.patientCode, startsWith('P-2023-'));
+
+    final visit = await (db.select(db.visits)..where((v) => v.patientId.equals(patient.id))).getSingle();
+    expect(visit.visitDate, equals(historicalDate));
+    expect(visit.createdAt, equals(historicalDate));
+  });
 }

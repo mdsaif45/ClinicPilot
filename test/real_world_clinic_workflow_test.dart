@@ -100,16 +100,16 @@ void main() {
       final fields = find.byType(TextFormField);
       // Serial No
       await tester.enterText(fields.at(0), '001');
-      // Full Name
-      await tester.enterText(fields.at(1), 'Patient One');
+      // Full Name (field 1 is DateField)
+      await tester.enterText(fields.at(2), 'Patient One');
       // Phone Number
-      await tester.enterText(fields.at(2), '9876543210');
+      await tester.enterText(fields.at(3), '9876543210');
       // Age
-      await tester.enterText(fields.at(4), '60');
+      await tester.enterText(fields.at(5), '60');
       // Locality
-      await tester.enterText(fields.at(5), 'Central Park');
+      await tester.enterText(fields.at(6), 'Central Park');
       // Disease
-      await tester.enterText(fields.at(6), 'Joint Pain');
+      await tester.enterText(fields.at(7), 'Joint Pain');
 
       // Submit
       await tester.tap(find.text('Register & Create Visit'));
