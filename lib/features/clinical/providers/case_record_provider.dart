@@ -41,7 +41,12 @@ final patientCaseRecordProvider =
       followUpDetails: MasterCaseRecordData.parseFollowUp(row.followUpNotes),
       followUpNotes: row.followUpNotes ?? '',
       outcomeDetails: MasterCaseRecordData.parseOutcome(row.outcome),
-      outcome: row.outcome ?? 'Under Active Treatment',
+      outcome: MasterCaseRecordData.parseOutcome(row.outcome).finalStatus.isNotEmpty &&
+              !MasterCaseRecordData.parseOutcome(row.outcome).finalStatus.startsWith('{')
+          ? MasterCaseRecordData.parseOutcome(row.outcome).finalStatus
+          : (row.outcome != null && !row.outcome!.startsWith('{')
+              ? row.outcome!
+              : 'Under Active Treatment'),
       documentation: MasterCaseRecordData.parseDocumentation(row.hpi),
     );
   });

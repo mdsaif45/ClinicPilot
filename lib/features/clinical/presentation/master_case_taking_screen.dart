@@ -1,4 +1,5 @@
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_confirm_dialog.dart';
 import '../../../core/widgets/date_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,6 +58,8 @@ class MasterCaseTakingScreen extends ConsumerStatefulWidget {
 class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen> {
   bool _initialized = false;
   bool _saving = false;
+  bool _isDirty = false;
+  bool _isPopulating = false;
   
   // Default: keep 01 (index 0) expanded, collapse all other sections (1..18)
   final Set<int> _collapsedSections = {for (int i = 1; i < 19; i++) i};
@@ -365,11 +368,285 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
   final _docTranscriptionNotesController = TextEditingController();
   final _docUnclearInformationController = TextEditingController();
 
+  void _markDirty() {
+    if (!_isPopulating && !_isDirty) {
+      setState(() => _isDirty = true);
+    }
+  }
+
+  void _attachComplaintListeners(_ComplaintEntry entry) {
+    entry.complaint.addListener(_markDirty);
+    entry.location.addListener(_markDirty);
+    entry.onset.addListener(_markDirty);
+    entry.duration.addListener(_markDirty);
+    entry.sensation.addListener(_markDirty);
+    entry.extensionRadiation.addListener(_markDirty);
+    entry.agg.addListener(_markDirty);
+    entry.amel.addListener(_markDirty);
+    entry.concomitant.addListener(_markDirty);
+    entry.causation.addListener(_markDirty);
+    entry.periodicity.addListener(_markDirty);
+    entry.time.addListener(_markDirty);
+    entry.associatedSymptoms.addListener(_markDirty);
+  }
+
+  List<TextEditingController> _getAllControllers() {
+    return [
+      _regNoController,
+      _firstVisitDateController,
+      _patientNameController,
+      _ageController,
+      _genderController,
+      _dobController,
+      _occupationController,
+      _addressController,
+      _phoneController,
+      _additionalComplaintsController,
+      _hpiChronoDevController,
+      _hpiFirstOccurrenceController,
+      _hpiProgressionController,
+      _hpiPreviousEpisodesController,
+      _hpiPreviousTreatmentController,
+      _hpiResponseToTreatmentController,
+      _hpiPrecipitatingFactorsController,
+      _hpiOtherRelevantHistoryController,
+      _pastChildhoodIllnessesController,
+      _pastMajorIllnessesController,
+      _pastChronicDiseasesController,
+      _pastSurgeriesController,
+      _pastInjuriesTraumaController,
+      _pastHospitalisationsController,
+      _pastInfectionsController,
+      _pastAllergiesController,
+      _pastPreviousMedicationsController,
+      _pastPrevHomeopathicTreatmentController,
+      _pastOtherPastHistoryController,
+      _familyFatherController,
+      _familyMotherController,
+      _familySiblingsController,
+      _familySpouseController,
+      _familyChildrenController,
+      _familyGrandparentsRelativesController,
+      _familyHereditaryDiseasesController,
+      _familyMajorFamilialDiseasesController,
+      _familyPsychiatricHistoryController,
+      _familyOtherFamilyHistoryController,
+      _devMaternalHealthController,
+      _devPregnancyComplicationsController,
+      _devMaternalInfectionsController,
+      _devMaternalMedicationsController,
+      _devAntenatalCareController,
+      _devNutritionDuringPregnancyController,
+      _devGestationalAgeController,
+      _devBirthOrderController,
+      _devModeOfDeliveryController,
+      _devBirthWeightController,
+      _devNeonatalHistoryController,
+      _devBreastfeedingController,
+      _devDevelopmentalMilestonesController,
+      _devChildhoodDevelopmentController,
+      _devOtherBirthDevelopmentalHistoryController,
+      _pgHotChillyController,
+      _pgWeatherSeasonPreferenceController,
+      _pgSensitivityToTemperatureController,
+      _pgThirstQuantityController,
+      _pgThirstFrequencyController,
+      _pgThirstTimingController,
+      _pgAppetiteController,
+      _pgHungerFastingController,
+      _pgFoodDesiresController,
+      _pgFoodAversionsController,
+      _pgFoodIntolerancesController,
+      _pgStoolFrequencyController,
+      _pgStoolConsistencyController,
+      _pgStoolColourOdourController,
+      _pgStoolDifficultiesModalitiesController,
+      _pgUrineFrequencyController,
+      _pgUrineQuantityController,
+      _pgUrineColourOdourController,
+      _pgUrinarySymptomsController,
+      _pgPerspirationQuantityController,
+      _pgPerspirationOdourController,
+      _pgPerspirationTimingDistributionController,
+      _pgSleepQuantityController,
+      _pgSleepQualityController,
+      _pgSleepPositionController,
+      _pgSleepOnsetController,
+      _pgSleepDisturbancesController,
+      _pgDreamsGeneralController,
+      _pgDreamsRecurrentPeculiarController,
+      _pgEnergyVitalityController,
+      _pgFatigueController,
+      _pgSexualHistoryController,
+      _pgMenstrualHistoryController,
+      _pgObstetricHistoryController,
+      _pgSkinHairNailsController,
+      _pgGeneralDischargesController,
+      _pgOtherPhysicalGeneralsController,
+      _mgGeneralMentalEmotionalStateController,
+      _mgDispositionController,
+      _mgIrritabilityController,
+      _mgAngerController,
+      _mgAnxietyController,
+      _mgFearsController,
+      _mgSpecificFearsPhobiasController,
+      _mgSadnessGriefController,
+      _mgDepressionController,
+      _mgJealousyController,
+      _mgSuspicionController,
+      _mgCompanyDesireAversionController,
+      _mgDesireForSolitudeController,
+      _mgDesireForAttentionConsolationController,
+      _mgTalkativenessQuietnessController,
+      _mgConfidenceSelfEsteemController,
+      _mgWillDeterminationController,
+      _mgIndecisionController,
+      _mgMemoryController,
+      _mgConcentrationController,
+      _mgWorkStudyResponseController,
+      _mgRestlessnessController,
+      _mgResponseToStressController,
+      _mgResponseToContradictionOppositionController,
+      _mgResponseToReprimandController,
+      _mgCompulsionsObsessionsController,
+      _mgOtherCharacteristicMentalSymptomsController,
+      _plDietController,
+      _plMealPatternController,
+      _plTeaCoffeeController,
+      _plTobaccoController,
+      _plAlcoholController,
+      _plOtherSubstanceUseController,
+      _plPhysicalActivityController,
+      _plOccupationWorkPatternController,
+      _plSedentaryBehaviourController,
+      _plSleepRoutineController,
+      _plPersonalHygieneController,
+      _plSocialHistoryController,
+      _plFinancialOccupationalStressorsController,
+      _plOtherHabitsController,
+      _ceGeneralAppearanceController,
+      _ceBuildNutritionController,
+      _cePallorController,
+      _ceIcterusController,
+      _ceCyanosisController,
+      _ceClubbingController,
+      _ceLymphadenopathyController,
+      _ceOedemaController,
+      _ceTemperatureController,
+      _cePulseController,
+      _ceBloodPressureController,
+      _ceRespiratoryRateController,
+      _ceSpO2Controller,
+      _ceWeightController,
+      _ceHeightController,
+      _ceBMIController,
+      _ceCVSExaminationController,
+      _ceRespiratoryExaminationController,
+      _ceAbdominalExaminationController,
+      _ceCNSExaminationController,
+      _ceMusculoskeletalExaminationController,
+      _ceSkinExaminationController,
+      _ceENTOralExaminationController,
+      _ceOtherExaminationFindingsController,
+      _maSecondaryMixedMiasmController,
+      _maPsoricFeaturesController,
+      _maSycoticFeaturesController,
+      _maSyphiliticFeaturesController,
+      _maTubercularFeaturesController,
+      _maCancerinicFeaturesController,
+      _maOtherMiasmaticIndicatorsController,
+      _maCharacteristicSymptomsSupportingMiasmController,
+      _maFinalMiasmaticInterpretationController,
+      _caTotalityOfSymptomsController,
+      _caCharacteristicSymptomsController,
+      _caGeneralsController,
+      _caParticularsController,
+      _caMentalGeneralsController,
+      _caPhysicalGeneralsController,
+      _caModalitiesController,
+      _caConcomitantsController,
+      _caCausationController,
+      _caRepertoryUsedController,
+      _caRubricsSelectedController,
+      _caRepertorialResultController,
+      _caMateriaMedicaCorrelationController,
+      _caDifferentialRemediesController,
+      _caFinalRemedySelectionRationaleController,
+      _diagProvisionalDiagnosisController,
+      _diagFinalWorkingDiagnosisController,
+      _diagDifferentialDiagnosisController,
+      _diagComorbiditiesController,
+      _diagRedFlagsReferralIndicationsController,
+      _diagClinicalRemarksController,
+      _rxPrescriptionDateController,
+      _rxRemedyController,
+      _rxPotencyController,
+      _rxDoseController,
+      _rxRepetitionFrequencyController,
+      _rxRouteController,
+      _rxPharmaceuticalFormController,
+      _rxQuantityDispensedController,
+      _rxDietRegimenAdviceController,
+      _rxLifestyleAdviceController,
+      _rxInvestigationsAdvisedController,
+      _rxReferralAdvisedController,
+      _rxPrescriptionRationaleController,
+      _rxPrescriptionNotesController,
+      _invInvestigationDateController,
+      _invInvestigationNameController,
+      _invTypePanelController,
+      _invResultValueController,
+      _invUnitController,
+      _invReferenceRangeController,
+      _invNormalAbnormalController,
+      _invReportSummaryController,
+      _invClinicalInterpretationController,
+      _invReportReferenceController,
+      _fuFollowUpDateController,
+      _fuIntervalSincePreviousVisitController,
+      _fuOverallResponseController,
+      _fuChiefComplaintChangesController,
+      _fuNewSymptomsController,
+      _fuAggravationController,
+      _fuImprovementController,
+      _fuGeneralSymptomsChangeController,
+      _fuMentalSymptomsChangeController,
+      _fuSleepChangeController,
+      _fuAppetiteThirstChangeController,
+      _fuStoolUrineChangeController,
+      _fuPerspirationChangeController,
+      _fuEnergyChangeController,
+      _fuAdverseNewSymptomsController,
+      _fuFollowUpPrescriptionController,
+      _fuPotencyController,
+      _fuDoseRepetitionController,
+      _fuNextFollowUpController,
+      _fuFollowUpRemarksController,
+      _outDegreeOfImprovementController,
+      _outTreatmentDurationController,
+      _outReasonForDiscontinuationClosureController,
+      _outLostToFollowUpController,
+      _outFinalOutcomeNotesController,
+      _docDataSourceController,
+      _docOriginalRegisterReferenceController,
+      _docTranscriptionNotesController,
+      _docUnclearInformationController,
+    ];
+  }
+
   @override
   void initState() {
     super.initState();
     _sectionKeys = List.generate(_sectionTitles.length, (_) => GlobalKey());
+    _isPopulating = true;
     _initializeDefaultData();
+    for (final c in _getAllControllers()) {
+      c.addListener(_markDirty);
+    }
+    for (final entry in _complaints) {
+      _attachComplaintListeners(entry);
+    }
+    _isPopulating = false;
   }
 
   void _initializeDefaultData() {
@@ -652,6 +929,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
   void _populateFromExisting(MasterCaseRecordData record) {
     if (_initialized) return;
     _initialized = true;
+    _isPopulating = true;
 
     // 1. Identification
     if (record.identification.regNo.isNotEmpty) _regNoController.text = record.identification.regNo;
@@ -962,11 +1240,20 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     _docOriginalRegisterReferenceController.text = record.documentation.originalRegisterReference;
     _docTranscriptionNotesController.text = record.documentation.transcriptionNotes;
     _docUnclearInformationController.text = record.documentation.unclearInformation;
+
+    for (final entry in _complaints) {
+      _attachComplaintListeners(entry);
+    }
+    _isPopulating = false;
+    _isDirty = false;
   }
 
   void _addComplaintBlock() {
+    final entry = _ComplaintEntry();
+    _attachComplaintListeners(entry);
     setState(() {
-      _complaints.add(_ComplaintEntry());
+      _complaints.add(entry);
+      _isDirty = true;
     });
     AppHaptics.light();
   }
@@ -976,6 +1263,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     setState(() {
       final removed = _complaints.removeAt(index);
       removed.dispose();
+      _isDirty = true;
     });
     AppHaptics.selection();
   }
@@ -1331,6 +1619,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
       await ref.read(caseRecordNotifierProvider.notifier).saveCaseRecord(record);
       AppHaptics.success();
       if (mounted) {
+        setState(() => _isDirty = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Case record saved successfully')),
         );
@@ -1359,46 +1648,67 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           _populateFromExisting(existingRecord);
         }
 
+        final isEditing = existingRecord != null;
+        final title = isEditing ? 'Edit Case' : 'Case Taking';
+        final saveLabel = isEditing ? 'Save Changes' : 'Save Case';
         final allCollapsed = _collapsedSections.length == _sectionTitles.length;
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              'Case Taking',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        return PopScope(
+          canPop: !_isDirty || _saving,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
+            final discard = await AppConfirmDialog.show(
+              context,
+              title: 'Unsaved Changes',
+              message: 'You have unsaved changes. What would you like to do?',
+              confirmLabel: 'Discard Changes',
+              cancelLabel: 'Keep Editing',
+              isDestructive: true,
+            );
+            if (discard == true && context.mounted) {
+              setState(() => _isDirty = false);
+              Navigator.of(context).pop();
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(allCollapsed ? Icons.unfold_more : Icons.unfold_less),
+                  tooltip: allCollapsed ? 'Expand All' : 'Collapse All',
+                  onPressed: _toggleAllSections,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: Spacing.md, left: Spacing.xs),
+                  child: AppButton.primary(
+                    label: saveLabel,
+                    icon: Icons.check,
+                    loading: _saving,
+                    onPressed: _saving ? null : _saveRecord,
+                  ),
+                ),
+              ],
             ),
-            actions: [
-              IconButton(
-                icon: Icon(allCollapsed ? Icons.unfold_more : Icons.unfold_less),
-                tooltip: allCollapsed ? 'Expand All' : 'Collapse All',
-                onPressed: _toggleAllSections,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: Spacing.md, left: Spacing.xs),
-                child: AppButton.primary(
-                  label: 'Save Case',
-                  icon: Icons.check,
-                  loading: _saving,
-                  onPressed: _saving ? null : _saveRecord,
-                ),
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              // Sticky Quick Navigation Horizontal Bar
-              _buildQuickJumpBar(),
-              const Divider(height: 1),
+            body: Column(
+              children: [
+                // Sticky Quick Navigation Horizontal Bar
+                _buildQuickJumpBar(),
+                const Divider(height: 1),
 
-              // Main Form ListView
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.md, Spacing.md, Spacing.xxl),
-                  itemCount: _sectionTitles.length,
-                  itemBuilder: (context, index) => _buildSectionByIndex(index),
+                // Main Form ListView
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.md, Spacing.md, Spacing.xxl),
+                    itemCount: _sectionTitles.length,
+                    itemBuilder: (context, index) => _buildSectionByIndex(index),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

@@ -79,8 +79,9 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
 
     if (allInvestigations.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
         child: AppCard(
+          margin: EdgeInsets.zero,
           child: EmptyState(
             icon: Icons.biotech_outlined,
             title: 'No lab tests recorded',
@@ -100,7 +101,7 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
         : allInvestigations.where((e) => e.testName == _selectedFilterTest).toList();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -160,17 +161,17 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
               testName: _selectedFilterTest!,
               investigations: filteredList,
             ),
-            const SizedBox(height: Spacing.sm),
+            const SizedBox(height: Spacing.md),
           ],
 
           // Reports List
-          for (final inv in filteredList) ...[
+          for (var i = 0; i < filteredList.length; i++) ...[
+            if (i > 0) const SizedBox(height: Spacing.md),
             _InvestigationCard(
-              investigation: inv,
-              onEdit: () => _openEditInvestigation(context, inv),
-              onDelete: () => _confirmDelete(context, ref, inv),
+              investigation: filteredList[i],
+              onEdit: () => _openEditInvestigation(context, filteredList[i]),
+              onDelete: () => _confirmDelete(context, ref, filteredList[i]),
             ),
-            const SizedBox(height: Spacing.sm),
           ],
         ],
       ),
@@ -205,6 +206,7 @@ class _ParameterTrendCard extends StatelessWidget {
     final unit = latest.unit ?? '';
 
     return AppCard(
+      margin: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -329,6 +331,7 @@ class _InvestigationCard extends StatelessWidget {
         : (inv.stringValue ?? 'Recorded');
 
     return AppCard(
+      margin: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -62,6 +62,93 @@ void main() {
       await t.pumpWidget(wrap(const MetricStrip(metrics: [])));
       expect(find.byType(VerticalDivider), findsNothing);
     });
+
+    testWidgets('compact phone width (360px): drops icons and preserves full readable text', (t) async {
+      t.view.physicalSize = const Size(360, 640);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.resetPhysicalSize);
+      addTearDown(t.view.resetDevicePixelRatio);
+
+      await t.pumpWidget(wrap(const MetricStrip(metrics: [
+        Metric(label: 'Visits', value: '2', icon: Icons.event_available_outlined),
+        Metric(label: 'Lifetime', value: '₹ 900', icon: Icons.account_balance_wallet_outlined),
+        Metric(label: 'Avg bill', value: '₹ 450', icon: Icons.calculate_outlined),
+        Metric(label: 'Pending', value: '₹ 0', icon: Icons.pending_actions_outlined),
+      ])));
+
+      await t.pumpAndSettle();
+
+      // Verify all 4 values and labels are fully present
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('₹ 900'), findsOneWidget);
+      expect(find.text('₹ 450'), findsOneWidget);
+      expect(find.text('₹ 0'), findsOneWidget);
+      expect(find.text('Visits'), findsOneWidget);
+      expect(find.text('Lifetime'), findsOneWidget);
+      expect(find.text('Avg bill'), findsOneWidget);
+      expect(find.text('Pending'), findsOneWidget);
+
+      // Icons should be hidden to prioritize text readability
+      expect(find.byIcon(Icons.event_available_outlined), findsNothing);
+      expect(find.byIcon(Icons.account_balance_wallet_outlined), findsNothing);
+      expect(find.byIcon(Icons.calculate_outlined), findsNothing);
+      expect(find.byIcon(Icons.pending_actions_outlined), findsNothing);
+    });
+
+    testWidgets('wide screen / tablet (600px+): renders icons alongside values and labels', (t) async {
+      t.view.physicalSize = const Size(800, 1000);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.resetPhysicalSize);
+      addTearDown(t.view.resetDevicePixelRatio);
+
+      await t.pumpWidget(wrap(const MetricStrip(metrics: [
+        Metric(label: 'Visits', value: '2', icon: Icons.event_available_outlined),
+        Metric(label: 'Lifetime', value: '₹ 900', icon: Icons.account_balance_wallet_outlined),
+        Metric(label: 'Avg bill', value: '₹ 450', icon: Icons.calculate_outlined),
+        Metric(label: 'Pending', value: '₹ 0', icon: Icons.pending_actions_outlined),
+      ])));
+
+      await t.pumpAndSettle();
+
+      // Icons should be visible
+      expect(find.byIcon(Icons.event_available_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.account_balance_wallet_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.calculate_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.pending_actions_outlined), findsOneWidget);
+
+      // Values and labels are visible
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('₹ 900'), findsOneWidget);
+      expect(find.text('Lifetime'), findsOneWidget);
+    });
+
+    testWidgets('handles accessibility large text scaling without overflow', (t) async {
+      t.view.physicalSize = const Size(360, 640);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.resetPhysicalSize);
+      addTearDown(t.view.resetDevicePixelRatio);
+
+      await t.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(
+            size: Size(360, 640),
+            textScaler: TextScaler.linear(1.5),
+          ),
+          child: wrap(const MetricStrip(metrics: [
+            Metric(label: 'Visits', value: '2', icon: Icons.event_available_outlined),
+            Metric(label: 'Lifetime', value: '₹ 900', icon: Icons.account_balance_wallet_outlined),
+            Metric(label: 'Avg bill', value: '₹ 450', icon: Icons.calculate_outlined),
+            Metric(label: 'Pending', value: '₹ 0', icon: Icons.pending_actions_outlined),
+          ])),
+        ),
+      );
+
+      await t.pumpAndSettle();
+
+      expect(find.text('₹ 900'), findsOneWidget);
+      expect(find.text('Lifetime'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    });
   });
 
   group('ChipRow', () {

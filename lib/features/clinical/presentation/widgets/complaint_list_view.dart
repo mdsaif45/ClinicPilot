@@ -66,7 +66,7 @@ class ComplaintListView extends ConsumerWidget {
 
     if (complaints.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
         child: AppCard(
           margin: EdgeInsets.zero,
           child: EmptyState(
@@ -81,7 +81,7 @@ class ComplaintListView extends ConsumerWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -102,17 +102,17 @@ class ComplaintListView extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: Spacing.sm),
-          for (final c in complaints) ...[
+          for (var i = 0; i < complaints.length; i++) ...[
+            if (i > 0) const SizedBox(height: Spacing.md),
             _ComplaintCard(
-              complaint: c,
-              onEdit: () => _openEditComplaint(context, c),
-              onDelete: () => _confirmDelete(context, ref, c),
+              complaint: complaints[i],
+              onEdit: () => _openEditComplaint(context, complaints[i]),
+              onDelete: () => _confirmDelete(context, ref, complaints[i]),
               onStatusChanged: (newStatus) {
                 AppHaptics.selection();
-                ref.read(complaintNotifierProvider.notifier).updateStatus(c.id, newStatus);
+                ref.read(complaintNotifierProvider.notifier).updateStatus(complaints[i].id, newStatus);
               },
             ),
-            const SizedBox(height: Spacing.sm),
           ],
         ],
       ),

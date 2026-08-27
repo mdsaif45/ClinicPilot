@@ -450,7 +450,6 @@ class _VisitsTab extends ConsumerWidget {
 
     return Column(
       children: [
-        const SizedBox(height: Spacing.md),
         for (final v in visits)
           AppCard(
             margin: const EdgeInsets.fromLTRB(
@@ -590,7 +589,6 @@ class _PaymentsTab extends StatelessWidget {
 
     return Column(
       children: [
-        const SizedBox(height: Spacing.md),
         for (final m in memos)
           AppCard(
             margin: const EdgeInsets.fromLTRB(
@@ -698,7 +696,6 @@ class _InsightsTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: Spacing.xs),
         const SectionHeader(title: 'Visit breakdown', tightTop: true),
         InfoRow(label: 'Total visits', value: '${visits.length}'),
         InfoRow(label: 'New consultations', value: '$newCount'),
@@ -878,7 +875,6 @@ class _FollowUpsTab extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: Spacing.xs),
         if (overdue.isNotEmpty) ...[
           const SectionHeader(title: 'Overdue', tightTop: true),
           for (final v in overdue) row(v, isOverdue: true),
@@ -905,11 +901,12 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
     final record = caseRecordAsync.value;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCard(
+            margin: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -949,24 +946,83 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: Spacing.md),
                 if (record != null) ...[
-                  InfoRow(label: 'Dominant Miasm', value: record.miasmaticAnalysis.dominantMiasm),
-                  InfoRow(label: 'Thermal State', value: record.physicalGenerals.thermal),
+                  if (record.chiefComplaints.isNotEmpty &&
+                      record.chiefComplaints.first.complaint.isNotEmpty)
+                    InfoRow(
+                      label: 'Chief Complaint',
+                      value: record.chiefComplaints.first.complaint,
+                      icon: Icons.healing_outlined,
+                    ),
+                  if (record.clinicalAssessment.finalWorkingDiagnosis.isNotEmpty ||
+                      record.clinicalAssessment.provisionalDiagnosis.isNotEmpty)
+                    InfoRow(
+                      label: 'Diagnosis',
+                      value: record.clinicalAssessment.finalWorkingDiagnosis.isNotEmpty
+                          ? record.clinicalAssessment.finalWorkingDiagnosis
+                          : record.clinicalAssessment.provisionalDiagnosis,
+                      icon: Icons.medical_services_outlined,
+                    ),
                   InfoRow(
-                    label: 'Similimum Remedy',
-                    value: record.caseTotality.selectedRemedy.isNotEmpty
-                        ? '${record.caseTotality.selectedRemedy} ${record.caseTotality.potency}'
-                        : null,
+                    label: 'Dominant Miasm',
+                    value: record.miasmaticAnalysis.dominantMiasm,
+                    icon: Icons.coronavirus_outlined,
                   ),
-                  InfoRow(label: 'Case Outcome', value: record.outcome),
+                  InfoRow(
+                    label: 'Thermal State',
+                    value: record.physicalGenerals.thermal,
+                    icon: Icons.thermostat_outlined,
+                  ),
+                  InfoRow(
+                    label: 'Simillimum Remedy',
+                    value: record.caseTotality.selectedRemedy.isNotEmpty
+                        ? '${record.caseTotality.selectedRemedy} ${record.caseTotality.potency}'.trim()
+                        : null,
+                    icon: Icons.medication_outlined,
+                  ),
+                  InfoRow(
+                    label: 'Case Outcome',
+                    value: record.displayOutcome,
+                    icon: Icons.flag_outlined,
+                  ),
+                  if (record.outcomeDetails.degreeOfImprovement.isNotEmpty)
+                    InfoRow(
+                      label: 'Degree of Improvement',
+                      value: record.outcomeDetails.degreeOfImprovement,
+                      icon: Icons.trending_up_outlined,
+                    ),
+                  if (record.outcomeDetails.treatmentDuration.isNotEmpty)
+                    InfoRow(
+                      label: 'Treatment Duration',
+                      value: record.outcomeDetails.treatmentDuration,
+                      icon: Icons.timer_outlined,
+                    ),
+                  if (record.outcomeDetails.reasonForDiscontinuation.isNotEmpty)
+                    InfoRow(
+                      label: 'Discontinuation Reason',
+                      value: record.outcomeDetails.reasonForDiscontinuation,
+                      icon: Icons.cancel_outlined,
+                    ),
+                  if (record.outcomeDetails.lostToFollowUp.isNotEmpty)
+                    InfoRow(
+                      label: 'Lost to Follow-up',
+                      value: record.outcomeDetails.lostToFollowUp,
+                      icon: Icons.person_off_outlined,
+                    ),
+                  if (record.outcomeDetails.finalOutcomeNotes.isNotEmpty)
+                    InfoRow(
+                      label: 'Outcome Notes',
+                      value: record.outcomeDetails.finalOutcomeNotes,
+                      icon: Icons.notes_outlined,
+                    ),
                   const SizedBox(height: Spacing.sm),
                 ],
                 AppButton.primary(
                   label: record == null
                       ? 'Start Clinical Case Taking'
-                      : 'View / Edit Master Record',
+                      : 'Edit Case Record',
                   icon: record == null
                       ? Icons.edit_note
-                      : Icons.visibility_outlined,
+                      : Icons.edit_outlined,
                   fullWidth: true,
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).push(

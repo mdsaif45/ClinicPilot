@@ -31,7 +31,7 @@ class Metric {
 }
 
 /// A structured container of headline metrics, formatted as a polished summary
-/// card with icon badges, bold tabular figures, and balanced distribution.
+/// card with icon badges, bold tabular figures, and responsive distribution.
 class MetricStrip extends StatelessWidget {
   final List<Metric> metrics;
   final EdgeInsetsGeometry? margin;
@@ -53,62 +53,77 @@ class MetricStrip extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    Widget content;
+    Widget buildContent(BoxConstraints constraints) {
+      final availableWidth = constraints.maxWidth.isFinite
+          ? constraints.maxWidth
+          : MediaQuery.sizeOf(context).width;
 
-    if (metrics.length <= 4) {
-      content = IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (var i = 0; i < metrics.length; i++) ...[
-              if (i > 0)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
-                  child: VerticalDivider(
-                    width: 1,
-                    thickness: 1,
-                    color: scheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                ),
-              Expanded(
-                child: _MetricCell(metric: metrics[i]),
-              ),
-            ],
-          ],
-        ),
-      );
-    } else {
-      content = SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: IntrinsicHeight(
+      final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+      // Comfortable cell with icon badge (28px) + gap (8px) + text column requires >= 104px * textScale
+      final minWidthForIcon = 104.0 * textScale;
+      final cellWidth = availableWidth / metrics.length;
+      final showIcons = cellWidth >= minWidthForIcon;
+
+      if (metrics.length <= 4) {
+        return IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < metrics.length; i++) ...[
                 if (i > 0)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+                    padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
                     child: VerticalDivider(
                       width: 1,
                       thickness: 1,
                       color: scheme.outlineVariant.withValues(alpha: 0.5),
                     ),
                   ),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 84),
-                  child: _MetricCell(metric: metrics[i]),
+                Expanded(
+                  child: _MetricCell(
+                    metric: metrics[i],
+                    showIcon: showIcons,
+                  ),
                 ),
               ],
             ],
           ),
-        ),
-      );
+        );
+      } else {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < metrics.length; i++) ...[
+                  if (i > 0)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+                      child: VerticalDivider(
+                        width: 1,
+                        thickness: 1,
+                        color: scheme.outlineVariant.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 84),
+                    child: _MetricCell(metric: metrics[i], showIcon: true),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      }
     }
 
     if (!asCard) {
       return Padding(
         padding: margin ?? const EdgeInsets.symmetric(horizontal: Spacing.lg),
-        child: content,
+        child: LayoutBuilder(
+          builder: (context, constraints) => buildContent(constraints),
+        ),
       );
     }
 
@@ -132,15 +147,21 @@ class MetricStrip extends StatelessWidget {
           color: scheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
-      child: content,
+      child: LayoutBuilder(
+        builder: (context, constraints) => buildContent(constraints),
+      ),
     );
   }
 }
 
 class _MetricCell extends StatelessWidget {
   final Metric metric;
+  final bool showIcon;
 
-  const _MetricCell({required this.metric});
+  const _MetricCell({
+    required this.metric,
+    this.showIcon = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -154,6 +175,68 @@ class _MetricCell extends StatelessWidget {
             ? scheme.onSurface
             : AppTheme.moneyColor(context, signed));
 
+    final textContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            metric.value,
+            style: AppTheme.tabularFigures(
+              theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: valueColor,
+                fontSize: 16,
+              ),
+            ),
+            maxLines: 1,
+          ),
+        ),
+        const SizedBox(height: 2),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            metric.label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
+            maxLines: 1,
+          ),
+        ),
+        if (metric.subtitle != null) ...[
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              metric.subtitle!,
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontSize: 10,
+                color: accent,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+            ),
+          ),
+        ],
+      ],
+    );
+
+    if (!showIcon || metric.icon == null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.xs,
+          vertical: Spacing.xs,
+        ),
+        child: textContent,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: Spacing.xs,
@@ -163,65 +246,20 @@ class _MetricCell extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (metric.icon != null) ...[
-            Container(
-              padding: const EdgeInsets.all(Spacing.xs + 1),
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.12),
-                borderRadius: Radii.mdAll,
-              ),
-              child: Icon(
-                metric.icon,
-                size: 18,
-                color: accent,
-              ),
+          Container(
+            padding: const EdgeInsets.all(Spacing.xs + 1),
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.12),
+              borderRadius: Radii.mdAll,
             ),
-            const SizedBox(width: Spacing.sm),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  metric.value,
-                  style: AppTheme.tabularFigures(
-                    theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: valueColor,
-                      fontSize: 17,
-                    ),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  metric.label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 11,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (metric.subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    metric.subtitle!,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 10,
-                      color: accent,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
+            child: Icon(
+              metric.icon,
+              size: 18,
+              color: accent,
             ),
           ),
+          const SizedBox(width: Spacing.sm),
+          Expanded(child: textContent),
         ],
       ),
     );

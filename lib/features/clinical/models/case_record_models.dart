@@ -1648,6 +1648,18 @@ class MasterCaseRecordData {
   static PrescriptionPlanDetails parsePrescription(String? raw) => PrescriptionPlanDetails.fromString(raw);
   static InvestigationsPlanDetails parseInvestigations(String? raw) => InvestigationsPlanDetails.fromString(raw);
 
+  String get displayOutcome {
+    final status = outcomeDetails.finalStatus.trim();
+    if (status.isNotEmpty && !status.startsWith('{')) {
+      return status;
+    }
+    final rawOutcome = outcome.trim();
+    if (rawOutcome.isNotEmpty && !rawOutcome.startsWith('{')) {
+      return rawOutcome;
+    }
+    return 'Under Active Treatment';
+  }
+
   static FollowUpDetails parseFollowUp(String? raw) {
     if (raw == null || raw.isEmpty) return const FollowUpDetails();
     try {
@@ -1663,6 +1675,7 @@ class MasterCaseRecordData {
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) return OutcomeDetails.fromJson(decoded);
     } catch (_) {}
+    if (raw.startsWith('{')) return const OutcomeDetails();
     return OutcomeDetails(finalStatus: raw);
   }
 }

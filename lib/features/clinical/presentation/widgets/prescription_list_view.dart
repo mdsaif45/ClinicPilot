@@ -116,8 +116,9 @@ class PrescriptionListView extends ConsumerWidget {
 
     if (prescriptions.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
         child: AppCard(
+          margin: EdgeInsets.zero,
           child: EmptyState(
             icon: Icons.medication_outlined,
             title: 'No prescriptions logged',
@@ -130,7 +131,7 @@ class PrescriptionListView extends ConsumerWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -156,13 +157,13 @@ class PrescriptionListView extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: Spacing.sm),
-          for (final rx in prescriptions) ...[
+          for (var i = 0; i < prescriptions.length; i++) ...[
+            if (i > 0) const SizedBox(height: Spacing.md),
             _PrescriptionCard(
-              rx: rx,
-              onEdit: () => _openEditPrescription(context, rx),
-              onDelete: () => _confirmDelete(context, ref, rx),
+              rx: prescriptions[i],
+              onEdit: () => _openEditPrescription(context, prescriptions[i]),
+              onDelete: () => _confirmDelete(context, ref, prescriptions[i]),
             ),
-            const SizedBox(height: Spacing.sm),
           ],
         ],
       ),
@@ -187,6 +188,7 @@ class _PrescriptionCard extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return AppCard(
+      margin: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

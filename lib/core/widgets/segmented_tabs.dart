@@ -115,7 +115,7 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
             ],
           ),
         ),
-        const SizedBox(height: Spacing.md),
+        const SizedBox(height: Spacing.lg),
         KeyedSubtree(
           key: ValueKey<int>(_index),
           child: Builder(builder: widget.tabs[_index].builder),
