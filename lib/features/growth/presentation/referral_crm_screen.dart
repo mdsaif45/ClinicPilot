@@ -100,7 +100,7 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
           // KPI Metric Summary Bar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(Spacing.md),
+              padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.md, Spacing.lg, Spacing.sm),
               child: Row(
                 children: [
                   Expanded(
@@ -140,7 +140,7 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
           // Search & Category Filters
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
               child: Column(
                 children: [
                   TextField(
@@ -226,13 +226,13 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final contact = filteredContacts[index];
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: Spacing.sm),
+                      padding: const EdgeInsets.only(bottom: Spacing.md),
                       child: _PartnerCard(
                         contact: contact,
                         onEdit: () => _openEditPartner(context, contact),
@@ -334,7 +334,7 @@ class _KpiCard extends StatelessWidget {
   }
 }
 
-class _PartnerCard extends StatelessWidget {
+class _PartnerCard extends StatefulWidget {
   final ReferralContact contact;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -350,9 +350,33 @@ class _PartnerCard extends StatelessWidget {
   });
 
   @override
+  State<_PartnerCard> createState() => _PartnerCardState();
+}
+
+class _PartnerCardState extends State<_PartnerCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final contact = widget.contact;
+
+    final hasContactPerson = (contact.contactPerson ?? '').trim().isNotEmpty;
+    final hasPhone = (contact.phone ?? '').trim().isNotEmpty;
+    final hasAddress = (contact.address ?? '').trim().isNotEmpty;
+    final hasNotes = (contact.notes ?? '').trim().isNotEmpty;
+    final hasLastVisit = contact.lastVisitedDate != null;
+
+    final hasSecondaryDetails = hasContactPerson || hasPhone || hasAddress || hasNotes || hasLastVisit;
+
+    // Concise location / context subtitle
+    String? subtitleText;
+    if (hasAddress) {
+      subtitleText = contact.address;
+    } else if (hasContactPerson) {
+      subtitleText = 'Contact: ${contact.contactPerson}';
+    }
 
     return AppCard(
       margin: EdgeInsets.zero,
@@ -360,7 +384,7 @@ class _PartnerCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
+          // ── LAYER 1: PARTNER IDENTITY & CATEGORY ──────────────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -373,17 +397,24 @@ class _PartnerCard extends StatelessWidget {
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    if ((contact.contactPerson ?? '').isNotEmpty)
+                    if (subtitleText != null) ...[
+                      const SizedBox(height: 2),
                       Text(
-                        'Contact: ${contact.contactPerson}',
+                        subtitleText,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: scheme.onSurfaceVariant,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                    ],
                   ],
                 ),
               ),
+              const SizedBox(width: Spacing.xs),
               CustomBadge(
                 label: contact.category,
                 color: scheme.primary,
@@ -391,116 +422,228 @@ class _PartnerCard extends StatelessWidget {
               const SizedBox(width: Spacing.xs),
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, size: 20),
+                tooltip: 'Partner options',
                 onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  if (val == 'delete') onDelete();
+                  switch (val) {
+                    case 'edit':
+                      widget.onEdit();
+                      break;
+                    case 'call':
+                      if (hasPhone) {
+                        AppHaptics.selection();
+                        ContactService.call(contact.phone!);
+                      }
+                      break;
+                    case 'whatsapp':
+                      if (hasPhone) {
+                        AppHaptics.selection();
+                        ContactService.openWhatsApp(
+                          phone: contact.phone!,
+                          message: 'Hello ${contact.contactPerson ?? contact.name}, Dr. Saifuddin here from City Care Homeopathy.',
+                        );
+                      }
+                      break;
+                    case 'delete':
+                      widget.onDelete();
+                      break;
+                  }
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit Partner')),
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, size: 18),
+                        SizedBox(width: Spacing.sm),
+                        Text('Edit Partner'),
+                      ],
+                    ),
+                  ),
+                  if (hasPhone) ...[
+                    const PopupMenuItem(
+                      value: 'call',
+                      child: Row(
+                        children: [
+                          Icon(Icons.call_outlined, size: 18),
+                          SizedBox(width: Spacing.sm),
+                          Text('Call Partner'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'whatsapp',
+                      child: Row(
+                        children: [
+                          Icon(Icons.chat_outlined, size: 18),
+                          SizedBox(width: Spacing.sm),
+                          Text('WhatsApp Message'),
+                        ],
+                      ),
+                    ),
+                  ],
                   PopupMenuItem(
                     value: 'delete',
-                    child: Text('Delete', style: TextStyle(color: scheme.error)),
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, size: 18, color: scheme.error),
+                        const SizedBox(width: Spacing.sm),
+                        Text('Delete', style: TextStyle(color: scheme.error)),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: Spacing.xs),
+          const SizedBox(height: Spacing.sm),
 
-          // Address & Phone
-          if ((contact.address ?? '').isNotEmpty) ...[
-            Row(
-              children: [
-                Icon(Icons.place_outlined, size: 14, color: scheme.onSurfaceVariant),
-                const SizedBox(width: Spacing.xs),
-                Expanded(
-                  child: Text(
-                    contact.address!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-          ],
-          if ((contact.phone ?? '').isNotEmpty) ...[
-            Row(
-              children: [
-                Icon(Icons.phone_outlined, size: 14, color: scheme.onSurfaceVariant),
-                const SizedBox(width: Spacing.xs),
-                Text(
-                  contact.phone!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.chat_outlined, size: 18),
-                  tooltip: 'WhatsApp message',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    AppHaptics.selection();
-                    ContactService.openWhatsApp(
-                      phone: contact.phone!,
-                      message: 'Hello ${contact.contactPerson ?? contact.name}, Dr. Saifuddin here from City Care Homeopathy.',
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.call_outlined, size: 18),
-                  tooltip: 'Call partner',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    AppHaptics.selection();
-                    ContactService.call(contact.phone!);
-                  },
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: Spacing.xs),
-
-          // Stats Chips
+          // ── LAYER 2: KEY OPERATIONAL METRICS ──────────────────────
           Wrap(
             spacing: Spacing.xs,
             runSpacing: Spacing.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               CustomBadge(
-                label: '${contact.referralCount} Patients Referred',
+                icon: Icons.people_outline,
+                label: '${contact.referralCount} ${contact.referralCount == 1 ? 'Referral' : 'Referrals'}',
                 color: scheme.tertiary,
               ),
               CustomBadge(
-                label: '${contact.visitCount} Doctor Visits Logged',
+                icon: Icons.directions_walk_outlined,
+                label: '${contact.visitCount} ${contact.visitCount == 1 ? 'Doctor Visit' : 'Doctor Visits'}',
                 color: scheme.secondary,
               ),
-              if (contact.lastVisitedDate != null)
+              if (hasLastVisit)
                 CustomBadge(
-                  label: 'Last Visited: ${Formatters.formatDate(contact.lastVisitedDate!)}',
+                  label: 'Last: ${Formatters.formatDate(contact.lastVisitedDate!)}',
                   color: scheme.onSurfaceVariant,
                 ),
             ],
           ),
 
-          if ((contact.notes ?? '').isNotEmpty) ...[
+          // ── PROGRESSIVE DISCLOSURE AFFORDANCE / NOTE PREVIEW ──────
+          if (hasSecondaryDetails) ...[
             const SizedBox(height: Spacing.xs),
-            Text(
-              'Notes: ${contact.notes}',
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontStyle: FontStyle.italic,
-                color: scheme.onSurfaceVariant,
+            InkWell(
+              onTap: () {
+                AppHaptics.selection();
+                setState(() => _expanded = !_expanded);
+              },
+              borderRadius: Radii.smAll,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    if (hasNotes && !_expanded) ...[
+                      Icon(Icons.notes, size: 13, color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          contact.notes!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ] else ...[
+                      Text(
+                        _expanded ? 'Hide details' : 'View contact & notes',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                    Icon(
+                      _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      size: 16,
+                      color: _expanded ? scheme.primary : scheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
+
+          // ── EXPANDED SECONDARY DETAILS ────────────────────────────
+          if (_expanded && hasSecondaryDetails) ...[
+            const Divider(height: 12),
+            if (hasContactPerson && hasAddress)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    Icon(Icons.person_outline, size: 14, color: scheme.onSurfaceVariant),
+                    const SizedBox(width: Spacing.xs),
+                    Text(
+                      'Contact: ${contact.contactPerson!}',
+                      style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            if (hasPhone)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    Icon(Icons.phone_outlined, size: 14, color: scheme.onSurfaceVariant),
+                    const SizedBox(width: Spacing.xs),
+                    Text(
+                      contact.phone!,
+                      style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.chat_outlined, size: 18),
+                      tooltip: 'WhatsApp message',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () {
+                        AppHaptics.selection();
+                        ContactService.openWhatsApp(
+                          phone: contact.phone!,
+                          message: 'Hello ${contact.contactPerson ?? contact.name}, Dr. Saifuddin here from City Care Homeopathy.',
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.call_outlined, size: 18),
+                      tooltip: 'Call partner',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () {
+                        AppHaptics.selection();
+                        ContactService.call(contact.phone!);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            if (hasNotes)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(Spacing.xs + 2),
+                margin: const EdgeInsets.only(top: 2),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                  borderRadius: Radii.smAll,
+                ),
+                child: Text(
+                  'Notes: ${contact.notes!}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+          ],
+
           const SizedBox(height: Spacing.sm),
 
-          // Action Buttons
+          // ── LAYER 3: CORE PRIMARY ACTIONS ─────────────────────────
           Row(
             children: [
               Expanded(
@@ -508,7 +651,7 @@ class _PartnerCard extends StatelessWidget {
                   label: 'Log Visit',
                   icon: Icons.directions_walk_outlined,
                   fullWidth: true,
-                  onPressed: onLogVisit,
+                  onPressed: widget.onLogVisit,
                 ),
               ),
               const SizedBox(width: Spacing.sm),
@@ -517,7 +660,7 @@ class _PartnerCard extends StatelessWidget {
                   label: '+1 Referral',
                   icon: Icons.person_add_outlined,
                   fullWidth: true,
-                  onPressed: onAddReferral,
+                  onPressed: widget.onAddReferral,
                 ),
               ),
             ],

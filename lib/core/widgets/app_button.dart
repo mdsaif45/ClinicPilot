@@ -91,13 +91,17 @@ class AppButton extends StatelessWidget {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 18, color: textColor),
-            const SizedBox(width: Spacing.sm),
+            const SizedBox(width: Spacing.xs + 2),
           ],
-          Text(
-            label,
-            style: theme.textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: textColor,
+          Flexible(
+            child: Text(
+              label,
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
