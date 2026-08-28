@@ -658,7 +658,7 @@ class _MonthlySnapshotHeader extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.calendar_month_outlined,
+                  Icons.calendar_today_outlined,
                   size: 14,
                   color: isCurrentMonth ? scheme.onSurfaceVariant : scheme.primary,
                 ),
