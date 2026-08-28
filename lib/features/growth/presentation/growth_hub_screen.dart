@@ -147,6 +147,12 @@ class GrowthHubScreen extends ConsumerWidget {
           onTap: () => context.push('/growth/overview'),
         ),
         _MenuCard(
+          icon: Icons.insights_outlined,
+          title: 'Practice Activity & Timeline',
+          subtitle: 'Hourly OPD rush, weekly targets, bubble calendar matrix & journal',
+          onTap: () => context.push('/growth/activity'),
+        ),
+        _MenuCard(
           icon: Icons.account_balance_wallet_outlined,
           title: 'Profit Summary',
           subtitle: 'Income, expenses, profit trend, best day',
