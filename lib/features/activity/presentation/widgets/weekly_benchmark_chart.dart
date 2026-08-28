@@ -377,10 +377,6 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
     // 3. Draw Bottom Baseline Axis Line
     canvas.drawLine(Offset(0, baselineY), Offset(plotWidth, baselineY), axisPaint);
 
-    final dotPaint = Paint()
-      ..color = labelColor.withValues(alpha: 0.4)
-      ..style = PaintingStyle.fill;
-
     // 4. Draw 7 Daily Bars with Tick Icons for Target Met
     final dayCount = bins.length;
     final slotWidth = plotWidth / dayCount;
@@ -388,12 +384,6 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
 
     double? selectedCenterX;
     double? selectedBarTopY;
-
-    // Draw Intermediate Baseline Dots between day slots
-    for (int i = 1; i < dayCount; i++) {
-      final dotX = i * slotWidth;
-      canvas.drawCircle(Offset(dotX, baselineY), 1.6, dotPaint);
-    }
 
     for (int i = 0; i < dayCount; i++) {
       final bin = bins[i];
@@ -469,7 +459,7 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
       final cursorX = selectedCenterX;
       final cursorY = selectedBarTopY ?? baselineY;
 
-      // Vertical Dashed Cursor Line
+      // Vertical Dashed Cursor Line (aligned 100% with centerX and day tick)
       final dashedPaint = Paint()
         ..color = primaryColor.withValues(alpha: 0.8)
         ..strokeWidth = 1.4

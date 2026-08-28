@@ -60,8 +60,8 @@ class _HourlyRushChartState extends State<HourlyRushChart> with SingleTickerProv
 
   void _handleTouch(Offset localPosition, double plotWidth) {
     if (plotWidth <= 0 || widget.bins.isEmpty) return;
-    final slotWidth = plotWidth / 24.0;
-    final index = (localPosition.dx / slotWidth).floor().clamp(0, 23);
+    final fraction = (localPosition.dx / plotWidth).clamp(0.0, 1.0);
+    final index = (fraction * 24).round().clamp(0, widget.bins.length - 1);
     if (index != _hoveredHourIndex) {
       AppHaptics.selection();
       setState(() {
@@ -124,9 +124,7 @@ class _HourlyRushChartState extends State<HourlyRushChart> with SingleTickerProv
                       onTapDown: (details) => _handleTouch(details.localPosition, plotWidth),
                       onHorizontalDragStart: (details) => _handleTouch(details.localPosition, plotWidth),
                       onHorizontalDragUpdate: (details) => _handleTouch(details.localPosition, plotWidth),
-                      onHorizontalDragEnd: (_) {
-                        // Keep tooltip active or let user tap to dismiss
-                      },
+                      onHorizontalDragEnd: (_) {},
                       child: MouseRegion(
                         onHover: (event) => _handleTouch(event.localPosition, plotWidth),
                         onExit: (_) {
@@ -287,10 +285,8 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
     // 2. Draw Bottom Baseline Axis Line
     canvas.drawLine(Offset(0, baselineY), Offset(plotWidth, baselineY), axisPaint);
 
-    // 3. Draw 24 Animated Slender Activity Bars
-    final barSlotWidth = plotWidth / 24.0;
-    final barWidth = math.min(barSlotWidth * 0.55, 4.5);
-
+    // 3. Draw 24 Slender Activity Bars precisely aligned with hour checkpoints
+    const barWidth = 4.0;
     double? selectedCenterX;
     double? selectedBarTopY;
 
@@ -299,7 +295,8 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
       final val = math.max(bin.revenue, bin.patients.toDouble());
       final ratio = (val / maxVal).clamp(0.0, 1.0);
       final barHeight = ratio * plotHeight * progress;
-      final centerX = (i + 0.5) * barSlotWidth;
+      // Exact alignment: hour h corresponds to x = (h / 24.0) * plotWidth
+      final centerX = (bin.hour / 24.0) * plotWidth;
       final topY = baselineY - barHeight;
 
       if (i == selectedHourIndex) {
@@ -310,8 +307,8 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
       if (barHeight > 0) {
         final barRect = RRect.fromRectAndCorners(
           Rect.fromLTWH(centerX - (barWidth / 2), topY, barWidth, barHeight),
-          topLeft: const Radius.circular(2.5),
-          topRight: const Radius.circular(2.5),
+          topLeft: const Radius.circular(2.0),
+          topRight: const Radius.circular(2.0),
         );
         canvas.drawRRect(barRect, barPaint);
       }
@@ -378,12 +375,12 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
     }
 
     // 6. Draw Google Fit Scrubber Cursor & Speech-Bubble Tooltip on Selected Hour
-    if (selectedHourIndex != null && selectedCenterX != null && selectedHourIndex! < bins.length) {
+    if (selectedHourIndex != null && selectedHourIndex! < bins.length) {
       final bin = bins[selectedHourIndex!];
-      final cursorX = selectedCenterX;
+      final cursorX = selectedCenterX ?? ((bin.hour / 24.0) * plotWidth);
       final cursorY = selectedBarTopY ?? baselineY;
 
-      // Vertical Dashed Cursor Line
+      // Vertical Dashed Cursor Line (aligned 100% with tickX)
       final dashedPaint = Paint()
         ..color = primaryColor.withValues(alpha: 0.8)
         ..strokeWidth = 1.4
@@ -413,7 +410,7 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
       canvas.drawCircle(Offset(cursorX, cursorY), 3.8, dotSolidPaint);
       canvas.drawCircle(Offset(cursorX, cursorY), 1.6, dotCenterWhitePaint);
 
-      // Prepare Tooltip Content: e.g. "₹ 1,500 at 10 AM" or "3 pts at 10 AM"
+      // Prepare Tooltip Content: e.g. "₹ 1,500 at 10 AM" or "3 patients at 10 AM"
       final valStr = metric == ActivityMetric.revenue
           ? Formatters.formatCurrency(bin.revenue)
           : '${bin.patients} ${bin.patients == 1 ? 'patient' : 'patients'}';
