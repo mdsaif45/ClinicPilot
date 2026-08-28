@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
@@ -71,13 +70,14 @@ class MonthlyBubbleMatrix extends StatelessWidget {
               return const SizedBox.shrink();
             }
 
-            final bubbleSize = (14.0 + (day.intensity * 24.0)).clamp(14.0, 38.0);
+            final hasActivity = day.intensity > 0;
+            final bubbleSize = (20.0 + (day.intensity * 18.0)).clamp(20.0, 38.0);
             final valText = metric == ActivityMetric.revenue
                 ? Formatters.formatCurrency(day.revenue)
-                : '${day.patients} pts';
+                : '${day.patients} ${day.patients == 1 ? 'patient' : 'patients'}';
 
             return Tooltip(
-              message: '${day.dayNumber} ${DateFormat('MMM').format(day.date)}: $valText',
+              message: valText,
               child: InkWell(
                 onTap: () {
                   AppHaptics.selection();
@@ -88,31 +88,27 @@ class MonthlyBubbleMatrix extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Proportional Bubble
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 350),
-                        curve: Curves.easeOutCubic,
-                        width: bubbleSize,
-                        height: bubbleSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: day.intensity > 0
-                              ? primaryColor.withValues(alpha: 0.35 + (day.intensity * 0.65))
-                              : scheme.outlineVariant.withValues(alpha: 0.15),
-                          border: day.isToday
-                              ? Border.all(color: primaryColor, width: 2)
-                              : null,
+                      // Proportional Bubble (only drawn if there is activity)
+                      if (hasActivity)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 350),
+                          curve: Curves.easeOutCubic,
+                          width: bubbleSize,
+                          height: bubbleSize,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: primaryColor.withValues(alpha: 0.35 + (day.intensity * 0.65)),
+                          ),
                         ),
-                      ),
                       // Day Number
                       Text(
                         '${day.dayNumber}',
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 11,
-                          fontWeight: day.intensity > 0.5 || day.isToday
+                          fontWeight: day.intensity > 0.4
                               ? FontWeight.bold
                               : FontWeight.w500,
-                          color: day.intensity > 0.5
+                          color: day.intensity > 0.4
                               ? scheme.onPrimary
                               : scheme.onSurface,
                         ),
