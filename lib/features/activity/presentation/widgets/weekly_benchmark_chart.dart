@@ -377,6 +377,10 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
     // 3. Draw Bottom Baseline Axis Line
     canvas.drawLine(Offset(0, baselineY), Offset(plotWidth, baselineY), axisPaint);
 
+    final dotPaint = Paint()
+      ..color = labelColor.withValues(alpha: 0.4)
+      ..style = PaintingStyle.fill;
+
     // 4. Draw 7 Daily Bars with Tick Icons for Target Met
     final dayCount = bins.length;
     final slotWidth = plotWidth / dayCount;
@@ -384,6 +388,12 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
 
     double? selectedCenterX;
     double? selectedBarTopY;
+
+    // Draw Intermediate Baseline Dots between day slots
+    for (int i = 1; i < dayCount; i++) {
+      final dotX = i * slotWidth;
+      canvas.drawCircle(Offset(dotX, baselineY), 1.6, dotPaint);
+    }
 
     for (int i = 0; i < dayCount; i++) {
       final bin = bins[i];
@@ -401,30 +411,38 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
       if (barHeight > 0) {
         final barRect = RRect.fromRectAndCorners(
           Rect.fromLTWH(centerX - (barWidth / 2), topY, barWidth, barHeight),
-          topLeft: const Radius.circular(3),
-          topRight: const Radius.circular(3),
+          topLeft: const Radius.circular(3.5),
+          topRight: const Radius.circular(3.5),
         );
         canvas.drawRRect(barRect, barPaint);
 
         // Checkmark Icon on top of bar if target met (Google Fit style)
-        if (bin.isTargetMet && progress > 0.8) {
+        if (bin.isTargetMet && progress > 0.7 && barHeight > 16.0) {
           final checkPaint = Paint()
             ..color = tooltipBgColor
-            ..strokeWidth = 1.8
+            ..strokeWidth = 2.0
             ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
             ..style = PaintingStyle.stroke;
 
-          final checkY = topY + 7.0;
+          final checkY = topY + 7.5;
           final checkPath = Path()
             ..moveTo(centerX - 3.5, checkY)
-            ..lineTo(centerX - 1.0, checkY + 2.5)
-            ..lineTo(centerX + 3.5, checkY - 2.5);
+            ..lineTo(centerX - 0.8, checkY + 2.8)
+            ..lineTo(centerX + 3.8, checkY - 2.5);
 
           canvas.drawPath(checkPath, checkPaint);
         }
       }
 
-      // Day Label below baseline
+      // Vertical Tick under Day on baseline (Google Fit style)
+      canvas.drawLine(
+        Offset(centerX, baselineY),
+        Offset(centerX, baselineY + 4.0),
+        axisPaint,
+      );
+
+      // Day Label below baseline tick
       final textSpan = TextSpan(
         text: bin.dayLabel,
         style: TextStyle(
