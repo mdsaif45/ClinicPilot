@@ -97,6 +97,13 @@ class TimelineActivityItem {
   final double? amount;
   final String? paymentMethod;
   final String? diseaseTag;
+  final String? patientId;
+  final String? patientCode;
+  final String? patientName;
+  final String? memoNumber;
+  final String? visitType;
+  final String? notes;
+  final String? category;
 
   const TimelineActivityItem({
     required this.id,
@@ -107,6 +114,13 @@ class TimelineActivityItem {
     this.amount,
     this.paymentMethod,
     this.diseaseTag,
+    this.patientId,
+    this.patientCode,
+    this.patientName,
+    this.memoNumber,
+    this.visitType,
+    this.notes,
+    this.category,
   });
 }
 
@@ -181,7 +195,7 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
   bool inClinic(String? rowClinicId) =>
       clinicId == null || rowClinicId == clinicId;
 
-  final patientMap = {for (final p in rawData.patients) p.id: p.name};
+  final patientMap = {for (final p in rawData.patients) p.id: p};
 
   // 1. DAY VIEW CALCULATIONS (Hourly 9 AM - 9 PM)
   final dayStart = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
@@ -420,15 +434,25 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
   for (final v in rawData.visits) {
     if (!inClinic(v.clinicId)) continue;
     if (!v.visitDate.isBefore(rangeStart) && v.visitDate.isBefore(rangeEnd)) {
-      final pName = patientMap[v.patientId] ?? 'Patient';
+      final patient = patientMap[v.patientId];
+      final pName = patient?.name ?? 'Patient';
+      final isNew = v.visitType.toLowerCase() == 'new';
+      final vType = isNew ? 'New Consultation' : 'Follow-up Consultation';
+
       timelineItems.add(
         TimelineActivityItem(
           id: 'v_${v.id}',
           timestamp: v.visitDate,
           type: ActivityEventType.consultation,
-          title: '$pName • ${v.visitType == 'new' ? 'New Consultation' : 'Follow-up'}',
-          subtitle: v.disease?.isNotEmpty == true ? 'Condition: ${v.disease}' : 'General Consultation',
+          title: '$pName • $vType',
+          subtitle: v.disease.isNotEmpty ? 'Condition: ${v.disease}' : 'General Consultation',
           diseaseTag: v.disease,
+          patientId: v.patientId,
+          patientCode: patient?.patientCode,
+          patientName: pName,
+          visitType: vType,
+          notes: v.notes,
+          category: 'Consultation',
         ),
       );
     }
@@ -437,16 +461,25 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
   for (final m in rawData.memos) {
     if (!inClinic(m.clinicId)) continue;
     if (!m.memoDate.isBefore(rangeStart) && m.memoDate.isBefore(rangeEnd)) {
-      final pName = patientMap[m.patientId] ?? 'Patient';
+      final patient = patientMap[m.patientId];
+      final pName = patient?.name ?? 'Patient';
+      final pMethod = m.paymentMethod.toUpperCase();
+
       timelineItems.add(
         TimelineActivityItem(
           id: 'cm_${m.id}',
           timestamp: m.memoDate,
           type: ActivityEventType.dispense,
           title: 'Invoice #${m.memoNumber} • $pName',
-          subtitle: 'Payment via ${m.paymentMethod.toUpperCase()}',
+          subtitle: 'Payment: $pMethod',
           amount: m.total,
-          paymentMethod: m.paymentMethod,
+          paymentMethod: pMethod,
+          patientId: m.patientId,
+          patientCode: patient?.patientCode,
+          patientName: pName,
+          memoNumber: m.memoNumber,
+          notes: m.notes,
+          category: 'Dispense',
         ),
       );
     }
@@ -463,6 +496,9 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
           title: 'Clinic Expense • ${e.category}',
           subtitle: e.notes?.isNotEmpty == true ? e.notes : 'Operational Cost',
           amount: e.amount,
+          paymentMethod: e.paymentMethod.toUpperCase(),
+          notes: e.notes,
+          category: e.category,
         ),
       );
     }

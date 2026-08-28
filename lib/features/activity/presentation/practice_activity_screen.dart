@@ -202,16 +202,29 @@ class PracticeActivityScreen extends ConsumerWidget {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    // Summary Subtitle
-                    Text(
-                      metric == ActivityMetric.revenue
-                          ? Formatters.formatCurrency(state.totalRevenue)
-                          : '${state.totalPatients} patients',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                      ),
+                    const SizedBox(height: 3),
+                    // Summary Subtitle (Google Fit style: icon + concise number)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          metric == ActivityMetric.revenue
+                              ? Icons.currency_rupee
+                              : Icons.people_outline,
+                          size: 14,
+                          color: primaryColor,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          metric == ActivityMetric.revenue
+                              ? Formatters.formatCurrency(state.totalRevenue).replaceAll('₹ ', '')
+                              : '${state.totalPatients} patients',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -334,71 +347,10 @@ class PracticeActivityScreen extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: Spacing.xl),
+          const SizedBox(height: Spacing.lg),
 
-          // 6. Practice Journal Action Card
-          Card(
-            elevation: 0,
-            color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: scheme.outlineVariant.withValues(alpha: 0.3),
-              ),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () {
-                AppHaptics.light();
-                context.push('/growth/journal');
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(Spacing.md),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: scheme.primary.withValues(alpha: 0.12),
-                      ),
-                      child: Icon(
-                        Icons.auto_stories_outlined,
-                        color: scheme.primary,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: Spacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Practice Journal',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'View chronological consultations, dispenses & receipts',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // 6. Restored Google Fit Style Timeline Feed for this selected date
+          ActivityJournalFeed(items: state.timelineItems),
         ],
       ),
     );

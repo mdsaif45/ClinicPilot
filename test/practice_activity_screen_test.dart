@@ -96,7 +96,7 @@ void main() {
       expect(find.text('Month'), findsOneWidget);
       expect(find.text('Revenue'), findsWidgets);
       expect(find.text('Patients'), findsWidgets);
-      expect(find.text('Practice Journal'), findsWidgets);
+      expect(find.text('Sara Khan • New Consultation'), findsOneWidget);
 
       // 2. Switch to Week View
       await tester.tap(find.text('Week'));

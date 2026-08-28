@@ -4,7 +4,10 @@ import 'package:intl/intl.dart';
 import '../../../../core/design/tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../providers/practice_activity_provider.dart';
+import '../../providers/practice_journal_provider.dart';
+import 'journal_item_detail_sheet.dart';
 
+/// Clean, modern activity timeline feed styled faithfully after Google Fit (Image 2).
 class ActivityJournalFeed extends StatelessWidget {
   final List<TimelineActivityItem> items;
 
@@ -27,7 +30,7 @@ class ActivityJournalFeed extends StatelessWidget {
             Icon(Icons.event_note, size: 36, color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
             const SizedBox(height: Spacing.sm),
             Text(
-              'No practice activity logged for this period',
+              'No practice activity logged for this date',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: scheme.onSurfaceVariant,
               ),
@@ -41,126 +44,166 @@ class ActivityJournalFeed extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: Spacing.xs),
+      separatorBuilder: (_, __) => Divider(
+        height: 1,
+        indent: Spacing.sm,
+        endIndent: Spacing.sm,
+        color: scheme.outlineVariant.withValues(alpha: 0.25),
+      ),
       itemBuilder: (context, index) {
         final item = items[index];
 
         IconData icon;
-        Color iconBg;
-        Color iconFg;
+        Color iconColor;
 
         switch (item.type) {
           case ActivityEventType.consultation:
             icon = Icons.medical_services_outlined;
-            iconBg = scheme.secondary.withValues(alpha: 0.12);
-            iconFg = scheme.secondary;
+            iconColor = scheme.secondary;
             break;
           case ActivityEventType.dispense:
             icon = Icons.medication_outlined;
-            iconBg = scheme.primary.withValues(alpha: 0.12);
-            iconFg = scheme.primary;
+            iconColor = scheme.primary;
             break;
           case ActivityEventType.expense:
             icon = Icons.receipt_long_outlined;
-            iconBg = scheme.error.withValues(alpha: 0.12);
-            iconFg = scheme.error;
+            iconColor = scheme.error;
             break;
         }
 
         final timeStr = DateFormat('h:mm a').format(item.timestamp);
-        final dateStr = DateFormat('d MMM').format(item.timestamp);
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm + 2),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerLow,
-            borderRadius: Radii.mdAll,
-            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              // Icon Badge
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: iconBg,
+        return InkWell(
+          onTap: () {
+            // Map TimelineActivityItem to PracticeJournalEntry and open JournalItemDetailSheet
+            final entry = PracticeJournalEntry(
+              id: item.id,
+              timestamp: item.timestamp,
+              type: item.type == ActivityEventType.consultation
+                  ? JournalEventType.consultation
+                  : item.type == ActivityEventType.dispense
+                      ? JournalEventType.dispense
+                      : JournalEventType.expense,
+              title: item.title,
+              subtitle: item.subtitle,
+              amount: item.amount,
+              paymentMethod: item.paymentMethod,
+              patientName: item.patientName,
+              patientId: item.patientId,
+              patientCode: item.patientCode,
+              disease: item.diseaseTag,
+              memoNumber: item.memoNumber,
+              visitType: item.visitType,
+              notes: item.notes,
+              category: item.category,
+            );
+            JournalItemDetailSheet.show(context, entry);
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Spacing.xs, vertical: Spacing.md),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. Icon on left
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: iconColor,
+                  ),
                 ),
-                child: Center(
-                  child: Icon(icon, color: iconFg, size: 20),
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
+                const SizedBox(width: Spacing.md),
 
-              // Title & Subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          '$dateStr • $timeStr',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (item.diseaseTag?.isNotEmpty == true) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: scheme.secondaryContainer.withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              item.diseaseTag!,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                fontSize: 10,
-                                color: scheme.onSecondaryContainer,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.title,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (item.subtitle != null) ...[
+                // 2. Micro Time + Bold Title + Subtitle
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Micro Timestamp (Google Fit style)
                       Text(
-                        item.subtitle!,
-                        style: theme.textTheme.bodySmall?.copyWith(
+                        timeStr,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
                           color: scheme.onSurfaceVariant,
                         ),
                       ),
-                    ],
-                  ],
-                ),
-              ),
+                      const SizedBox(height: 2),
 
-              // Amount if applicable
-              if (item.amount != null) ...[
-                const SizedBox(width: Spacing.sm),
-                Text(
-                  item.type == ActivityEventType.expense
-                      ? '-${Formatters.formatCurrency(item.amount!)}'
-                      : Formatters.formatCurrency(item.amount!),
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: item.type == ActivityEventType.expense
-                        ? scheme.error
-                        : scheme.primary,
+                      // Bold Title
+                      Text(
+                        item.title,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+
+                      // Subtitle with condition / amount
+                      Row(
+                        children: [
+                          if (item.diseaseTag != null && item.diseaseTag!.isNotEmpty) ...[
+                            Flexible(
+                              child: Text(
+                                item.diseaseTag!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (item.amount != null) ...[
+                              Text(
+                                ' • ',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ] else if (item.subtitle != null) ...[
+                            Flexible(
+                              child: Text(
+                                item.subtitle!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (item.amount != null) ...[
+                              Text(
+                                ' • ',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ],
+                          if (item.amount != null) ...[
+                            Text(
+                              item.type == ActivityEventType.expense
+                                  ? '-${Formatters.formatCurrency(item.amount!)}'
+                                  : Formatters.formatCurrency(item.amount!),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: item.type == ActivityEventType.expense
+                                    ? scheme.error
+                                    : scheme.primary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ],
+            ),
           ),
         );
       },
