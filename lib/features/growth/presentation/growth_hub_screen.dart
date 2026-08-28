@@ -148,9 +148,15 @@ class GrowthHubScreen extends ConsumerWidget {
         ),
         _MenuCard(
           icon: Icons.insights_outlined,
-          title: 'Practice Activity & Timeline',
-          subtitle: 'Hourly OPD rush, weekly targets, bubble calendar matrix & journal',
+          title: 'Practice Activity',
+          subtitle: 'Hourly OPD rush, weekly targets & monthly bubble heatmap',
           onTap: () => context.push('/growth/activity'),
+        ),
+        _MenuCard(
+          icon: Icons.auto_stories_outlined,
+          title: 'Practice Journal',
+          subtitle: 'Chronological consultations, pharmacy invoices & receipts',
+          onTap: () => context.push('/growth/journal'),
         ),
         _MenuCard(
           icon: Icons.account_balance_wallet_outlined,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/design/tokens.dart';
@@ -78,6 +79,16 @@ class PracticeActivityScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Practice Activity'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_stories_outlined),
+            tooltip: 'Practice Journal',
+            onPressed: () {
+              AppHaptics.light();
+              context.push('/growth/journal');
+            },
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
@@ -325,15 +336,69 @@ class PracticeActivityScreen extends ConsumerWidget {
 
           const SizedBox(height: Spacing.xl),
 
-          // 6. Practice Journal Feed
-          Text(
-            'Practice Timeline',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+          // 6. Practice Journal Action Card
+          Card(
+            elevation: 0,
+            color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.3),
+              ),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                AppHaptics.light();
+                context.push('/growth/journal');
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(Spacing.md),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: scheme.primary.withValues(alpha: 0.12),
+                      ),
+                      child: Icon(
+                        Icons.auto_stories_outlined,
+                        color: scheme.primary,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Practice Journal',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'View chronological consultations, dispenses & receipts',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: Spacing.sm),
-          ActivityJournalFeed(items: state.timelineItems),
         ],
       ),
     );

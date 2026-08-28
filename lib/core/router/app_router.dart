@@ -21,6 +21,7 @@ import '../../features/growth/presentation/camp_manager_screen.dart';
 import '../../features/growth/presentation/disease_analytics_screen.dart';
 import '../../features/growth/presentation/referral_crm_screen.dart';
 import '../../features/activity/presentation/practice_activity_screen.dart';
+import '../../features/activity/presentation/practice_journal_screen.dart';
 import '../../features/settings/presentation/doctor_profile_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
@@ -129,6 +130,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/growth/activity',
         builder: (context, state) => const PracticeActivityScreen(),
+      ),
+      GoRoute(
+        path: '/growth/journal',
+        builder: (context, state) => const PracticeJournalScreen(),
       ),
       GoRoute(
         path: '/settings',
