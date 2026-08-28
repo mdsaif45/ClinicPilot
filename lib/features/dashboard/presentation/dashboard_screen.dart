@@ -600,59 +600,69 @@ class _MonthlySnapshotHeader extends ConsumerWidget {
       child: Row(
         children: [
           Expanded(
-            child: Row(
-              children: [
-                Flexible(
-                  child: InkWell(
-                    onTap: onToggleGoals,
-                    borderRadius: Radii.smAll,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              monthTitle,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            showGoals ? Icons.expand_less : Icons.expand_more,
-                            size: 18,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ],
+            child: InkWell(
+              onTap: onToggleGoals,
+              borderRadius: Radii.smAll,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        monthTitle,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      showGoals ? Icons.expand_less : Icons.expand_more,
+                      size: 18,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ],
                 ),
-                if (!isCurrentMonth) ...[
-                  const SizedBox(width: Spacing.xs),
-                  InkWell(
-                    onTap: () {
-                      AppHaptics.selection();
-                      ref.read(selectedDashboardMonthProvider.notifier).state =
-                          currentMonth;
-                    },
-                    borderRadius: Radii.smAll,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                      child: CustomBadge(
-                        label: 'This Month',
+              ),
+            ),
+          ),
+          // Quick Jump to This Month (Enterprise standard Option 1)
+          if (!isCurrentMonth) ...[
+            InkWell(
+              onTap: () {
+                AppHaptics.selection();
+                ref.read(selectedDashboardMonthProvider.notifier).state = currentMonth;
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: scheme.primary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.history, size: 13, color: scheme.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      'This Month',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                         color: scheme.primary,
                       ),
                     ),
-                  ),
-                ],
-              ],
+                  ],
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 4),
+          ],
           // Month Traversal Controls (< MonthPicker >)
           IconButton(
             icon: const Icon(Icons.chevron_left),

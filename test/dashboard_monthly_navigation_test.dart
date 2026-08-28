@@ -228,10 +228,10 @@ void main() {
       expect(find.text('₹ 22,000'), findsOneWidget);
       expect(find.text('₹ 17,000'), findsOneWidget);
 
-      // Tap "This Month" quick jump badge
-      final thisMonthBadge = find.widgetWithText(CustomBadge, 'This Month');
-      expect(thisMonthBadge, findsOneWidget);
-      await tester.tap(thisMonthBadge);
+      // Tap "This Month" quick jump button
+      final thisMonthBtn = find.text('This Month');
+      expect(thisMonthBtn, findsOneWidget);
+      await tester.tap(thisMonthBtn);
       await tester.pumpAndSettle();
 
       // Restored to Current Month
