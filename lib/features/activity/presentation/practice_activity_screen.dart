@@ -202,26 +202,29 @@ class PracticeActivityScreen extends ConsumerWidget {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 3),
-                    // Summary Subtitle (Google Fit style: icon + concise number)
+                    const SizedBox(height: 4),
+                    // Summary Subtitle (Google Fit style: accent icon + subtle metric text)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
                           metric == ActivityMetric.revenue
                               ? Icons.currency_rupee
-                              : Icons.people_outline,
-                          size: 14,
+                              : Icons.person_outline,
+                          size: 16,
                           color: primaryColor,
                         ),
-                        const SizedBox(width: 2),
+                        const SizedBox(width: 4),
                         Text(
                           metric == ActivityMetric.revenue
-                              ? Formatters.formatCurrency(state.totalRevenue).replaceAll('₹ ', '')
+                              ? Formatters.formatCurrency(state.totalRevenue)
                               : '${state.totalPatients} patients',
                           style: theme.textTheme.bodyMedium?.copyWith(
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w600,
-                            color: primaryColor,
+                            color: scheme.onSurfaceVariant,
+                            letterSpacing: -0.1,
                           ),
                         ),
                       ],
