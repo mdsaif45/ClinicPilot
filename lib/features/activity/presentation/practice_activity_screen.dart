@@ -93,48 +93,12 @@ class PracticeActivityScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
         children: [
-          // 1. Google Fit Style Segmented Tabs (Day | Week | Month)
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              children: [
-                _buildSegmentTab(
-                  context,
-                  ref,
-                  title: 'Day',
-                  isSelected: range == ActivityTimeRange.day,
-                  onTap: () {
-                    AppHaptics.selection();
-                    ref.read(activityRangeProvider.notifier).state = ActivityTimeRange.day;
-                  },
-                ),
-                _buildSegmentTab(
-                  context,
-                  ref,
-                  title: 'Week',
-                  isSelected: range == ActivityTimeRange.week,
-                  onTap: () {
-                    AppHaptics.selection();
-                    ref.read(activityRangeProvider.notifier).state = ActivityTimeRange.week;
-                  },
-                ),
-                _buildSegmentTab(
-                  context,
-                  ref,
-                  title: 'Month',
-                  isSelected: range == ActivityTimeRange.month,
-                  onTap: () {
-                    AppHaptics.selection();
-                    ref.read(activityRangeProvider.notifier).state = ActivityTimeRange.month;
-                  },
-                ),
-              ],
-            ),
+          // 1. Google Fit Style Animated Sliding Segmented Tabs (Day | Week | Month)
+          _ActivityTimeRangeTabs(
+            selectedRange: range,
+            onRangeChanged: (newRange) {
+              ref.read(activityRangeProvider.notifier).state = newRange;
+            },
           ),
 
           const SizedBox(height: Spacing.lg),
@@ -447,49 +411,6 @@ class PracticeActivityScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSegmentTab(
-    BuildContext context,
-    WidgetRef ref, {
-    required String title,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? scheme.surface : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: scheme.shadow.withValues(alpha: 0.06),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? scheme.onSurface : scheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildMetricPill(
     BuildContext context,
     WidgetRef ref, {
@@ -529,6 +450,106 @@ class PracticeActivityScreen extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActivityTimeRangeTabs extends StatelessWidget {
+  final ActivityTimeRange selectedRange;
+  final ValueChanged<ActivityTimeRange> onRangeChanged;
+
+  const _ActivityTimeRangeTabs({
+    required this.selectedRange,
+    required this.onRangeChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    final selectedIndex = selectedRange.index; // 0: Day, 1: Week, 2: Month
+    final alignX = selectedIndex == 0 ? -1.0 : (selectedIndex == 1 ? 0.0 : 1.0);
+
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tabWidth = constraints.maxWidth / 3.0;
+
+          return Stack(
+            children: [
+              // Smooth Sliding Floating Pill Background
+              AnimatedAlign(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment(alignX, 0),
+                child: Container(
+                  width: tabWidth,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: scheme.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: scheme.shadow.withValues(alpha: 0.08),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 3 Interactive Tabs
+              Row(
+                children: [
+                  _buildTab(context, scheme, theme, 'Day', ActivityTimeRange.day),
+                  _buildTab(context, scheme, theme, 'Week', ActivityTimeRange.week),
+                  _buildTab(context, scheme, theme, 'Month', ActivityTimeRange.month),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTab(
+    BuildContext context,
+    ColorScheme scheme,
+    ThemeData theme,
+    String label,
+    ActivityTimeRange range,
+  ) {
+    final isSelected = selectedRange == range;
+
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          AppHaptics.selection();
+          onRangeChanged(range);
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
+            style: (theme.textTheme.labelMedium ?? const TextStyle()).copyWith(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? scheme.onSurface : scheme.onSurfaceVariant,
+            ),
+            child: Text(label),
+          ),
         ),
       ),
     );
