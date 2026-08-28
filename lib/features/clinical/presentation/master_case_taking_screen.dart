@@ -658,6 +658,12 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
       _regNoController.text = widget.patient.patientCode;
     }
     _addressController.text = widget.patient.address ?? '';
+    if (_firstVisitDateController.text.isEmpty) {
+      _firstVisitDateController.text = Formatters.formatDdMmYyyy(DateTime.now());
+    }
+    if (_rxPrescriptionDateController.text.isEmpty) {
+      _rxPrescriptionDateController.text = Formatters.formatDdMmYyyy(DateTime.now());
+    }
   }
 
   @override
@@ -1702,7 +1708,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 // Main Form ListView
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.md, Spacing.md, Spacing.xxl),
+                    padding: const EdgeInsets.only(top: Spacing.sm, bottom: Spacing.xxl),
                     itemCount: _sectionTitles.length,
                     itemBuilder: (context, index) => _buildSectionByIndex(index),
                   ),
@@ -1724,7 +1730,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
       color: scheme.surface,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
         itemCount: _sectionTitles.length,
         separatorBuilder: (_, __) => const SizedBox(width: Spacing.xs),
         itemBuilder: (context, index) {
@@ -1790,7 +1796,6 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
             _buildInput(_patientNameController, 'Patient Full Name', Icons.person_outline),
             const SizedBox(height: Spacing.md),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: _buildInput(_ageController, 'Age', Icons.cake_outlined)),
                 const SizedBox(width: Spacing.md),
@@ -1807,7 +1812,11 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                     onChanged: (v) => setState(() => _genderController.text = v),
                   ),
                 ),
-                const SizedBox(width: Spacing.md),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
                 Expanded(
                   child: PickerField<String>(
                     label: 'Marital Status',
@@ -1823,12 +1832,6 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                     onChanged: (v) => setState(() => _maritalStatus = v),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(child: DateField(controller: _dobController, label: 'Date of Birth')),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_occupationController, 'Occupation', Icons.work_outline)),
               ],
@@ -1836,11 +1839,13 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
             const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(flex: 2, child: _buildInput(_addressController, 'Address / Locality', Icons.home_outlined)),
+                Expanded(child: DateField(controller: _dobController, label: 'Date of Birth')),
                 const SizedBox(width: Spacing.md),
-                Expanded(flex: 2, child: _buildInput(_phoneController, 'Phone Number', Icons.phone_outlined)),
+                Expanded(child: _buildInput(_phoneController, 'Phone Number', Icons.phone_outlined)),
               ],
             ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_addressController, 'Address / Locality', Icons.home_outlined),
           ],
         );
 
@@ -1976,12 +1981,16 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: _buildInput(_familySiblingsController, 'Siblings', Icons.group)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_familySpouseController, 'Spouse', Icons.favorite_border)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_familyChildrenController, 'Children', Icons.family_restroom)),
               ],
             ),
             const SizedBox(height: Spacing.md),
-            _buildInput(_familyGrandparentsRelativesController, 'Grandparents & Other Relatives', Icons.elderly_outlined),
+            Row(
+              children: [
+                Expanded(child: _buildInput(_familyChildrenController, 'Children', Icons.family_restroom)),
+                const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_familyGrandparentsRelativesController, 'Grandparents & Other Relatives', Icons.elderly_outlined)),
+              ],
+            ),
             const SizedBox(height: Spacing.md),
             Row(
               children: [
@@ -2106,10 +2115,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: _buildInput(_pgThirstQuantityController, 'Thirst Quantity', Icons.local_drink)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_pgThirstFrequencyController, 'Thirst Frequency', Icons.timelapse)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_pgThirstTimingController, 'Thirst Timing', Icons.schedule)),
               ],
             ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgThirstTimingController, 'Thirst Timing', Icons.schedule),
             const SizedBox(height: Spacing.md),
             Row(
               children: [
@@ -2126,10 +2135,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: _buildInput(_pgStoolFrequencyController, 'Stool Frequency', Icons.repeat)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_pgStoolConsistencyController, 'Stool Consistency', Icons.grain)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_pgStoolColourOdourController, 'Stool Colour / Odour', Icons.palette_outlined)),
               ],
             ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgStoolColourOdourController, 'Stool Colour / Odour', Icons.palette_outlined),
             const SizedBox(height: Spacing.md),
             _buildInput(_pgStoolDifficultiesModalitiesController, 'Stool Difficulties & Modalities', Icons.airline_seat_legroom_reduced),
             const SizedBox(height: Spacing.md),
@@ -2138,10 +2147,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: _buildInput(_pgUrineFrequencyController, 'Urine Frequency', Icons.speed)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_pgUrineQuantityController, 'Urine Quantity', Icons.opacity)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_pgUrineColourOdourController, 'Urine Colour / Odour', Icons.water)),
               ],
             ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgUrineColourOdourController, 'Urine Colour / Odour', Icons.water),
             const SizedBox(height: Spacing.md),
             _buildInput(_pgUrinarySymptomsController, 'Urinary Symptoms', Icons.water_drop),
             const SizedBox(height: Spacing.md),
@@ -2160,10 +2169,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: _buildInput(_pgSleepQuantityController, 'Sleep Hours', Icons.bedtime)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_pgSleepQualityController, 'Sleep Quality', Icons.hotel)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_pgSleepPositionController, 'Sleep Position', Icons.airline_seat_flat)),
               ],
             ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_pgSleepPositionController, 'Sleep Position', Icons.airline_seat_flat),
             const SizedBox(height: Spacing.md),
             Row(
               children: [
@@ -2224,10 +2233,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           children: [
             _buildInput(_mgGeneralMentalEmotionalStateController, 'General Mental & Emotional State', Icons.psychology, 2),
             const SizedBox(height: Spacing.md),
+            _buildInput(_mgDispositionController, 'Disposition / Nature', Icons.sentiment_satisfied),
+            const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(child: _buildInput(_mgDispositionController, 'Disposition / Nature', Icons.sentiment_satisfied)),
-                const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_mgIrritabilityController, 'Irritability', Icons.sentiment_dissatisfied)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_mgAngerController, 'Anger & Temper', Icons.sentiment_very_dissatisfied)),
@@ -2281,10 +2290,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: _buildInput(_mgConfidenceSelfEsteemController, 'Confidence / Self-Esteem', Icons.star_border)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_mgWillDeterminationController, 'Will & Determination', Icons.fitness_center)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_mgIndecisionController, 'Indecision & Doubt', Icons.help_outline)),
               ],
             ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_mgIndecisionController, 'Indecision & Doubt', Icons.help_outline),
             const SizedBox(height: Spacing.md),
             Row(
               children: [
@@ -2337,10 +2346,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
               ],
             ),
             const SizedBox(height: Spacing.md),
+            _buildInput(_plTeaCoffeeController, 'Tea / Coffee', Icons.coffee),
+            const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(child: _buildInput(_plTeaCoffeeController, 'Tea / Coffee', Icons.coffee)),
-                const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_plTobaccoController, 'Tobacco / Smoking', Icons.smoking_rooms)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_plAlcoholController, 'Alcohol Intake', Icons.local_bar)),
@@ -2403,15 +2412,19 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: _buildInput(_ceBloodPressureController, 'Blood Pressure (mmHg)', Icons.speed)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_cePulseController, 'Pulse (bpm)', Icons.favorite)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_ceTemperatureController, 'Temperature (°F)', Icons.thermostat)),
               ],
             ),
             const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(child: _buildInput(_ceRespiratoryRateController, 'Resp Rate (/min)', Icons.air)),
+                Expanded(child: _buildInput(_ceTemperatureController, 'Temperature (°F)', Icons.thermostat)),
                 const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceRespiratoryRateController, 'Resp Rate (/min)', Icons.air)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
                 Expanded(child: _buildInput(_ceSpO2Controller, 'SpO2 (%)', Icons.bubble_chart)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_ceWeightController, 'Weight (kg)', Icons.scale)),
@@ -2431,15 +2444,19 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: _buildInput(_cePallorController, 'Pallor', Icons.circle_outlined)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_ceIcterusController, 'Icterus', Icons.circle_outlined)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_ceCyanosisController, 'Cyanosis', Icons.circle_outlined)),
               ],
             ),
             const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(child: _buildInput(_ceClubbingController, 'Clubbing', Icons.circle_outlined)),
+                Expanded(child: _buildInput(_ceCyanosisController, 'Cyanosis', Icons.circle_outlined)),
                 const SizedBox(width: Spacing.md),
+                Expanded(child: _buildInput(_ceClubbingController, 'Clubbing', Icons.circle_outlined)),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            Row(
+              children: [
                 Expanded(child: _buildInput(_ceLymphadenopathyController, 'Lymphadenopathy', Icons.circle_outlined)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_ceOedemaController, 'Oedema', Icons.circle_outlined)),
@@ -2630,33 +2647,39 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           title: 'Baseline Prescription & Management',
           icon: Icons.medication_outlined,
           children: [
-            Row(
-              children: [
-                Expanded(child: DateField(controller: _rxPrescriptionDateController, label: 'Prescription Date')),
-                const SizedBox(width: Spacing.md),
-                Expanded(flex: 2, child: _buildInput(_rxRemedyController, 'Remedy Prescribed', Icons.healing)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_rxPotencyController, 'Potency & Scale', Icons.science)),
-              ],
-            ),
+            DateField(controller: _rxPrescriptionDateController, label: 'Prescription Date'),
             const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(child: _buildInput(_rxDoseController, 'Dose', Icons.medical_information)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_rxRepetitionFrequencyController, 'Repetition Frequency', Icons.repeat)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_rxQuantityDispensedController, 'Quantity Dispensed', Icons.inventory_2_outlined)),
-              ],
+            _buildInput(
+              _rxRemedyController,
+              'Remedy Prescribed & Dosage Details',
+              Icons.healing,
+              null, // maxLines null enables auto-height expanding
+              3,    // minLines 3
             ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(child: _buildInput(_rxRouteController, 'Route', Icons.alt_route)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_rxPharmaceuticalFormController, 'Form (Globules/Drops)', Icons.medication_liquid)),
-              ],
-            ),
+            // The following individual fields are preserved/commented out for future granular tracking:
+            // Row(
+            //   children: [
+            //     Expanded(child: _buildInput(_rxPotencyController, 'Potency & Scale', Icons.science)),
+            //     const SizedBox(width: Spacing.md),
+            //     Expanded(child: _buildInput(_rxDoseController, 'Dose', Icons.medical_information)),
+            //   ],
+            // ),
+            // const SizedBox(height: Spacing.md),
+            // Row(
+            //   children: [
+            //     Expanded(child: _buildInput(_rxRepetitionFrequencyController, 'Repetition Frequency', Icons.repeat)),
+            //     const SizedBox(width: Spacing.md),
+            //     Expanded(child: _buildInput(_rxQuantityDispensedController, 'Quantity Dispensed', Icons.inventory_2_outlined)),
+            //   ],
+            // ),
+            // const SizedBox(height: Spacing.md),
+            // Row(
+            //   children: [
+            //     Expanded(child: _buildInput(_rxRouteController, 'Route', Icons.alt_route)),
+            //     const SizedBox(width: Spacing.md),
+            //     Expanded(child: _buildInput(_rxPharmaceuticalFormController, 'Form (Globules/Drops)', Icons.medication_liquid)),
+            //   ],
+            // ),
             const SizedBox(height: Spacing.md),
             _buildInput(_rxDietRegimenAdviceController, 'Diet & Regimen Advice', Icons.restaurant, 2),
             const SizedBox(height: Spacing.md),
@@ -2687,14 +2710,14 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
               children: [
                 Expanded(child: DateField(controller: _invInvestigationDateController, label: 'Investigation Date')),
                 const SizedBox(width: Spacing.md),
-                Expanded(flex: 2, child: _buildInput(_invInvestigationNameController, 'Test / Panel Name', Icons.science)),
+                Expanded(child: _buildInput(_invInvestigationNameController, 'Test / Panel Name', Icons.science)),
               ],
             ),
             const SizedBox(height: Spacing.md),
+            _buildInput(_invTypePanelController, 'Type / Category', Icons.category),
+            const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(child: _buildInput(_invTypePanelController, 'Type / Category', Icons.category)),
-                const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_invResultValueController, 'Result Value', Icons.numbers)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_invUnitController, 'Unit', Icons.straighten)),
@@ -2743,10 +2766,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
                 Expanded(child: DateField(controller: _fuFollowUpDateController, label: 'Follow-Up Date')),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_fuIntervalSincePreviousVisitController, 'Interval', Icons.hourglass_bottom)),
-                const SizedBox(width: Spacing.md),
-                Expanded(child: _buildInput(_fuOverallResponseController, 'Overall Response', Icons.thumb_up_alt_outlined)),
               ],
             ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(_fuOverallResponseController, 'Overall Response', Icons.thumb_up_alt_outlined),
             const SizedBox(height: Spacing.md),
             _buildInput(_fuChiefComplaintChangesController, 'Chief Complaint Changes', Icons.change_circle_outlined, 2),
             const SizedBox(height: Spacing.md),
@@ -2792,10 +2815,10 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
               ],
             ),
             const SizedBox(height: Spacing.md),
+            _buildInput(_fuFollowUpPrescriptionController, 'Follow-Up Remedy', Icons.medication),
+            const SizedBox(height: Spacing.md),
             Row(
               children: [
-                Expanded(flex: 2, child: _buildInput(_fuFollowUpPrescriptionController, 'Follow-Up Remedy', Icons.medication)),
-                const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_fuPotencyController, 'Potency', Icons.science)),
                 const SizedBox(width: Spacing.md),
                 Expanded(child: _buildInput(_fuDoseRepetitionController, 'Dose & Repetition', Icons.repeat)),
@@ -2806,7 +2829,7 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
               children: [
                 Expanded(child: DateField(controller: _fuNextFollowUpController, label: 'Next Follow-Up Target')),
                 const SizedBox(width: Spacing.md),
-                Expanded(flex: 2, child: _buildInput(_fuFollowUpRemarksController, 'Follow-Up Remarks & Notes', Icons.comment)),
+                Expanded(child: _buildInput(_fuFollowUpRemarksController, 'Follow-Up Remarks & Notes', Icons.comment)),
               ],
             ),
           ],
@@ -2894,64 +2917,61 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     final theme = Theme.of(context);
     final isCollapsed = _collapsedSections.contains(index);
 
-    return Container(
+    return AppCard(
       key: _sectionKeys[index],
-      margin: const EdgeInsets.only(bottom: Spacing.md),
-      child: AppCard(
-        padding: const EdgeInsets.all(Spacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InkWell(
-              onTap: () => _toggleSection(index),
-              borderRadius: Radii.smAll,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: Radii.pillAll,
-                      ),
-                      child: Text(
-                        sectionNum,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
+      padding: EdgeInsets.all(isCollapsed ? Spacing.md : Spacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () => _toggleSection(index),
+            borderRadius: Radii.smAll,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: Radii.pillAll,
+                    ),
+                    child: Text(
+                      sectionNum,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: Spacing.sm),
-                    Icon(icon, size: 20, color: theme.colorScheme.primary),
-                    const SizedBox(width: Spacing.sm),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Icon(icon, size: 20, color: theme.colorScheme.primary),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
-                    Icon(
-                      isCollapsed ? Icons.expand_more : Icons.expand_less,
-                      size: 20,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ],
-                ),
+                  ),
+                  Icon(
+                    isCollapsed ? Icons.expand_more : Icons.expand_less,
+                    size: 20,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ],
               ),
             ),
-            if (!isCollapsed) ...[
-              const SizedBox(height: Spacing.sm),
-              const Divider(height: 1),
-              const SizedBox(height: Spacing.md),
-              ...children,
-            ],
+          ),
+          if (!isCollapsed) ...[
+            const SizedBox(height: Spacing.sm),
+            const Divider(height: 1),
+            const SizedBox(height: Spacing.lg),
+            ...children,
           ],
-        ),
+        ],
       ),
     );
   }
@@ -3064,7 +3084,9 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     TextEditingController controller,
     String label, [
     IconData? icon,
-    int maxLines = 1,
+    int? maxLines = 1,
+    int? minLines,
+    String? hintText,
   ]) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -3084,11 +3106,13 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
         TextFormField(
           controller: controller,
           maxLines: maxLines,
+          minLines: minLines,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: scheme.onSurface,
           ),
           decoration: InputDecoration(
             isDense: true,
+            hintText: hintText,
             prefixIcon: icon != null
                 ? Icon(icon, size: 20, color: scheme.onSurfaceVariant)
                 : null,

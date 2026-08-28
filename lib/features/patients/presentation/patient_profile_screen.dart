@@ -26,6 +26,7 @@ import '../../clinics/providers/clinic_provider.dart';
 import '../../visits/presentation/add_visit_dialog.dart';
 import '../../visits/providers/visit_provider.dart';
 import '../../growth/presentation/record_review_dialog.dart';
+import '../../clinical/presentation/clinical_case_sheet_screen.dart';
 import '../../clinical/presentation/master_case_taking_screen.dart';
 import '../../clinical/presentation/widgets/complaint_list_view.dart';
 import '../../clinical/presentation/widgets/prescription_list_view.dart';
@@ -1033,22 +1034,46 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                     ),
                   const SizedBox(height: Spacing.sm),
                 ],
-                AppButton.primary(
-                  label: record == null
-                      ? 'Start Clinical Case Taking'
-                      : 'Edit Case Record',
-                  icon: record == null
-                      ? Icons.edit_note
-                      : Icons.edit_outlined,
-                  fullWidth: true,
-                  onPressed: () {
-                    Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(
-                        builder: (_) => MasterCaseTakingScreen(patient: patient),
-                      ),
-                    );
-                  },
-                ),
+                if (record == null)
+                  AppButton.primary(
+                    label: 'Start Clinical Case Taking',
+                    icon: Icons.edit_note,
+                    fullWidth: true,
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).push(
+                        MaterialPageRoute(
+                          builder: (_) => MasterCaseTakingScreen(patient: patient),
+                        ),
+                      );
+                    },
+                  )
+                else ...[
+                  AppButton.primary(
+                    label: 'View Full Case Sheet',
+                    icon: Icons.visibility_outlined,
+                    fullWidth: true,
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).push(
+                        MaterialPageRoute(
+                          builder: (_) => ClinicalCaseSheetScreen(patient: patient),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                  AppButton.outlined(
+                    label: 'Edit Case Record',
+                    icon: Icons.edit_outlined,
+                    fullWidth: true,
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).push(
+                        MaterialPageRoute(
+                          builder: (_) => MasterCaseTakingScreen(patient: patient),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
           ),

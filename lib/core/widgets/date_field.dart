@@ -137,15 +137,14 @@ class _DateFieldState extends State<DateField> {
           decoration: InputDecoration(
             isDense: true,
             hintText: 'DD/MM/YYYY',
-            prefixIcon: Icon(
-              widget.prefixIcon,
-              size: 20,
-              color: scheme.onSurfaceVariant,
-            ),
             suffixIcon: IconButton(
               icon: const Icon(Icons.calendar_month_outlined, size: 20),
               tooltip: 'Choose date from calendar',
               onPressed: () => _pickDate(context),
+            ),
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 40,
+              minHeight: 40,
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: Spacing.md,
