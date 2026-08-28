@@ -218,7 +218,7 @@ class PracticeActivityScreen extends ConsumerWidget {
                         const SizedBox(width: 4),
                         Text(
                           metric == ActivityMetric.revenue
-                              ? Formatters.formatCurrency(state.totalRevenue)
+                              ? Formatters.formatCurrency(state.totalRevenue).replaceAll('₹ ', '')
                               : '${state.totalPatients} patients',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontSize: 13.5,
@@ -352,10 +352,98 @@ class PracticeActivityScreen extends ConsumerWidget {
 
           const SizedBox(height: Spacing.lg),
 
-          // 6. Restored Google Fit Style Timeline Feed for this selected date
-          ActivityJournalFeed(items: state.timelineItems),
+          // 6. Restored Google Fit Style Feed / Breakdown
+          if (range == ActivityTimeRange.week)
+            _buildWeeklyDaysList(context, ref, state, primaryColor)
+          else
+            ActivityJournalFeed(items: state.timelineItems),
         ],
       ),
+    );
+  }
+
+  Widget _buildWeeklyDaysList(
+    BuildContext context,
+    WidgetRef ref,
+    PracticeActivityState state,
+    Color primaryColor,
+  ) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final metric = state.metric;
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: state.weeklyBins.length,
+      separatorBuilder: (_, __) => Divider(
+        height: 1,
+        indent: Spacing.sm,
+        endIndent: Spacing.sm,
+        color: scheme.outlineVariant.withValues(alpha: 0.25),
+      ),
+      itemBuilder: (context, index) {
+        final bin = state.weeklyBins[index];
+        final fullDateStr = DateFormat('EEEE, d MMMM yyyy').format(bin.date);
+        final valStr = metric == ActivityMetric.revenue
+            ? Formatters.formatCurrency(bin.revenue)
+            : '${bin.patients} patients';
+
+        return InkWell(
+          onTap: () {
+            AppHaptics.selection();
+            ref.read(selectedActivityDateProvider.notifier).state = bin.date;
+            ref.read(activityRangeProvider.notifier).state = ActivityTimeRange.day;
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Spacing.xs, vertical: Spacing.md),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        fullDateStr,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        valStr,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (bin.isTargetMet)
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: primaryColor.withValues(alpha: 0.15),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.check,
+                        color: primaryColor,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
