@@ -125,24 +125,24 @@ void main() {
 
       // 1. Initial State (Today)
       container.read(selectedDashboardDateProvider.notifier).state = today;
-      final todayStats = await container.read(dashboardStatsProvider.future);
+      final todayStats = await container.read(dailyStatsProvider.future);
 
       expect(todayStats.isToday, isTrue);
-      expect(todayStats.activeDailyPatients, equals(1));
-      expect(todayStats.activeDailyRevenue, equals(1000.0));
-      expect(todayStats.activeDailyExpense, equals(0.0));
-      expect(todayStats.activeDailyNetProfit, equals(1000.0));
+      expect(todayStats.dailyPatients, equals(1));
+      expect(todayStats.dailyRevenue, equals(1000.0));
+      expect(todayStats.dailyExpense, equals(0.0));
+      expect(todayStats.dailyNetProfit, equals(1000.0));
 
       // 2. Select Yesterday
       container.read(selectedDashboardDateProvider.notifier).state = yesterday;
-      final yesterdayStats = await container.read(dashboardStatsProvider.future);
+      final yesterdayStats = await container.read(dailyStatsProvider.future);
 
       expect(yesterdayStats.isToday, isFalse);
       expect(yesterdayStats.isYesterday, isTrue);
-      expect(yesterdayStats.activeDailyPatients, equals(2));
-      expect(yesterdayStats.activeDailyRevenue, equals(2500.0));
-      expect(yesterdayStats.activeDailyExpense, equals(400.0));
-      expect(yesterdayStats.activeDailyNetProfit, equals(2100.0));
+      expect(yesterdayStats.dailyPatients, equals(2));
+      expect(yesterdayStats.dailyRevenue, equals(2500.0));
+      expect(yesterdayStats.dailyExpense, equals(400.0));
+      expect(yesterdayStats.dailyNetProfit, equals(2100.0));
     });
   });
 
@@ -160,18 +160,24 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           databaseProvider.overrideWithValue(db),
-          dashboardStatsProvider.overrideWith((ref) {
+          dailyStatsProvider.overrideWith((ref) {
             final selected = ref.watch(selectedDashboardDateProvider);
             final isT = selected.year == today.year &&
                 selected.month == today.month &&
                 selected.day == today.day;
             return Stream.value(
-              DashboardStats(
+              DailyStats(
                 selectedDate: selected,
                 dailyRevenue: isT ? 2800.0 : 1500.0,
                 dailyExpense: isT ? 0.0 : 300.0,
                 dailyNetProfit: isT ? 2800.0 : 1200.0,
                 dailyPatients: isT ? 1 : 4,
+              ),
+            );
+          }),
+          dashboardStatsProvider.overrideWith((ref) {
+            return Stream.value(
+              DashboardStats(
                 todayRevenue: 2800.0,
                 todayExpense: 0.0,
                 todayNetProfit: 2800.0,

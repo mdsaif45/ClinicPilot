@@ -165,33 +165,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 );
               }),
 
-              // 3. Date-Navigable Daily Clinic Snapshot
-              _DailySnapshotHeader(stats: stats),
-              _TileRow(children: [
-                MetricCard(
-                  label: stats.isToday ? "Today's Patients" : 'Patients',
-                  value: '${stats.activeDailyPatients}',
-                  numericValue: stats.activeDailyPatients.toDouble(),
-                  icon: Icons.person_outline,
-                  tone: MetricTone.neutral,
-                ),
-                MetricCard(
-                  label: stats.isToday ? "Today's Revenue" : 'Revenue',
-                  value: Formatters.formatCurrency(stats.activeDailyRevenue),
-                  numericValue: stats.activeDailyRevenue,
-                  icon: Icons.currency_rupee,
-                  tone: MetricTone.positive,
-                ),
-                MetricCard(
-                  label: stats.isToday ? "Today's Profit" : 'Profit',
-                  value: Formatters.formatCurrency(stats.activeDailyNetProfit),
-                  numericValue: stats.activeDailyNetProfit,
-                  icon: Icons.currency_rupee,
-                  tone: stats.activeDailyNetProfit < 0
-                      ? MetricTone.negative
-                      : MetricTone.positive,
-                ),
-              ]),
+              // 3. Date-Navigable Daily Clinic Snapshot (Isolated & Smoothly Animated)
+              const _DailySnapshotSection(),
 
               // 4. This Month at a Glance (Year removed from title)
               SectionHeader(
@@ -325,7 +300,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 class _TileRow extends StatelessWidget {
   final List<Widget> children;
 
-  const _TileRow({required this.children});
+  const _TileRow({super.key, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -343,23 +318,85 @@ class _TileRow extends StatelessWidget {
   }
 }
 
-class _DailySnapshotHeader extends ConsumerWidget {
-  final DashboardStats stats;
+class _DailySnapshotSection extends ConsumerWidget {
+  const _DailySnapshotSection();
 
-  const _DailySnapshotHeader({required this.stats});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dailyAsync = ref.watch(dailyStatsProvider);
+    final daily = dailyAsync.valueOrNull;
+
+    if (daily == null) {
+      return const SizedBox(height: 120);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _DailySnapshotHeader(daily: daily),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          child: _TileRow(
+            key: ValueKey<String>(
+              '${daily.selectedDate.year}-${daily.selectedDate.month}-${daily.selectedDate.day}',
+            ),
+            children: [
+              MetricCard(
+                label: daily.isToday ? "Today's Patients" : 'Patients',
+                value: '${daily.dailyPatients}',
+                numericValue: daily.dailyPatients.toDouble(),
+                icon: Icons.person_outline,
+                tone: MetricTone.neutral,
+              ),
+              MetricCard(
+                label: daily.isToday ? "Today's Revenue" : 'Revenue',
+                value: Formatters.formatCurrency(daily.dailyRevenue),
+                numericValue: daily.dailyRevenue,
+                icon: Icons.currency_rupee,
+                tone: MetricTone.positive,
+              ),
+              MetricCard(
+                label: daily.isToday ? "Today's Profit" : 'Profit',
+                value: Formatters.formatCurrency(daily.dailyNetProfit),
+                numericValue: daily.dailyNetProfit,
+                icon: Icons.currency_rupee,
+                tone: daily.dailyNetProfit < 0
+                    ? MetricTone.negative
+                    : MetricTone.positive,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DailySnapshotHeader extends ConsumerWidget {
+  final DailyStats daily;
+
+  const _DailySnapshotHeader({required this.daily});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final now = DateTime.now();
-    final selectedDate = stats.activeSelectedDate;
-    final isToday = stats.isToday;
+    final selectedDate = daily.selectedDate;
+    final isToday = daily.isToday;
 
     String dateTitle;
     if (isToday) {
       dateTitle = 'Today';
-    } else if (stats.isYesterday) {
+    } else if (daily.isYesterday) {
       dateTitle = 'Yesterday';
     } else {
       dateTitle = DateFormat('d MMM, EEE').format(selectedDate);

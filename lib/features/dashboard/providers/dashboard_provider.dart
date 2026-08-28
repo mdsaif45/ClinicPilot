@@ -82,21 +82,102 @@ class DashboardStats {
       : (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0);
 }
 
+class DailyStats {
+  final DateTime selectedDate;
+  final double dailyRevenue;
+  final double dailyExpense;
+  final double dailyNetProfit;
+  final int dailyPatients;
+
+  const DailyStats({
+    required this.selectedDate,
+    required this.dailyRevenue,
+    required this.dailyExpense,
+    required this.dailyNetProfit,
+    required this.dailyPatients,
+  });
+
+  bool get isToday {
+    final now = DateTime.now();
+    return selectedDate.year == now.year &&
+        selectedDate.month == now.month &&
+        selectedDate.day == now.day;
+  }
+
+  bool get isYesterday {
+    final y = DateTime.now().subtract(const Duration(days: 1));
+    return selectedDate.year == y.year &&
+        selectedDate.month == y.month &&
+        selectedDate.day == y.day;
+  }
+}
+
 /// Active selected date for daily dashboard breakdown.
 final selectedDashboardDateProvider =
     StateProvider<DateTime>((ref) => DateTime.now());
 
-/// Live dashboard figures.
+/// Scoped live daily statistics for the selected date.
 ///
-/// Built on Drift's `watch()` so every number re-emits as soon as a patient,
-/// visit, memo or expense is written. The previous implementation was an
-/// `async*` generator that yielded exactly once, so the dashboard silently
-/// went stale until the screen was rebuilt.
-final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
+/// Only re-emits when the selected date or today's records change.
+/// Does NOT cause the rest of the Dashboard to reload or shimmer.
+final dailyStatsProvider = StreamProvider<DailyStats>((ref) {
   final db = ref.watch(databaseProvider);
   final activeClinic = ref.watch(activeClinicProvider);
   final clinicId = activeClinic?.id;
   final selectedDate = ref.watch(selectedDashboardDateProvider);
+
+  final memos =
+      (db.select(db.cashMemos)..where((t) => t.isDeleted.equals(false))).watch();
+  final expenses =
+      (db.select(db.expenses)..where((t) => t.isDeleted.equals(false))).watch();
+  final visits =
+      (db.select(db.visits)..where((t) => t.isDeleted.equals(false))).watch();
+
+  return _combine3(memos, expenses, visits, (memoRows, expenseRows, visitRows) {
+    final selectedDayStart = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    final selectedDayEnd = selectedDayStart.add(const Duration(days: 1));
+
+    bool inClinic(String? rowClinicId) =>
+        clinicId == null || rowClinicId == clinicId;
+
+    bool within(DateTime d, DateTime start, DateTime end) =>
+        !d.isBefore(start) && d.isBefore(end);
+
+    var dailyRevenue = 0.0;
+    for (final m in memoRows) {
+      if (!inClinic(m.clinicId)) continue;
+      if (within(m.memoDate, selectedDayStart, selectedDayEnd)) dailyRevenue += m.total;
+    }
+
+    var dailyExpense = 0.0;
+    for (final e in expenseRows) {
+      if (!inClinic(e.clinicId)) continue;
+      if (within(e.date, selectedDayStart, selectedDayEnd)) dailyExpense += e.amount;
+    }
+
+    var dailyVisits = 0;
+    for (final v in visitRows) {
+      if (!inClinic(v.clinicId)) continue;
+      if (within(v.visitDate, selectedDayStart, selectedDayEnd)) dailyVisits++;
+    }
+
+    return DailyStats(
+      selectedDate: selectedDate,
+      dailyRevenue: dailyRevenue,
+      dailyExpense: dailyExpense,
+      dailyNetProfit: dailyRevenue - dailyExpense,
+      dailyPatients: dailyVisits,
+    );
+  });
+});
+
+/// Live dashboard figures for monthly & overall practice performance.
+///
+/// Built on Drift's `watch()` so numbers re-emit as soon as records are written.
+final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
+  final db = ref.watch(databaseProvider);
+  final activeClinic = ref.watch(activeClinicProvider);
+  final clinicId = activeClinic?.id;
 
   final memos =
       (db.select(db.cashMemos)..where((t) => t.isDeleted.equals(false))).watch();
@@ -112,8 +193,8 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
   return _combine5(memos, expenses, visits, patients, settings,
       (memoRows, expenseRows, visitRows, patientRows, settingRows) {
     final now = DateTime.now();
-    final selectedDayStart = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    final selectedDayEnd = selectedDayStart.add(const Duration(days: 1));
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = todayStart.add(const Duration(days: 1));
 
     final monthStart = DateTime(now.year, now.month, 1);
     final nextMonthStart = DateTime(now.year, now.month + 1, 1);
@@ -138,10 +219,10 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
     bool within(DateTime d, DateTime start, DateTime end) =>
         !d.isBefore(start) && d.isBefore(end);
 
-    var dailyRevenue = 0.0, monthRevenue = 0.0, prevMonthRevenue = 0.0;
+    var todayRevenue = 0.0, monthRevenue = 0.0, prevMonthRevenue = 0.0;
     for (final m in memoRows) {
       if (!inClinic(m.clinicId)) continue;
-      if (within(m.memoDate, selectedDayStart, selectedDayEnd)) dailyRevenue += m.total;
+      if (within(m.memoDate, todayStart, todayEnd)) todayRevenue += m.total;
       if (within(m.memoDate, monthStart, nextMonthStart)) {
         monthRevenue += m.total;
       } else if (within(m.memoDate, prevMonthStart, monthStart)) {
@@ -149,17 +230,17 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
       }
     }
 
-    var dailyExpense = 0.0, monthExpense = 0.0;
+    var todayExpense = 0.0, monthExpense = 0.0;
     for (final e in expenseRows) {
       if (!inClinic(e.clinicId)) continue;
-      if (within(e.date, selectedDayStart, selectedDayEnd)) dailyExpense += e.amount;
+      if (within(e.date, todayStart, todayEnd)) todayExpense += e.amount;
       if (within(e.date, monthStart, nextMonthStart)) monthExpense += e.amount;
     }
 
-    var dailyVisits = 0, monthNew = 0, monthRepeat = 0, prevMonthNew = 0;
+    var todayVisits = 0, monthNew = 0, monthRepeat = 0, prevMonthNew = 0;
     for (final v in visitRows) {
       if (!inClinic(v.clinicId)) continue;
-      if (within(v.visitDate, selectedDayStart, selectedDayEnd)) dailyVisits++;
+      if (within(v.visitDate, todayStart, todayEnd)) todayVisits++;
       if (within(v.visitDate, monthStart, nextMonthStart)) {
         if (v.visitType == 'new') {
           monthNew++;
@@ -180,15 +261,15 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
         previous <= 0 ? null : ((current - previous) / previous) * 100;
 
     return DashboardStats(
-      selectedDate: selectedDate,
-      dailyRevenue: dailyRevenue,
-      dailyExpense: dailyExpense,
-      dailyNetProfit: dailyRevenue - dailyExpense,
-      dailyPatients: dailyVisits,
-      todayRevenue: dailyRevenue,
-      todayExpense: dailyExpense,
-      todayNetProfit: dailyRevenue - dailyExpense,
-      todayPatients: dailyVisits,
+      selectedDate: todayStart,
+      dailyRevenue: todayRevenue,
+      dailyExpense: todayExpense,
+      dailyNetProfit: todayRevenue - todayExpense,
+      dailyPatients: todayVisits,
+      todayRevenue: todayRevenue,
+      todayExpense: todayExpense,
+      todayNetProfit: todayRevenue - todayExpense,
+      todayPatients: todayVisits,
       monthlyRevenue: monthRevenue,
       monthlyExpense: monthExpense,
       monthlyNetProfit: monthRevenue - monthExpense,
@@ -202,6 +283,51 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
     );
   });
 });
+
+/// Combines three streams, re-emitting whenever any of them produces a value.
+Stream<R> _combine3<A, B, C, R>(
+  Stream<A> sa,
+  Stream<B> sb,
+  Stream<C> sc,
+  R Function(A, B, C) combine,
+) {
+  late StreamController<R> controller;
+  A? a;
+  B? b;
+  C? c;
+  final subs = <StreamSubscription>[];
+
+  void emit() {
+    if (a != null && b != null && c != null) {
+      controller.add(combine(a as A, b as B, c as C));
+    }
+  }
+
+  controller = StreamController<R>(
+    onListen: () {
+      subs
+        ..add(sa.listen((v) {
+          a = v;
+          emit();
+        }, onError: controller.addError))
+        ..add(sb.listen((v) {
+          b = v;
+          emit();
+        }, onError: controller.addError))
+        ..add(sc.listen((v) {
+          c = v;
+          emit();
+        }, onError: controller.addError));
+    },
+    onCancel: () async {
+      for (final s in subs) {
+        await s.cancel();
+      }
+    },
+  );
+
+  return controller.stream;
+}
 
 /// Combines five streams, re-emitting whenever any of them produces a value.
 Stream<R> _combine5<A, B, C, D, E, R>(
