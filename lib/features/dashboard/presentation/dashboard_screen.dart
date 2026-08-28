@@ -323,57 +323,44 @@ class _DailySnapshotSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dailyAsync = ref.watch(dailyStatsProvider);
-    final daily = dailyAsync.valueOrNull;
+    final selectedDate = ref.watch(selectedDashboardDateProvider);
+    final daily = ref.watch(dailyStatsProvider);
 
-    if (daily == null) {
-      return const SizedBox(height: 120);
-    }
+    final now = DateTime.now();
+    final isToday = selectedDate.year == now.year &&
+        selectedDate.month == now.month &&
+        selectedDate.day == now.day;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _DailySnapshotHeader(daily: daily),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.easeInCubic,
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          child: _TileRow(
-            key: ValueKey<String>(
-              '${daily.selectedDate.year}-${daily.selectedDate.month}-${daily.selectedDate.day}',
+        _DailySnapshotHeader(selectedDate: selectedDate),
+        _TileRow(
+          children: [
+            MetricCard(
+              label: isToday ? "Today's Patients" : 'Patients',
+              value: '${daily.dailyPatients}',
+              numericValue: daily.dailyPatients.toDouble(),
+              icon: Icons.person_outline,
+              tone: MetricTone.neutral,
             ),
-            children: [
-              MetricCard(
-                label: daily.isToday ? "Today's Patients" : 'Patients',
-                value: '${daily.dailyPatients}',
-                numericValue: daily.dailyPatients.toDouble(),
-                icon: Icons.person_outline,
-                tone: MetricTone.neutral,
-              ),
-              MetricCard(
-                label: daily.isToday ? "Today's Revenue" : 'Revenue',
-                value: Formatters.formatCurrency(daily.dailyRevenue),
-                numericValue: daily.dailyRevenue,
-                icon: Icons.currency_rupee,
-                tone: MetricTone.positive,
-              ),
-              MetricCard(
-                label: daily.isToday ? "Today's Profit" : 'Profit',
-                value: Formatters.formatCurrency(daily.dailyNetProfit),
-                numericValue: daily.dailyNetProfit,
-                icon: Icons.currency_rupee,
-                tone: daily.dailyNetProfit < 0
-                    ? MetricTone.negative
-                    : MetricTone.positive,
-              ),
-            ],
-          ),
+            MetricCard(
+              label: isToday ? "Today's Revenue" : 'Revenue',
+              value: Formatters.formatCurrency(daily.dailyRevenue),
+              numericValue: daily.dailyRevenue,
+              icon: Icons.currency_rupee,
+              tone: MetricTone.positive,
+            ),
+            MetricCard(
+              label: isToday ? "Today's Profit" : 'Profit',
+              value: Formatters.formatCurrency(daily.dailyNetProfit),
+              numericValue: daily.dailyNetProfit,
+              icon: Icons.currency_rupee,
+              tone: daily.dailyNetProfit < 0
+                  ? MetricTone.negative
+                  : MetricTone.positive,
+            ),
+          ],
         ),
       ],
     );
@@ -381,22 +368,29 @@ class _DailySnapshotSection extends ConsumerWidget {
 }
 
 class _DailySnapshotHeader extends ConsumerWidget {
-  final DailyStats daily;
+  final DateTime selectedDate;
 
-  const _DailySnapshotHeader({required this.daily});
+  const _DailySnapshotHeader({required this.selectedDate});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final now = DateTime.now();
-    final selectedDate = daily.selectedDate;
-    final isToday = daily.isToday;
+    final isToday = selectedDate.year == now.year &&
+        selectedDate.month == now.month &&
+        selectedDate.day == now.day;
+    final isYesterday = () {
+      final y = now.subtract(const Duration(days: 1));
+      return selectedDate.year == y.year &&
+          selectedDate.month == y.month &&
+          selectedDate.day == y.day;
+    }();
 
     String dateTitle;
     if (isToday) {
       dateTitle = 'Today';
-    } else if (daily.isYesterday) {
+    } else if (isYesterday) {
       dateTitle = 'Yesterday';
     } else {
       dateTitle = DateFormat('d MMM, EEE').format(selectedDate);

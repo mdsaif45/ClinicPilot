@@ -28,6 +28,7 @@ class ActiveClinicIdNotifier extends StateNotifier<String?> {
     final query = _db.select(_db.settings)
       ..where((tbl) => tbl.key.equals('active_clinic_id'));
     final setting = await query.getSingleOrNull();
+    if (!mounted) return;
     if (setting != null && setting.value.isNotEmpty) {
       state = setting.value;
     } else {
@@ -35,6 +36,7 @@ class ActiveClinicIdNotifier extends StateNotifier<String?> {
             ..where((tbl) => tbl.isDeleted.equals(false))
             ..limit(1))
           .getSingleOrNull();
+      if (!mounted) return;
       if (firstClinic != null) {
         state = firstClinic.id;
         await setClinicId(firstClinic.id);

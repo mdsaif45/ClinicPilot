@@ -123,9 +123,12 @@ void main() {
             ),
           );
 
+      // Allow underlying streams to emit initial database state
+      await container.read(dailyRawStreamsProvider.future);
+
       // 1. Initial State (Today)
       container.read(selectedDashboardDateProvider.notifier).state = today;
-      final todayStats = await container.read(dailyStatsProvider.future);
+      final todayStats = container.read(dailyStatsProvider);
 
       expect(todayStats.isToday, isTrue);
       expect(todayStats.dailyPatients, equals(1));
@@ -135,7 +138,7 @@ void main() {
 
       // 2. Select Yesterday
       container.read(selectedDashboardDateProvider.notifier).state = yesterday;
-      final yesterdayStats = await container.read(dailyStatsProvider.future);
+      final yesterdayStats = container.read(dailyStatsProvider);
 
       expect(yesterdayStats.isToday, isFalse);
       expect(yesterdayStats.isYesterday, isTrue);
@@ -165,14 +168,12 @@ void main() {
             final isT = selected.year == today.year &&
                 selected.month == today.month &&
                 selected.day == today.day;
-            return Stream.value(
-              DailyStats(
-                selectedDate: selected,
-                dailyRevenue: isT ? 2800.0 : 1500.0,
-                dailyExpense: isT ? 0.0 : 300.0,
-                dailyNetProfit: isT ? 2800.0 : 1200.0,
-                dailyPatients: isT ? 1 : 4,
-              ),
+            return DailyStats(
+              selectedDate: selected,
+              dailyRevenue: isT ? 2800.0 : 1500.0,
+              dailyExpense: isT ? 0.0 : 300.0,
+              dailyNetProfit: isT ? 2800.0 : 1200.0,
+              dailyPatients: isT ? 1 : 4,
             );
           }),
           dashboardStatsProvider.overrideWith((ref) {

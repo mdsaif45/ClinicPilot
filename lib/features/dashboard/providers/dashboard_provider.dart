@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
@@ -116,15 +117,21 @@ class DailyStats {
 final selectedDashboardDateProvider =
     StateProvider<DateTime>((ref) => DateTime.now());
 
-/// Scoped live daily statistics for the selected date.
-///
-/// Only re-emits when the selected date or today's records change.
-/// Does NOT cause the rest of the Dashboard to reload or shimmer.
-final dailyStatsProvider = StreamProvider<DailyStats>((ref) {
+class _DailyRawData {
+  final List<CashMemo> memos;
+  final List<Expense> expenses;
+  final List<Visit> visits;
+
+  const _DailyRawData({
+    required this.memos,
+    required this.expenses,
+    required this.visits,
+  });
+}
+
+/// Continuous stream of raw database records for the dashboard.
+final dailyRawStreamsProvider = StreamProvider<_DailyRawData>((ref) {
   final db = ref.watch(databaseProvider);
-  final activeClinic = ref.watch(activeClinicProvider);
-  final clinicId = activeClinic?.id;
-  final selectedDate = ref.watch(selectedDashboardDateProvider);
 
   final memos =
       (db.select(db.cashMemos)..where((t) => t.isDeleted.equals(false))).watch();
@@ -134,41 +141,75 @@ final dailyStatsProvider = StreamProvider<DailyStats>((ref) {
       (db.select(db.visits)..where((t) => t.isDeleted.equals(false))).watch();
 
   return _combine3(memos, expenses, visits, (memoRows, expenseRows, visitRows) {
-    final selectedDayStart = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    final selectedDayEnd = selectedDayStart.add(const Duration(days: 1));
-
-    bool inClinic(String? rowClinicId) =>
-        clinicId == null || rowClinicId == clinicId;
-
-    bool within(DateTime d, DateTime start, DateTime end) =>
-        !d.isBefore(start) && d.isBefore(end);
-
-    var dailyRevenue = 0.0;
-    for (final m in memoRows) {
-      if (!inClinic(m.clinicId)) continue;
-      if (within(m.memoDate, selectedDayStart, selectedDayEnd)) dailyRevenue += m.total;
-    }
-
-    var dailyExpense = 0.0;
-    for (final e in expenseRows) {
-      if (!inClinic(e.clinicId)) continue;
-      if (within(e.date, selectedDayStart, selectedDayEnd)) dailyExpense += e.amount;
-    }
-
-    var dailyVisits = 0;
-    for (final v in visitRows) {
-      if (!inClinic(v.clinicId)) continue;
-      if (within(v.visitDate, selectedDayStart, selectedDayEnd)) dailyVisits++;
-    }
-
-    return DailyStats(
-      selectedDate: selectedDate,
-      dailyRevenue: dailyRevenue,
-      dailyExpense: dailyExpense,
-      dailyNetProfit: dailyRevenue - dailyExpense,
-      dailyPatients: dailyVisits,
+    return _DailyRawData(
+      memos: memoRows,
+      expenses: expenseRows,
+      visits: visitRows,
     );
   });
+});
+
+/// Scoped synchronous live daily statistics for the selected date.
+///
+/// Filters the in-memory database snapshot instantaneously with zero async
+/// delay or loading states when traversing dates.
+final dailyStatsProvider = Provider<DailyStats>((ref) {
+  final rawData = ref.watch(dailyRawStreamsProvider).valueOrNull;
+  final activeClinic = ref.watch(activeClinicProvider);
+  final clinicId = activeClinic?.id;
+  final selectedDate = ref.watch(selectedDashboardDateProvider);
+
+  if (rawData == null) {
+    return DailyStats(
+      selectedDate: selectedDate,
+      dailyRevenue: 0.0,
+      dailyExpense: 0.0,
+      dailyNetProfit: 0.0,
+      dailyPatients: 0,
+    );
+  }
+
+  final selectedDayStart =
+      DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+  final selectedDayEnd = selectedDayStart.add(const Duration(days: 1));
+
+  bool inClinic(String? rowClinicId) =>
+      clinicId == null || rowClinicId == clinicId;
+
+  bool within(DateTime d, DateTime start, DateTime end) =>
+      !d.isBefore(start) && d.isBefore(end);
+
+  var dailyRevenue = 0.0;
+  for (final m in rawData.memos) {
+    if (!inClinic(m.clinicId)) continue;
+    if (within(m.memoDate, selectedDayStart, selectedDayEnd)) {
+      dailyRevenue += m.total;
+    }
+  }
+
+  var dailyExpense = 0.0;
+  for (final e in rawData.expenses) {
+    if (!inClinic(e.clinicId)) continue;
+    if (within(e.date, selectedDayStart, selectedDayEnd)) {
+      dailyExpense += e.amount;
+    }
+  }
+
+  var dailyVisits = 0;
+  for (final v in rawData.visits) {
+    if (!inClinic(v.clinicId)) continue;
+    if (within(v.visitDate, selectedDayStart, selectedDayEnd)) {
+      dailyVisits++;
+    }
+  }
+
+  return DailyStats(
+    selectedDate: selectedDate,
+    dailyRevenue: dailyRevenue,
+    dailyExpense: dailyExpense,
+    dailyNetProfit: dailyRevenue - dailyExpense,
+    dailyPatients: dailyVisits,
+  );
 });
 
 /// Live dashboard figures for monthly & overall practice performance.
