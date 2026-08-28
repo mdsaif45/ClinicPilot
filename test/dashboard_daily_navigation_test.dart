@@ -240,6 +240,23 @@ void main() {
       expect(find.text('Today'), findsOneWidget);
       expect(find.text("Today's Patients"), findsOneWidget);
       expect(find.text('1'), findsOneWidget);
+
+      // Tap Previous Day (<) again
+      await tester.tap(prevBtn);
+      await tester.pumpAndSettle();
+      expect(container.read(selectedDashboardDateProvider).day, equals(yesterday.day));
+      expect(find.text('Yesterday'), findsOneWidget);
+
+      // Tap Next Day (>) to return to Today using the right arrow icon
+      final nextBtn = find.byTooltip('Next Day');
+      expect(nextBtn, findsOneWidget);
+      await tester.tap(nextBtn);
+      await tester.pumpAndSettle();
+
+      expect(container.read(selectedDashboardDateProvider).day, equals(today.day));
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text("Today's Patients"), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
     });
   });
 }

@@ -377,15 +377,15 @@ class _DailySnapshotHeader extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final now = DateTime.now();
-    final isToday = selectedDate.year == now.year &&
-        selectedDate.month == now.month &&
-        selectedDate.day == now.day;
-    final isYesterday = () {
-      final y = now.subtract(const Duration(days: 1));
-      return selectedDate.year == y.year &&
-          selectedDate.month == y.month &&
-          selectedDate.day == y.day;
-    }();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    final isToday = selectedDate.year == today.year &&
+        selectedDate.month == today.month &&
+        selectedDate.day == today.day;
+    final isYesterday = selectedDate.year == yesterday.year &&
+        selectedDate.month == yesterday.month &&
+        selectedDate.day == yesterday.day;
 
     String dateTitle;
     if (isToday) {
@@ -420,7 +420,7 @@ class _DailySnapshotHeader extends ConsumerWidget {
                     onTap: () {
                       AppHaptics.selection();
                       ref.read(selectedDashboardDateProvider.notifier).state =
-                          DateTime.now();
+                          today;
                     },
                     borderRadius: Radii.smAll,
                     child: Padding(
@@ -443,7 +443,7 @@ class _DailySnapshotHeader extends ConsumerWidget {
             onPressed: () {
               AppHaptics.selection();
               ref.read(selectedDashboardDateProvider.notifier).state =
-                  selectedDate.subtract(const Duration(days: 1));
+                  DateTime(selectedDate.year, selectedDate.month, selectedDate.day - 1);
             },
           ),
           InkWell(
@@ -451,12 +451,13 @@ class _DailySnapshotHeader extends ConsumerWidget {
               AppHaptics.selection();
               final picked = await showDatePicker(
                 context: context,
-                initialDate: selectedDate.isAfter(now) ? now : selectedDate,
+                initialDate: selectedDate.isAfter(today) ? today : selectedDate,
                 firstDate: DateTime(2020),
-                lastDate: DateTime(now.year, now.month, now.day),
+                lastDate: today,
               );
               if (picked != null) {
-                ref.read(selectedDashboardDateProvider.notifier).state = picked;
+                ref.read(selectedDashboardDateProvider.notifier).state =
+                    DateTime(picked.year, picked.month, picked.day);
               }
             },
             borderRadius: Radii.smAll,
@@ -490,9 +491,9 @@ class _DailySnapshotHeader extends ConsumerWidget {
                 ? null
                 : () {
                     AppHaptics.selection();
-                    final next = selectedDate.add(const Duration(days: 1));
-                    final todayEnd = DateTime(now.year, now.month, now.day);
-                    if (!next.isAfter(todayEnd)) {
+                    final next = DateTime(
+                        selectedDate.year, selectedDate.month, selectedDate.day + 1);
+                    if (!next.isAfter(today)) {
                       ref.read(selectedDashboardDateProvider.notifier).state = next;
                     }
                   },

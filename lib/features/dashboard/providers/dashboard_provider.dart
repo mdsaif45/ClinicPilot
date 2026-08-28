@@ -113,9 +113,11 @@ class DailyStats {
   }
 }
 
-/// Active selected date for daily dashboard breakdown.
-final selectedDashboardDateProvider =
-    StateProvider<DateTime>((ref) => DateTime.now());
+/// Active selected date for daily dashboard breakdown (date only, midnight normalized).
+final selectedDashboardDateProvider = StateProvider<DateTime>((ref) {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day);
+});
 
 class _DailyRawData {
   final List<CashMemo> memos;
