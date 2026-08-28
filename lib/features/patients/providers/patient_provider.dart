@@ -53,6 +53,11 @@ final serialNoInUseProvider =
   return match != null;
 });
 
+final patientByIdProvider = StreamProvider.family<Patient?, String>((ref, id) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(db.patients)..where((tbl) => tbl.id.equals(id))).watchSingleOrNull();
+});
+
 final patientsStreamProvider = StreamProvider<List<Patient>>((ref) {
   final db = ref.watch(databaseProvider);
   final query = ref.watch(patientSearchQueryProvider).trim().toLowerCase();

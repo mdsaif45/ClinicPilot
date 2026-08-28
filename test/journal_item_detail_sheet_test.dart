@@ -44,11 +44,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify Header & Hero
-      expect(find.text('Sara Khan • New Consultation'), findsOneWidget);
+      expect(find.text('Sara Khan'), findsWidgets);
       expect(find.text('Consultation Logged'), findsOneWidget);
 
       // Verify Metric Rows
-      expect(find.text('Sara Khan (P-001)'), findsOneWidget);
+      expect(find.text('P-001'), findsOneWidget);
       expect(find.text('Allergic Rhinitis'), findsOneWidget);
       expect(find.text('Advised warm water steam'), findsOneWidget);
       expect(find.text('Open Patient Profile & Records'), findsOneWidget);

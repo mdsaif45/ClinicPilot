@@ -34,9 +34,10 @@ class JournalItemDetailSheet extends StatelessWidget {
     final scheme = theme.colorScheme;
     final formattedFullDate = DateFormat('EEEE, d MMMM yyyy • h:mm a').format(entry.timestamp);
 
-    // Resolve Category Visuals
+    // Resolve Category Visuals & Clean non-duplicated titles
     IconData heroIcon;
     Color heroColor;
+    String heroHeadline;
     String statusTitle;
     String statusSubtitle;
 
@@ -44,20 +45,26 @@ class JournalItemDetailSheet extends StatelessWidget {
       case JournalEventType.consultation:
         heroIcon = Icons.medical_services_outlined;
         heroColor = scheme.secondary;
+        // Clean headline: Patient Name (avoids duplicating "New Consultation" in both headline & hero pill)
+        heroHeadline = entry.patientName ?? entry.title;
         statusTitle = 'Consultation Logged';
         statusSubtitle = 'Clinical notes and examination recorded in patient history.';
         break;
       case JournalEventType.dispense:
         heroIcon = Icons.medication_outlined;
         heroColor = scheme.primary;
+        heroHeadline = entry.memoNumber != null
+            ? 'Invoice #${entry.memoNumber} • ${entry.patientName ?? 'Patient'}'
+            : entry.title;
         statusTitle = 'Payment & Dispense Settled';
         statusSubtitle = 'Cash memo receipt generated and clinic ledger updated.';
         break;
       case JournalEventType.expense:
         heroIcon = Icons.receipt_long_outlined;
         heroColor = scheme.error;
+        heroHeadline = 'Clinic Expense • ${entry.category ?? 'General'}';
         statusTitle = 'Expense Disbursed';
-        statusSubtitle = 'Operational clinic payout documented.';
+        statusSubtitle = 'Operational clinic payout documented in ledger.';
         break;
     }
 
@@ -87,7 +94,7 @@ class JournalItemDetailSheet extends StatelessWidget {
 
               const SizedBox(height: Spacing.sm),
 
-              // 2. Action Header Bar (Close + Share/Info)
+              // 2. Action Header Bar (Close + Patient Profile shortcut)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -96,27 +103,23 @@ class JournalItemDetailSheet extends StatelessWidget {
                     tooltip: 'Close',
                     onPressed: () => Navigator.of(context).pop(),
                   ),
-                  Row(
-                    children: [
-                      if (entry.patientId != null)
-                        IconButton(
-                          icon: const Icon(Icons.person_outline),
-                          tooltip: 'Open Patient Profile',
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            context.push('/patients/${entry.patientId}');
-                          },
-                        ),
-                    ],
-                  ),
+                  if (entry.patientId != null)
+                    IconButton(
+                      icon: const Icon(Icons.person_outline),
+                      tooltip: 'Open Patient Profile',
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context.push('/patients/${entry.patientId}');
+                      },
+                    ),
                 ],
               ),
 
               const SizedBox(height: Spacing.xs),
 
-              // 3. Hero Title & Timestamp (Google Fit Style)
+              // 3. Hero Headline & Timestamp (Google Fit Style)
               Text(
-                entry.title,
+                heroHeadline,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
@@ -160,14 +163,10 @@ class JournalItemDetailSheet extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (entry.amount != null) ...[
-                        Icon(
-                          Icons.currency_rupee,
-                          size: 26,
-                          color: heroColor,
-                        ),
-                        const SizedBox(width: 4),
                         Text(
-                          Formatters.formatCurrency(entry.amount!),
+                          entry.type == JournalEventType.expense
+                              ? '- ${Formatters.formatCurrency(entry.amount!)}'
+                              : Formatters.formatCurrency(entry.amount!),
                           style: theme.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: heroColor,
@@ -176,7 +175,7 @@ class JournalItemDetailSheet extends StatelessWidget {
                       ] else ...[
                         Icon(
                           Icons.medical_services_outlined,
-                          size: 26,
+                          size: 24,
                           color: heroColor,
                         ),
                         const SizedBox(width: Spacing.sm),
@@ -263,13 +262,10 @@ class JournalItemDetailSheet extends StatelessWidget {
                 child: Column(
                   children: [
                     if (entry.patientName != null)
-                      _buildMetricRow(
+                      _buildPatientMetricRow(
                         context,
-                        icon: Icons.person_outline,
-                        label: 'Patient',
-                        value: entry.patientCode != null
-                            ? '${entry.patientName} (${entry.patientCode})'
-                            : entry.patientName!,
+                        patientName: entry.patientName!,
+                        patientCode: entry.patientCode,
                       ),
                     if (entry.disease != null && entry.disease!.isNotEmpty)
                       _buildMetricRow(
@@ -291,7 +287,7 @@ class JournalItemDetailSheet extends StatelessWidget {
                         icon: Icons.payments_outlined,
                         label: 'Payment Method',
                         value: entry.paymentMethod!,
-                        trailingBadge: CustomBadge(
+                        customTrailing: CustomBadge(
                           label: entry.paymentMethod!,
                           color: scheme.primary,
                         ),
@@ -343,12 +339,91 @@ class JournalItemDetailSheet extends StatelessWidget {
     );
   }
 
+  Widget _buildPatientMetricRow(
+    BuildContext context, {
+    required String patientName,
+    String? patientCode,
+  }) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.person_outline,
+                size: 18,
+                color: scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: Spacing.md),
+              Text(
+                'Patient',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      patientName,
+                      textAlign: TextAlign.end,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: scheme.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (patientCode != null && patientCode.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerHighest.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          patientCode,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurfaceVariant,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Divider(
+          height: 1,
+          indent: Spacing.md,
+          endIndent: Spacing.md,
+          color: scheme.outlineVariant.withValues(alpha: 0.3),
+        ),
+      ],
+    );
+  }
+
   Widget _buildMetricRow(
     BuildContext context, {
     required IconData icon,
     required String label,
     required String value,
-    Widget? trailingBadge,
+    Widget? customTrailing,
     bool isLast = false,
   }) {
     final theme = Theme.of(context);
@@ -359,6 +434,7 @@ class JournalItemDetailSheet extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(
                 icon,
@@ -373,22 +449,23 @@ class JournalItemDetailSheet extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const Spacer(),
-              if (trailingBadge != null)
-                trailingBadge
-              else
-                Flexible(
-                  child: Text(
-                    value,
-                    textAlign: TextAlign.end,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: scheme.onSurface,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: customTrailing ??
+                      Text(
+                        value,
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onSurface,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                 ),
+              ),
             ],
           ),
         ),

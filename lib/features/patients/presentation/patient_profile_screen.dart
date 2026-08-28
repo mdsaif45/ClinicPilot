@@ -31,6 +31,7 @@ import '../../clinical/presentation/widgets/complaint_list_view.dart';
 import '../../clinical/presentation/widgets/prescription_list_view.dart';
 import '../../clinical/presentation/widgets/investigation_list_view.dart';
 import '../../clinical/providers/case_record_provider.dart';
+import '../providers/patient_provider.dart';
 import 'edit_patient_dialog.dart';
 
 /// Everything known about one patient, on one page.
@@ -1036,6 +1037,37 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Dynamic loader that resolves a Patient by ID from the database and displays their profile.
+class PatientProfileLoaderScreen extends ConsumerWidget {
+  final String patientId;
+
+  const PatientProfileLoaderScreen({super.key, required this.patientId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final patientAsync = ref.watch(patientByIdProvider(patientId));
+
+    return patientAsync.when(
+      data: (patient) {
+        if (patient == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Patient Not Found')),
+            body: const Center(child: Text('This patient record could not be found.')),
+          );
+        }
+        return PatientProfileScreen(patient: patient);
+      },
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, _) => Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(child: Text('Error loading patient: $err')),
       ),
     );
   }
