@@ -113,26 +113,83 @@ class DailyStats {
   }
 }
 
+class MonthlyStats {
+  final DateTime selectedMonth;
+  final double monthlyRevenue;
+  final double monthlyExpense;
+  final double monthlyNetProfit;
+  final double monthlyRevenueGoal;
+  final int totalPatients;
+  final int monthlyNewPatients;
+  final int monthlyRepeatPatients;
+  final int monthlyNewPatientGoal;
+  final double? revenueGrowthPercent;
+  final double? patientGrowthPercent;
+
+  const MonthlyStats({
+    required this.selectedMonth,
+    required this.monthlyRevenue,
+    required this.monthlyExpense,
+    required this.monthlyNetProfit,
+    required this.monthlyRevenueGoal,
+    required this.totalPatients,
+    required this.monthlyNewPatients,
+    required this.monthlyRepeatPatients,
+    required this.monthlyNewPatientGoal,
+    this.revenueGrowthPercent,
+    this.patientGrowthPercent,
+  });
+
+  bool get isCurrentMonth {
+    final now = DateTime.now();
+    return selectedMonth.year == now.year && selectedMonth.month == now.month;
+  }
+
+  bool get isLastMonth {
+    final now = DateTime.now();
+    final last = DateTime(now.year, now.month - 1, 1);
+    return selectedMonth.year == last.year && selectedMonth.month == last.month;
+  }
+
+  double get revenueGoalProgress => monthlyRevenueGoal <= 0
+      ? 0
+      : (monthlyRevenue / monthlyRevenueGoal).clamp(0.0, 1.0);
+
+  double get newPatientGoalProgress => monthlyNewPatientGoal <= 0
+      ? 0
+      : (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0);
+}
+
 /// Active selected date for daily dashboard breakdown (date only, midnight normalized).
 final selectedDashboardDateProvider = StateProvider<DateTime>((ref) {
   final now = DateTime.now();
   return DateTime(now.year, now.month, now.day);
 });
 
-class _DailyRawData {
+/// Active selected month for monthly dashboard breakdown (normalized to 1st of month).
+final selectedDashboardMonthProvider = StateProvider<DateTime>((ref) {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, 1);
+});
+
+class _DashboardRawData {
   final List<CashMemo> memos;
   final List<Expense> expenses;
   final List<Visit> visits;
+  final List<Patient> patients;
+  final List<Setting> settings;
 
-  const _DailyRawData({
+  const _DashboardRawData({
     required this.memos,
     required this.expenses,
     required this.visits,
+    required this.patients,
+    required this.settings,
   });
 }
 
 /// Continuous stream of raw database records for the dashboard.
-final dailyRawStreamsProvider = StreamProvider<_DailyRawData>((ref) {
+final dashboardRawStreamsProvider = StreamProvider<_DashboardRawData>((ref) {
   final db = ref.watch(databaseProvider);
 
   final memos =
@@ -141,22 +198,31 @@ final dailyRawStreamsProvider = StreamProvider<_DailyRawData>((ref) {
       (db.select(db.expenses)..where((t) => t.isDeleted.equals(false))).watch();
   final visits =
       (db.select(db.visits)..where((t) => t.isDeleted.equals(false))).watch();
+  final patients =
+      (db.select(db.patients)..where((t) => t.isDeleted.equals(false))).watch();
+  final settings = db.select(db.settings).watch();
 
-  return _combine3(memos, expenses, visits, (memoRows, expenseRows, visitRows) {
-    return _DailyRawData(
+  return _combine5(memos, expenses, visits, patients, settings,
+      (memoRows, expenseRows, visitRows, patientRows, settingRows) {
+    return _DashboardRawData(
       memos: memoRows,
       expenses: expenseRows,
       visits: visitRows,
+      patients: patientRows,
+      settings: settingRows,
     );
   });
 });
+
+/// Legacy alias to preserve backwards compatibility.
+final dailyRawStreamsProvider = dashboardRawStreamsProvider;
 
 /// Scoped synchronous live daily statistics for the selected date.
 ///
 /// Filters the in-memory database snapshot instantaneously with zero async
 /// delay or loading states when traversing dates.
 final dailyStatsProvider = Provider<DailyStats>((ref) {
-  final rawData = ref.watch(dailyRawStreamsProvider).valueOrNull;
+  final rawData = ref.watch(dashboardRawStreamsProvider).valueOrNull;
   final activeClinic = ref.watch(activeClinicProvider);
   final clinicId = activeClinic?.id;
   final selectedDate = ref.watch(selectedDashboardDateProvider);
@@ -214,7 +280,107 @@ final dailyStatsProvider = Provider<DailyStats>((ref) {
   );
 });
 
-/// Live dashboard figures for monthly & overall practice performance.
+/// Scoped synchronous live monthly statistics for the selected month.
+///
+/// Filters the in-memory database snapshot instantaneously with zero async
+/// delay or loading states when traversing months.
+final monthlyStatsProvider = Provider<MonthlyStats>((ref) {
+  final rawData = ref.watch(dashboardRawStreamsProvider).valueOrNull;
+  final activeClinic = ref.watch(activeClinicProvider);
+  final clinicId = activeClinic?.id;
+  final selectedMonth = ref.watch(selectedDashboardMonthProvider);
+
+  if (rawData == null) {
+    return MonthlyStats(
+      selectedMonth: selectedMonth,
+      monthlyRevenue: 0.0,
+      monthlyExpense: 0.0,
+      monthlyNetProfit: 0.0,
+      monthlyRevenueGoal: 50000.0,
+      totalPatients: 0,
+      monthlyNewPatients: 0,
+      monthlyRepeatPatients: 0,
+      monthlyNewPatientGoal: 10,
+    );
+  }
+
+  final monthStart = DateTime(selectedMonth.year, selectedMonth.month, 1);
+  final nextMonthStart = DateTime(selectedMonth.year, selectedMonth.month + 1, 1);
+  final prevMonthStart = DateTime(selectedMonth.year, selectedMonth.month - 1, 1);
+
+  String? settingValue(String key) {
+    for (final s in rawData.settings) {
+      if (s.key == key) return s.value;
+    }
+    return null;
+  }
+
+  String? clinicRevenueGoal = clinicId != null ? settingValue('monthly_revenue_goal_$clinicId') : null;
+  String? clinicPatientGoal = clinicId != null ? settingValue('monthly_new_patient_goal_$clinicId') : null;
+
+  final goal = double.tryParse(clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '') ?? 50000.0;
+  final patientGoal = int.tryParse(clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '') ?? 10;
+
+  bool inClinic(String? rowClinicId) =>
+      clinicId == null || rowClinicId == clinicId;
+
+  bool within(DateTime d, DateTime start, DateTime end) =>
+      !d.isBefore(start) && d.isBefore(end);
+
+  var monthRevenue = 0.0, prevMonthRevenue = 0.0;
+  for (final m in rawData.memos) {
+    if (!inClinic(m.clinicId)) continue;
+    if (within(m.memoDate, monthStart, nextMonthStart)) {
+      monthRevenue += m.total;
+    } else if (within(m.memoDate, prevMonthStart, monthStart)) {
+      prevMonthRevenue += m.total;
+    }
+  }
+
+  var monthExpense = 0.0;
+  for (final e in rawData.expenses) {
+    if (!inClinic(e.clinicId)) continue;
+    if (within(e.date, monthStart, nextMonthStart)) monthExpense += e.amount;
+  }
+
+  var monthNew = 0, monthRepeat = 0, prevMonthNew = 0;
+  for (final v in rawData.visits) {
+    if (!inClinic(v.clinicId)) continue;
+    if (within(v.visitDate, monthStart, nextMonthStart)) {
+      if (v.visitType == 'new') {
+        monthNew++;
+      } else {
+        monthRepeat++;
+      }
+    } else if (within(v.visitDate, prevMonthStart, monthStart) &&
+        v.visitType == 'new') {
+      prevMonthNew++;
+    }
+  }
+
+  final totalPatients = clinicId == null
+      ? rawData.patients.length
+      : rawData.patients.where((p) => p.primaryClinicId == clinicId).length;
+
+  double? growth(num current, num previous) =>
+      previous <= 0 ? null : ((current - previous) / previous) * 100;
+
+  return MonthlyStats(
+    selectedMonth: selectedMonth,
+    monthlyRevenue: monthRevenue,
+    monthlyExpense: monthExpense,
+    monthlyNetProfit: monthRevenue - monthExpense,
+    monthlyRevenueGoal: goal,
+    totalPatients: totalPatients,
+    monthlyNewPatients: monthNew,
+    monthlyRepeatPatients: monthRepeat,
+    monthlyNewPatientGoal: patientGoal,
+    revenueGrowthPercent: growth(monthRevenue, prevMonthRevenue),
+    patientGrowthPercent: growth(monthNew, prevMonthNew),
+  );
+});
+
+/// Live dashboard figures for overall practice performance.
 ///
 /// Built on Drift's `watch()` so numbers re-emit as soon as records are written.
 final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {

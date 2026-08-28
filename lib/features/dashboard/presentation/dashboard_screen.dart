@@ -29,8 +29,6 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  bool _showGoals = false;
-
   @override
   Widget build(BuildContext context) {
     final statsAsync = ref.watch(dashboardStatsProvider);
@@ -168,46 +166,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               // 3. Date-Navigable Daily Clinic Snapshot (Isolated & Smoothly Animated)
               const _DailySnapshotSection(),
 
-              // 4. This Month at a Glance (Year removed from title)
-              SectionHeader(
-                title: 'This Month (${DateFormat('MMMM').format(now)})',
-                onAction: () {
-                  AppHaptics.selection();
-                  setState(() => _showGoals = !_showGoals);
-                },
-                actionIcon: _showGoals ? Icons.expand_less : Icons.expand_more,
-              ),
-              _TileRow(children: [
-                MetricCard(
-                  label: 'Revenue',
-                  value: Formatters.formatCurrency(stats.monthlyRevenue),
-                  numericValue: stats.monthlyRevenue,
-                  icon: Icons.currency_rupee,
-                  tone: MetricTone.positive,
-                ),
-                MetricCard(
-                  label: 'Expenses',
-                  value: Formatters.formatCurrency(stats.monthlyExpense),
-                  numericValue: stats.monthlyExpense,
-                  icon: Icons.cancel_outlined,
-                  tone: MetricTone.negative,
-                ),
-                MetricCard(
-                  label: 'Net Profit',
-                  value: Formatters.formatCurrency(stats.monthlyNetProfit),
-                  numericValue: stats.monthlyNetProfit,
-                  icon: Icons.currency_rupee,
-                  tone: stats.monthlyNetProfit < 0
-                      ? MetricTone.negative
-                      : MetricTone.positive,
-                ),
-              ]),
-
-              // 5. Goal Progress Card (Moved directly under This Month, hidden by default)
-              if (_showGoals) ...[
-                const SizedBox(height: Spacing.sm),
-                GoalTrackerCard(stats: stats, now: now),
-              ],
+              // 4. Date-Navigable Monthly Clinic Snapshot & Goals
+              const _MonthlySnapshotSection(),
 
               // 6. Patients Summary
               const SectionHeader(title: 'Patients Summary'),
@@ -495,6 +455,235 @@ class _DailySnapshotHeader extends ConsumerWidget {
                         selectedDate.year, selectedDate.month, selectedDate.day + 1);
                     if (!next.isAfter(today)) {
                       ref.read(selectedDashboardDateProvider.notifier).state = next;
+                    }
+                  },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthlySnapshotSection extends ConsumerStatefulWidget {
+  const _MonthlySnapshotSection();
+
+  @override
+  ConsumerState<_MonthlySnapshotSection> createState() =>
+      _MonthlySnapshotSectionState();
+}
+
+class _MonthlySnapshotSectionState
+    extends ConsumerState<_MonthlySnapshotSection> {
+  bool _showGoals = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedMonth = ref.watch(selectedDashboardMonthProvider);
+    final monthly = ref.watch(monthlyStatsProvider);
+    final stats = ref.watch(dashboardStatsProvider).valueOrNull;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _MonthlySnapshotHeader(
+          selectedMonth: selectedMonth,
+          showGoals: _showGoals,
+          onToggleGoals: () {
+            AppHaptics.selection();
+            setState(() => _showGoals = !_showGoals);
+          },
+        ),
+        _TileRow(
+          children: [
+            MetricCard(
+              label: 'Revenue',
+              value: Formatters.formatCurrency(monthly.monthlyRevenue),
+              numericValue: monthly.monthlyRevenue,
+              icon: Icons.currency_rupee,
+              tone: MetricTone.positive,
+            ),
+            MetricCard(
+              label: 'Expenses',
+              value: Formatters.formatCurrency(monthly.monthlyExpense),
+              numericValue: monthly.monthlyExpense,
+              icon: Icons.cancel_outlined,
+              tone: MetricTone.negative,
+            ),
+            MetricCard(
+              label: 'Net Profit',
+              value: Formatters.formatCurrency(monthly.monthlyNetProfit),
+              numericValue: monthly.monthlyNetProfit,
+              icon: Icons.currency_rupee,
+              tone: monthly.monthlyNetProfit < 0
+                  ? MetricTone.negative
+                  : MetricTone.positive,
+            ),
+          ],
+        ),
+        if (_showGoals && stats != null) ...[
+          const SizedBox(height: Spacing.sm),
+          GoalTrackerCard(
+            stats: DashboardStats(
+              todayRevenue: stats.todayRevenue,
+              todayExpense: stats.todayExpense,
+              todayNetProfit: stats.todayNetProfit,
+              todayPatients: stats.todayPatients,
+              monthlyRevenue: monthly.monthlyRevenue,
+              monthlyExpense: monthly.monthlyExpense,
+              monthlyNetProfit: monthly.monthlyNetProfit,
+              monthlyRevenueGoal: monthly.monthlyRevenueGoal,
+              totalPatients: monthly.totalPatients,
+              monthlyNewPatients: monthly.monthlyNewPatients,
+              monthlyRepeatPatients: monthly.monthlyRepeatPatients,
+              monthlyNewPatientGoal: monthly.monthlyNewPatientGoal,
+            ),
+            now: selectedMonth,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _MonthlySnapshotHeader extends ConsumerWidget {
+  final DateTime selectedMonth;
+  final bool showGoals;
+  final VoidCallback onToggleGoals;
+
+  const _MonthlySnapshotHeader({
+    required this.selectedMonth,
+    required this.showGoals,
+    required this.onToggleGoals,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final now = DateTime.now();
+    final currentMonth = DateTime(now.year, now.month, 1);
+    final lastMonth = DateTime(now.year, now.month - 1, 1);
+
+    final isCurrentMonth = selectedMonth.year == currentMonth.year &&
+        selectedMonth.month == currentMonth.month;
+    final isLastMonth = selectedMonth.year == lastMonth.year &&
+        selectedMonth.month == lastMonth.month;
+
+    String monthTitle;
+    if (isCurrentMonth) {
+      monthTitle = 'This Month (${DateFormat('MMMM').format(now)})';
+    } else if (isLastMonth) {
+      monthTitle = 'Last Month (${DateFormat('MMMM').format(selectedMonth)})';
+    } else {
+      monthTitle = DateFormat('MMMM yyyy').format(selectedMonth);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.lg,
+        Spacing.lg,
+        Spacing.sm,
+        Spacing.sm,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(
+                  child: InkWell(
+                    onTap: onToggleGoals,
+                    borderRadius: Radii.smAll,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              monthTitle,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            showGoals ? Icons.expand_less : Icons.expand_more,
+                            size: 18,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                if (!isCurrentMonth) ...[
+                  const SizedBox(width: Spacing.xs),
+                  InkWell(
+                    onTap: () {
+                      AppHaptics.selection();
+                      ref.read(selectedDashboardMonthProvider.notifier).state =
+                          currentMonth;
+                    },
+                    borderRadius: Radii.smAll,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: CustomBadge(
+                        label: 'This Month',
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          // Month Traversal Controls (< MonthPicker >)
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            tooltip: 'Previous Month',
+            visualDensity: VisualDensity.compact,
+            onPressed: () {
+              AppHaptics.selection();
+              ref.read(selectedDashboardMonthProvider.notifier).state =
+                  DateTime(selectedMonth.year, selectedMonth.month - 1, 1);
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.calendar_month_outlined,
+                  size: 14,
+                  color: isCurrentMonth ? scheme.onSurfaceVariant : scheme.primary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  DateFormat('MMM yyyy').format(selectedMonth),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: isCurrentMonth ? FontWeight.w500 : FontWeight.w700,
+                    color: isCurrentMonth ? scheme.onSurfaceVariant : scheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            tooltip: 'Next Month',
+            visualDensity: VisualDensity.compact,
+            onPressed: isCurrentMonth
+                ? null
+                : () {
+                    AppHaptics.selection();
+                    final next = DateTime(selectedMonth.year, selectedMonth.month + 1, 1);
+                    if (!next.isAfter(currentMonth)) {
+                      ref.read(selectedDashboardMonthProvider.notifier).state = next;
                     }
                   },
           ),
