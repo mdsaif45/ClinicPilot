@@ -7,6 +7,7 @@ import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../providers/practice_journal_provider.dart';
 import 'widgets/double_activity_ring.dart';
+import 'widgets/journal_item_detail_sheet.dart';
 
 /// Standalone Clinical Practice Journal screen inspired by Google Fit Journal layout.
 class PracticeJournalScreen extends ConsumerStatefulWidget {
@@ -294,7 +295,7 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
 
     return InkWell(
       onTap: () {
-        AppHaptics.light();
+        JournalItemDetailSheet.show(context, entry);
       },
       borderRadius: BorderRadius.circular(12),
       child: Padding(

@@ -20,6 +20,12 @@ class PracticeJournalEntry {
   final double? amount;
   final String? paymentMethod;
   final String? patientName;
+  final String? patientId;
+  final String? patientCode;
+  final String? disease;
+  final String? notes;
+  final String? memoNumber;
+  final String? visitType;
   final String? category;
 
   const PracticeJournalEntry({
@@ -31,6 +37,12 @@ class PracticeJournalEntry {
     this.amount,
     this.paymentMethod,
     this.patientName,
+    this.patientId,
+    this.patientCode,
+    this.disease,
+    this.notes,
+    this.memoNumber,
+    this.visitType,
     this.category,
   });
 }
@@ -79,14 +91,15 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
 
   bool inClinic(String? rowClinicId) => clinicId == null || rowClinicId == clinicId;
 
-  final patientMap = {for (final p in rawData.patients) p.id: p.name};
+  final patientMap = {for (final p in rawData.patients) p.id: p};
 
   final allEntries = <PracticeJournalEntry>[];
 
   // 1. Visits / Consultations
   for (final v in rawData.visits) {
     if (!inClinic(v.clinicId)) continue;
-    final patientName = patientMap[v.patientId] ?? 'Patient';
+    final patient = patientMap[v.patientId];
+    final patientName = patient?.name ?? 'Patient';
     final isNew = v.visitType.toLowerCase() == 'new';
     final visitTypeLabel = isNew ? 'New Consultation' : 'Follow-up Consultation';
 
@@ -98,6 +111,11 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
         title: '$patientName • $visitTypeLabel',
         subtitle: v.disease.isNotEmpty ? 'Condition: ${v.disease}' : 'General Consultation',
         patientName: patientName,
+        patientId: v.patientId,
+        patientCode: patient?.patientCode,
+        disease: v.disease,
+        notes: v.notes,
+        visitType: visitTypeLabel,
         category: 'Consultation',
       ),
     );
@@ -106,7 +124,8 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
   // 2. Cash Memos / Dispenses & Invoices
   for (final m in rawData.memos) {
     if (!inClinic(m.clinicId)) continue;
-    final patientName = patientMap[m.patientId] ?? 'Patient';
+    final patient = patientMap[m.patientId];
+    final patientName = patient?.name ?? 'Patient';
     final pMethod = m.paymentMethod.toUpperCase();
 
     allEntries.add(
@@ -119,6 +138,10 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
         amount: m.total,
         paymentMethod: pMethod,
         patientName: patientName,
+        patientId: m.patientId,
+        patientCode: patient?.patientCode,
+        memoNumber: m.memoNumber,
+        notes: m.notes,
         category: 'Dispense',
       ),
     );
@@ -136,6 +159,8 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
         title: 'Clinic Expense • ${e.category}',
         subtitle: e.notes?.isNotEmpty == true ? e.notes : 'Operational Cost',
         amount: e.amount,
+        paymentMethod: e.paymentMethod.toUpperCase(),
+        notes: e.notes,
         category: e.category,
       ),
     );
