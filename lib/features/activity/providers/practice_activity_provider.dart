@@ -215,7 +215,7 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
   int peakHour = 10;
   var maxPeakVal = 0.0;
 
-  for (int h = 8; h <= 21; h++) {
+  for (int h = 0; h < 24; h++) {
     final hourStart = DateTime(dayStart.year, dayStart.month, dayStart.day, h);
     final hourEnd = hourStart.add(const Duration(hours: 1));
 

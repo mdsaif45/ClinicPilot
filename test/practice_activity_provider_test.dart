@@ -118,7 +118,7 @@ void main() {
 
       expect(state.totalRevenue, equals(2000.0));
       expect(state.totalPatients, equals(3));
-      expect(state.hourlyBins.length, equals(14)); // 8 AM to 9 PM
+      expect(state.hourlyBins.length, equals(24)); // 24-hour day (12 AM to 11 PM)
 
       // Bin at 10 AM (index 2 for hour 10)
       final bin10 = state.hourlyBins.firstWhere((b) => b.hour == 10);
