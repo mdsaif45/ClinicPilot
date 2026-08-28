@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/custom_badge.dart';
 import '../providers/practice_activity_provider.dart';
 import 'widgets/activity_journal_feed.dart';
 import 'widgets/hourly_rush_chart.dart';

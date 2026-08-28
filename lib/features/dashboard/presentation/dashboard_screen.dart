@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/metric_card.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
 import '../../expenses/presentation/add_expense_dialog.dart';
 import '../../patients/presentation/add_patient_dialog.dart';
-import '../../patients/providers/recall_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../settings/providers/doctor_profile_provider.dart';
 import '../providers/dashboard_provider.dart';
@@ -101,69 +98,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: Spacing.xs),
-
-              // 2. Patient Follow-up Alert (Only surfaces when overdue patients exist)
-              Consumer(builder: (context, ref, _) {
-                final lists = ref.watch(recallListProvider).value;
-                final count = lists == null
-                    ? 0
-                    : lists.overdue.length + lists.lapsed.length;
-                if (count == 0) return const SizedBox.shrink();
-
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Spacing.lg,
-                    Spacing.sm,
-                    Spacing.lg,
-                    0,
-                  ),
-                  child: Material(
-                    color: theme.colorScheme.errorContainer
-                        .withValues(alpha: 0.35),
-                    borderRadius: Radii.mdAll,
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: () => context.push('/recall'),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: Spacing.lg,
-                          vertical: Spacing.md,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.notifications_active_outlined,
-                                color: theme.colorScheme.error, size: 22),
-                            const SizedBox(width: Spacing.md),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    count == 1
-                                        ? '1 patient needs following up'
-                                        : '$count patients need following up',
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Overdue for consultation or review',
-                                    style: theme.textTheme.labelSmall,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(Icons.chevron_right, size: 20),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-
-              // 3. Date-Navigable Daily Clinic Snapshot (Isolated & Smoothly Animated)
+              // 2. Date-Navigable Daily Clinic Snapshot (Isolated & Smoothly Animated)
               const _DailySnapshotSection(),
 
               // 4. Date-Navigable Monthly Clinic Snapshot & Goals
@@ -175,19 +110,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 MetricCard(
                   label: 'Total Patients',
                   value: '${stats.totalPatients}',
-                  icon: Icons.person_add_outlined,
+                  subtitle: '${stats.totalRepeatPatients} repeat',
+                  icon: Icons.people_alt_outlined,
                   tone: MetricTone.neutral,
                 ),
                 MetricCard(
-                  label: 'New This Month',
+                  label: 'New Patients',
                   value: '${stats.monthlyNewPatients}',
+                  subtitle: 'this month',
                   icon: Icons.person_add_outlined,
                   tone: MetricTone.neutral,
                 ),
                 MetricCard(
-                  label: 'Repeat This Month',
+                  label: 'Repeat Patients',
                   value: '${stats.monthlyRepeatPatients}',
-                  icon: Icons.person_add_outlined,
+                  subtitle: 'this month',
+                  icon: Icons.replay,
                   tone: MetricTone.neutral,
                 ),
               ]),
@@ -260,19 +198,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 class _TileRow extends StatelessWidget {
   final List<Widget> children;
 
-  const _TileRow({super.key, required this.children});
+  const _TileRow({required this.children});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-      child: Row(
-        children: [
-          for (var i = 0; i < children.length; i++) ...[
-            if (i > 0) const SizedBox(width: Spacing.md),
-            Expanded(child: children[i]),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0) const SizedBox(width: Spacing.md),
+              Expanded(child: children[i]),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

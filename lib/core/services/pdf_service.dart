@@ -64,7 +64,9 @@ class PdfService {
                       borderRadius: pw.BorderRadius.circular(6),
                     ),
                     child: pw.Text(
-                      'CASH MEMO',
+                      clinicName.toLowerCase().contains('online') || clinicName.toLowerCase().contains('teleconsult')
+                          ? 'TELECONSULTATION RECEIPT'
+                          : 'CASH MEMO',
                       style: pw.TextStyle(
                         color: PdfColors.white,
                         fontWeight: pw.FontWeight.bold,

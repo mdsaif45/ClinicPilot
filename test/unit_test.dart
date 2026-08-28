@@ -588,7 +588,7 @@ void main() {
       final expenses = await db.select(db.expenses).get();
       final referralPartners = await db.select(db.referralContacts).get();
 
-      expect(clinics.length, equals(3));
+      expect(clinics.length, equals(4)); // 3 physical clinics + 1 online practice
       expect(patients.length, equals(10));
       expect(caseRecords.length, equals(10));
       expect(complaints.length, equals(10));

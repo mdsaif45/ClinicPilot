@@ -22,6 +22,7 @@ class Patients extends Table {
   TextColumn get name => text()();
   TextColumn get phone => text()();
   TextColumn get whatsapp => text().nullable()();
+  TextColumn get email => text().nullable()();
   IntColumn  get age => integer()();
   TextColumn get gender => text()();               // Male | Female | Other
   TextColumn get area => text().nullable()();      // locality — hyperlocal marketing

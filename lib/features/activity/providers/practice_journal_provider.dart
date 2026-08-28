@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/database/app_database.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
 

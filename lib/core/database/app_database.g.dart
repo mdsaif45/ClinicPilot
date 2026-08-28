@@ -743,6 +743,15 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _ageMeta = const VerificationMeta('age');
   @override
   late final GeneratedColumn<int> age = GeneratedColumn<int>(
@@ -909,6 +918,7 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
     name,
     phone,
     whatsapp,
+    email,
     age,
     gender,
     area,
@@ -976,6 +986,12 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
       context.handle(
         _whatsappMeta,
         whatsapp.isAcceptableOrUnknown(data['whatsapp']!, _whatsappMeta),
+      );
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
       );
     }
     if (data.containsKey('age')) {
@@ -1119,6 +1135,10 @@ class $PatientsTable extends Patients with TableInfo<$PatientsTable, Patient> {
         DriftSqlType.string,
         data['${effectivePrefix}whatsapp'],
       ),
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      ),
       age:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -1198,6 +1218,7 @@ class Patient extends DataClass implements Insertable<Patient> {
   final String name;
   final String phone;
   final String? whatsapp;
+  final String? email;
   final int age;
   final String gender;
   final String? area;
@@ -1226,6 +1247,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     required this.name,
     required this.phone,
     this.whatsapp,
+    this.email,
     required this.age,
     required this.gender,
     this.area,
@@ -1251,6 +1273,9 @@ class Patient extends DataClass implements Insertable<Patient> {
     map['phone'] = Variable<String>(phone);
     if (!nullToAbsent || whatsapp != null) {
       map['whatsapp'] = Variable<String>(whatsapp);
+    }
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
     }
     map['age'] = Variable<int>(age);
     map['gender'] = Variable<String>(gender);
@@ -1294,6 +1319,8 @@ class Patient extends DataClass implements Insertable<Patient> {
           whatsapp == null && nullToAbsent
               ? const Value.absent()
               : Value(whatsapp),
+      email:
+          email == null && nullToAbsent ? const Value.absent() : Value(email),
       age: Value(age),
       gender: Value(gender),
       area: area == null && nullToAbsent ? const Value.absent() : Value(area),
@@ -1339,6 +1366,7 @@ class Patient extends DataClass implements Insertable<Patient> {
       name: serializer.fromJson<String>(json['name']),
       phone: serializer.fromJson<String>(json['phone']),
       whatsapp: serializer.fromJson<String?>(json['whatsapp']),
+      email: serializer.fromJson<String?>(json['email']),
       age: serializer.fromJson<int>(json['age']),
       gender: serializer.fromJson<String>(json['gender']),
       area: serializer.fromJson<String?>(json['area']),
@@ -1365,6 +1393,7 @@ class Patient extends DataClass implements Insertable<Patient> {
       'name': serializer.toJson<String>(name),
       'phone': serializer.toJson<String>(phone),
       'whatsapp': serializer.toJson<String?>(whatsapp),
+      'email': serializer.toJson<String?>(email),
       'age': serializer.toJson<int>(age),
       'gender': serializer.toJson<String>(gender),
       'area': serializer.toJson<String?>(area),
@@ -1389,6 +1418,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     String? name,
     String? phone,
     Value<String?> whatsapp = const Value.absent(),
+    Value<String?> email = const Value.absent(),
     int? age,
     String? gender,
     Value<String?> area = const Value.absent(),
@@ -1410,6 +1440,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     name: name ?? this.name,
     phone: phone ?? this.phone,
     whatsapp: whatsapp.present ? whatsapp.value : this.whatsapp,
+    email: email.present ? email.value : this.email,
     age: age ?? this.age,
     gender: gender ?? this.gender,
     area: area.present ? area.value : this.area,
@@ -1437,6 +1468,7 @@ class Patient extends DataClass implements Insertable<Patient> {
       name: data.name.present ? data.name.value : this.name,
       phone: data.phone.present ? data.phone.value : this.phone,
       whatsapp: data.whatsapp.present ? data.whatsapp.value : this.whatsapp,
+      email: data.email.present ? data.email.value : this.email,
       age: data.age.present ? data.age.value : this.age,
       gender: data.gender.present ? data.gender.value : this.gender,
       area: data.area.present ? data.area.value : this.area,
@@ -1477,6 +1509,7 @@ class Patient extends DataClass implements Insertable<Patient> {
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('whatsapp: $whatsapp, ')
+          ..write('email: $email, ')
           ..write('age: $age, ')
           ..write('gender: $gender, ')
           ..write('area: $area, ')
@@ -1496,13 +1529,14 @@ class Patient extends DataClass implements Insertable<Patient> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     patientCode,
     serialNo,
     name,
     phone,
     whatsapp,
+    email,
     age,
     gender,
     area,
@@ -1517,7 +1551,7 @@ class Patient extends DataClass implements Insertable<Patient> {
     isDeleted,
     createdAt,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1528,6 +1562,7 @@ class Patient extends DataClass implements Insertable<Patient> {
           other.name == this.name &&
           other.phone == this.phone &&
           other.whatsapp == this.whatsapp &&
+          other.email == this.email &&
           other.age == this.age &&
           other.gender == this.gender &&
           other.area == this.area &&
@@ -1551,6 +1586,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
   final Value<String> name;
   final Value<String> phone;
   final Value<String?> whatsapp;
+  final Value<String?> email;
   final Value<int> age;
   final Value<String> gender;
   final Value<String?> area;
@@ -1573,6 +1609,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     this.name = const Value.absent(),
     this.phone = const Value.absent(),
     this.whatsapp = const Value.absent(),
+    this.email = const Value.absent(),
     this.age = const Value.absent(),
     this.gender = const Value.absent(),
     this.area = const Value.absent(),
@@ -1596,6 +1633,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     required String name,
     required String phone,
     this.whatsapp = const Value.absent(),
+    this.email = const Value.absent(),
     required int age,
     required String gender,
     this.area = const Value.absent(),
@@ -1623,6 +1661,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     Expression<String>? name,
     Expression<String>? phone,
     Expression<String>? whatsapp,
+    Expression<String>? email,
     Expression<int>? age,
     Expression<String>? gender,
     Expression<String>? area,
@@ -1646,6 +1685,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
       if (name != null) 'name': name,
       if (phone != null) 'phone': phone,
       if (whatsapp != null) 'whatsapp': whatsapp,
+      if (email != null) 'email': email,
       if (age != null) 'age': age,
       if (gender != null) 'gender': gender,
       if (area != null) 'area': area,
@@ -1671,6 +1711,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     Value<String>? name,
     Value<String>? phone,
     Value<String?>? whatsapp,
+    Value<String?>? email,
     Value<int>? age,
     Value<String>? gender,
     Value<String?>? area,
@@ -1694,6 +1735,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
       name: name ?? this.name,
       phone: phone ?? this.phone,
       whatsapp: whatsapp ?? this.whatsapp,
+      email: email ?? this.email,
       age: age ?? this.age,
       gender: gender ?? this.gender,
       area: area ?? this.area,
@@ -1732,6 +1774,9 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
     }
     if (whatsapp.present) {
       map['whatsapp'] = Variable<String>(whatsapp.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
     }
     if (age.present) {
       map['age'] = Variable<int>(age.value);
@@ -1790,6 +1835,7 @@ class PatientsCompanion extends UpdateCompanion<Patient> {
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('whatsapp: $whatsapp, ')
+          ..write('email: $email, ')
           ..write('age: $age, ')
           ..write('gender: $gender, ')
           ..write('area: $area, ')
@@ -12621,6 +12667,7 @@ typedef $$PatientsTableCreateCompanionBuilder =
       required String name,
       required String phone,
       Value<String?> whatsapp,
+      Value<String?> email,
       required int age,
       required String gender,
       Value<String?> area,
@@ -12645,6 +12692,7 @@ typedef $$PatientsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String> phone,
       Value<String?> whatsapp,
+      Value<String?> email,
       Value<int> age,
       Value<String> gender,
       Value<String?> area,
@@ -12862,6 +12910,11 @@ class $$PatientsTableFilterComposer
 
   ColumnFilters<String> get whatsapp => $composableBuilder(
     column: $table.whatsapp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -13175,6 +13228,11 @@ class $$PatientsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get age => $composableBuilder(
     column: $table.age,
     builder: (column) => ColumnOrderings(column),
@@ -13274,6 +13332,9 @@ class $$PatientsTableAnnotationComposer
 
   GeneratedColumn<String> get whatsapp =>
       $composableBuilder(column: $table.whatsapp, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
 
   GeneratedColumn<int> get age =>
       $composableBuilder(column: $table.age, builder: (column) => column);
@@ -13574,6 +13635,7 @@ class $$PatientsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> phone = const Value.absent(),
                 Value<String?> whatsapp = const Value.absent(),
+                Value<String?> email = const Value.absent(),
                 Value<int> age = const Value.absent(),
                 Value<String> gender = const Value.absent(),
                 Value<String?> area = const Value.absent(),
@@ -13596,6 +13658,7 @@ class $$PatientsTableTableManager
                 name: name,
                 phone: phone,
                 whatsapp: whatsapp,
+                email: email,
                 age: age,
                 gender: gender,
                 area: area,
@@ -13620,6 +13683,7 @@ class $$PatientsTableTableManager
                 required String name,
                 required String phone,
                 Value<String?> whatsapp = const Value.absent(),
+                Value<String?> email = const Value.absent(),
                 required int age,
                 required String gender,
                 Value<String?> area = const Value.absent(),
@@ -13642,6 +13706,7 @@ class $$PatientsTableTableManager
                 name: name,
                 phone: phone,
                 whatsapp: whatsapp,
+                email: email,
                 age: age,
                 gender: gender,
                 area: area,

@@ -156,9 +156,28 @@ class _PatientRow extends ConsumerWidget {
         padding: const EdgeInsets.only(top: Spacing.xs),
         child: Row(
           children: [
-            Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),
-            const SizedBox(width: Spacing.xs),
-            Text(patient.phone, style: theme.textTheme.labelMedium),
+            if (patient.phone.trim().isNotEmpty) ...[
+              Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),
+              const SizedBox(width: Spacing.xs),
+              Text(patient.phone, style: theme.textTheme.labelMedium),
+            ] else if (patient.email?.trim().isNotEmpty == true) ...[
+              Icon(Icons.email_outlined, size: 13, color: scheme.onSurfaceVariant),
+              const SizedBox(width: Spacing.xs),
+              Expanded(
+                child: Text(
+                  patient.email!,
+                  style: theme.textTheme.labelMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ] else ...[
+              Icon(Icons.badge_outlined, size: 13, color: scheme.onSurfaceVariant),
+              const SizedBox(width: Spacing.xs),
+              Text(
+                patient.patientCode.isNotEmpty ? patient.patientCode : 'No contact on file',
+                style: theme.textTheme.labelMedium,
+              ),
+            ],
           ],
         ),
       ),

@@ -42,10 +42,13 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   final _whatsappController = TextEditingController();
+  final _emailController = TextEditingController();
   final _ageController = TextEditingController();
   final _areaController = TextEditingController();
   late final TextEditingController _diseaseController;
 
+  bool _isOnlineConsultation = false;
+  String _onlineMedium = 'WhatsApp Video Call';
   String _gender = 'Male';
   String? _selectedClinicId;
   String? _clinicError;
@@ -53,13 +56,20 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
   bool _submitting = false;
 
+  final List<String> _onlineMediums = [
+    'WhatsApp Video Call',
+    'Phone Call',
+    'WhatsApp Chat',
+    'Google Meet / Zoom',
+  ];
+
   final List<String> _referralSources = [
     'Direct Walk-in',
+    'Social Media (Instagram / Facebook)',
     'Patient Referral',
     'Doctor Referral',
+    'Google Search / Website',
     'Camp / Event',
-    'Google Search',
-    'Social Media',
     'Other',
   ];
 
@@ -69,7 +79,16 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     _nameController = TextEditingController(text: widget.initialName ?? '');
     _phoneController = TextEditingController(text: widget.initialPhone ?? '');
     _diseaseController = TextEditingController(text: widget.initialDisease ?? '');
-    _selectedClinicId = widget.initialClinicId ?? ref.read(activeClinicIdProvider);
+
+    final initialClinic = widget.initialClinicId ?? ref.read(activeClinicIdProvider);
+    if (initialClinic == 'clinic_online') {
+      _isOnlineConsultation = true;
+      _selectedClinicId = 'clinic_online';
+      _referralSource = 'Social Media (Instagram / Facebook)';
+    } else {
+      _isOnlineConsultation = false;
+      _selectedClinicId = initialClinic;
+    }
   }
 
   @override
@@ -78,6 +97,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     _nameController.dispose();
     _phoneController.dispose();
     _whatsappController.dispose();
+    _emailController.dispose();
     _ageController.dispose();
     _areaController.dispose();
     _diseaseController.dispose();
@@ -86,15 +106,18 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final clinicsAsync = ref.watch(clinicsStreamProvider);
-    final clinics = clinicsAsync.value ?? [];
+    final allClinics = clinicsAsync.value ?? [];
+    final physicalClinics = allClinics.where((c) => c.id != 'clinic_online').toList();
 
-    if (_selectedClinicId == null && clinics.length == 1) {
-      _selectedClinicId = clinics.first.id;
+    if (_selectedClinicId == null && physicalClinics.isNotEmpty && !_isOnlineConsultation) {
+      _selectedClinicId = physicalClinics.first.id;
     }
 
     final serialText = _serialController.text.trim();
-    final liveSerialInUse = serialText.isEmpty || _selectedClinicId == null
+    final liveSerialInUse = _isOnlineConsultation || serialText.isEmpty || _selectedClinicId == null
         ? false
         : ref
                 .watch(serialNoInUseProvider(SerialLookupArgs(
@@ -104,7 +127,7 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 .value ==
             true;
 
-    if (clinicsAsync.hasValue && clinics.isEmpty) {
+    if (clinicsAsync.hasValue && physicalClinics.isEmpty && !_isOnlineConsultation) {
       return AppFormDialog(
         title: 'Register New Patient',
         actions: [
@@ -150,20 +173,132 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CustomTextField(
-              controller: _serialController,
-              label: 'Serial No.',
-              prefixIcon: Icons.tag,
-              onChanged: (_) => setState(() {}),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Required';
-                if (liveSerialInUse) {
-                  return 'Serial ${v.trim()} is already used at this clinic';
-                }
-                return null;
-              },
+            // Consultation Mode Switcher
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: Radii.mdAll,
+                border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() {
+                        _isOnlineConsultation = false;
+                        final active = widget.initialClinicId ?? ref.read(activeClinicIdProvider);
+                        _selectedClinicId = (active != null && active != 'clinic_online')
+                            ? active
+                            : physicalClinics.firstOrNull?.id;
+                        if (_referralSource == 'Social Media (Instagram / Facebook)') {
+                          _referralSource = 'Direct Walk-in';
+                        }
+                      }),
+                      borderRadius: Radii.smAll,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: !_isOnlineConsultation ? scheme.surface : Colors.transparent,
+                          borderRadius: Radii.smAll,
+                          boxShadow: !_isOnlineConsultation
+                              ? [
+                                  BoxShadow(
+                                    color: scheme.shadow.withValues(alpha: 0.06),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.local_hospital_outlined,
+                              size: 16,
+                              color: !_isOnlineConsultation ? scheme.primary : scheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'In-Clinic Visit',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                fontWeight: !_isOnlineConsultation ? FontWeight.bold : FontWeight.w500,
+                                color: !_isOnlineConsultation ? scheme.primary : scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() {
+                        _isOnlineConsultation = true;
+                        _selectedClinicId = 'clinic_online';
+                        _referralSource = 'Social Media (Instagram / Facebook)';
+                      }),
+                      borderRadius: Radii.smAll,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _isOnlineConsultation ? scheme.surface : Colors.transparent,
+                          borderRadius: Radii.smAll,
+                          boxShadow: _isOnlineConsultation
+                              ? [
+                                  BoxShadow(
+                                    color: scheme.shadow.withValues(alpha: 0.06),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.language,
+                              size: 16,
+                              color: _isOnlineConsultation ? scheme.primary : scheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Online / Remote',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                fontWeight: _isOnlineConsultation ? FontWeight.bold : FontWeight.w500,
+                                color: _isOnlineConsultation ? scheme.primary : scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: Spacing.md),
+
+            // In-Clinic Serial No. input
+            if (!_isOnlineConsultation) ...[
+              CustomTextField(
+                controller: _serialController,
+                label: 'Serial No.',
+                prefixIcon: Icons.tag,
+                onChanged: (_) => setState(() {}),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Required';
+                  if (liveSerialInUse) {
+                    return 'Serial ${v.trim()} is already used at this clinic';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: Spacing.md),
+            ],
+
             DateField(
               label: 'Patient Entry Date',
               value: _entryDate,
@@ -179,10 +314,9 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             const SizedBox(height: Spacing.md),
             CustomTextField(
               controller: _phoneController,
-              label: 'Phone Number',
+              label: 'Phone Number (Optional)',
               prefixIcon: Icons.phone,
               keyboardType: TextInputType.phone,
-              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -190,6 +324,13 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
               label: 'WhatsApp Number (Optional)',
               prefixIcon: Icons.chat,
               keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _emailController,
+              label: 'Email Address (Optional)',
+              prefixIcon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: Spacing.md),
             Row(
@@ -224,28 +365,42 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             const SizedBox(height: Spacing.md),
             CustomTextField(
               controller: _areaController,
-              label: 'Locality / Area',
+              label: _isOnlineConsultation ? 'City / State / Location' : 'Locality / Area',
               prefixIcon: Icons.location_on,
             ),
             const SizedBox(height: Spacing.md),
-            PickerField<String>(
-              label: 'Clinic',
-              prefixIcon: Icons.local_hospital,
-              value: _selectedClinicId,
-              errorText: _clinicError,
-              options: clinics
-                  .map((c) => PickerOption(
-                        value: c.id,
-                        label: c.name,
-                        subtitle: c.address,
-                      ))
-                  .toList(),
-              onChanged: (val) => setState(() {
-                _selectedClinicId = val;
-                _clinicError = null;
-              }),
-            ),
-            const SizedBox(height: Spacing.md),
+
+            // Clinic selector or Online teleconsultation badge
+            if (_isOnlineConsultation) ...[
+              PickerField<String>(
+                label: 'Consultation Medium',
+                prefixIcon: Icons.video_camera_front_outlined,
+                value: _onlineMedium,
+                options: _onlineMediums.map((m) => PickerOption(value: m, label: m)).toList(),
+                onChanged: (val) => setState(() => _onlineMedium = val),
+              ),
+              const SizedBox(height: Spacing.md),
+            ] else ...[
+              PickerField<String>(
+                label: 'Clinic',
+                prefixIcon: Icons.local_hospital,
+                value: _selectedClinicId,
+                errorText: _clinicError,
+                options: physicalClinics
+                    .map((c) => PickerOption(
+                          value: c.id,
+                          label: c.name,
+                          subtitle: c.address,
+                        ))
+                    .toList(),
+                onChanged: (val) => setState(() {
+                  _selectedClinicId = val;
+                  _clinicError = null;
+                }),
+              ),
+              const SizedBox(height: Spacing.md),
+            ],
+
             DiseaseAutocompleteField(
               controller: _diseaseController,
               validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
@@ -270,24 +425,28 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     if (_submitting) return;
     final formOk = _formKey.currentState!.validate();
 
+    final effectiveClinicId = _isOnlineConsultation ? 'clinic_online' : _selectedClinicId;
+
     setState(() {
-      _clinicError = _selectedClinicId == null ? 'Please select a clinic' : null;
+      _clinicError = effectiveClinicId == null ? 'Please select a clinic' : null;
     });
 
-    if (!formOk || _selectedClinicId == null) {
+    if (!formOk || effectiveClinicId == null) {
       AppHaptics.error();
       return;
     }
 
     setState(() => _submitting = true);
 
-    final serialNo = _serialController.text.trim();
+    final serialNo = _isOnlineConsultation ? '' : _serialController.text.trim();
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
     final whatsapp = _whatsappController.text.trim();
+    final email = _emailController.text.trim();
     final age = int.parse(_ageController.text.trim());
     final area = _areaController.text.trim();
     final disease = Formatters.toTitleCase(_diseaseController.text);
+    final notes = _isOnlineConsultation ? 'Consultation Medium: $_onlineMedium' : null;
 
     try {
       final patient =
@@ -295,14 +454,17 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 name: name,
                 phone: phone,
                 whatsapp: whatsapp.isEmpty ? null : whatsapp,
+                email: email.isEmpty ? null : email,
                 age: age,
                 gender: _gender,
                 area: area.isEmpty ? null : area,
-                primaryClinicId: _selectedClinicId!,
+                primaryClinicId: effectiveClinicId,
                 serialNo: serialNo,
                 disease: disease,
                 referralSource: _referralSource,
+                notes: notes,
                 entryDate: _entryDate,
+                consultationType: _isOnlineConsultation ? 'online' : 'clinic',
               );
       if (disease.isNotEmpty) {
         ref.read(masterDiseaseServiceProvider).recordDisease(disease);

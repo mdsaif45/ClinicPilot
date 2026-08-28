@@ -28,6 +28,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _whatsappController;
+  late TextEditingController _emailController;
   late TextEditingController _ageController;
   late TextEditingController _areaController;
   late TextEditingController _addressController;
@@ -48,6 +49,8 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
     _phoneController = TextEditingController(text: widget.patient.phone);
     _whatsappController =
         TextEditingController(text: widget.patient.whatsapp ?? '');
+    _emailController =
+        TextEditingController(text: widget.patient.email ?? '');
     _ageController =
         TextEditingController(text: widget.patient.age.toString());
     _areaController =
@@ -67,6 +70,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
     _nameController.dispose();
     _phoneController.dispose();
     _whatsappController.dispose();
+    _emailController.dispose();
     _ageController.dispose();
     _areaController.dispose();
     _addressController.dispose();
@@ -144,11 +148,9 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
             const SizedBox(height: Spacing.md),
             CustomTextField(
               controller: _phoneController,
-              label: 'Phone Number',
+              label: 'Phone Number (Optional)',
               prefixIcon: Icons.phone,
               keyboardType: TextInputType.phone,
-              validator: (val) =>
-                  val == null || val.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -156,6 +158,13 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
               label: 'WhatsApp Number (Optional)',
               prefixIcon: Icons.chat,
               keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: Spacing.md),
+            CustomTextField(
+              controller: _emailController,
+              label: 'Email Address (Optional)',
+              prefixIcon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: Spacing.md),
             Row(
@@ -229,6 +238,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
             name: _nameController.text.trim(),
             phone: _phoneController.text.trim(),
             whatsapp: _whatsappController.text.trim().isEmpty ? null : _whatsappController.text.trim(),
+            email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
             age: int.parse(_ageController.text.trim()),
             gender: _gender,
             area: _areaController.text.trim().isEmpty ? null : _areaController.text.trim(),
@@ -242,7 +252,7 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not update patient: \$e')),
+          SnackBar(content: Text('Could not update patient: $e')),
         );
       }
       return;

@@ -24,6 +24,7 @@ class DashboardStats {
   final double monthlyRevenueGoal;
 
   final int totalPatients;
+  final int totalRepeatPatients;
   final int monthlyNewPatients;
   final int monthlyRepeatPatients;
   final int monthlyNewPatientGoal;
@@ -49,6 +50,7 @@ class DashboardStats {
     required this.monthlyNetProfit,
     required this.monthlyRevenueGoal,
     required this.totalPatients,
+    this.totalRepeatPatients = 0,
     required this.monthlyNewPatients,
     required this.monthlyRepeatPatients,
     required this.monthlyNewPatientGoal,
@@ -466,6 +468,12 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
         ? patientRows.length
         : patientRows.where((p) => p.primaryClinicId == clinicId).length;
 
+    final totalRepeatPatients = visitRows
+        .where((v) => inClinic(v.clinicId) && v.visitType != 'new')
+        .map((v) => v.patientId)
+        .toSet()
+        .length;
+
     double? growth(num current, num previous) =>
         previous <= 0 ? null : ((current - previous) / previous) * 100;
 
@@ -484,6 +492,7 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
       monthlyNetProfit: monthRevenue - monthExpense,
       monthlyRevenueGoal: goal,
       totalPatients: totalPatients,
+      totalRepeatPatients: totalRepeatPatients,
       monthlyNewPatients: monthNew,
       monthlyRepeatPatients: monthRepeat,
       monthlyNewPatientGoal: patientGoal,
@@ -493,50 +502,7 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
   });
 });
 
-/// Combines three streams, re-emitting whenever any of them produces a value.
-Stream<R> _combine3<A, B, C, R>(
-  Stream<A> sa,
-  Stream<B> sb,
-  Stream<C> sc,
-  R Function(A, B, C) combine,
-) {
-  late StreamController<R> controller;
-  A? a;
-  B? b;
-  C? c;
-  final subs = <StreamSubscription>[];
 
-  void emit() {
-    if (a != null && b != null && c != null) {
-      controller.add(combine(a as A, b as B, c as C));
-    }
-  }
-
-  controller = StreamController<R>(
-    onListen: () {
-      subs
-        ..add(sa.listen((v) {
-          a = v;
-          emit();
-        }, onError: controller.addError))
-        ..add(sb.listen((v) {
-          b = v;
-          emit();
-        }, onError: controller.addError))
-        ..add(sc.listen((v) {
-          c = v;
-          emit();
-        }, onError: controller.addError));
-    },
-    onCancel: () async {
-      for (final s in subs) {
-        await s.cancel();
-      }
-    },
-  );
-
-  return controller.stream;
-}
 
 /// Combines five streams, re-emitting whenever any of them produces a value.
 Stream<R> _combine5<A, B, C, D, E, R>(

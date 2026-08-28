@@ -295,23 +295,39 @@ class _InfoTab extends StatelessWidget {
         const SizedBox(height: Spacing.sm),
 
         // Communication
-        InfoRow(
-          label: 'Phone',
-          value: patient.phone,
-          icon: Icons.call_outlined,
-          onTap: () => ContactService.call(patient.phone),
-        ),
-        InfoRow(
-          label: 'WhatsApp',
-          value: patient.whatsapp ?? patient.phone,
-          icon: Icons.chat_outlined,
-          onTap: () => WhatsAppTemplatePickerSheet.show(
-            context,
-            patient: patient,
-            clinicName: visits.isNotEmpty ? visits.first.clinic.name : 'Clinic',
-            dueDate: nextFollowUp,
+        if (patient.phone.trim().isNotEmpty)
+          InfoRow(
+            label: 'Phone',
+            value: patient.phone,
+            icon: Icons.call_outlined,
+            onTap: () => ContactService.call(patient.phone),
           ),
-        ),
+        if (patient.whatsapp?.trim().isNotEmpty == true || patient.phone.trim().isNotEmpty)
+          InfoRow(
+            label: 'WhatsApp',
+            value: patient.whatsapp?.trim().isNotEmpty == true
+                ? patient.whatsapp!
+                : patient.phone,
+            icon: Icons.chat_outlined,
+            onTap: () => WhatsAppTemplatePickerSheet.show(
+              context,
+              patient: patient,
+              clinicName: visits.isNotEmpty ? visits.first.clinic.name : 'Clinic',
+              dueDate: nextFollowUp,
+            ),
+          ),
+        if (patient.email?.trim().isNotEmpty == true)
+          InfoRow(
+            label: 'Email',
+            value: patient.email,
+            icon: Icons.email_outlined,
+          ),
+        if (patient.phone.trim().isEmpty && (patient.email ?? '').trim().isEmpty)
+          const InfoRow(
+            label: 'Contact',
+            value: 'No contact details on file',
+            icon: Icons.contact_page_outlined,
+          ),
 
         const SizedBox(height: Spacing.sm),
         const Divider(height: 1, indent: Spacing.lg, endIndent: Spacing.lg),

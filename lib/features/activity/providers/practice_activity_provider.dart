@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/database/app_database.dart';
-import '../../../core/database/database_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
 
@@ -208,9 +206,6 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
       .toList();
   final dayVisits = rawData.visits
       .where((v) => inClinic(v.clinicId) && !v.visitDate.isBefore(dayStart) && v.visitDate.isBefore(dayEnd))
-      .toList();
-  final dayExpenses = rawData.expenses
-      .where((e) => inClinic(e.clinicId) && !e.date.isBefore(dayStart) && e.date.isBefore(dayEnd))
       .toList();
 
   final hourlyBins = <HourlyActivityBin>[];

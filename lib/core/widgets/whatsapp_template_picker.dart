@@ -105,6 +105,16 @@ class _WhatsAppTemplatePickerSheetState
         ? widget.patient.whatsapp!
         : widget.patient.phone;
 
+    if (phone.trim().isEmpty) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No phone number recorded for this patient.')),
+        );
+      }
+      return;
+    }
+
     final ok = await ContactService.openWhatsApp(
       phone: phone,
       message: _messageController.text.trim(),

@@ -3,8 +3,6 @@ import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
 import 'package:clinic_pilot/features/activity/presentation/practice_activity_screen.dart';
 import 'package:clinic_pilot/features/activity/providers/practice_activity_provider.dart';
-import 'package:clinic_pilot/features/dashboard/providers/dashboard_provider.dart';
-import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

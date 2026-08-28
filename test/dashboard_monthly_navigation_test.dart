@@ -1,7 +1,6 @@
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
-import 'package:clinic_pilot/core/widgets/custom_badge.dart';
 import 'package:clinic_pilot/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:clinic_pilot/features/dashboard/providers/dashboard_provider.dart';
 import 'package:drift/drift.dart' as drift;

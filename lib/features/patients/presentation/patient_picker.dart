@@ -220,23 +220,25 @@ class _PatientTile extends StatelessWidget {
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: Spacing.xs),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),
-                const SizedBox(width: Spacing.xs),
-                Text(p.phone, style: theme.textTheme.labelMedium),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: Text(
-                    p.patientCode,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelSmall,
-                  ),
-                ),
-              ],
+            if (p.phone.trim().isNotEmpty) ...[
+              Icon(Icons.call, size: 13, color: scheme.onSurfaceVariant),
+              const SizedBox(width: Spacing.xs),
+              Text(p.phone, style: theme.textTheme.labelMedium),
+              const SizedBox(width: Spacing.md),
+            ] else if (p.email?.trim().isNotEmpty == true) ...[
+              Icon(Icons.email_outlined, size: 13, color: scheme.onSurfaceVariant),
+              const SizedBox(width: Spacing.xs),
+              Text(p.email!, style: theme.textTheme.labelMedium),
+              const SizedBox(width: Spacing.md),
+            ],
+            Expanded(
+              child: Text(
+                p.patientCode,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall,
+              ),
             ),
           ],
         ),

@@ -14,6 +14,7 @@ enum MetricTone {
 class MetricCard extends StatelessWidget {
   final String label;
   final String value;
+  final String? subtitle;
   final double? numericValue;
   final IconData? icon;
   final MetricTone tone;
@@ -23,6 +24,7 @@ class MetricCard extends StatelessWidget {
     super.key,
     required this.label,
     required this.value,
+    this.subtitle,
     this.numericValue,
     this.icon,
     this.tone = MetricTone.neutral,
@@ -116,6 +118,19 @@ class MetricCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitle!,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ],
           ),
         ),

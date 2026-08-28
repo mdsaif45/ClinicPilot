@@ -28,6 +28,8 @@ import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../../features/dashboard/presentation/widgets/notification_center_sheet.dart';
+import '../../features/patients/providers/recall_provider.dart';
 import '../../features/settings/presentation/app_version_screen.dart';
 import '../../features/settings/providers/release_provider.dart';
 import '../../features/settings/providers/update_provider.dart';
@@ -367,6 +369,12 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
       );
     }
 
+    final recallLists = ref.watch(recallListProvider).value;
+    final overdueCount = recallLists == null
+        ? 0
+        : recallLists.overdue.length + recallLists.lapsed.length;
+    final hasUnreadAlerts = overdueCount > 0 || updateWaiting;
+
     return Scaffold(
       appBar: isDashboard
           ? AppBar(
@@ -384,26 +392,25 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                       clipBehavior: Clip.none,
                       children: [
                         const Icon(Icons.notifications_none_outlined, size: 24),
-                        Positioned(
-                          right: 1,
-                          top: 1,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: scheme.error,
-                              shape: BoxShape.circle,
+                        if (hasUnreadAlerts)
+                          Positioned(
+                            right: 1,
+                            top: 1,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: scheme.error,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                     tooltip: 'Notifications',
                     onPressed: () {
                       AppHaptics.selection();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No unread alerts.')),
-                      );
+                      NotificationCenterSheet.show(context);
                     },
                   ),
                 ),

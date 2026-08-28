@@ -70,6 +70,7 @@ final patientsStreamProvider = StreamProvider<List<Patient>>((ref) {
       ..where((tbl) =>
           tbl.name.lower().contains(query) |
           tbl.phone.contains(query) |
+          tbl.email.lower().contains(query) |
           tbl.patientCode.lower().contains(query) |
           tbl.serialNo.lower().contains(query) |
           tbl.primaryDisease.lower().contains(query) |
@@ -88,6 +89,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     required String name,
     required String phone,
     String? whatsapp,
+    String? email,
     required int age,
     required String gender,
     String? area,
@@ -99,6 +101,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     String? referralSource,
     String? notes,
     DateTime? entryDate,
+    String consultationType = 'clinic',
   }) async {
     state = const AsyncLoading();
 
@@ -110,15 +113,22 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     final nextNum = (allPatients.length + 1).toString().padLeft(5, '0');
     final patientCode = 'P-$year-$nextNum';
 
+    final effectiveSerial = serialNo.trim().isNotEmpty
+        ? serialNo.trim()
+        : (consultationType == 'online' || primaryClinicId == 'clinic_online'
+            ? 'ONL-$nextNum'
+            : nextNum);
+
     final patientId = IdGenerator.generate();
 
     final companion = PatientsCompanion.insert(
       id: patientId,
       patientCode: Value(patientCode),
-      serialNo: Value(serialNo),
+      serialNo: Value(effectiveSerial),
       name: name,
       phone: phone,
       whatsapp: Value(whatsapp),
+      email: Value(email),
       age: age,
       gender: gender,
       area: Value(area),
@@ -136,6 +146,27 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     // row does, so without a transaction a bad clinic id let the patient
     // save while the visit - and the whole registration - failed after it.
     await _db.transaction(() async {
+      // Ensure virtual online clinic exists if registering an online patient
+      if (primaryClinicId == 'clinic_online') {
+        final existingOnline = await (_db.select(_db.clinics)
+              ..where((c) => c.id.equals('clinic_online')))
+            .getSingleOrNull();
+        if (existingOnline == null) {
+          await _db.into(_db.clinics).insertOnConflictUpdate(
+                ClinicsCompanion.insert(
+                  id: 'clinic_online',
+                  name: 'Online / Teleconsultation',
+                  address: const Value('Digital / Remote Practice'),
+                  phone: const Value(''),
+                  defaultConsultationFee: const Value(300.0),
+                  monthlyRent: const Value(0.0),
+                  openDays: const Value('1,2,3,4,5,6,7'),
+                  colorHex: const Value('#7C3AED'),
+                ),
+              );
+        }
+      }
+
       await _db.into(_db.patients).insert(companion);
 
       // Register initial visit (visitType = 'new')
@@ -146,7 +177,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
               patientId: patientId,
               clinicId: primaryClinicId,
               visitType: 'new',
-              consultationType: const Value('clinic'),
+              consultationType: Value(consultationType),
               disease: disease,
               referralSource: Value(referralSource),
               visitDate: entry,
@@ -166,6 +197,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     required String name,
     required String phone,
     String? whatsapp,
+    String? email,
     required int age,
     required String gender,
     String? area,
@@ -182,6 +214,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
           name: Value(name),
           phone: Value(phone),
           whatsapp: Value(whatsapp),
+          email: Value(email),
           age: Value(age),
           gender: Value(gender),
           area: Value(area),

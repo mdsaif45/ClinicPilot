@@ -50,7 +50,12 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
   void initState() {
     super.initState();
     _selectedPatient = widget.initialPatient;
-    _selectedClinicId = ref.read(activeClinicIdProvider);
+    if (widget.initialPatient != null && widget.initialPatient!.primaryClinicId == 'clinic_online') {
+      _selectedClinicId = 'clinic_online';
+      _paymentMethod = 'UPI';
+    } else {
+      _selectedClinicId = ref.read(activeClinicIdProvider);
+    }
 
     final activeClinic = ref.read(activeClinicProvider);
     if (activeClinic != null) {
@@ -195,6 +200,10 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
               onSelected: (p) => setState(() {
                 _selectedPatient = p;
                 _patientError = null;
+                if (p.primaryClinicId == 'clinic_online') {
+                  _selectedClinicId = 'clinic_online';
+                  _paymentMethod = 'UPI';
+                }
               }),
               errorText: _patientError,
             ),

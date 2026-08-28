@@ -104,12 +104,12 @@ void main() {
       await tester.enterText(fields.at(2), 'Patient One');
       // Phone Number
       await tester.enterText(fields.at(3), '9876543210');
-      // Age
-      await tester.enterText(fields.at(5), '60');
+      // Age (field 4 is whatsapp, 5 is email, 6 is age)
+      await tester.enterText(fields.at(6), '60');
       // Locality
-      await tester.enterText(fields.at(6), 'Central Park');
+      await tester.enterText(fields.at(7), 'Central Park');
       // Disease
-      await tester.enterText(fields.at(7), 'Joint Pain');
+      await tester.enterText(fields.at(8), 'Joint Pain');
 
       // Submit
       await tester.tap(find.text('Register & Create Visit'));

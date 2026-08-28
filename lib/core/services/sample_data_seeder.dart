@@ -147,6 +147,19 @@ class SampleDataSeeder {
           ),
         );
 
+    await db.into(db.clinics).insertOnConflictUpdate(
+          ClinicsCompanion.insert(
+            id: 'clinic_online',
+            name: 'Online / Teleconsultation',
+            address: const Value('Digital / Remote Practice'),
+            phone: const Value('9830012345'),
+            defaultConsultationFee: const Value(300.0),
+            monthlyRent: const Value(0.0),
+            openDays: const Value('1,2,3,4,5,6,7'),
+            colorHex: const Value('#7C3AED'),
+          ),
+        );
+
     // Save clinic targets
     await db.into(db.settings).insertOnConflictUpdate(
           SettingsCompanion.insert(
