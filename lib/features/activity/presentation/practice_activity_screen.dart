@@ -131,40 +131,12 @@ class PracticeActivityScreen extends ConsumerWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            rangeTitle,
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        if (!isCurrentPeriod) ...[
-                          const SizedBox(width: Spacing.xs),
-                          InkWell(
-                            onTap: () {
-                              AppHaptics.selection();
-                              ref.read(selectedActivityDateProvider.notifier).state = todayMidnight;
-                            },
-                            borderRadius: Radii.smAll,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                              child: CustomBadge(
-                                label: range == ActivityTimeRange.day
-                                    ? 'Today'
-                                    : range == ActivityTimeRange.week
-                                        ? 'This Week'
-                                        : 'This Month',
-                                color: scheme.primary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                    Text(
+                      rangeTitle,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     // Summary Subtitle (Google Fit style: accent icon + subtle metric text)
@@ -193,6 +165,43 @@ class PracticeActivityScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                    if (!isCurrentPeriod) ...[
+                      const SizedBox(height: 6),
+                      InkWell(
+                        onTap: () {
+                          AppHaptics.selection();
+                          ref.read(selectedActivityDateProvider.notifier).state = todayMidnight;
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.history, size: 13, color: primaryColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                range == ActivityTimeRange.day
+                                    ? 'Jump to Today'
+                                    : range == ActivityTimeRange.week
+                                        ? 'Jump to This Week'
+                                        : 'Jump to This Month',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
