@@ -26,12 +26,14 @@ final selectedActivityDateProvider = StateProvider<DateTime>((ref) {
 
 class HourlyActivityBin {
   final int hour; // 0..23
-  final String label; // e.g. "10 AM"
+  final int minute; // 0, 15, 30, 45
+  final String label; // e.g. "12:15 AM", "2:15 PM"
   final double revenue;
   final int patients;
 
   const HourlyActivityBin({
     required this.hour,
+    this.minute = 0,
     required this.label,
     required this.revenue,
     required this.patients,
@@ -215,20 +217,20 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
   int peakHour = 10;
   var maxPeakVal = 0.0;
 
-  for (int h = 0; h < 24; h++) {
-    final hourStart = DateTime(dayStart.year, dayStart.month, dayStart.day, h);
-    final hourEnd = hourStart.add(const Duration(hours: 1));
+  for (int slot = 0; slot < 96; slot++) {
+    final slotStart = dayStart.add(Duration(minutes: slot * 15));
+    final slotEnd = slotStart.add(const Duration(minutes: 15));
 
     var hRev = 0.0;
     for (final m in dayMemos) {
-      if (!m.memoDate.isBefore(hourStart) && m.memoDate.isBefore(hourEnd)) {
+      if (!m.memoDate.isBefore(slotStart) && m.memoDate.isBefore(slotEnd)) {
         hRev += m.total;
       }
     }
 
     var hPts = 0;
     for (final v in dayVisits) {
-      if (!v.visitDate.isBefore(hourStart) && v.visitDate.isBefore(hourEnd)) {
+      if (!v.visitDate.isBefore(slotStart) && v.visitDate.isBefore(slotEnd)) {
         hPts++;
       }
     }
@@ -236,14 +238,18 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
     final val = metric == ActivityMetric.revenue ? hRev : hPts.toDouble();
     if (val > maxPeakVal) {
       maxPeakVal = val;
-      peakHour = h;
+      peakHour = slotStart.hour;
     }
 
-    final formattedHour = DateFormat('h a').format(hourStart);
+    final formattedLabel = slotStart.minute == 0
+        ? DateFormat('h a').format(slotStart)
+        : DateFormat('h:mm a').format(slotStart);
+
     hourlyBins.add(
       HourlyActivityBin(
-        hour: h,
-        label: formattedHour,
+        hour: slotStart.hour,
+        minute: slotStart.minute,
+        label: formattedLabel,
         revenue: hRev,
         patients: hPts,
       ),

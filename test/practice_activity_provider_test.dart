@@ -118,17 +118,17 @@ void main() {
 
       expect(state.totalRevenue, equals(2000.0));
       expect(state.totalPatients, equals(3));
-      expect(state.hourlyBins.length, equals(24)); // 24-hour day (12 AM to 11 PM)
+      expect(state.hourlyBins.length, equals(96)); // 96 fifteen-minute slots
 
-      // Bin at 10 AM (index 2 for hour 10)
-      final bin10 = state.hourlyBins.firstWhere((b) => b.hour == 10);
-      expect(bin10.patients, equals(2));
-      expect(bin10.revenue, equals(1200.0));
+      // Bin at 10:15 AM
+      final bin1015 = state.hourlyBins.firstWhere((b) => b.hour == 10 && b.minute == 15);
+      expect(bin1015.patients, equals(1));
+      expect(bin1015.revenue, equals(1200.0));
 
-      // Bin at 5 PM (index for hour 17)
-      final bin17 = state.hourlyBins.firstWhere((b) => b.hour == 17);
-      expect(bin17.patients, equals(1));
-      expect(bin17.revenue, equals(800.0));
+      // Bin at 5:30 PM (hour 17, min 30)
+      final bin1730 = state.hourlyBins.firstWhere((b) => b.hour == 17 && b.minute == 30);
+      expect(bin1730.patients, equals(1));
+      expect(bin1730.revenue, equals(800.0));
 
       // Peak hour description
       expect(state.peakRushDescription, contains('10:00 AM'));

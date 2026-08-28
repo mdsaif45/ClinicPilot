@@ -6,7 +6,7 @@ import '../../../../core/services/app_haptics.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../providers/practice_activity_provider.dart';
 
-/// Modern, animated, and interactive Google Fit Hourly Activity Rush Chart with touch scrubber cursor and speech-bubble tooltip.
+/// Modern, animated, and interactive Google Fit Hourly Activity Rush Chart with 15-minute intervals, touch scrubber cursor, and speech-bubble tooltip.
 class HourlyRushChart extends StatefulWidget {
   final List<HourlyActivityBin> bins;
   final ActivityMetric metric;
@@ -26,7 +26,7 @@ class HourlyRushChart extends StatefulWidget {
 class _HourlyRushChartState extends State<HourlyRushChart> with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _barGrowthAnim;
-  int? _hoveredHourIndex;
+  int? _hoveredSlotIndex;
 
   @override
   void initState() {
@@ -48,7 +48,7 @@ class _HourlyRushChartState extends State<HourlyRushChart> with SingleTickerProv
     if (oldWidget.metric != widget.metric || oldWidget.bins != widget.bins) {
       _animController.reset();
       _animController.forward();
-      _hoveredHourIndex = null;
+      _hoveredSlotIndex = null;
     }
   }
 
@@ -60,12 +60,13 @@ class _HourlyRushChartState extends State<HourlyRushChart> with SingleTickerProv
 
   void _handleTouch(Offset localPosition, double plotWidth) {
     if (plotWidth <= 0 || widget.bins.isEmpty) return;
+    final totalSlots = widget.bins.length;
     final fraction = (localPosition.dx / plotWidth).clamp(0.0, 1.0);
-    final index = (fraction * 24).round().clamp(0, widget.bins.length - 1);
-    if (index != _hoveredHourIndex) {
+    final index = (fraction * (totalSlots - 1)).round().clamp(0, totalSlots - 1);
+    if (index != _hoveredSlotIndex) {
       AppHaptics.selection();
       setState(() {
-        _hoveredHourIndex = index;
+        _hoveredSlotIndex = index;
       });
     }
   }
@@ -107,7 +108,7 @@ class _HourlyRushChartState extends State<HourlyRushChart> with SingleTickerProv
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Interactive Chart Plot Area with Scrubber and Animated Bars
+        // Interactive Chart Plot Area with 15-min Scrubber and Animated Bars
         SizedBox(
           height: 205,
           child: Row(
@@ -129,7 +130,7 @@ class _HourlyRushChartState extends State<HourlyRushChart> with SingleTickerProv
                         onHover: (event) => _handleTouch(event.localPosition, plotWidth),
                         onExit: (_) {
                           setState(() {
-                            _hoveredHourIndex = null;
+                            _hoveredSlotIndex = null;
                           });
                         },
                         child: AnimatedBuilder(
@@ -147,7 +148,7 @@ class _HourlyRushChartState extends State<HourlyRushChart> with SingleTickerProv
                                 labelColor: scheme.onSurfaceVariant.withValues(alpha: 0.8),
                                 tooltipBgColor: scheme.surfaceContainerHighest,
                                 tooltipTextColor: scheme.onSurface,
-                                selectedHourIndex: _hoveredHourIndex,
+                                selectedSlotIndex: _hoveredSlotIndex,
                                 metric: widget.metric,
                               ),
                             );
@@ -234,7 +235,7 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
   final Color labelColor;
   final Color tooltipBgColor;
   final Color tooltipTextColor;
-  final int? selectedHourIndex;
+  final int? selectedSlotIndex;
   final ActivityMetric metric;
 
   const _GoogleFitInteractiveChartPainter({
@@ -248,7 +249,7 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
     required this.labelColor,
     required this.tooltipBgColor,
     required this.tooltipTextColor,
-    required this.selectedHourIndex,
+    required this.selectedSlotIndex,
     required this.metric,
   });
 
@@ -285,21 +286,22 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
     // 2. Draw Bottom Baseline Axis Line
     canvas.drawLine(Offset(0, baselineY), Offset(plotWidth, baselineY), axisPaint);
 
-    // 3. Draw 24 Slender Activity Bars precisely aligned with hour checkpoints
-    const barWidth = 4.0;
+    // 3. Draw 15-minute Slender Activity Bars
+    final totalSlots = bins.length;
+    final barWidth = math.max((plotWidth / totalSlots) * 0.75, 2.5);
+
     double? selectedCenterX;
     double? selectedBarTopY;
 
-    for (int i = 0; i < bins.length && i < 24; i++) {
+    for (int i = 0; i < totalSlots; i++) {
       final bin = bins[i];
       final val = math.max(bin.revenue, bin.patients.toDouble());
       final ratio = (val / maxVal).clamp(0.0, 1.0);
       final barHeight = ratio * plotHeight * progress;
-      // Exact alignment: hour h corresponds to x = (h / 24.0) * plotWidth
-      final centerX = (bin.hour / 24.0) * plotWidth;
+      final centerX = totalSlots > 1 ? (i / (totalSlots - 1.0)) * plotWidth : 0.0;
       final topY = baselineY - barHeight;
 
-      if (i == selectedHourIndex) {
+      if (i == selectedSlotIndex) {
         selectedCenterX = centerX;
         selectedBarTopY = topY;
       }
@@ -307,8 +309,8 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
       if (barHeight > 0) {
         final barRect = RRect.fromRectAndCorners(
           Rect.fromLTWH(centerX - (barWidth / 2), topY, barWidth, barHeight),
-          topLeft: const Radius.circular(2.0),
-          topRight: const Radius.circular(2.0),
+          topLeft: const Radius.circular(1.5),
+          topRight: const Radius.circular(1.5),
         );
         canvas.drawRRect(barRect, barPaint);
       }
@@ -374,13 +376,13 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
       textPainter.paint(canvas, Offset(textLeft, baselineY + 6.0));
     }
 
-    // 6. Draw Google Fit Scrubber Cursor & Speech-Bubble Tooltip on Selected Hour
-    if (selectedHourIndex != null && selectedHourIndex! < bins.length) {
-      final bin = bins[selectedHourIndex!];
-      final cursorX = selectedCenterX ?? ((bin.hour / 24.0) * plotWidth);
+    // 6. Draw Google Fit Scrubber Cursor & Speech-Bubble Tooltip on Selected 15-min Slot
+    if (selectedSlotIndex != null && selectedSlotIndex! < bins.length) {
+      final bin = bins[selectedSlotIndex!];
+      final cursorX = selectedCenterX ?? ((selectedSlotIndex! / (totalSlots - 1.0)) * plotWidth);
       final cursorY = selectedBarTopY ?? baselineY;
 
-      // Vertical Dashed Cursor Line (aligned 100% with tickX)
+      // Vertical Dashed Cursor Line
       final dashedPaint = Paint()
         ..color = primaryColor.withValues(alpha: 0.8)
         ..strokeWidth = 1.4
@@ -410,7 +412,7 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
       canvas.drawCircle(Offset(cursorX, cursorY), 3.8, dotSolidPaint);
       canvas.drawCircle(Offset(cursorX, cursorY), 1.6, dotCenterWhitePaint);
 
-      // Prepare Tooltip Content: e.g. "₹ 1,500 at 10 AM" or "3 patients at 10 AM"
+      // Prepare Tooltip Content: e.g. "₹ 2,050 at 12:15 AM" or "1 patient at 2:15 AM"
       final valStr = metric == ActivityMetric.revenue
           ? Formatters.formatCurrency(bin.revenue)
           : '${bin.patients} ${bin.patients == 1 ? 'patient' : 'patients'}';
@@ -498,7 +500,7 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
         oldDelegate.maxVal != maxVal ||
         oldDelegate.progress != progress ||
         oldDelegate.primaryColor != primaryColor ||
-        oldDelegate.selectedHourIndex != selectedHourIndex ||
+        oldDelegate.selectedSlotIndex != selectedSlotIndex ||
         oldDelegate.metric != metric ||
         oldDelegate.gridColor != gridColor ||
         oldDelegate.axisColor != axisColor;
