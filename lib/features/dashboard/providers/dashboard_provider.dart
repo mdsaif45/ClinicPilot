@@ -6,6 +6,12 @@ import '../../../core/database/database_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
 class DashboardStats {
+  final DateTime? selectedDate;
+  final double? dailyRevenue;
+  final double? dailyExpense;
+  final double? dailyNetProfit;
+  final int? dailyPatients;
+
   final double todayRevenue;
   final double todayExpense;
   final double todayNetProfit;
@@ -28,6 +34,11 @@ class DashboardStats {
   final double? patientGrowthPercent;
 
   const DashboardStats({
+    this.selectedDate,
+    this.dailyRevenue,
+    this.dailyExpense,
+    this.dailyNetProfit,
+    this.dailyPatients,
     required this.todayRevenue,
     required this.todayExpense,
     required this.todayNetProfit,
@@ -44,6 +55,24 @@ class DashboardStats {
     this.patientGrowthPercent,
   });
 
+  DateTime get activeSelectedDate => selectedDate ?? DateTime.now();
+  double get activeDailyRevenue => dailyRevenue ?? todayRevenue;
+  double get activeDailyExpense => dailyExpense ?? todayExpense;
+  double get activeDailyNetProfit => dailyNetProfit ?? todayNetProfit;
+  int get activeDailyPatients => dailyPatients ?? todayPatients;
+
+  bool get isToday {
+    final now = DateTime.now();
+    final d = activeSelectedDate;
+    return d.year == now.year && d.month == now.month && d.day == now.day;
+  }
+
+  bool get isYesterday {
+    final y = DateTime.now().subtract(const Duration(days: 1));
+    final d = activeSelectedDate;
+    return d.year == y.year && d.month == y.month && d.day == y.day;
+  }
+
   double get revenueGoalProgress => monthlyRevenueGoal <= 0
       ? 0
       : (monthlyRevenue / monthlyRevenueGoal).clamp(0.0, 1.0);
@@ -52,6 +81,10 @@ class DashboardStats {
       ? 0
       : (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0);
 }
+
+/// Active selected date for daily dashboard breakdown.
+final selectedDashboardDateProvider =
+    StateProvider<DateTime>((ref) => DateTime.now());
 
 /// Live dashboard figures.
 ///
@@ -63,6 +96,7 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
   final db = ref.watch(databaseProvider);
   final activeClinic = ref.watch(activeClinicProvider);
   final clinicId = activeClinic?.id;
+  final selectedDate = ref.watch(selectedDashboardDateProvider);
 
   final memos =
       (db.select(db.cashMemos)..where((t) => t.isDeleted.equals(false))).watch();
@@ -78,8 +112,8 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
   return _combine5(memos, expenses, visits, patients, settings,
       (memoRows, expenseRows, visitRows, patientRows, settingRows) {
     final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-    final todayEnd = todayStart.add(const Duration(days: 1));
+    final selectedDayStart = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    final selectedDayEnd = selectedDayStart.add(const Duration(days: 1));
 
     final monthStart = DateTime(now.year, now.month, 1);
     final nextMonthStart = DateTime(now.year, now.month + 1, 1);
@@ -104,10 +138,10 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
     bool within(DateTime d, DateTime start, DateTime end) =>
         !d.isBefore(start) && d.isBefore(end);
 
-    var todayRevenue = 0.0, monthRevenue = 0.0, prevMonthRevenue = 0.0;
+    var dailyRevenue = 0.0, monthRevenue = 0.0, prevMonthRevenue = 0.0;
     for (final m in memoRows) {
       if (!inClinic(m.clinicId)) continue;
-      if (within(m.memoDate, todayStart, todayEnd)) todayRevenue += m.total;
+      if (within(m.memoDate, selectedDayStart, selectedDayEnd)) dailyRevenue += m.total;
       if (within(m.memoDate, monthStart, nextMonthStart)) {
         monthRevenue += m.total;
       } else if (within(m.memoDate, prevMonthStart, monthStart)) {
@@ -115,17 +149,17 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
       }
     }
 
-    var todayExpense = 0.0, monthExpense = 0.0;
+    var dailyExpense = 0.0, monthExpense = 0.0;
     for (final e in expenseRows) {
       if (!inClinic(e.clinicId)) continue;
-      if (within(e.date, todayStart, todayEnd)) todayExpense += e.amount;
+      if (within(e.date, selectedDayStart, selectedDayEnd)) dailyExpense += e.amount;
       if (within(e.date, monthStart, nextMonthStart)) monthExpense += e.amount;
     }
 
-    var todayVisits = 0, monthNew = 0, monthRepeat = 0, prevMonthNew = 0;
+    var dailyVisits = 0, monthNew = 0, monthRepeat = 0, prevMonthNew = 0;
     for (final v in visitRows) {
       if (!inClinic(v.clinicId)) continue;
-      if (within(v.visitDate, todayStart, todayEnd)) todayVisits++;
+      if (within(v.visitDate, selectedDayStart, selectedDayEnd)) dailyVisits++;
       if (within(v.visitDate, monthStart, nextMonthStart)) {
         if (v.visitType == 'new') {
           monthNew++;
@@ -146,10 +180,15 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
         previous <= 0 ? null : ((current - previous) / previous) * 100;
 
     return DashboardStats(
-      todayRevenue: todayRevenue,
-      todayExpense: todayExpense,
-      todayNetProfit: todayRevenue - todayExpense,
-      todayPatients: todayVisits,
+      selectedDate: selectedDate,
+      dailyRevenue: dailyRevenue,
+      dailyExpense: dailyExpense,
+      dailyNetProfit: dailyRevenue - dailyExpense,
+      dailyPatients: dailyVisits,
+      todayRevenue: dailyRevenue,
+      todayExpense: dailyExpense,
+      todayNetProfit: dailyRevenue - dailyExpense,
+      todayPatients: dailyVisits,
       monthlyRevenue: monthRevenue,
       monthlyExpense: monthExpense,
       monthlyNetProfit: monthRevenue - monthExpense,

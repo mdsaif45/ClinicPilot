@@ -7,6 +7,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/metric_card.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/shimmer_loading.dart';
@@ -164,29 +165,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 );
               }),
 
-              // 3. Today's Clinic Snapshot
-              const SectionHeader(title: 'Today'),
+              // 3. Date-Navigable Daily Clinic Snapshot
+              _DailySnapshotHeader(stats: stats),
               _TileRow(children: [
                 MetricCard(
-                  label: "Today's Patients",
-                  value: '${stats.todayPatients}',
-                  numericValue: stats.todayPatients.toDouble(),
+                  label: stats.isToday ? "Today's Patients" : 'Patients',
+                  value: '${stats.activeDailyPatients}',
+                  numericValue: stats.activeDailyPatients.toDouble(),
                   icon: Icons.person_outline,
                   tone: MetricTone.neutral,
                 ),
                 MetricCard(
-                  label: "Today's Revenue",
-                  value: Formatters.formatCurrency(stats.todayRevenue),
-                  numericValue: stats.todayRevenue,
+                  label: stats.isToday ? "Today's Revenue" : 'Revenue',
+                  value: Formatters.formatCurrency(stats.activeDailyRevenue),
+                  numericValue: stats.activeDailyRevenue,
                   icon: Icons.currency_rupee,
                   tone: MetricTone.positive,
                 ),
                 MetricCard(
-                  label: "Today's Profit",
-                  value: Formatters.formatCurrency(stats.todayNetProfit),
-                  numericValue: stats.todayNetProfit,
+                  label: stats.isToday ? "Today's Profit" : 'Profit',
+                  value: Formatters.formatCurrency(stats.activeDailyNetProfit),
+                  numericValue: stats.activeDailyNetProfit,
                   icon: Icons.currency_rupee,
-                  tone: stats.todayNetProfit < 0
+                  tone: stats.activeDailyNetProfit < 0
                       ? MetricTone.negative
                       : MetricTone.positive,
                 ),
@@ -336,6 +337,135 @@ class _TileRow extends StatelessWidget {
             if (i > 0) const SizedBox(width: Spacing.md),
             Expanded(child: children[i]),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DailySnapshotHeader extends ConsumerWidget {
+  final DashboardStats stats;
+
+  const _DailySnapshotHeader({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final now = DateTime.now();
+    final selectedDate = stats.activeSelectedDate;
+    final isToday = stats.isToday;
+
+    String dateTitle;
+    if (isToday) {
+      dateTitle = 'Today';
+    } else if (stats.isYesterday) {
+      dateTitle = 'Yesterday';
+    } else {
+      dateTitle = DateFormat('d MMM, EEE').format(selectedDate);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.lg,
+        Spacing.lg,
+        Spacing.sm,
+        Spacing.sm,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Text(
+                  dateTitle,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (!isToday) ...[
+                  const SizedBox(width: Spacing.xs),
+                  InkWell(
+                    onTap: () {
+                      AppHaptics.selection();
+                      ref.read(selectedDashboardDateProvider.notifier).state =
+                          DateTime.now();
+                    },
+                    borderRadius: Radii.smAll,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: CustomBadge(
+                        label: 'Today',
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          // Date Traversal Controls (< DatePicker >)
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            tooltip: 'Previous Day',
+            visualDensity: VisualDensity.compact,
+            onPressed: () {
+              AppHaptics.selection();
+              ref.read(selectedDashboardDateProvider.notifier).state =
+                  selectedDate.subtract(const Duration(days: 1));
+            },
+          ),
+          InkWell(
+            onTap: () async {
+              AppHaptics.selection();
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: selectedDate.isAfter(now) ? now : selectedDate,
+                firstDate: DateTime(2020),
+                lastDate: DateTime(now.year, now.month, now.day),
+              );
+              if (picked != null) {
+                ref.read(selectedDashboardDateProvider.notifier).state = picked;
+              }
+            },
+            borderRadius: Radii.smAll,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 14,
+                    color: isToday ? scheme.onSurfaceVariant : scheme.primary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    DateFormat('d MMM').format(selectedDate),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: isToday ? FontWeight.w500 : FontWeight.w700,
+                      color: isToday ? scheme.onSurfaceVariant : scheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            tooltip: 'Next Day',
+            visualDensity: VisualDensity.compact,
+            onPressed: isToday
+                ? null
+                : () {
+                    AppHaptics.selection();
+                    final next = selectedDate.add(const Duration(days: 1));
+                    final todayEnd = DateTime(now.year, now.month, now.day);
+                    if (!next.isAfter(todayEnd)) {
+                      ref.read(selectedDashboardDateProvider.notifier).state = next;
+                    }
+                  },
+          ),
         ],
       ),
     );
