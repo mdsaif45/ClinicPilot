@@ -498,11 +498,12 @@ class _ActivityTimeRangeTabs extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: scheme.surface,
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.25)),
                     boxShadow: [
                       BoxShadow(
-                        color: scheme.shadow.withValues(alpha: 0.08),
+                        color: scheme.shadow.withValues(alpha: 0.1),
                         blurRadius: 6,
-                        offset: const Offset(0, 2),
+                        offset: const Offset(0, 1.5),
                       ),
                     ],
                   ),
@@ -539,6 +540,9 @@ class _ActivityTimeRangeTabs extends StatelessWidget {
           AppHaptics.selection();
           onRangeChanged(range);
         },
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         child: Center(
           child: AnimatedDefaultTextStyle(
