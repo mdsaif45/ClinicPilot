@@ -2,6 +2,7 @@ import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
 import 'package:clinic_pilot/features/activity/presentation/practice_journal_screen.dart';
+import 'package:clinic_pilot/features/activity/presentation/widgets/double_activity_ring.dart';
 import 'package:clinic_pilot/features/activity/providers/practice_journal_provider.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -106,9 +107,10 @@ void main() {
       expect(find.text('Dispenses'), findsOneWidget);
       expect(find.text('Expenses'), findsOneWidget);
 
-      // 2. Date Section Headers
+      // 2. Date Section Headers & Double Activity Rings
       expect(find.text('Today'), findsOneWidget);
       expect(find.text('Yesterday'), findsOneWidget);
+      expect(find.byType(DoubleActivityRing), findsWidgets);
 
       // 3. Entry Content
       expect(find.text('Priya Sharma • New Consultation'), findsOneWidget);

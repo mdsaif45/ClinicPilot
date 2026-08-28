@@ -6,6 +6,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../providers/practice_journal_provider.dart';
+import 'widgets/double_activity_ring.dart';
 
 /// Standalone Clinical Practice Journal screen inspired by Google Fit Journal layout.
 class PracticeJournalScreen extends ConsumerStatefulWidget {
@@ -200,7 +201,7 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
                     Text(
                       Formatters.formatCurrency(group.totalRevenue),
                       style: theme.textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                         color: scheme.primary,
                       ),
                     ),
@@ -209,30 +210,26 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
                   if (group.totalPatients > 0) ...[
                     Icon(
                       Icons.people_outline,
-                      size: 14,
+                      size: 15,
                       color: scheme.secondary,
                     ),
                     const SizedBox(width: 2),
                     Text(
                       '${group.totalPatients}',
                       style: theme.textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                         color: scheme.secondary,
                       ),
                     ),
                     const SizedBox(width: Spacing.xs),
                   ],
-                  // Circular ring icon
-                  Container(
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: scheme.primary,
-                        width: 2,
-                      ),
-                    ),
+                  // Concentric Double Activity Ring (Inner: Revenue Color1, Outer: Patient Color2)
+                  DoubleActivityRing(
+                    innerProgress: group.revenueProgress,
+                    outerProgress: group.patientProgress,
+                    innerColor: scheme.primary,
+                    outerColor: scheme.secondary,
+                    size: 22.0,
                   ),
                 ],
               ),

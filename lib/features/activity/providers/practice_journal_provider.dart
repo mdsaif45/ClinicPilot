@@ -41,6 +41,10 @@ class JournalDayGroup {
   final double totalRevenue;
   final int totalPatients;
   final double totalExpense;
+  final double revenueGoal;
+  final double patientGoal;
+  final double revenueProgress;
+  final double patientProgress;
   final List<PracticeJournalEntry> entries;
 
   const JournalDayGroup({
@@ -49,6 +53,10 @@ class JournalDayGroup {
     required this.totalRevenue,
     required this.totalPatients,
     required this.totalExpense,
+    this.revenueGoal = 2000.0,
+    this.patientGoal = 5.0,
+    this.revenueProgress = 0.0,
+    this.patientProgress = 0.0,
     required this.entries,
   });
 }
@@ -201,6 +209,29 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
       }
     }
 
+    String? settingValue(String key) {
+      for (final s in rawData.settings) {
+        if (s.key == key) return s.value;
+      }
+      return null;
+    }
+
+    final clinicRevenueGoal =
+        clinicId != null ? settingValue('monthly_revenue_goal_$clinicId') : null;
+    final clinicPatientGoal =
+        clinicId != null ? settingValue('monthly_new_patient_goal_$clinicId') : null;
+
+    final monthlyRevenueGoal =
+        double.tryParse(clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '') ?? 50000.0;
+    final monthlyPatientGoal =
+        int.tryParse(clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '') ?? 50;
+
+    final dailyRevenueGoal = monthlyRevenueGoal / 25.0; // ~₹2,000 / day
+    final dailyPatientGoal = (monthlyPatientGoal / 25.0).clamp(1.0, 100.0); // ~2-5 patients / day
+
+    final revProg = dailyRevenueGoal > 0 ? (dayRevenue / dailyRevenueGoal).clamp(0.0, 1.0) : 0.0;
+    final patProg = dailyPatientGoal > 0 ? (dayPatients / dailyPatientGoal).clamp(0.0, 1.0) : 0.0;
+
     dayGroups.add(
       JournalDayGroup(
         date: date,
@@ -208,6 +239,10 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
         totalRevenue: dayRevenue,
         totalPatients: dayPatients,
         totalExpense: dayExpense,
+        revenueGoal: dailyRevenueGoal,
+        patientGoal: dailyPatientGoal,
+        revenueProgress: revProg,
+        patientProgress: patProg,
         entries: entries,
       ),
     );

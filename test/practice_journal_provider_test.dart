@@ -108,6 +108,8 @@ void main() {
       final todayGroup = groups.firstWhere((g) => g.dayLabel == 'Today');
       expect(todayGroup.totalRevenue, equals(1500.0));
       expect(todayGroup.totalPatients, equals(1));
+      expect(todayGroup.revenueProgress, greaterThan(0.0));
+      expect(todayGroup.patientProgress, greaterThan(0.0));
       expect(todayGroup.entries.length, equals(2));
 
       // Yesterday Group
