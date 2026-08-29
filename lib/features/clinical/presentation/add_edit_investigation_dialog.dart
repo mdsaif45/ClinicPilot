@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/date_field.dart';
+import '../../../core/widgets/document_attachment_gallery.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../models/investigation_templates.dart';
 import '../providers/investigation_provider.dart';
@@ -14,12 +16,14 @@ class AddEditInvestigationDialog extends ConsumerStatefulWidget {
   final String patientId;
   final String? visitId;
   final Investigation? existingInvestigation;
+  final bool defaultIsBaseline;
 
   const AddEditInvestigationDialog({
     super.key,
     required this.patientId,
     this.visitId,
     this.existingInvestigation,
+    this.defaultIsBaseline = true,
   });
 
   @override
@@ -37,7 +41,9 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
   late final TextEditingController _notesController;
 
   late DateTime _testDate;
+  late bool _isBaseline;
   late String _category;
+  late List<String> _reportAttachments;
   String _computedFlag = 'Normal';
   bool _submitting = false;
 
@@ -59,8 +65,10 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
     _labController = TextEditingController(text: inv?.labName ?? '');
     _notesController = TextEditingController(text: inv?.notes ?? '');
     _testDate = inv?.testDate ?? DateTime.now();
+    _isBaseline = inv?.isBaseline ?? widget.defaultIsBaseline;
     _category = inv?.testCategory ?? 'Blood / Biochemistry';
     _computedFlag = inv?.flag ?? 'Normal';
+    _reportAttachments = InvestigationNotifier.parseAttachments(inv?.reportAttachments);
 
     _valueController.addListener(_recomputeFlag);
     _minController.addListener(_recomputeFlag);
@@ -120,6 +128,7 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
           patientId: widget.patientId,
           visitId: widget.visitId,
           testDate: _testDate,
+          isBaseline: _isBaseline,
           testCategory: _category,
           testName: _nameController.text.trim(),
           numericValue: numVal,
@@ -129,12 +138,14 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
           refRangeMax: maxVal,
           flag: _computedFlag,
           labName: _labController.text.trim(),
+          reportAttachments: _reportAttachments,
           notes: _notesController.text.trim(),
         );
       } else {
         await notifier.updateInvestigation(
           id: inv.id,
           testDate: _testDate,
+          isBaseline: _isBaseline,
           testCategory: _category,
           testName: _nameController.text.trim(),
           numericValue: numVal,
@@ -144,6 +155,7 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
           refRangeMax: maxVal,
           flag: _computedFlag,
           labName: _labController.text.trim(),
+          reportAttachments: _reportAttachments,
           notes: _notesController.text.trim(),
         );
       }
@@ -155,7 +167,7 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving lab test: $e')),
+          SnackBar(content: Text('Error saving investigation: $e')),
         );
       }
     }
@@ -218,19 +230,17 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                 const SizedBox(height: Spacing.md),
               ],
 
-              // Test Name & Category
-              TextFormField(
+              // Test Name
+              CustomTextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Test Parameter Name *',
-                  prefixIcon: Icon(Icons.biotech_outlined),
-                ),
+                label: 'Test Parameter Name *',
+                prefixIcon: Icons.biotech_outlined,
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Enter test parameter name' : null,
               ),
               const SizedBox(height: Spacing.md),
 
-              // Category & Date
+              // Category, Date & Visit Context
               Row(
                 children: [
                   Expanded(
@@ -254,27 +264,22 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: InkWell(
-                      onTap: () async {
-                        AppHaptics.selection();
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: _testDate,
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
-                        );
-                        if (picked != null) setState(() => _testDate = picked);
-                      },
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Test Date',
-                          prefixIcon: Icon(Icons.calendar_today, size: 16),
-                        ),
-                        child: Text(
-                          Formatters.formatDate(_testDate),
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      ),
+                    child: DateField(
+                      label: 'Test Date',
+                      value: _testDate,
+                      onChanged: (date) => setState(() => _testDate = date),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.md),
+                  Expanded(
+                    child: PickerField<bool>(
+                      label: 'Visit Context',
+                      value: _isBaseline,
+                      options: const [
+                        PickerOption(value: true, label: 'Initial Baseline'),
+                        PickerOption(value: false, label: 'Follow-Up Test'),
+                      ],
+                      onChanged: (val) => setState(() => _isBaseline = val),
                     ),
                   ),
                 ],
@@ -287,12 +292,10 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                 children: [
                   Expanded(
                     flex: 2,
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _valueController,
-                      decoration: const InputDecoration(
-                        labelText: 'Measured Value *',
-                        hintText: 'e.g. 142.5',
-                      ),
+                      label: 'Measured Value *',
+                      prefixIcon: Icons.analytics_outlined,
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Enter value' : null,
                     ),
@@ -300,31 +303,42 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                   const SizedBox(width: Spacing.sm),
                   Expanded(
                     flex: 1,
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _unitController,
-                      decoration: const InputDecoration(
-                        labelText: 'Unit',
-                        hintText: 'mg/dL',
-                      ),
+                      label: 'Unit',
+                      prefixIcon: Icons.straighten_outlined,
                     ),
                   ),
                   const SizedBox(width: Spacing.sm),
-                  Container(
-                    height: 52,
-                    padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: flagColor.withValues(alpha: 0.12),
-                      borderRadius: Radii.smAll,
-                      border: Border.all(color: flagColor.withValues(alpha: 0.4)),
-                    ),
-                    child: Text(
-                      _computedFlag.toUpperCase(),
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: flagColor,
-                        fontWeight: FontWeight.w800,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Flag',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: Spacing.xs),
+                      Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: flagColor.withValues(alpha: 0.12),
+                          borderRadius: Radii.mdAll,
+                          border: Border.all(color: flagColor.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          _computedFlag.toUpperCase(),
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: flagColor,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -334,20 +348,18 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _minController,
-                      decoration: const InputDecoration(
-                        labelText: 'Ref Range Min',
-                      ),
+                      label: 'Ref Range Min',
+                      prefixIcon: Icons.arrow_downward_outlined,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _maxController,
-                      decoration: const InputDecoration(
-                        labelText: 'Ref Range Max',
-                      ),
+                      label: 'Ref Range Max',
+                      prefixIcon: Icons.arrow_upward_outlined,
                     ),
                   ),
                 ],
@@ -355,21 +367,26 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
               const SizedBox(height: Spacing.md),
 
               // Diagnostic Lab Name & Doctor Notes
-              TextFormField(
+              CustomTextField(
                 controller: _labController,
-                decoration: const InputDecoration(
-                  labelText: 'Diagnostic Lab / Center Name',
-                  prefixIcon: Icon(Icons.local_hospital_outlined),
-                ),
+                label: 'Diagnostic Lab / Center Name',
+                prefixIcon: Icons.local_hospital_outlined,
               ),
               const SizedBox(height: Spacing.md),
 
-              TextFormField(
+              // Document / Report Attachment Gallery (PDF, Images)
+              DocumentAttachmentGallery(
+                patientId: widget.patientId,
+                attachments: _reportAttachments,
+                onAttachmentsChanged: (list) => setState(() => _reportAttachments = list),
+              ),
+              const SizedBox(height: Spacing.md),
+
+              CustomTextField(
                 controller: _notesController,
+                label: 'Clinical Interpretation / Remarks',
+                prefixIcon: Icons.notes_outlined,
                 maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Clinical Interpretation / Remarks',
-                ),
               ),
             ],
           ),

@@ -7793,6 +7793,34 @@ class $ComplaintsTable extends Complaints
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
   );
+  static const VerificationMeta _complaintDateMeta = const VerificationMeta(
+    'complaintDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> complaintDate =
+      GeneratedColumn<DateTime>(
+        'complaint_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: currentDateAndTime,
+      );
+  static const VerificationMeta _isBaselineMeta = const VerificationMeta(
+    'isBaseline',
+  );
+  @override
+  late final GeneratedColumn<bool> isBaseline = GeneratedColumn<bool>(
+    'is_baseline',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_baseline" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _complaintNameMeta = const VerificationMeta(
     'complaintName',
   );
@@ -7943,6 +7971,28 @@ class $ComplaintsTable extends Complaints
     requiredDuringInsert: false,
     defaultValue: const Constant('Active'),
   );
+  static const VerificationMeta _beforeImagesMeta = const VerificationMeta(
+    'beforeImages',
+  );
+  @override
+  late final GeneratedColumn<String> beforeImages = GeneratedColumn<String>(
+    'before_images',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _afterImagesMeta = const VerificationMeta(
+    'afterImages',
+  );
+  @override
+  late final GeneratedColumn<String> afterImages = GeneratedColumn<String>(
+    'after_images',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -7997,6 +8047,8 @@ class $ComplaintsTable extends Complaints
     patientId,
     visitId,
     complaintIndex,
+    complaintDate,
+    isBaseline,
     complaintName,
     location,
     side,
@@ -8011,6 +8063,8 @@ class $ComplaintsTable extends Complaints
     periodicity,
     severity,
     status,
+    beforeImages,
+    afterImages,
     notes,
     isDeleted,
     createdAt,
@@ -8054,6 +8108,21 @@ class $ComplaintsTable extends Complaints
           data['complaint_index']!,
           _complaintIndexMeta,
         ),
+      );
+    }
+    if (data.containsKey('complaint_date')) {
+      context.handle(
+        _complaintDateMeta,
+        complaintDate.isAcceptableOrUnknown(
+          data['complaint_date']!,
+          _complaintDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_baseline')) {
+      context.handle(
+        _isBaselineMeta,
+        isBaseline.isAcceptableOrUnknown(data['is_baseline']!, _isBaselineMeta),
       );
     }
     if (data.containsKey('complaint_name')) {
@@ -8157,6 +8226,24 @@ class $ComplaintsTable extends Complaints
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
     }
+    if (data.containsKey('before_images')) {
+      context.handle(
+        _beforeImagesMeta,
+        beforeImages.isAcceptableOrUnknown(
+          data['before_images']!,
+          _beforeImagesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('after_images')) {
+      context.handle(
+        _afterImagesMeta,
+        afterImages.isAcceptableOrUnknown(
+          data['after_images']!,
+          _afterImagesMeta,
+        ),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -8209,6 +8296,14 @@ class $ComplaintsTable extends Complaints
             DriftSqlType.int,
             data['${effectivePrefix}complaint_index'],
           )!,
+      complaintDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}complaint_date'],
+      ),
+      isBaseline: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_baseline'],
+      ),
       complaintName:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -8268,6 +8363,14 @@ class $ComplaintsTable extends Complaints
             DriftSqlType.string,
             data['${effectivePrefix}status'],
           )!,
+      beforeImages: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}before_images'],
+      ),
+      afterImages: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}after_images'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -8301,6 +8404,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
   final String patientId;
   final String? visitId;
   final int complaintIndex;
+  final DateTime? complaintDate;
+  final bool? isBaseline;
   final String complaintName;
   final String? location;
   final String? side;
@@ -8315,6 +8420,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
   final String? periodicity;
   final int severity;
   final String status;
+  final String? beforeImages;
+  final String? afterImages;
   final String? notes;
   final bool isDeleted;
   final DateTime createdAt;
@@ -8324,6 +8431,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     required this.patientId,
     this.visitId,
     required this.complaintIndex,
+    this.complaintDate,
+    this.isBaseline,
     required this.complaintName,
     this.location,
     this.side,
@@ -8338,6 +8447,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     this.periodicity,
     required this.severity,
     required this.status,
+    this.beforeImages,
+    this.afterImages,
     this.notes,
     required this.isDeleted,
     required this.createdAt,
@@ -8352,6 +8463,12 @@ class Complaint extends DataClass implements Insertable<Complaint> {
       map['visit_id'] = Variable<String>(visitId);
     }
     map['complaint_index'] = Variable<int>(complaintIndex);
+    if (!nullToAbsent || complaintDate != null) {
+      map['complaint_date'] = Variable<DateTime>(complaintDate);
+    }
+    if (!nullToAbsent || isBaseline != null) {
+      map['is_baseline'] = Variable<bool>(isBaseline);
+    }
     map['complaint_name'] = Variable<String>(complaintName);
     if (!nullToAbsent || location != null) {
       map['location'] = Variable<String>(location);
@@ -8388,6 +8505,12 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     }
     map['severity'] = Variable<int>(severity);
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || beforeImages != null) {
+      map['before_images'] = Variable<String>(beforeImages);
+    }
+    if (!nullToAbsent || afterImages != null) {
+      map['after_images'] = Variable<String>(afterImages);
+    }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
@@ -8406,6 +8529,14 @@ class Complaint extends DataClass implements Insertable<Complaint> {
               ? const Value.absent()
               : Value(visitId),
       complaintIndex: Value(complaintIndex),
+      complaintDate:
+          complaintDate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(complaintDate),
+      isBaseline:
+          isBaseline == null && nullToAbsent
+              ? const Value.absent()
+              : Value(isBaseline),
       complaintName: Value(complaintName),
       location:
           location == null && nullToAbsent
@@ -8448,6 +8579,14 @@ class Complaint extends DataClass implements Insertable<Complaint> {
               : Value(periodicity),
       severity: Value(severity),
       status: Value(status),
+      beforeImages:
+          beforeImages == null && nullToAbsent
+              ? const Value.absent()
+              : Value(beforeImages),
+      afterImages:
+          afterImages == null && nullToAbsent
+              ? const Value.absent()
+              : Value(afterImages),
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       isDeleted: Value(isDeleted),
@@ -8466,6 +8605,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
       patientId: serializer.fromJson<String>(json['patientId']),
       visitId: serializer.fromJson<String?>(json['visitId']),
       complaintIndex: serializer.fromJson<int>(json['complaintIndex']),
+      complaintDate: serializer.fromJson<DateTime?>(json['complaintDate']),
+      isBaseline: serializer.fromJson<bool?>(json['isBaseline']),
       complaintName: serializer.fromJson<String>(json['complaintName']),
       location: serializer.fromJson<String?>(json['location']),
       side: serializer.fromJson<String?>(json['side']),
@@ -8484,6 +8625,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
       periodicity: serializer.fromJson<String?>(json['periodicity']),
       severity: serializer.fromJson<int>(json['severity']),
       status: serializer.fromJson<String>(json['status']),
+      beforeImages: serializer.fromJson<String?>(json['beforeImages']),
+      afterImages: serializer.fromJson<String?>(json['afterImages']),
       notes: serializer.fromJson<String?>(json['notes']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -8498,6 +8641,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
       'patientId': serializer.toJson<String>(patientId),
       'visitId': serializer.toJson<String?>(visitId),
       'complaintIndex': serializer.toJson<int>(complaintIndex),
+      'complaintDate': serializer.toJson<DateTime?>(complaintDate),
+      'isBaseline': serializer.toJson<bool?>(isBaseline),
       'complaintName': serializer.toJson<String>(complaintName),
       'location': serializer.toJson<String?>(location),
       'side': serializer.toJson<String?>(side),
@@ -8512,6 +8657,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
       'periodicity': serializer.toJson<String?>(periodicity),
       'severity': serializer.toJson<int>(severity),
       'status': serializer.toJson<String>(status),
+      'beforeImages': serializer.toJson<String?>(beforeImages),
+      'afterImages': serializer.toJson<String?>(afterImages),
       'notes': serializer.toJson<String?>(notes),
       'isDeleted': serializer.toJson<bool>(isDeleted),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -8524,6 +8671,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     String? patientId,
     Value<String?> visitId = const Value.absent(),
     int? complaintIndex,
+    Value<DateTime?> complaintDate = const Value.absent(),
+    Value<bool?> isBaseline = const Value.absent(),
     String? complaintName,
     Value<String?> location = const Value.absent(),
     Value<String?> side = const Value.absent(),
@@ -8538,6 +8687,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     Value<String?> periodicity = const Value.absent(),
     int? severity,
     String? status,
+    Value<String?> beforeImages = const Value.absent(),
+    Value<String?> afterImages = const Value.absent(),
     Value<String?> notes = const Value.absent(),
     bool? isDeleted,
     DateTime? createdAt,
@@ -8547,6 +8698,9 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     patientId: patientId ?? this.patientId,
     visitId: visitId.present ? visitId.value : this.visitId,
     complaintIndex: complaintIndex ?? this.complaintIndex,
+    complaintDate:
+        complaintDate.present ? complaintDate.value : this.complaintDate,
+    isBaseline: isBaseline.present ? isBaseline.value : this.isBaseline,
     complaintName: complaintName ?? this.complaintName,
     location: location.present ? location.value : this.location,
     side: side.present ? side.value : this.side,
@@ -8567,6 +8721,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     periodicity: periodicity.present ? periodicity.value : this.periodicity,
     severity: severity ?? this.severity,
     status: status ?? this.status,
+    beforeImages: beforeImages.present ? beforeImages.value : this.beforeImages,
+    afterImages: afterImages.present ? afterImages.value : this.afterImages,
     notes: notes.present ? notes.value : this.notes,
     isDeleted: isDeleted ?? this.isDeleted,
     createdAt: createdAt ?? this.createdAt,
@@ -8581,6 +8737,12 @@ class Complaint extends DataClass implements Insertable<Complaint> {
           data.complaintIndex.present
               ? data.complaintIndex.value
               : this.complaintIndex,
+      complaintDate:
+          data.complaintDate.present
+              ? data.complaintDate.value
+              : this.complaintDate,
+      isBaseline:
+          data.isBaseline.present ? data.isBaseline.value : this.isBaseline,
       complaintName:
           data.complaintName.present
               ? data.complaintName.value
@@ -8608,6 +8770,12 @@ class Complaint extends DataClass implements Insertable<Complaint> {
           data.periodicity.present ? data.periodicity.value : this.periodicity,
       severity: data.severity.present ? data.severity.value : this.severity,
       status: data.status.present ? data.status.value : this.status,
+      beforeImages:
+          data.beforeImages.present
+              ? data.beforeImages.value
+              : this.beforeImages,
+      afterImages:
+          data.afterImages.present ? data.afterImages.value : this.afterImages,
       notes: data.notes.present ? data.notes.value : this.notes,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -8622,6 +8790,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
           ..write('patientId: $patientId, ')
           ..write('visitId: $visitId, ')
           ..write('complaintIndex: $complaintIndex, ')
+          ..write('complaintDate: $complaintDate, ')
+          ..write('isBaseline: $isBaseline, ')
           ..write('complaintName: $complaintName, ')
           ..write('location: $location, ')
           ..write('side: $side, ')
@@ -8636,6 +8806,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
           ..write('periodicity: $periodicity, ')
           ..write('severity: $severity, ')
           ..write('status: $status, ')
+          ..write('beforeImages: $beforeImages, ')
+          ..write('afterImages: $afterImages, ')
           ..write('notes: $notes, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('createdAt: $createdAt, ')
@@ -8650,6 +8822,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     patientId,
     visitId,
     complaintIndex,
+    complaintDate,
+    isBaseline,
     complaintName,
     location,
     side,
@@ -8664,6 +8838,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
     periodicity,
     severity,
     status,
+    beforeImages,
+    afterImages,
     notes,
     isDeleted,
     createdAt,
@@ -8677,6 +8853,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
           other.patientId == this.patientId &&
           other.visitId == this.visitId &&
           other.complaintIndex == this.complaintIndex &&
+          other.complaintDate == this.complaintDate &&
+          other.isBaseline == this.isBaseline &&
           other.complaintName == this.complaintName &&
           other.location == this.location &&
           other.side == this.side &&
@@ -8691,6 +8869,8 @@ class Complaint extends DataClass implements Insertable<Complaint> {
           other.periodicity == this.periodicity &&
           other.severity == this.severity &&
           other.status == this.status &&
+          other.beforeImages == this.beforeImages &&
+          other.afterImages == this.afterImages &&
           other.notes == this.notes &&
           other.isDeleted == this.isDeleted &&
           other.createdAt == this.createdAt &&
@@ -8702,6 +8882,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
   final Value<String> patientId;
   final Value<String?> visitId;
   final Value<int> complaintIndex;
+  final Value<DateTime?> complaintDate;
+  final Value<bool?> isBaseline;
   final Value<String> complaintName;
   final Value<String?> location;
   final Value<String?> side;
@@ -8716,6 +8898,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
   final Value<String?> periodicity;
   final Value<int> severity;
   final Value<String> status;
+  final Value<String?> beforeImages;
+  final Value<String?> afterImages;
   final Value<String?> notes;
   final Value<bool> isDeleted;
   final Value<DateTime> createdAt;
@@ -8726,6 +8910,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     this.patientId = const Value.absent(),
     this.visitId = const Value.absent(),
     this.complaintIndex = const Value.absent(),
+    this.complaintDate = const Value.absent(),
+    this.isBaseline = const Value.absent(),
     this.complaintName = const Value.absent(),
     this.location = const Value.absent(),
     this.side = const Value.absent(),
@@ -8740,6 +8926,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     this.periodicity = const Value.absent(),
     this.severity = const Value.absent(),
     this.status = const Value.absent(),
+    this.beforeImages = const Value.absent(),
+    this.afterImages = const Value.absent(),
     this.notes = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -8751,6 +8939,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     required String patientId,
     this.visitId = const Value.absent(),
     this.complaintIndex = const Value.absent(),
+    this.complaintDate = const Value.absent(),
+    this.isBaseline = const Value.absent(),
     required String complaintName,
     this.location = const Value.absent(),
     this.side = const Value.absent(),
@@ -8765,6 +8955,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     this.periodicity = const Value.absent(),
     this.severity = const Value.absent(),
     this.status = const Value.absent(),
+    this.beforeImages = const Value.absent(),
+    this.afterImages = const Value.absent(),
     this.notes = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -8778,6 +8970,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     Expression<String>? patientId,
     Expression<String>? visitId,
     Expression<int>? complaintIndex,
+    Expression<DateTime>? complaintDate,
+    Expression<bool>? isBaseline,
     Expression<String>? complaintName,
     Expression<String>? location,
     Expression<String>? side,
@@ -8792,6 +8986,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     Expression<String>? periodicity,
     Expression<int>? severity,
     Expression<String>? status,
+    Expression<String>? beforeImages,
+    Expression<String>? afterImages,
     Expression<String>? notes,
     Expression<bool>? isDeleted,
     Expression<DateTime>? createdAt,
@@ -8803,6 +8999,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
       if (patientId != null) 'patient_id': patientId,
       if (visitId != null) 'visit_id': visitId,
       if (complaintIndex != null) 'complaint_index': complaintIndex,
+      if (complaintDate != null) 'complaint_date': complaintDate,
+      if (isBaseline != null) 'is_baseline': isBaseline,
       if (complaintName != null) 'complaint_name': complaintName,
       if (location != null) 'location': location,
       if (side != null) 'side': side,
@@ -8818,6 +9016,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
       if (periodicity != null) 'periodicity': periodicity,
       if (severity != null) 'severity': severity,
       if (status != null) 'status': status,
+      if (beforeImages != null) 'before_images': beforeImages,
+      if (afterImages != null) 'after_images': afterImages,
       if (notes != null) 'notes': notes,
       if (isDeleted != null) 'is_deleted': isDeleted,
       if (createdAt != null) 'created_at': createdAt,
@@ -8831,6 +9031,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     Value<String>? patientId,
     Value<String?>? visitId,
     Value<int>? complaintIndex,
+    Value<DateTime?>? complaintDate,
+    Value<bool?>? isBaseline,
     Value<String>? complaintName,
     Value<String?>? location,
     Value<String?>? side,
@@ -8845,6 +9047,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     Value<String?>? periodicity,
     Value<int>? severity,
     Value<String>? status,
+    Value<String?>? beforeImages,
+    Value<String?>? afterImages,
     Value<String?>? notes,
     Value<bool>? isDeleted,
     Value<DateTime>? createdAt,
@@ -8856,6 +9060,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
       patientId: patientId ?? this.patientId,
       visitId: visitId ?? this.visitId,
       complaintIndex: complaintIndex ?? this.complaintIndex,
+      complaintDate: complaintDate ?? this.complaintDate,
+      isBaseline: isBaseline ?? this.isBaseline,
       complaintName: complaintName ?? this.complaintName,
       location: location ?? this.location,
       side: side ?? this.side,
@@ -8870,6 +9076,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
       periodicity: periodicity ?? this.periodicity,
       severity: severity ?? this.severity,
       status: status ?? this.status,
+      beforeImages: beforeImages ?? this.beforeImages,
+      afterImages: afterImages ?? this.afterImages,
       notes: notes ?? this.notes,
       isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
@@ -8892,6 +9100,12 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     }
     if (complaintIndex.present) {
       map['complaint_index'] = Variable<int>(complaintIndex.value);
+    }
+    if (complaintDate.present) {
+      map['complaint_date'] = Variable<DateTime>(complaintDate.value);
+    }
+    if (isBaseline.present) {
+      map['is_baseline'] = Variable<bool>(isBaseline.value);
     }
     if (complaintName.present) {
       map['complaint_name'] = Variable<String>(complaintName.value);
@@ -8935,6 +9149,12 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (beforeImages.present) {
+      map['before_images'] = Variable<String>(beforeImages.value);
+    }
+    if (afterImages.present) {
+      map['after_images'] = Variable<String>(afterImages.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -8960,6 +9180,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
           ..write('patientId: $patientId, ')
           ..write('visitId: $visitId, ')
           ..write('complaintIndex: $complaintIndex, ')
+          ..write('complaintDate: $complaintDate, ')
+          ..write('isBaseline: $isBaseline, ')
           ..write('complaintName: $complaintName, ')
           ..write('location: $location, ')
           ..write('side: $side, ')
@@ -8974,6 +9196,8 @@ class ComplaintsCompanion extends UpdateCompanion<Complaint> {
           ..write('periodicity: $periodicity, ')
           ..write('severity: $severity, ')
           ..write('status: $status, ')
+          ..write('beforeImages: $beforeImages, ')
+          ..write('afterImages: $afterImages, ')
           ..write('notes: $notes, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('createdAt: $createdAt, ')
@@ -9035,11 +9259,26 @@ class $PrescriptionsTable extends Prescriptions
       GeneratedColumn<DateTime>(
         'prescription_date',
         aliasedName,
-        false,
+        true,
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
         defaultValue: currentDateAndTime,
       );
+  static const VerificationMeta _isBaselineMeta = const VerificationMeta(
+    'isBaseline',
+  );
+  @override
+  late final GeneratedColumn<bool> isBaseline = GeneratedColumn<bool>(
+    'is_baseline',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_baseline" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _remedyIndexMeta = const VerificationMeta(
     'remedyIndex',
   );
@@ -9185,6 +9424,7 @@ class $PrescriptionsTable extends Prescriptions
     patientId,
     visitId,
     prescriptionDate,
+    isBaseline,
     remedyIndex,
     remedyName,
     potency,
@@ -9236,6 +9476,12 @@ class $PrescriptionsTable extends Prescriptions
           data['prescription_date']!,
           _prescriptionDateMeta,
         ),
+      );
+    }
+    if (data.containsKey('is_baseline')) {
+      context.handle(
+        _isBaselineMeta,
+        isBaseline.isAcceptableOrUnknown(data['is_baseline']!, _isBaselineMeta),
       );
     }
     if (data.containsKey('remedy_index')) {
@@ -9349,11 +9595,14 @@ class $PrescriptionsTable extends Prescriptions
         DriftSqlType.string,
         data['${effectivePrefix}visit_id'],
       ),
-      prescriptionDate:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}prescription_date'],
-          )!,
+      prescriptionDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}prescription_date'],
+      ),
+      isBaseline: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_baseline'],
+      ),
       remedyIndex:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -9421,7 +9670,8 @@ class Prescription extends DataClass implements Insertable<Prescription> {
   final String id;
   final String patientId;
   final String? visitId;
-  final DateTime prescriptionDate;
+  final DateTime? prescriptionDate;
+  final bool? isBaseline;
   final int remedyIndex;
   final String remedyName;
   final String potency;
@@ -9438,7 +9688,8 @@ class Prescription extends DataClass implements Insertable<Prescription> {
     required this.id,
     required this.patientId,
     this.visitId,
-    required this.prescriptionDate,
+    this.prescriptionDate,
+    this.isBaseline,
     required this.remedyIndex,
     required this.remedyName,
     required this.potency,
@@ -9460,7 +9711,12 @@ class Prescription extends DataClass implements Insertable<Prescription> {
     if (!nullToAbsent || visitId != null) {
       map['visit_id'] = Variable<String>(visitId);
     }
-    map['prescription_date'] = Variable<DateTime>(prescriptionDate);
+    if (!nullToAbsent || prescriptionDate != null) {
+      map['prescription_date'] = Variable<DateTime>(prescriptionDate);
+    }
+    if (!nullToAbsent || isBaseline != null) {
+      map['is_baseline'] = Variable<bool>(isBaseline);
+    }
     map['remedy_index'] = Variable<int>(remedyIndex);
     map['remedy_name'] = Variable<String>(remedyName);
     map['potency'] = Variable<String>(potency);
@@ -9496,7 +9752,14 @@ class Prescription extends DataClass implements Insertable<Prescription> {
           visitId == null && nullToAbsent
               ? const Value.absent()
               : Value(visitId),
-      prescriptionDate: Value(prescriptionDate),
+      prescriptionDate:
+          prescriptionDate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(prescriptionDate),
+      isBaseline:
+          isBaseline == null && nullToAbsent
+              ? const Value.absent()
+              : Value(isBaseline),
       remedyIndex: Value(remedyIndex),
       remedyName: Value(remedyName),
       potency: Value(potency),
@@ -9539,7 +9802,10 @@ class Prescription extends DataClass implements Insertable<Prescription> {
       id: serializer.fromJson<String>(json['id']),
       patientId: serializer.fromJson<String>(json['patientId']),
       visitId: serializer.fromJson<String?>(json['visitId']),
-      prescriptionDate: serializer.fromJson<DateTime>(json['prescriptionDate']),
+      prescriptionDate: serializer.fromJson<DateTime?>(
+        json['prescriptionDate'],
+      ),
+      isBaseline: serializer.fromJson<bool?>(json['isBaseline']),
       remedyIndex: serializer.fromJson<int>(json['remedyIndex']),
       remedyName: serializer.fromJson<String>(json['remedyName']),
       potency: serializer.fromJson<String>(json['potency']),
@@ -9561,7 +9827,8 @@ class Prescription extends DataClass implements Insertable<Prescription> {
       'id': serializer.toJson<String>(id),
       'patientId': serializer.toJson<String>(patientId),
       'visitId': serializer.toJson<String?>(visitId),
-      'prescriptionDate': serializer.toJson<DateTime>(prescriptionDate),
+      'prescriptionDate': serializer.toJson<DateTime?>(prescriptionDate),
+      'isBaseline': serializer.toJson<bool?>(isBaseline),
       'remedyIndex': serializer.toJson<int>(remedyIndex),
       'remedyName': serializer.toJson<String>(remedyName),
       'potency': serializer.toJson<String>(potency),
@@ -9581,7 +9848,8 @@ class Prescription extends DataClass implements Insertable<Prescription> {
     String? id,
     String? patientId,
     Value<String?> visitId = const Value.absent(),
-    DateTime? prescriptionDate,
+    Value<DateTime?> prescriptionDate = const Value.absent(),
+    Value<bool?> isBaseline = const Value.absent(),
     int? remedyIndex,
     String? remedyName,
     String? potency,
@@ -9598,7 +9866,11 @@ class Prescription extends DataClass implements Insertable<Prescription> {
     id: id ?? this.id,
     patientId: patientId ?? this.patientId,
     visitId: visitId.present ? visitId.value : this.visitId,
-    prescriptionDate: prescriptionDate ?? this.prescriptionDate,
+    prescriptionDate:
+        prescriptionDate.present
+            ? prescriptionDate.value
+            : this.prescriptionDate,
+    isBaseline: isBaseline.present ? isBaseline.value : this.isBaseline,
     remedyIndex: remedyIndex ?? this.remedyIndex,
     remedyName: remedyName ?? this.remedyName,
     potency: potency ?? this.potency,
@@ -9622,6 +9894,8 @@ class Prescription extends DataClass implements Insertable<Prescription> {
           data.prescriptionDate.present
               ? data.prescriptionDate.value
               : this.prescriptionDate,
+      isBaseline:
+          data.isBaseline.present ? data.isBaseline.value : this.isBaseline,
       remedyIndex:
           data.remedyIndex.present ? data.remedyIndex.value : this.remedyIndex,
       remedyName:
@@ -9655,6 +9929,7 @@ class Prescription extends DataClass implements Insertable<Prescription> {
           ..write('patientId: $patientId, ')
           ..write('visitId: $visitId, ')
           ..write('prescriptionDate: $prescriptionDate, ')
+          ..write('isBaseline: $isBaseline, ')
           ..write('remedyIndex: $remedyIndex, ')
           ..write('remedyName: $remedyName, ')
           ..write('potency: $potency, ')
@@ -9677,6 +9952,7 @@ class Prescription extends DataClass implements Insertable<Prescription> {
     patientId,
     visitId,
     prescriptionDate,
+    isBaseline,
     remedyIndex,
     remedyName,
     potency,
@@ -9698,6 +9974,7 @@ class Prescription extends DataClass implements Insertable<Prescription> {
           other.patientId == this.patientId &&
           other.visitId == this.visitId &&
           other.prescriptionDate == this.prescriptionDate &&
+          other.isBaseline == this.isBaseline &&
           other.remedyIndex == this.remedyIndex &&
           other.remedyName == this.remedyName &&
           other.potency == this.potency &&
@@ -9716,7 +9993,8 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
   final Value<String> id;
   final Value<String> patientId;
   final Value<String?> visitId;
-  final Value<DateTime> prescriptionDate;
+  final Value<DateTime?> prescriptionDate;
+  final Value<bool?> isBaseline;
   final Value<int> remedyIndex;
   final Value<String> remedyName;
   final Value<String> potency;
@@ -9735,6 +10013,7 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
     this.patientId = const Value.absent(),
     this.visitId = const Value.absent(),
     this.prescriptionDate = const Value.absent(),
+    this.isBaseline = const Value.absent(),
     this.remedyIndex = const Value.absent(),
     this.remedyName = const Value.absent(),
     this.potency = const Value.absent(),
@@ -9754,6 +10033,7 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
     required String patientId,
     this.visitId = const Value.absent(),
     this.prescriptionDate = const Value.absent(),
+    this.isBaseline = const Value.absent(),
     this.remedyIndex = const Value.absent(),
     required String remedyName,
     required String potency,
@@ -9776,6 +10056,7 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
     Expression<String>? patientId,
     Expression<String>? visitId,
     Expression<DateTime>? prescriptionDate,
+    Expression<bool>? isBaseline,
     Expression<int>? remedyIndex,
     Expression<String>? remedyName,
     Expression<String>? potency,
@@ -9795,6 +10076,7 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
       if (patientId != null) 'patient_id': patientId,
       if (visitId != null) 'visit_id': visitId,
       if (prescriptionDate != null) 'prescription_date': prescriptionDate,
+      if (isBaseline != null) 'is_baseline': isBaseline,
       if (remedyIndex != null) 'remedy_index': remedyIndex,
       if (remedyName != null) 'remedy_name': remedyName,
       if (potency != null) 'potency': potency,
@@ -9815,7 +10097,8 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
     Value<String>? id,
     Value<String>? patientId,
     Value<String?>? visitId,
-    Value<DateTime>? prescriptionDate,
+    Value<DateTime?>? prescriptionDate,
+    Value<bool?>? isBaseline,
     Value<int>? remedyIndex,
     Value<String>? remedyName,
     Value<String>? potency,
@@ -9835,6 +10118,7 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
       patientId: patientId ?? this.patientId,
       visitId: visitId ?? this.visitId,
       prescriptionDate: prescriptionDate ?? this.prescriptionDate,
+      isBaseline: isBaseline ?? this.isBaseline,
       remedyIndex: remedyIndex ?? this.remedyIndex,
       remedyName: remedyName ?? this.remedyName,
       potency: potency ?? this.potency,
@@ -9865,6 +10149,9 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
     }
     if (prescriptionDate.present) {
       map['prescription_date'] = Variable<DateTime>(prescriptionDate.value);
+    }
+    if (isBaseline.present) {
+      map['is_baseline'] = Variable<bool>(isBaseline.value);
     }
     if (remedyIndex.present) {
       map['remedy_index'] = Variable<int>(remedyIndex.value);
@@ -9915,6 +10202,7 @@ class PrescriptionsCompanion extends UpdateCompanion<Prescription> {
           ..write('patientId: $patientId, ')
           ..write('visitId: $visitId, ')
           ..write('prescriptionDate: $prescriptionDate, ')
+          ..write('isBaseline: $isBaseline, ')
           ..write('remedyIndex: $remedyIndex, ')
           ..write('remedyName: $remedyName, ')
           ..write('potency: $potency, ')
@@ -9983,10 +10271,25 @@ class $InvestigationsTable extends Investigations
   late final GeneratedColumn<DateTime> testDate = GeneratedColumn<DateTime>(
     'test_date',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _isBaselineMeta = const VerificationMeta(
+    'isBaseline',
+  );
+  @override
+  late final GeneratedColumn<bool> isBaseline = GeneratedColumn<bool>(
+    'is_baseline',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_baseline" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
   );
   static const VerificationMeta _testCategoryMeta = const VerificationMeta(
     'testCategory',
@@ -10085,6 +10388,18 @@ class $InvestigationsTable extends Investigations
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _reportAttachmentsMeta = const VerificationMeta(
+    'reportAttachments',
+  );
+  @override
+  late final GeneratedColumn<String> reportAttachments =
+      GeneratedColumn<String>(
+        'report_attachments',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -10139,6 +10454,7 @@ class $InvestigationsTable extends Investigations
     patientId,
     visitId,
     testDate,
+    isBaseline,
     testCategory,
     testName,
     numericValue,
@@ -10148,6 +10464,7 @@ class $InvestigationsTable extends Investigations
     refRangeMax,
     flag,
     labName,
+    reportAttachments,
     notes,
     isDeleted,
     createdAt,
@@ -10188,6 +10505,12 @@ class $InvestigationsTable extends Investigations
       context.handle(
         _testDateMeta,
         testDate.isAcceptableOrUnknown(data['test_date']!, _testDateMeta),
+      );
+    }
+    if (data.containsKey('is_baseline')) {
+      context.handle(
+        _isBaselineMeta,
+        isBaseline.isAcceptableOrUnknown(data['is_baseline']!, _isBaselineMeta),
       );
     }
     if (data.containsKey('test_category')) {
@@ -10261,6 +10584,15 @@ class $InvestigationsTable extends Investigations
         labName.isAcceptableOrUnknown(data['lab_name']!, _labNameMeta),
       );
     }
+    if (data.containsKey('report_attachments')) {
+      context.handle(
+        _reportAttachmentsMeta,
+        reportAttachments.isAcceptableOrUnknown(
+          data['report_attachments']!,
+          _reportAttachmentsMeta,
+        ),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -10308,11 +10640,14 @@ class $InvestigationsTable extends Investigations
         DriftSqlType.string,
         data['${effectivePrefix}visit_id'],
       ),
-      testDate:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}test_date'],
-          )!,
+      testDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}test_date'],
+      ),
+      isBaseline: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_baseline'],
+      ),
       testCategory:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -10352,6 +10687,10 @@ class $InvestigationsTable extends Investigations
         DriftSqlType.string,
         data['${effectivePrefix}lab_name'],
       ),
+      reportAttachments: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}report_attachments'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -10384,7 +10723,8 @@ class Investigation extends DataClass implements Insertable<Investigation> {
   final String id;
   final String patientId;
   final String? visitId;
-  final DateTime testDate;
+  final DateTime? testDate;
+  final bool? isBaseline;
   final String testCategory;
   final String testName;
   final double? numericValue;
@@ -10394,6 +10734,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
   final double? refRangeMax;
   final String flag;
   final String? labName;
+  final String? reportAttachments;
   final String? notes;
   final bool isDeleted;
   final DateTime createdAt;
@@ -10402,7 +10743,8 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     required this.id,
     required this.patientId,
     this.visitId,
-    required this.testDate,
+    this.testDate,
+    this.isBaseline,
     required this.testCategory,
     required this.testName,
     this.numericValue,
@@ -10412,6 +10754,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     this.refRangeMax,
     required this.flag,
     this.labName,
+    this.reportAttachments,
     this.notes,
     required this.isDeleted,
     required this.createdAt,
@@ -10425,7 +10768,12 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     if (!nullToAbsent || visitId != null) {
       map['visit_id'] = Variable<String>(visitId);
     }
-    map['test_date'] = Variable<DateTime>(testDate);
+    if (!nullToAbsent || testDate != null) {
+      map['test_date'] = Variable<DateTime>(testDate);
+    }
+    if (!nullToAbsent || isBaseline != null) {
+      map['is_baseline'] = Variable<bool>(isBaseline);
+    }
     map['test_category'] = Variable<String>(testCategory);
     map['test_name'] = Variable<String>(testName);
     if (!nullToAbsent || numericValue != null) {
@@ -10447,6 +10795,9 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     if (!nullToAbsent || labName != null) {
       map['lab_name'] = Variable<String>(labName);
     }
+    if (!nullToAbsent || reportAttachments != null) {
+      map['report_attachments'] = Variable<String>(reportAttachments);
+    }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
@@ -10464,7 +10815,14 @@ class Investigation extends DataClass implements Insertable<Investigation> {
           visitId == null && nullToAbsent
               ? const Value.absent()
               : Value(visitId),
-      testDate: Value(testDate),
+      testDate:
+          testDate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(testDate),
+      isBaseline:
+          isBaseline == null && nullToAbsent
+              ? const Value.absent()
+              : Value(isBaseline),
       testCategory: Value(testCategory),
       testName: Value(testName),
       numericValue:
@@ -10489,6 +10847,10 @@ class Investigation extends DataClass implements Insertable<Investigation> {
           labName == null && nullToAbsent
               ? const Value.absent()
               : Value(labName),
+      reportAttachments:
+          reportAttachments == null && nullToAbsent
+              ? const Value.absent()
+              : Value(reportAttachments),
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       isDeleted: Value(isDeleted),
@@ -10506,7 +10868,8 @@ class Investigation extends DataClass implements Insertable<Investigation> {
       id: serializer.fromJson<String>(json['id']),
       patientId: serializer.fromJson<String>(json['patientId']),
       visitId: serializer.fromJson<String?>(json['visitId']),
-      testDate: serializer.fromJson<DateTime>(json['testDate']),
+      testDate: serializer.fromJson<DateTime?>(json['testDate']),
+      isBaseline: serializer.fromJson<bool?>(json['isBaseline']),
       testCategory: serializer.fromJson<String>(json['testCategory']),
       testName: serializer.fromJson<String>(json['testName']),
       numericValue: serializer.fromJson<double?>(json['numericValue']),
@@ -10516,6 +10879,9 @@ class Investigation extends DataClass implements Insertable<Investigation> {
       refRangeMax: serializer.fromJson<double?>(json['refRangeMax']),
       flag: serializer.fromJson<String>(json['flag']),
       labName: serializer.fromJson<String?>(json['labName']),
+      reportAttachments: serializer.fromJson<String?>(
+        json['reportAttachments'],
+      ),
       notes: serializer.fromJson<String?>(json['notes']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -10529,7 +10895,8 @@ class Investigation extends DataClass implements Insertable<Investigation> {
       'id': serializer.toJson<String>(id),
       'patientId': serializer.toJson<String>(patientId),
       'visitId': serializer.toJson<String?>(visitId),
-      'testDate': serializer.toJson<DateTime>(testDate),
+      'testDate': serializer.toJson<DateTime?>(testDate),
+      'isBaseline': serializer.toJson<bool?>(isBaseline),
       'testCategory': serializer.toJson<String>(testCategory),
       'testName': serializer.toJson<String>(testName),
       'numericValue': serializer.toJson<double?>(numericValue),
@@ -10539,6 +10906,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
       'refRangeMax': serializer.toJson<double?>(refRangeMax),
       'flag': serializer.toJson<String>(flag),
       'labName': serializer.toJson<String?>(labName),
+      'reportAttachments': serializer.toJson<String?>(reportAttachments),
       'notes': serializer.toJson<String?>(notes),
       'isDeleted': serializer.toJson<bool>(isDeleted),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -10550,7 +10918,8 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     String? id,
     String? patientId,
     Value<String?> visitId = const Value.absent(),
-    DateTime? testDate,
+    Value<DateTime?> testDate = const Value.absent(),
+    Value<bool?> isBaseline = const Value.absent(),
     String? testCategory,
     String? testName,
     Value<double?> numericValue = const Value.absent(),
@@ -10560,6 +10929,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     Value<double?> refRangeMax = const Value.absent(),
     String? flag,
     Value<String?> labName = const Value.absent(),
+    Value<String?> reportAttachments = const Value.absent(),
     Value<String?> notes = const Value.absent(),
     bool? isDeleted,
     DateTime? createdAt,
@@ -10568,7 +10938,8 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     id: id ?? this.id,
     patientId: patientId ?? this.patientId,
     visitId: visitId.present ? visitId.value : this.visitId,
-    testDate: testDate ?? this.testDate,
+    testDate: testDate.present ? testDate.value : this.testDate,
+    isBaseline: isBaseline.present ? isBaseline.value : this.isBaseline,
     testCategory: testCategory ?? this.testCategory,
     testName: testName ?? this.testName,
     numericValue: numericValue.present ? numericValue.value : this.numericValue,
@@ -10578,6 +10949,10 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     refRangeMax: refRangeMax.present ? refRangeMax.value : this.refRangeMax,
     flag: flag ?? this.flag,
     labName: labName.present ? labName.value : this.labName,
+    reportAttachments:
+        reportAttachments.present
+            ? reportAttachments.value
+            : this.reportAttachments,
     notes: notes.present ? notes.value : this.notes,
     isDeleted: isDeleted ?? this.isDeleted,
     createdAt: createdAt ?? this.createdAt,
@@ -10589,6 +10964,8 @@ class Investigation extends DataClass implements Insertable<Investigation> {
       patientId: data.patientId.present ? data.patientId.value : this.patientId,
       visitId: data.visitId.present ? data.visitId.value : this.visitId,
       testDate: data.testDate.present ? data.testDate.value : this.testDate,
+      isBaseline:
+          data.isBaseline.present ? data.isBaseline.value : this.isBaseline,
       testCategory:
           data.testCategory.present
               ? data.testCategory.value
@@ -10607,6 +10984,10 @@ class Investigation extends DataClass implements Insertable<Investigation> {
           data.refRangeMax.present ? data.refRangeMax.value : this.refRangeMax,
       flag: data.flag.present ? data.flag.value : this.flag,
       labName: data.labName.present ? data.labName.value : this.labName,
+      reportAttachments:
+          data.reportAttachments.present
+              ? data.reportAttachments.value
+              : this.reportAttachments,
       notes: data.notes.present ? data.notes.value : this.notes,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -10621,6 +11002,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
           ..write('patientId: $patientId, ')
           ..write('visitId: $visitId, ')
           ..write('testDate: $testDate, ')
+          ..write('isBaseline: $isBaseline, ')
           ..write('testCategory: $testCategory, ')
           ..write('testName: $testName, ')
           ..write('numericValue: $numericValue, ')
@@ -10630,6 +11012,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
           ..write('refRangeMax: $refRangeMax, ')
           ..write('flag: $flag, ')
           ..write('labName: $labName, ')
+          ..write('reportAttachments: $reportAttachments, ')
           ..write('notes: $notes, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('createdAt: $createdAt, ')
@@ -10644,6 +11027,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     patientId,
     visitId,
     testDate,
+    isBaseline,
     testCategory,
     testName,
     numericValue,
@@ -10653,6 +11037,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
     refRangeMax,
     flag,
     labName,
+    reportAttachments,
     notes,
     isDeleted,
     createdAt,
@@ -10666,6 +11051,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
           other.patientId == this.patientId &&
           other.visitId == this.visitId &&
           other.testDate == this.testDate &&
+          other.isBaseline == this.isBaseline &&
           other.testCategory == this.testCategory &&
           other.testName == this.testName &&
           other.numericValue == this.numericValue &&
@@ -10675,6 +11061,7 @@ class Investigation extends DataClass implements Insertable<Investigation> {
           other.refRangeMax == this.refRangeMax &&
           other.flag == this.flag &&
           other.labName == this.labName &&
+          other.reportAttachments == this.reportAttachments &&
           other.notes == this.notes &&
           other.isDeleted == this.isDeleted &&
           other.createdAt == this.createdAt &&
@@ -10685,7 +11072,8 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
   final Value<String> id;
   final Value<String> patientId;
   final Value<String?> visitId;
-  final Value<DateTime> testDate;
+  final Value<DateTime?> testDate;
+  final Value<bool?> isBaseline;
   final Value<String> testCategory;
   final Value<String> testName;
   final Value<double?> numericValue;
@@ -10695,6 +11083,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
   final Value<double?> refRangeMax;
   final Value<String> flag;
   final Value<String?> labName;
+  final Value<String?> reportAttachments;
   final Value<String?> notes;
   final Value<bool> isDeleted;
   final Value<DateTime> createdAt;
@@ -10705,6 +11094,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     this.patientId = const Value.absent(),
     this.visitId = const Value.absent(),
     this.testDate = const Value.absent(),
+    this.isBaseline = const Value.absent(),
     this.testCategory = const Value.absent(),
     this.testName = const Value.absent(),
     this.numericValue = const Value.absent(),
@@ -10714,6 +11104,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     this.refRangeMax = const Value.absent(),
     this.flag = const Value.absent(),
     this.labName = const Value.absent(),
+    this.reportAttachments = const Value.absent(),
     this.notes = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -10725,6 +11116,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     required String patientId,
     this.visitId = const Value.absent(),
     this.testDate = const Value.absent(),
+    this.isBaseline = const Value.absent(),
     this.testCategory = const Value.absent(),
     required String testName,
     this.numericValue = const Value.absent(),
@@ -10734,6 +11126,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     this.refRangeMax = const Value.absent(),
     this.flag = const Value.absent(),
     this.labName = const Value.absent(),
+    this.reportAttachments = const Value.absent(),
     this.notes = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -10747,6 +11140,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     Expression<String>? patientId,
     Expression<String>? visitId,
     Expression<DateTime>? testDate,
+    Expression<bool>? isBaseline,
     Expression<String>? testCategory,
     Expression<String>? testName,
     Expression<double>? numericValue,
@@ -10756,6 +11150,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     Expression<double>? refRangeMax,
     Expression<String>? flag,
     Expression<String>? labName,
+    Expression<String>? reportAttachments,
     Expression<String>? notes,
     Expression<bool>? isDeleted,
     Expression<DateTime>? createdAt,
@@ -10767,6 +11162,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
       if (patientId != null) 'patient_id': patientId,
       if (visitId != null) 'visit_id': visitId,
       if (testDate != null) 'test_date': testDate,
+      if (isBaseline != null) 'is_baseline': isBaseline,
       if (testCategory != null) 'test_category': testCategory,
       if (testName != null) 'test_name': testName,
       if (numericValue != null) 'numeric_value': numericValue,
@@ -10776,6 +11172,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
       if (refRangeMax != null) 'ref_range_max': refRangeMax,
       if (flag != null) 'flag': flag,
       if (labName != null) 'lab_name': labName,
+      if (reportAttachments != null) 'report_attachments': reportAttachments,
       if (notes != null) 'notes': notes,
       if (isDeleted != null) 'is_deleted': isDeleted,
       if (createdAt != null) 'created_at': createdAt,
@@ -10788,7 +11185,8 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     Value<String>? id,
     Value<String>? patientId,
     Value<String?>? visitId,
-    Value<DateTime>? testDate,
+    Value<DateTime?>? testDate,
+    Value<bool?>? isBaseline,
     Value<String>? testCategory,
     Value<String>? testName,
     Value<double?>? numericValue,
@@ -10798,6 +11196,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     Value<double?>? refRangeMax,
     Value<String>? flag,
     Value<String?>? labName,
+    Value<String?>? reportAttachments,
     Value<String?>? notes,
     Value<bool>? isDeleted,
     Value<DateTime>? createdAt,
@@ -10809,6 +11208,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
       patientId: patientId ?? this.patientId,
       visitId: visitId ?? this.visitId,
       testDate: testDate ?? this.testDate,
+      isBaseline: isBaseline ?? this.isBaseline,
       testCategory: testCategory ?? this.testCategory,
       testName: testName ?? this.testName,
       numericValue: numericValue ?? this.numericValue,
@@ -10818,6 +11218,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
       refRangeMax: refRangeMax ?? this.refRangeMax,
       flag: flag ?? this.flag,
       labName: labName ?? this.labName,
+      reportAttachments: reportAttachments ?? this.reportAttachments,
       notes: notes ?? this.notes,
       isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
@@ -10840,6 +11241,9 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     }
     if (testDate.present) {
       map['test_date'] = Variable<DateTime>(testDate.value);
+    }
+    if (isBaseline.present) {
+      map['is_baseline'] = Variable<bool>(isBaseline.value);
     }
     if (testCategory.present) {
       map['test_category'] = Variable<String>(testCategory.value);
@@ -10868,6 +11272,9 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
     if (labName.present) {
       map['lab_name'] = Variable<String>(labName.value);
     }
+    if (reportAttachments.present) {
+      map['report_attachments'] = Variable<String>(reportAttachments.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -10893,6 +11300,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
           ..write('patientId: $patientId, ')
           ..write('visitId: $visitId, ')
           ..write('testDate: $testDate, ')
+          ..write('isBaseline: $isBaseline, ')
           ..write('testCategory: $testCategory, ')
           ..write('testName: $testName, ')
           ..write('numericValue: $numericValue, ')
@@ -10902,6 +11310,7 @@ class InvestigationsCompanion extends UpdateCompanion<Investigation> {
           ..write('refRangeMax: $refRangeMax, ')
           ..write('flag: $flag, ')
           ..write('labName: $labName, ')
+          ..write('reportAttachments: $reportAttachments, ')
           ..write('notes: $notes, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('createdAt: $createdAt, ')
@@ -18355,6 +18764,8 @@ typedef $$ComplaintsTableCreateCompanionBuilder =
       required String patientId,
       Value<String?> visitId,
       Value<int> complaintIndex,
+      Value<DateTime?> complaintDate,
+      Value<bool?> isBaseline,
       required String complaintName,
       Value<String?> location,
       Value<String?> side,
@@ -18369,6 +18780,8 @@ typedef $$ComplaintsTableCreateCompanionBuilder =
       Value<String?> periodicity,
       Value<int> severity,
       Value<String> status,
+      Value<String?> beforeImages,
+      Value<String?> afterImages,
       Value<String?> notes,
       Value<bool> isDeleted,
       Value<DateTime> createdAt,
@@ -18381,6 +18794,8 @@ typedef $$ComplaintsTableUpdateCompanionBuilder =
       Value<String> patientId,
       Value<String?> visitId,
       Value<int> complaintIndex,
+      Value<DateTime?> complaintDate,
+      Value<bool?> isBaseline,
       Value<String> complaintName,
       Value<String?> location,
       Value<String?> side,
@@ -18395,6 +18810,8 @@ typedef $$ComplaintsTableUpdateCompanionBuilder =
       Value<String?> periodicity,
       Value<int> severity,
       Value<String> status,
+      Value<String?> beforeImages,
+      Value<String?> afterImages,
       Value<String?> notes,
       Value<bool> isDeleted,
       Value<DateTime> createdAt,
@@ -18460,6 +18877,16 @@ class $$ComplaintsTableFilterComposer
 
   ColumnFilters<int> get complaintIndex => $composableBuilder(
     column: $table.complaintIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get complaintDate => $composableBuilder(
+    column: $table.complaintDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18530,6 +18957,16 @@ class $$ComplaintsTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get beforeImages => $composableBuilder(
+    column: $table.beforeImages,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get afterImages => $composableBuilder(
+    column: $table.afterImages,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18619,6 +19056,16 @@ class $$ComplaintsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get complaintDate => $composableBuilder(
+    column: $table.complaintDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get complaintName => $composableBuilder(
     column: $table.complaintName,
     builder: (column) => ColumnOrderings(column),
@@ -18686,6 +19133,16 @@ class $$ComplaintsTableOrderingComposer
 
   ColumnOrderings<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get beforeImages => $composableBuilder(
+    column: $table.beforeImages,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get afterImages => $composableBuilder(
+    column: $table.afterImages,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -18773,6 +19230,16 @@ class $$ComplaintsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<DateTime> get complaintDate => $composableBuilder(
+    column: $table.complaintDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get complaintName => $composableBuilder(
     column: $table.complaintName,
     builder: (column) => column,
@@ -18824,6 +19291,16 @@ class $$ComplaintsTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get beforeImages => $composableBuilder(
+    column: $table.beforeImages,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get afterImages => $composableBuilder(
+    column: $table.afterImages,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -18916,6 +19393,8 @@ class $$ComplaintsTableTableManager
                 Value<String> patientId = const Value.absent(),
                 Value<String?> visitId = const Value.absent(),
                 Value<int> complaintIndex = const Value.absent(),
+                Value<DateTime?> complaintDate = const Value.absent(),
+                Value<bool?> isBaseline = const Value.absent(),
                 Value<String> complaintName = const Value.absent(),
                 Value<String?> location = const Value.absent(),
                 Value<String?> side = const Value.absent(),
@@ -18930,6 +19409,8 @@ class $$ComplaintsTableTableManager
                 Value<String?> periodicity = const Value.absent(),
                 Value<int> severity = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> beforeImages = const Value.absent(),
+                Value<String?> afterImages = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -18940,6 +19421,8 @@ class $$ComplaintsTableTableManager
                 patientId: patientId,
                 visitId: visitId,
                 complaintIndex: complaintIndex,
+                complaintDate: complaintDate,
+                isBaseline: isBaseline,
                 complaintName: complaintName,
                 location: location,
                 side: side,
@@ -18954,6 +19437,8 @@ class $$ComplaintsTableTableManager
                 periodicity: periodicity,
                 severity: severity,
                 status: status,
+                beforeImages: beforeImages,
+                afterImages: afterImages,
                 notes: notes,
                 isDeleted: isDeleted,
                 createdAt: createdAt,
@@ -18966,6 +19451,8 @@ class $$ComplaintsTableTableManager
                 required String patientId,
                 Value<String?> visitId = const Value.absent(),
                 Value<int> complaintIndex = const Value.absent(),
+                Value<DateTime?> complaintDate = const Value.absent(),
+                Value<bool?> isBaseline = const Value.absent(),
                 required String complaintName,
                 Value<String?> location = const Value.absent(),
                 Value<String?> side = const Value.absent(),
@@ -18980,6 +19467,8 @@ class $$ComplaintsTableTableManager
                 Value<String?> periodicity = const Value.absent(),
                 Value<int> severity = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> beforeImages = const Value.absent(),
+                Value<String?> afterImages = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -18990,6 +19479,8 @@ class $$ComplaintsTableTableManager
                 patientId: patientId,
                 visitId: visitId,
                 complaintIndex: complaintIndex,
+                complaintDate: complaintDate,
+                isBaseline: isBaseline,
                 complaintName: complaintName,
                 location: location,
                 side: side,
@@ -19004,6 +19495,8 @@ class $$ComplaintsTableTableManager
                 periodicity: periodicity,
                 severity: severity,
                 status: status,
+                beforeImages: beforeImages,
+                afterImages: afterImages,
                 notes: notes,
                 isDeleted: isDeleted,
                 createdAt: createdAt,
@@ -19098,7 +19591,8 @@ typedef $$PrescriptionsTableCreateCompanionBuilder =
       required String id,
       required String patientId,
       Value<String?> visitId,
-      Value<DateTime> prescriptionDate,
+      Value<DateTime?> prescriptionDate,
+      Value<bool?> isBaseline,
       Value<int> remedyIndex,
       required String remedyName,
       required String potency,
@@ -19118,7 +19612,8 @@ typedef $$PrescriptionsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> patientId,
       Value<String?> visitId,
-      Value<DateTime> prescriptionDate,
+      Value<DateTime?> prescriptionDate,
+      Value<bool?> isBaseline,
       Value<int> remedyIndex,
       Value<String> remedyName,
       Value<String> potency,
@@ -19196,6 +19691,11 @@ class $$PrescriptionsTableFilterComposer
 
   ColumnFilters<DateTime> get prescriptionDate => $composableBuilder(
     column: $table.prescriptionDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -19325,6 +19825,11 @@ class $$PrescriptionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get remedyIndex => $composableBuilder(
     column: $table.remedyIndex,
     builder: (column) => ColumnOrderings(column),
@@ -19446,6 +19951,11 @@ class $$PrescriptionsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get prescriptionDate => $composableBuilder(
     column: $table.prescriptionDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
     builder: (column) => column,
   );
 
@@ -19577,7 +20087,8 @@ class $$PrescriptionsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> patientId = const Value.absent(),
                 Value<String?> visitId = const Value.absent(),
-                Value<DateTime> prescriptionDate = const Value.absent(),
+                Value<DateTime?> prescriptionDate = const Value.absent(),
+                Value<bool?> isBaseline = const Value.absent(),
                 Value<int> remedyIndex = const Value.absent(),
                 Value<String> remedyName = const Value.absent(),
                 Value<String> potency = const Value.absent(),
@@ -19596,6 +20107,7 @@ class $$PrescriptionsTableTableManager
                 patientId: patientId,
                 visitId: visitId,
                 prescriptionDate: prescriptionDate,
+                isBaseline: isBaseline,
                 remedyIndex: remedyIndex,
                 remedyName: remedyName,
                 potency: potency,
@@ -19615,7 +20127,8 @@ class $$PrescriptionsTableTableManager
                 required String id,
                 required String patientId,
                 Value<String?> visitId = const Value.absent(),
-                Value<DateTime> prescriptionDate = const Value.absent(),
+                Value<DateTime?> prescriptionDate = const Value.absent(),
+                Value<bool?> isBaseline = const Value.absent(),
                 Value<int> remedyIndex = const Value.absent(),
                 required String remedyName,
                 required String potency,
@@ -19634,6 +20147,7 @@ class $$PrescriptionsTableTableManager
                 patientId: patientId,
                 visitId: visitId,
                 prescriptionDate: prescriptionDate,
+                isBaseline: isBaseline,
                 remedyIndex: remedyIndex,
                 remedyName: remedyName,
                 potency: potency,
@@ -19736,7 +20250,8 @@ typedef $$InvestigationsTableCreateCompanionBuilder =
       required String id,
       required String patientId,
       Value<String?> visitId,
-      Value<DateTime> testDate,
+      Value<DateTime?> testDate,
+      Value<bool?> isBaseline,
       Value<String> testCategory,
       required String testName,
       Value<double?> numericValue,
@@ -19746,6 +20261,7 @@ typedef $$InvestigationsTableCreateCompanionBuilder =
       Value<double?> refRangeMax,
       Value<String> flag,
       Value<String?> labName,
+      Value<String?> reportAttachments,
       Value<String?> notes,
       Value<bool> isDeleted,
       Value<DateTime> createdAt,
@@ -19757,7 +20273,8 @@ typedef $$InvestigationsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> patientId,
       Value<String?> visitId,
-      Value<DateTime> testDate,
+      Value<DateTime?> testDate,
+      Value<bool?> isBaseline,
       Value<String> testCategory,
       Value<String> testName,
       Value<double?> numericValue,
@@ -19767,6 +20284,7 @@ typedef $$InvestigationsTableUpdateCompanionBuilder =
       Value<double?> refRangeMax,
       Value<String> flag,
       Value<String?> labName,
+      Value<String?> reportAttachments,
       Value<String?> notes,
       Value<bool> isDeleted,
       Value<DateTime> createdAt,
@@ -19839,6 +20357,11 @@ class $$InvestigationsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get testCategory => $composableBuilder(
     column: $table.testCategory,
     builder: (column) => ColumnFilters(column),
@@ -19881,6 +20404,11 @@ class $$InvestigationsTableFilterComposer
 
   ColumnFilters<String> get labName => $composableBuilder(
     column: $table.labName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reportAttachments => $composableBuilder(
+    column: $table.reportAttachments,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -19970,6 +20498,11 @@ class $$InvestigationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get testCategory => $composableBuilder(
     column: $table.testCategory,
     builder: (column) => ColumnOrderings(column),
@@ -20012,6 +20545,11 @@ class $$InvestigationsTableOrderingComposer
 
   ColumnOrderings<String> get labName => $composableBuilder(
     column: $table.labName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reportAttachments => $composableBuilder(
+    column: $table.reportAttachments,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -20097,6 +20635,11 @@ class $$InvestigationsTableAnnotationComposer
   GeneratedColumn<DateTime> get testDate =>
       $composableBuilder(column: $table.testDate, builder: (column) => column);
 
+  GeneratedColumn<bool> get isBaseline => $composableBuilder(
+    column: $table.isBaseline,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get testCategory => $composableBuilder(
     column: $table.testCategory,
     builder: (column) => column,
@@ -20133,6 +20676,11 @@ class $$InvestigationsTableAnnotationComposer
 
   GeneratedColumn<String> get labName =>
       $composableBuilder(column: $table.labName, builder: (column) => column);
+
+  GeneratedColumn<String> get reportAttachments => $composableBuilder(
+    column: $table.reportAttachments,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -20230,7 +20778,8 @@ class $$InvestigationsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> patientId = const Value.absent(),
                 Value<String?> visitId = const Value.absent(),
-                Value<DateTime> testDate = const Value.absent(),
+                Value<DateTime?> testDate = const Value.absent(),
+                Value<bool?> isBaseline = const Value.absent(),
                 Value<String> testCategory = const Value.absent(),
                 Value<String> testName = const Value.absent(),
                 Value<double?> numericValue = const Value.absent(),
@@ -20240,6 +20789,7 @@ class $$InvestigationsTableTableManager
                 Value<double?> refRangeMax = const Value.absent(),
                 Value<String> flag = const Value.absent(),
                 Value<String?> labName = const Value.absent(),
+                Value<String?> reportAttachments = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -20250,6 +20800,7 @@ class $$InvestigationsTableTableManager
                 patientId: patientId,
                 visitId: visitId,
                 testDate: testDate,
+                isBaseline: isBaseline,
                 testCategory: testCategory,
                 testName: testName,
                 numericValue: numericValue,
@@ -20259,6 +20810,7 @@ class $$InvestigationsTableTableManager
                 refRangeMax: refRangeMax,
                 flag: flag,
                 labName: labName,
+                reportAttachments: reportAttachments,
                 notes: notes,
                 isDeleted: isDeleted,
                 createdAt: createdAt,
@@ -20270,7 +20822,8 @@ class $$InvestigationsTableTableManager
                 required String id,
                 required String patientId,
                 Value<String?> visitId = const Value.absent(),
-                Value<DateTime> testDate = const Value.absent(),
+                Value<DateTime?> testDate = const Value.absent(),
+                Value<bool?> isBaseline = const Value.absent(),
                 Value<String> testCategory = const Value.absent(),
                 required String testName,
                 Value<double?> numericValue = const Value.absent(),
@@ -20280,6 +20833,7 @@ class $$InvestigationsTableTableManager
                 Value<double?> refRangeMax = const Value.absent(),
                 Value<String> flag = const Value.absent(),
                 Value<String?> labName = const Value.absent(),
+                Value<String?> reportAttachments = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -20290,6 +20844,7 @@ class $$InvestigationsTableTableManager
                 patientId: patientId,
                 visitId: visitId,
                 testDate: testDate,
+                isBaseline: isBaseline,
                 testCategory: testCategory,
                 testName: testName,
                 numericValue: numericValue,
@@ -20299,6 +20854,7 @@ class $$InvestigationsTableTableManager
                 refRangeMax: refRangeMax,
                 flag: flag,
                 labName: labName,
+                reportAttachments: reportAttachments,
                 notes: notes,
                 isDeleted: isDeleted,
                 createdAt: createdAt,

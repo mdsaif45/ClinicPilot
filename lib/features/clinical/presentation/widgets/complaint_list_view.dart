@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -152,6 +153,10 @@ class _ComplaintCard extends StatelessWidget {
       _ => scheme.onSurfaceVariant,
     };
 
+    final beforeImgs = ComplaintNotifier.parseImages(complaint.beforeImages);
+    final afterImgs = ComplaintNotifier.parseImages(complaint.afterImages);
+    final totalPhotos = beforeImgs.length + afterImgs.length;
+
     return AppCard(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(Spacing.md),
@@ -177,11 +182,23 @@ class _ComplaintCard extends StatelessWidget {
               ),
               const SizedBox(width: Spacing.xs),
               Expanded(
-                child: Text(
-                  complaint.complaintName,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      complaint.complaintName,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      '${Formatters.formatDate(complaint.complaintDate ?? complaint.createdAt)} • ${(complaint.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Visit'}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               PopupMenuButton<String>(
@@ -202,7 +219,7 @@ class _ComplaintCard extends StatelessWidget {
           ),
           const SizedBox(height: Spacing.xs),
 
-          // Badges: Severity + Side + Status Menu Pill
+          // Badges: Severity + Side + Status Menu Pill + Photos count
           Wrap(
             spacing: Spacing.xs,
             runSpacing: Spacing.xs,
@@ -231,6 +248,11 @@ class _ComplaintCard extends StatelessWidget {
                   color: statusColor,
                 ),
               ),
+              if (totalPhotos > 0)
+                CustomBadge(
+                  label: '📷 $totalPhotos ${totalPhotos == 1 ? 'Photo' : 'Photos'}',
+                  color: scheme.tertiary,
+                ),
             ],
           ),
           const SizedBox(height: Spacing.sm),

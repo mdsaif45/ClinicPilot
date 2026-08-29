@@ -12,6 +12,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../models/case_record_models.dart';
 import '../providers/case_record_provider.dart';
+import '../providers/complaint_provider.dart';
 
 class _ComplaintEntry {
   final TextEditingController complaint = TextEditingController();
@@ -1642,9 +1643,43 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     }
   }
 
+  void _populateFromComplaintsList(List<Complaint> dbComplaints) {
+    if (dbComplaints.isEmpty) return;
+    if (_complaints.isNotEmpty && _complaints.any((c) => c.complaint.text.trim().isNotEmpty)) {
+      return;
+    }
+    _isPopulating = true;
+    _complaints.clear();
+    for (final c in dbComplaints) {
+      final entry = _ComplaintEntry();
+      entry.complaint.text = c.complaintName;
+      entry.location.text = c.location ?? '';
+      entry.onset.text = c.onset ?? '';
+      entry.duration.text = c.duration ?? '';
+      entry.sensation.text = c.sensation ?? '';
+      entry.extensionRadiation.text = c.extension ?? '';
+      entry.agg.text = c.aggravatingFactors ?? '';
+      entry.amel.text = c.amelioratingFactors ?? '';
+      entry.concomitant.text = c.concomitants ?? '';
+      entry.causation.text = c.causation ?? '';
+      entry.periodicity.text = c.periodicity ?? '';
+      entry.severity = c.severity <= 3
+          ? 'Mild'
+          : (c.severity <= 6
+              ? 'Moderate'
+              : (c.severity <= 9 ? 'Severe' : 'Intolerable'));
+      entry.associatedSymptoms.text = c.notes ?? '';
+      _attachComplaintListeners(entry);
+      _complaints.add(entry);
+    }
+    if (_complaints.isEmpty) _complaints.add(_ComplaintEntry());
+    _isPopulating = false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final caseAsync = ref.watch(patientCaseRecordProvider(widget.patient.id));
+    final complaintsAsync = ref.watch(patientComplaintsProvider(widget.patient.id));
 
     return caseAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
@@ -1652,6 +1687,9 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
       data: (existingRecord) {
         if (existingRecord != null) {
           _populateFromExisting(existingRecord);
+        }
+        if (complaintsAsync.value != null && complaintsAsync.value!.isNotEmpty) {
+          _populateFromComplaintsList(complaintsAsync.value!);
         }
 
         final isEditing = existingRecord != null;

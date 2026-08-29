@@ -19,17 +19,20 @@ class Formatters {
   }
 
   // Format date as 20 May 2026
-  static String formatDate(DateTime date) {
+  static String formatDate(DateTime? date) {
+    if (date == null) return '';
     return _dateFormat.format(date);
   }
 
   // Format date as DD/MM/YYYY (e.g. 23/08/2026)
-  static String formatDdMmYyyy(DateTime date) {
+  static String formatDdMmYyyy(DateTime? date) {
+    if (date == null) return '';
     return _ddMmYyyyFormat.format(date);
   }
 
   // Format month and year as May 2026
-  static String formatMonthYear(DateTime date) {
+  static String formatMonthYear(DateTime? date) {
+    if (date == null) return '';
     return _monthYearFormat.format(date);
   }
 

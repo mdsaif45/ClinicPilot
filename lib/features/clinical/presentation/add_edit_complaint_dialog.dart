@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/master_disease_service.dart';
-
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
+import '../../../core/services/master_disease_service.dart';
 import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/disease_autocomplete_field.dart';
+import '../../../core/widgets/image_comparison_gallery.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../providers/complaint_provider.dart';
 
 class AddEditComplaintDialog extends ConsumerStatefulWidget {
   final String patientId;
+  final String? visitId;
   final Complaint? existingComplaint;
   final int defaultIndex;
+  final bool defaultIsBaseline;
 
   const AddEditComplaintDialog({
     super.key,
     required this.patientId,
+    this.visitId,
     this.existingComplaint,
     this.defaultIndex = 1,
+    this.defaultIsBaseline = true,
   });
 
   @override
@@ -43,9 +49,13 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
   late final TextEditingController _notesController;
 
   late int _complaintIndex;
+  late DateTime _complaintDate;
+  late bool _isBaseline;
   late String _side;
   late double _severity;
   late String _status;
+  late List<String> _beforeImages;
+  late List<String> _afterImages;
   bool _submitting = false;
 
   @override
@@ -53,6 +63,8 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
     super.initState();
     final c = widget.existingComplaint;
     _complaintIndex = c?.complaintIndex ?? widget.defaultIndex;
+    _complaintDate = c?.complaintDate ?? DateTime.now();
+    _isBaseline = c?.isBaseline ?? widget.defaultIsBaseline;
     _nameController = TextEditingController(text: c?.complaintName ?? '');
     _locationController = TextEditingController(text: c?.location ?? '');
     _side = c?.side ?? 'Not specified';
@@ -68,6 +80,8 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
     _notesController = TextEditingController(text: c?.notes ?? '');
     _severity = (c?.severity ?? 5).toDouble();
     _status = c?.status ?? 'Active';
+    _beforeImages = ComplaintNotifier.parseImages(c?.beforeImages);
+    _afterImages = ComplaintNotifier.parseImages(c?.afterImages);
   }
 
   @override
@@ -99,6 +113,9 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
       if (c == null) {
         await notifier.addComplaint(
           patientId: widget.patientId,
+          visitId: widget.visitId,
+          complaintDate: _complaintDate,
+          isBaseline: _isBaseline,
           complaintIndex: _complaintIndex,
           complaintName: _nameController.text.trim(),
           location: _locationController.text.trim(),
@@ -114,11 +131,15 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
           periodicity: _periodicityController.text.trim(),
           severity: _severity.round(),
           status: _status,
+          beforeImages: _beforeImages,
+          afterImages: _afterImages,
           notes: _notesController.text.trim(),
         );
       } else {
         await notifier.updateComplaint(
           id: c.id,
+          complaintDate: _complaintDate,
+          isBaseline: _isBaseline,
           complaintIndex: _complaintIndex,
           complaintName: _nameController.text.trim(),
           location: _locationController.text.trim(),
@@ -134,6 +155,8 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
           periodicity: _periodicityController.text.trim(),
           severity: _severity.round(),
           status: _status,
+          beforeImages: _beforeImages,
+          afterImages: _afterImages,
           notes: _notesController.text.trim(),
         );
       }
@@ -181,41 +204,52 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Complaint Name with Autocomplete & Order
+              // Order, Date & Visit Classification
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    width: 105,
-                    child: DropdownButtonFormField<int>(
+                    width: 90,
+                    child: PickerField<int>(
+                      label: 'Order',
                       value: _complaintIndex,
-                      isDense: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Order',
-                        contentPadding: EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.sm),
-                      ),
-                      items: List.generate(
+                      options: List.generate(
                         10,
-                        (i) => DropdownMenuItem(
-                          value: i + 1,
-                          child: Text('#${i + 1}'),
-                        ),
+                        (i) => PickerOption(value: i + 1, label: '#${i + 1}'),
                       ),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _complaintIndex = val);
-                      },
+                      onChanged: (val) => setState(() => _complaintIndex = val),
                     ),
                   ),
-                  const SizedBox(width: Spacing.sm),
+                  const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: DiseaseAutocompleteField(
-                      controller: _nameController,
-                      label: 'Complaint / Condition *',
-                                            validator: (v) =>
-                          v == null || v.trim().isEmpty ? 'Please enter complaint' : null,
+                    child: DateField(
+                      label: 'Complaint Date',
+                      value: _complaintDate,
+                      onChanged: (date) => setState(() => _complaintDate = date),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.md),
+                  Expanded(
+                    child: PickerField<bool>(
+                      label: 'Visit Context',
+                      value: _isBaseline,
+                      options: const [
+                        PickerOption(value: true, label: 'Initial Baseline'),
+                        PickerOption(value: false, label: 'Follow-Up Visit'),
+                      ],
+                      onChanged: (val) => setState(() => _isBaseline = val),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Complaint / Condition Name
+              DiseaseAutocompleteField(
+                controller: _nameController,
+                label: 'Complaint / Condition *',
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Please enter complaint' : null,
               ),
               const SizedBox(height: Spacing.md),
 
@@ -223,11 +257,10 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _locationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Location',
-                                              ),
+                      label: 'Location',
+                      prefixIcon: Icons.location_on_outlined,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
@@ -253,20 +286,18 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _onsetController,
-                      decoration: const InputDecoration(
-                        labelText: 'Onset',
-                                              ),
+                      label: 'Onset',
+                      prefixIcon: Icons.access_time_outlined,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _durationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Duration',
-                                              ),
+                      label: 'Duration',
+                      prefixIcon: Icons.timelapse_outlined,
                     ),
                   ),
                 ],
@@ -277,20 +308,18 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _sensationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Sensation / Character',
-                                              ),
+                      label: 'Sensation / Character',
+                      prefixIcon: Icons.touch_app_outlined,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _extensionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Extension / Radiation',
-                                              ),
+                      label: 'Extension / Radiation',
+                      prefixIcon: Icons.alt_route_outlined,
                     ),
                   ),
                 ],
@@ -301,22 +330,18 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _aggController,
-                      decoration: const InputDecoration(
-                        labelText: 'Aggravation (<)',
-                                                prefixIcon: Icon(Icons.arrow_upward, size: 16),
-                      ),
+                      label: 'Aggravation (<)',
+                      prefixIcon: Icons.arrow_upward_rounded,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _amelController,
-                      decoration: const InputDecoration(
-                        labelText: 'Amelioration (>)',
-                                                prefixIcon: Icon(Icons.arrow_downward, size: 16),
-                      ),
+                      label: 'Amelioration (>)',
+                      prefixIcon: Icons.arrow_downward_rounded,
                     ),
                   ),
                 ],
@@ -327,35 +352,32 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _concomitantsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Concomitants',
-                                              ),
+                      label: 'Concomitants',
+                      prefixIcon: Icons.link_outlined,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _causationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Causation',
-                                              ),
+                      label: 'Causation',
+                      prefixIcon: Icons.psychology_outlined,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: Spacing.md),
 
-              // Periodicity & Status
+              // Periodicity & Clinical Status
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _periodicityController,
-                      decoration: const InputDecoration(
-                        labelText: 'Periodicity',
-                                              ),
+                      label: 'Periodicity',
+                      prefixIcon: Icons.event_repeat_outlined,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
@@ -376,41 +398,84 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
               ),
               const SizedBox(height: Spacing.md),
 
-              // Severity (1-10 Slider)
-              Text(
-                'Severity: ${_severity.round()}/10',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: _severity >= 8
-                      ? scheme.error
-                      : _severity >= 5
-                          ? scheme.tertiary
-                          : scheme.primary,
-                ),
+              // Severity (1-10 with badge indicator)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Severity Rating',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _severity >= 8
+                              ? scheme.errorContainer
+                              : _severity >= 5
+                                  ? scheme.tertiaryContainer
+                                  : scheme.primaryContainer,
+                          borderRadius: Radii.pillAll,
+                        ),
+                        child: Text(
+                          '${_severity.round()}/10 • ${_severity <= 3 ? 'Mild' : (_severity <= 6 ? 'Moderate' : (_severity <= 9 ? 'Severe' : 'Intolerable'))}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: _severity >= 8
+                                ? scheme.onErrorContainer
+                                : _severity >= 5
+                                    ? scheme.onTertiaryContainer
+                                    : scheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: Spacing.xs),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 4,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                    ),
+                    child: Slider(
+                      value: _severity,
+                      min: 1,
+                      max: 10,
+                      divisions: 9,
+                      activeColor: _severity >= 8
+                          ? scheme.error
+                          : _severity >= 5
+                              ? scheme.tertiary
+                              : scheme.primary,
+                      onChanged: (val) => setState(() => _severity = val),
+                    ),
+                  ),
+                ],
               ),
-              Slider(
-                value: _severity,
-                min: 1,
-                max: 10,
-                divisions: 9,
-                label: '${_severity.round()}/10',
-                activeColor: _severity >= 8
-                    ? scheme.error
-                    : _severity >= 5
-                        ? scheme.tertiary
-                        : scheme.primary,
-                onChanged: (val) => setState(() => _severity = val),
+              const SizedBox(height: Spacing.md),
+
+              // Before & After Clinical Image Comparison Gallery
+              ImageComparisonGallery(
+                patientId: widget.patientId,
+                beforeImages: _beforeImages,
+                afterImages: _afterImages,
+                onBeforeImagesChanged: (list) => setState(() => _beforeImages = list),
+                onAfterImagesChanged: (list) => setState(() => _afterImages = list),
               ),
-              const SizedBox(height: Spacing.xs),
+              const SizedBox(height: Spacing.md),
 
               // Notes
-              TextFormField(
+              CustomTextField(
                 controller: _notesController,
+                label: 'Clinical Notes & Observations',
+                prefixIcon: Icons.notes_outlined,
                 maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Clinical Notes',
-                  hintText: 'Additional details or observations...',
-                ),
               ),
             ],
           ),

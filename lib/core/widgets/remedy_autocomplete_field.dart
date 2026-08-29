@@ -72,7 +72,7 @@ class RemedyAutocompleteField extends StatelessWidget {
     super.key,
     required this.controller,
     this.label = 'Remedy Name (Latin Binomial) *',
-    this.hint = 'e.g. Thuja Occidentalis, Nux Vomica',
+    this.hint = '',
     this.validator,
     this.onSelected,
   });
@@ -152,7 +152,7 @@ class RemedyAutocompleteField extends StatelessWidget {
               ),
               decoration: InputDecoration(
                 isDense: true,
-                hintText: hint,
+                hintText: hint.isNotEmpty ? hint : null,
                 hintStyle: theme.textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
                 ),

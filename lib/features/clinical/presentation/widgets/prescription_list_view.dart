@@ -219,14 +219,13 @@ class _PrescriptionCard extends StatelessWidget {
                       rx.remedyName,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
-                        fontStyle: FontStyle.italic,
                       ),
                     ),
-                    const SizedBox(height: 2),
                     Text(
-                      Formatters.formatDate(rx.prescriptionDate),
-                      style: theme.textTheme.labelSmall?.copyWith(
+                      '${Formatters.formatDate(rx.prescriptionDate ?? rx.createdAt)} • ${(rx.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Rx'}',
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,
+                        fontSize: 11,
                       ),
                     ),
                   ],

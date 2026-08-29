@@ -57,6 +57,51 @@ class CaseRecordNotifier extends StateNotifier<AsyncValue<void>> {
 
   CaseRecordNotifier(this._db) : super(const AsyncData(null));
 
+  int _parseSeverityToInt(String sev) {
+    if (sev.contains('Mild') || sev == '1' || sev == '2' || sev == '3') return 3;
+    if (sev.contains('Moderate') || sev == '4' || sev == '5' || sev == '6') return 5;
+    if (sev.contains('Severe') || sev == '7' || sev == '8' || sev == '9') return 8;
+    if (sev.contains('Intolerable') || sev == '10') return 10;
+    final num = int.tryParse(sev.replaceAll(RegExp(r'[^0-9]'), ''));
+    return num ?? 5;
+  }
+
+  Future<void> _syncComplaintsTable(String patientId, List<ChiefComplaintDetail> complaints) async {
+    // Soft-delete existing complaints for this patient
+    await (_db.update(_db.complaints)..where((t) => t.patientId.equals(patientId)))
+        .write(const ComplaintsCompanion(isDeleted: Value(true)));
+
+    final now = DateTime.now();
+    for (int i = 0; i < complaints.length; i++) {
+      final c = complaints[i];
+      if (c.complaint.trim().isEmpty) continue;
+
+      await _db.into(_db.complaints).insert(
+            ComplaintsCompanion.insert(
+              id: IdGenerator.generate(),
+              patientId: patientId,
+              complaintIndex: Value(i + 1),
+              complaintName: c.complaint.trim(),
+              location: Value(c.location.trim().isNotEmpty ? c.location.trim() : null),
+              onset: Value(c.onset.trim().isNotEmpty ? c.onset.trim() : null),
+              duration: Value(c.duration.trim().isNotEmpty ? c.duration.trim() : null),
+              sensation: Value(c.sensation.trim().isNotEmpty ? c.sensation.trim() : null),
+              extension: Value(c.extensionRadiation.trim().isNotEmpty ? c.extensionRadiation.trim() : null),
+              aggravatingFactors: Value(c.modalitiesAgg.trim().isNotEmpty ? c.modalitiesAgg.trim() : null),
+              amelioratingFactors: Value(c.modalitiesAmel.trim().isNotEmpty ? c.modalitiesAmel.trim() : null),
+              concomitants: Value(c.concomitants.trim().isNotEmpty ? c.concomitants.trim() : null),
+              causation: Value(c.causation.trim().isNotEmpty ? c.causation.trim() : null),
+              periodicity: Value(c.periodicity.trim().isNotEmpty ? c.periodicity.trim() : null),
+              severity: Value(_parseSeverityToInt(c.severity)),
+              status: const Value('Active'),
+              notes: Value(c.associatedSymptoms.trim().isNotEmpty ? c.associatedSymptoms.trim() : null),
+              createdAt: Value(now),
+              updatedAt: Value(now),
+            ),
+          );
+    }
+  }
+
   Future<String> saveCaseRecord(MasterCaseRecordData data) async {
     state = const AsyncLoading();
     final id = data.id ?? IdGenerator.generate();
@@ -86,6 +131,7 @@ class CaseRecordNotifier extends StateNotifier<AsyncValue<void>> {
 
     state = await AsyncValue.guard(() async {
       await _db.into(_db.patientCaseRecords).insertOnConflictUpdate(companion);
+      await _syncComplaintsTable(data.patientId, data.chiefComplaints);
     });
 
     return id;

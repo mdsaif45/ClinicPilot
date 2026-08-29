@@ -58,7 +58,7 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
       context: context,
       builder: (ctx) => AppConfirmDialog(
         title: 'Delete Lab Report',
-        message: 'Are you sure you want to remove "${inv.testName}" recorded on ${Formatters.formatDate(inv.testDate)}?',
+        message: 'Are you sure you want to remove "${inv.testName}" recorded on ${Formatters.formatDate(inv.testDate ?? inv.createdAt)}?',
         confirmLabel: 'Delete',
         isDestructive: true,
         onConfirm: () async {
@@ -196,7 +196,7 @@ class _ParameterTrendCard extends StatelessWidget {
     final numericReadings = investigations
         .where((i) => i.numericValue != null)
         .toList()
-      ..sort((a, b) => a.testDate.compareTo(b.testDate));
+      ..sort((a, b) => (a.testDate ?? a.createdAt).compareTo(b.testDate ?? b.createdAt));
 
     if (numericReadings.isEmpty) return const SizedBox.shrink();
 
@@ -223,40 +223,44 @@ class _ParameterTrendCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Spacing.xs),
-          if (numericReadings.length > 1) ...[
-            Row(
-              children: [
-                Text(
-                  'Initial: ${first.numericValue} $unit (${Formatters.formatDate(first.testDate)})',
-                  style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+          Row(
+            children: [
+              Text(
+                'Latest: ${latest.numericValue} $unit',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface,
                 ),
-                const SizedBox(width: Spacing.sm),
-                const Icon(Icons.arrow_forward, size: 14),
-                const SizedBox(width: Spacing.sm),
-                Text(
-                  'Latest: ${latest.numericValue} $unit',
-                  style: theme.textTheme.bodySmall?.copyWith(
+              ),
+              const SizedBox(width: Spacing.sm),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: (delta > 0
+                          ? scheme.errorContainer
+                          : (delta < 0 ? scheme.tertiaryContainer : scheme.surfaceContainerHigh)),
+                  borderRadius: Radii.smAll,
+                ),
+                child: Text(
+                  delta > 0
+                      ? '▲ +${delta.toStringAsFixed(1)} $unit'
+                      : (delta < 0 ? '▼ ${delta.toStringAsFixed(1)} $unit' : 'No change'),
+                  style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: delta <= 0 ? scheme.primary : scheme.error,
+                    color: (delta > 0
+                        ? scheme.onErrorContainer
+                        : (delta < 0 ? scheme.onTertiaryContainer : scheme.onSurface)),
+                    fontSize: 10,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Net Delta: ${delta > 0 ? '+' : ''}${delta.toStringAsFixed(1)} $unit',
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: delta <= 0 ? scheme.primary : scheme.error,
               ),
-            ),
-          ],
+            ],
+          ),
           const SizedBox(height: Spacing.sm),
-          // Timeline trend bars
+          // Readings Mini Bar Visualizer
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              for (final reading in numericReadings) ...[
+              for (final reading in numericReadings.take(8)) ...[
                 Expanded(
                   child: Column(
                     children: [
@@ -266,6 +270,8 @@ class _ParameterTrendCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           fontSize: 10,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Container(
@@ -281,7 +287,7 @@ class _ParameterTrendCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        Formatters.formatDate(reading.testDate),
+                        Formatters.formatDate(reading.testDate ?? reading.createdAt),
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 9,
                           color: scheme.onSurfaceVariant,
@@ -330,6 +336,8 @@ class _InvestigationCard extends StatelessWidget {
         ? '${inv.numericValue} ${inv.unit ?? ''}'.trim()
         : (inv.stringValue ?? 'Recorded');
 
+    final attachments = InvestigationNotifier.parseAttachments(inv.reportAttachments);
+
     return AppCard(
       margin: EdgeInsets.zero,
       child: Column(
@@ -350,7 +358,7 @@ class _InvestigationCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${inv.testCategory} • ${Formatters.formatDate(inv.testDate)}',
+                      '${inv.testCategory} • ${Formatters.formatDate(inv.testDate ?? inv.createdAt)} • ${(inv.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Test'}',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
@@ -411,6 +419,31 @@ class _InvestigationCard extends StatelessWidget {
               ],
             ],
           ),
+
+          // Attachments chips if present
+          if (attachments.isNotEmpty) ...[
+            const SizedBox(height: Spacing.xs),
+            Wrap(
+              spacing: Spacing.xs,
+              runSpacing: Spacing.xs,
+              children: attachments.map((path) {
+                final isPdf = path.toLowerCase().endsWith('.pdf');
+                return ActionChip(
+                  avatar: Icon(
+                    isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
+                    size: 14,
+                    color: isPdf ? scheme.error : scheme.primary,
+                  ),
+                  label: Text('Report (${path.split(RegExp(r'[\\/]')).last})'),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    AppHaptics.selection();
+                    // Open attachment
+                  },
+                );
+              }).toList(),
+            ),
+          ],
 
           // Lab Name & Doctor Notes
           if ((inv.labName ?? '').isNotEmpty) ...[

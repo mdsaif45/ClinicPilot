@@ -6,7 +6,8 @@ class Prescriptions extends Table {
   TextColumn get id => text()();
   TextColumn get patientId => text().references(Patients, #id)();
   TextColumn get visitId => text().nullable().references(Visits, #id)();
-  DateTimeColumn get prescriptionDate => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get prescriptionDate => dateTime().nullable().withDefault(currentDateAndTime)();
+  BoolColumn get isBaseline => boolean().nullable().withDefault(const Constant(true))();
   IntColumn get remedyIndex => integer().withDefault(const Constant(1))();
   TextColumn get remedyName => text()();
   TextColumn get potency => text()();

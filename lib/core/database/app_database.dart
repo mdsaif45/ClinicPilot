@@ -18,13 +18,13 @@ import 'tables/referral_contacts.dart';
 
 part 'app_database.g.dart';
 
-// Type-safe database powered by Drift ORM (Schema Version 14)
+// Type-safe database powered by Drift ORM (Schema Version 15)
 @DriftDatabase(tables: [Clinics, Patients, Visits, CashMemos, Expenses, Settings, ReviewRequests, Footfalls, Camps, PatientCaseRecords, Complaints, Prescriptions, Investigations, ReferralContacts])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -227,9 +227,27 @@ class AppDatabase extends _$AppDatabase {
           if (from < 14) {
             await _addColumnIfMissing(m, patients, patients.email);
           }
+
+          if (from < 15) {
+            await _addColumnIfMissing(m, complaints, complaints.complaintDate);
+            await _addColumnIfMissing(m, complaints, complaints.isBaseline);
+            await _addColumnIfMissing(m, complaints, complaints.beforeImages);
+            await _addColumnIfMissing(m, complaints, complaints.afterImages);
+            await _addColumnIfMissing(m, prescriptions, prescriptions.isBaseline);
+            await _addColumnIfMissing(m, investigations, investigations.isBaseline);
+            await _addColumnIfMissing(m, investigations, investigations.reportAttachments);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
+          try {
+            await customStatement("UPDATE complaints SET complaint_date = created_at WHERE complaint_date IS NULL;");
+            await customStatement("UPDATE complaints SET is_baseline = 1 WHERE is_baseline IS NULL;");
+            await customStatement("UPDATE prescriptions SET prescription_date = created_at WHERE prescription_date IS NULL;");
+            await customStatement("UPDATE prescriptions SET is_baseline = 1 WHERE is_baseline IS NULL;");
+            await customStatement("UPDATE investigations SET test_date = created_at WHERE test_date IS NULL;");
+            await customStatement("UPDATE investigations SET is_baseline = 1 WHERE is_baseline IS NULL;");
+          } catch (_) {}
         },
       );
 

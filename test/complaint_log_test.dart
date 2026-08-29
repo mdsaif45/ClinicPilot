@@ -128,7 +128,7 @@ void main() {
       expect(find.text('Complaint / Condition *'), findsOneWidget);
       expect(find.text('Location'), findsOneWidget);
       expect(find.text('Side'), findsOneWidget);
-      expect(find.text('Severity: 5/10'), findsOneWidget);
+      expect(find.text('5/10 • Moderate'), findsOneWidget);
     });
   });
 }

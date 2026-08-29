@@ -226,5 +226,32 @@ void main() {
       expect(find.text('No Case Record Found'), findsOneWidget);
       expect(find.text('Start Clinical Case Taking'), findsOneWidget);
     });
+
+    test('ChiefComplaintDetail model serializes and parses correctly for sync', () {
+      const detail = ChiefComplaintDetail(
+        complaint: 'Chronic Migraine',
+        location: 'Right temporal',
+        onset: 'Sudden',
+        duration: '3 years',
+        sensation: 'Throbbing, pulsating',
+        extensionRadiation: 'Radiates to right eye',
+        modalitiesAgg: 'Sun exposure, noise',
+        modalitiesAmel: 'Dark quiet room, hard pressure',
+        concomitants: 'Nausea, photophobia',
+        causation: 'Mental strain',
+        periodicity: 'Weekly on Sundays',
+        severity: 'Severe',
+        associatedSymptoms: 'Dizziness with aura',
+      );
+
+      final json = detail.toJson();
+      expect(json['complaint'], 'Chronic Migraine');
+      expect(json['severity'], 'Severe');
+
+      final parsed = ChiefComplaintDetail.fromJson(json);
+      expect(parsed.complaint, 'Chronic Migraine');
+      expect(parsed.modalitiesAgg, 'Sun exposure, noise');
+      expect(parsed.modalitiesAmel, 'Dark quiet room, hard pressure');
+    });
   });
 }

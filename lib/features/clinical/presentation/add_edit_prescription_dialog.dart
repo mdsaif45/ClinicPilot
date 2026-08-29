@@ -5,6 +5,8 @@ import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/widgets/app_form_dialog.dart';
+import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../../core/widgets/remedy_autocomplete_field.dart';
 import '../providers/prescription_provider.dart';
@@ -14,6 +16,7 @@ class AddEditPrescriptionDialog extends ConsumerStatefulWidget {
   final String? visitId;
   final Prescription? existingPrescription;
   final int defaultIndex;
+  final bool defaultIsBaseline;
 
   const AddEditPrescriptionDialog({
     super.key,
@@ -21,6 +24,7 @@ class AddEditPrescriptionDialog extends ConsumerStatefulWidget {
     this.visitId,
     this.existingPrescription,
     this.defaultIndex = 1,
+    this.defaultIsBaseline = true,
   });
 
   @override
@@ -36,6 +40,8 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
   late final TextEditingController _dietaryController;
 
   late int _remedyIndex;
+  late DateTime _prescriptionDate;
+  late bool _isBaseline;
   late String _potency;
   late String _frequency;
   late String _vehicle;
@@ -46,17 +52,19 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
     super.initState();
     final p = widget.existingPrescription;
     _remedyIndex = p?.remedyIndex ?? widget.defaultIndex;
+    _prescriptionDate = p?.prescriptionDate ?? DateTime.now();
+    _isBaseline = p?.isBaseline ?? widget.defaultIsBaseline;
     _nameController = TextEditingController(text: p?.remedyName ?? '');
     _potency = p?.potency ?? '200CH';
-    _doseController = TextEditingController(text: p?.doseCount ?? '4 pills');
+    _doseController = TextEditingController(text: p?.doseCount ?? '');
     _frequency = p?.frequency ?? 'OD (Once daily)';
     _vehicle = p?.vehicle ?? 'Globules / Pellets';
-    _durationController = TextEditingController(text: p?.durationDays ?? '7 days');
+    _durationController = TextEditingController(text: p?.durationDays ?? '');
     _instructionsController = TextEditingController(
-      text: p?.instructions ?? 'Morning empty stomach',
+      text: p?.instructions ?? '',
     );
     _dietaryController = TextEditingController(
-      text: p?.dietaryAdvice ?? 'Avoid raw onion, garlic, camphor, strong coffee, menthol',
+      text: p?.dietaryAdvice ?? '',
     );
   }
 
@@ -83,6 +91,8 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
         await notifier.addPrescription(
           patientId: widget.patientId,
           visitId: widget.visitId,
+          prescriptionDate: _prescriptionDate,
+          isBaseline: _isBaseline,
           remedyIndex: _remedyIndex,
           remedyName: _nameController.text.trim(),
           potency: _potency,
@@ -96,6 +106,8 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
       } else {
         await notifier.updatePrescription(
           id: p.id,
+          prescriptionDate: _prescriptionDate,
+          isBaseline: _isBaseline,
           remedyIndex: _remedyIndex,
           remedyName: _nameController.text.trim(),
           potency: _potency,
@@ -143,43 +155,51 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Remedy Name with Autocomplete & Order
+              // Order, Date & Visit Context
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    width: 125,
-                    child: DropdownButtonFormField<int>(
+                    width: 95,
+                    child: PickerField<int>(
+                      label: 'Rx #',
                       value: _remedyIndex,
-                      isDense: true,
-                      isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Rx #',
-                        contentPadding: EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.sm),
-                      ),
-                      items: List.generate(
+                      options: List.generate(
                         8,
-                        (i) => DropdownMenuItem(
-                          value: i + 1,
-                          child: Text('Rx #${i + 1}'),
-                        ),
+                        (i) => PickerOption(value: i + 1, label: 'Rx #${i + 1}'),
                       ),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _remedyIndex = val);
-                      },
+                      onChanged: (val) => setState(() => _remedyIndex = val),
                     ),
                   ),
-                  const SizedBox(width: Spacing.sm),
+                  const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: RemedyAutocompleteField(
-                      controller: _nameController,
-                      label: 'Remedy (Latin Binomial) *',
-                      hint: 'e.g. Thuja Occidentalis',
-                      validator: (v) =>
-                          v == null || v.trim().isEmpty ? 'Enter remedy name' : null,
+                    child: DateField(
+                      label: 'Prescription Date',
+                      value: _prescriptionDate,
+                      onChanged: (date) => setState(() => _prescriptionDate = date),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.md),
+                  Expanded(
+                    child: PickerField<bool>(
+                      label: 'Visit Context',
+                      value: _isBaseline,
+                      options: const [
+                        PickerOption(value: true, label: 'Initial Baseline'),
+                        PickerOption(value: false, label: 'Follow-Up Rx'),
+                      ],
+                      onChanged: (val) => setState(() => _isBaseline = val),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Remedy Name with Autocomplete
+              RemedyAutocompleteField(
+                controller: _nameController,
+                label: 'Remedy (Latin Binomial) *',
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Enter remedy name' : null,
               ),
               const SizedBox(height: Spacing.md),
 
@@ -187,32 +207,48 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
               Row(
                 children: [
                   Expanded(
-                    child: PickerField<String>(
-                      label: 'Potency',
-                      value: _potency,
-                      options: const [
-                        PickerOption(value: 'Q / MT', label: 'Q (Mother Tincture)'),
-                        PickerOption(value: '6CH', label: '6CH'),
-                        PickerOption(value: '30CH', label: '30CH'),
-                        PickerOption(value: '200CH', label: '200CH'),
-                        PickerOption(value: '1M', label: '1M (1000CH)'),
-                        PickerOption(value: '10M', label: '10M'),
-                        PickerOption(value: '50M', label: '50M'),
-                        PickerOption(value: 'CM', label: 'CM (100M)'),
-                        PickerOption(value: '0/1 (LM-01)', label: '0/1 (LM-01)'),
-                        PickerOption(value: '0/2 (LM-02)', label: '0/2 (LM-02)'),
-                        PickerOption(value: '0/3 (LM-03)', label: '0/3 (LM-03)'),
-                      ],
-                      onChanged: (val) => setState(() => _potency = val),
+                    child: Builder(
+                      builder: (context) {
+                        const standardOptions = [
+                          PickerOption(value: 'Q / MT', label: 'Q (Mother Tincture)'),
+                          PickerOption(value: '3X', label: '3X'),
+                          PickerOption(value: '6X', label: '6X'),
+                          PickerOption(value: '12X', label: '12X'),
+                          PickerOption(value: '6C', label: '6C / 6CH'),
+                          PickerOption(value: '30C', label: '30C / 30CH'),
+                          PickerOption(value: '200C', label: '200C / 200CH'),
+                          PickerOption(value: '30CH', label: '30CH'),
+                          PickerOption(value: '200CH', label: '200CH'),
+                          PickerOption(value: '1M', label: '1M (1000C)'),
+                          PickerOption(value: '10M', label: '10M'),
+                          PickerOption(value: '50M', label: '50M'),
+                          PickerOption(value: 'CM', label: 'CM (100M)'),
+                          PickerOption(value: '0/1 (LM-01)', label: '0/1 (LM-01)'),
+                          PickerOption(value: '0/2 (LM-02)', label: '0/2 (LM-02)'),
+                          PickerOption(value: '0/3 (LM-03)', label: '0/3 (LM-03)'),
+                        ];
+                        final hasMatch = standardOptions.any((o) => o.value == _potency);
+                        final options = [
+                          if (_potency.isNotEmpty && !hasMatch)
+                            PickerOption(value: _potency, label: _potency),
+                          ...standardOptions,
+                        ];
+
+                        return PickerField<String>(
+                          label: 'Potency',
+                          value: _potency.isNotEmpty ? _potency : null,
+                          options: options,
+                          onChanged: (val) => setState(() => _potency = val),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _doseController,
-                      decoration: const InputDecoration(
-                        labelText: 'Dose',
-                      ),
+                      label: 'Dose',
+                      prefixIcon: Icons.medication_outlined,
                     ),
                   ),
                 ],
@@ -261,20 +297,18 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _durationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Duration',
-                      ),
+                      label: 'Duration',
+                      prefixIcon: Icons.timelapse_outlined,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: TextFormField(
+                    child: CustomTextField(
                       controller: _instructionsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Timing / Instructions',
-                      ),
+                      label: 'Timing / Instructions',
+                      prefixIcon: Icons.schedule_outlined,
                     ),
                   ),
                 ],
@@ -282,12 +316,11 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
               const SizedBox(height: Spacing.md),
 
               // Dietary Advice & Restrictions
-              TextFormField(
+              CustomTextField(
                 controller: _dietaryController,
+                label: 'Dietary Restrictions / Restrictions Advice',
+                prefixIcon: Icons.restaurant_outlined,
                 maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Dietary Restrictions / Restrictions Advice',
-                ),
               ),
             ],
           ),

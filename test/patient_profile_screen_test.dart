@@ -2,6 +2,9 @@ import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
 import 'package:clinic_pilot/core/utils/formatters.dart';
 import 'package:clinic_pilot/features/cashmemo/providers/cash_memo_provider.dart';
+import 'package:clinic_pilot/features/clinical/providers/complaint_provider.dart';
+import 'package:clinic_pilot/features/clinical/providers/investigation_provider.dart';
+import 'package:clinic_pilot/features/clinical/providers/prescription_provider.dart';
 import 'package:clinic_pilot/features/clinics/providers/clinic_provider.dart';
 import 'package:clinic_pilot/features/patients/presentation/patient_profile_screen.dart';
 import 'package:clinic_pilot/features/visits/providers/visit_provider.dart';
@@ -131,6 +134,26 @@ void main() {
     expect(find.text('Software Engineer'), findsOneWidget);
     expect(find.text('Near Station Road'), findsOneWidget);
 
+    // Tap Complaints tab icon (healing_outlined)
+    await tester.tap(find.byIcon(Icons.healing_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('No complaints logged'), findsWidgets);
+
+    // Tap Master Case Sheet tab icon (assignment_outlined)
+    await tester.tap(find.byIcon(Icons.assignment_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Master Clinical Case Record'), findsWidgets);
+
+    // Tap Prescriptions tab icon (medication_outlined)
+    await tester.tap(find.byIcon(Icons.medication_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('No prescriptions logged'), findsWidgets);
+
+    // Tap Investigations tab icon (biotech_outlined)
+    await tester.tap(find.byIcon(Icons.biotech_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('No lab tests recorded'), findsWidgets);
+
     // Tap Visits tab icon
     await tester.tap(find.byIcon(Icons.timeline));
     await tester.pumpAndSettle();
@@ -154,5 +177,116 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Visit breakdown'), findsOneWidget);
     expect(find.text('Total visits'), findsOneWidget);
+  });
+
+  testWidgets('PatientProfileScreen renders populated clinical complaints, Rx, lab tests, and case sheet tabs without errors',
+      (tester) async {
+    final testComplaint1 = Complaint(
+      id: 'c-1',
+      patientId: 'p-1',
+      complaintIndex: 1,
+      complaintDate: DateTime(2026, 8, 1),
+      isBaseline: true,
+      complaintName: 'Acid Peptic Disease / GERD',
+      location: 'Epigastrium',
+      severity: 8,
+      status: 'Active',
+      isDeleted: false,
+      createdAt: DateTime(2026, 8, 1),
+      updatedAt: DateTime(2026, 8, 1),
+    );
+
+    final testComplaint2 = Complaint(
+      id: 'c-2',
+      patientId: 'p-1',
+      complaintIndex: 2,
+      complaintDate: null, // Legacy row with null date to verify backward compatibility
+      isBaseline: null, // Legacy row with null isBaseline
+      complaintName: 'Recurrent Allergic Sinusitis',
+      location: 'Nose & Forehead',
+      severity: 5,
+      status: 'Improving',
+      isDeleted: false,
+      createdAt: DateTime(2026, 8, 10),
+      updatedAt: DateTime(2026, 8, 10),
+    );
+
+    final testRx = Prescription(
+      id: 'rx-1',
+      patientId: 'p-1',
+      prescriptionDate: null, // Legacy row with null date
+      isBaseline: null, // Legacy row with null isBaseline
+      remedyIndex: 1,
+      remedyName: 'Nux Vomica',
+      potency: '200CH',
+      doseCount: '4 Pills',
+      frequency: 'Bedtime',
+      isDeleted: false,
+      createdAt: DateTime(2026, 8, 1),
+      updatedAt: DateTime(2026, 8, 1),
+    );
+
+    final testInv = Investigation(
+      id: 'inv-1',
+      patientId: 'p-1',
+      testDate: null, // Legacy row with null date
+      isBaseline: null, // Legacy row with null isBaseline
+      testCategory: 'Blood / Biochemistry',
+      testName: 'Serum Creatinine',
+      numericValue: 1.1,
+      unit: 'mg/dL',
+      flag: 'Normal',
+      isDeleted: false,
+      createdAt: DateTime(2026, 8, 1),
+      updatedAt: DateTime(2026, 8, 1),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          patientVisitsStreamProvider('p-1')
+              .overrideWith((ref) => Stream.value([testVisit])),
+          cashMemosStreamProvider
+              .overrideWith((ref) => Stream.value([testMemo])),
+          clinicsStreamProvider
+              .overrideWith((ref) => Stream.value([testClinic])),
+          patientComplaintsProvider('p-1')
+              .overrideWith((ref) => Stream.value([testComplaint1, testComplaint2])),
+          patientPrescriptionsProvider('p-1')
+              .overrideWith((ref) => Stream.value([testRx])),
+          patientInvestigationsProvider('p-1')
+              .overrideWith((ref) => Stream.value([testInv])),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: PatientProfileScreen(patient: testPatient),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // 1. Switch to Complaints Tab
+    await tester.tap(find.byIcon(Icons.healing_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Acid Peptic Disease / GERD'), findsOneWidget);
+    expect(find.text('Recurrent Allergic Sinusitis'), findsOneWidget);
+
+    // 2. Switch to Prescriptions Tab
+    await tester.tap(find.byIcon(Icons.medication_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Nux Vomica'), findsOneWidget);
+    expect(find.text('200CH'), findsOneWidget);
+
+    // 3. Switch to Investigations Tab
+    await tester.tap(find.byIcon(Icons.biotech_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Serum Creatinine'), findsWidgets);
+    expect(find.text('NORMAL'), findsOneWidget);
+
+    // 4. Switch to Case Sheet Tab
+    await tester.tap(find.byIcon(Icons.assignment_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Master Clinical Case Record'), findsOneWidget);
   });
 }

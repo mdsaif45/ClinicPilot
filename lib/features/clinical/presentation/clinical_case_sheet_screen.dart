@@ -3,12 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
+import '../../../core/services/media_attachment_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/custom_badge.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../visits/providers/visit_provider.dart';
 import '../models/case_record_models.dart';
 import '../providers/case_record_provider.dart';
+import '../providers/complaint_provider.dart';
+import '../providers/investigation_provider.dart';
+import '../providers/prescription_provider.dart';
+import 'add_edit_complaint_dialog.dart';
+import 'add_edit_investigation_dialog.dart';
+import 'add_edit_prescription_dialog.dart';
 import 'master_case_taking_screen.dart';
 
 class ClinicalCaseSheetScreen extends ConsumerStatefulWidget {
@@ -21,6 +31,7 @@ class ClinicalCaseSheetScreen extends ConsumerStatefulWidget {
 }
 
 class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScreen> {
+  int _selectedTab = 0; // 0: Baseline Case Record, 1: Follow-Up Visits History
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedSection = 'All';
@@ -129,29 +140,62 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
 
           return Column(
             children: [
-              // Search & Section Jump Filter Bar
-              _buildSearchAndFilterHeader(context),
-
-              // Main Clinical Content Area
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Spacing.lg,
-                    vertical: Spacing.md,
-                  ),
-                  children: [
-                    // 1. Patient & Executive Clinical Summary Card
-                    if (_selectedSection == 'All' && _searchQuery.isEmpty) ...[
-                      _buildPatientHeader(context, record),
-                      const SizedBox(height: Spacing.md),
+              // Top Sub-segmented Navigation Bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
+                color: scheme.surface,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment<int>(
+                        value: 0,
+                        label: Text('📋 Master Case Record (Baseline)'),
+                        icon: Icon(Icons.assignment_outlined, size: 18),
+                      ),
+                      ButtonSegment<int>(
+                        value: 1,
+                        label: Text('🔄 Follow-Up Visits History'),
+                        icon: Icon(Icons.timeline_outlined, size: 18),
+                      ),
                     ],
+                    selected: {_selectedTab},
+                    onSelectionChanged: (set) {
+                      AppHaptics.selection();
+                      setState(() => _selectedTab = set.first);
+                    },
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
 
-                    // 2. Chief Complaints
-                    if (_isSectionVisible('Complaints', [
-                      ...record.chiefComplaints.map((c) => '${c.complaint} ${c.sensation} ${c.location} ${c.modalitiesAgg} ${c.modalitiesAmel} ${c.concomitants} ${c.causation}'),
-                      record.additionalComplaints,
-                    ]))
-                      _buildChiefComplaintsSection(context, record),
+              Expanded(
+                child: _selectedTab == 0
+                    ? Column(
+                        children: [
+                          // Search & Section Jump Filter Bar
+                          _buildSearchAndFilterHeader(context),
+
+                          // Main Clinical Content Area
+                          Expanded(
+                            child: ListView(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: Spacing.lg,
+                                vertical: Spacing.md,
+                              ),
+                              children: [
+                                // 1. Patient & Executive Clinical Summary Card
+                                if (_selectedSection == 'All' && _searchQuery.isEmpty) ...[
+                                  _buildPatientHeader(context, record),
+                                  const SizedBox(height: Spacing.md),
+                                ],
+
+                      // 2. Chief Complaints
+                      if (_isSectionVisible('Complaints', [
+                        ...record.chiefComplaints.map((c) => '${c.complaint} ${c.sensation} ${c.location} ${c.modalitiesAgg} ${c.modalitiesAmel} ${c.concomitants} ${c.causation}'),
+                        record.additionalComplaints,
+                      ]))
+                        _buildChiefComplaintsSection(context, record),
 
                     // 3. History of Present Illness (HPI)
                     if (_isSectionVisible('HPI', [
@@ -288,7 +332,9 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                       record.outcomeDetails.degreeOfImprovement,
                       record.outcomeDetails.treatmentDuration,
                       record.followUpDetails.overallResponse,
-                      record.followUpNotes,
+                      record.followUpDetails.followUpRemarks,
+                      record.followUpDetails.chiefComplaintChanges,
+                      record.followUpDetails.nextFollowUp,
                     ]))
                       _buildFollowUpSection(context, record),
 
@@ -301,14 +347,255 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                       fullWidth: true,
                       onPressed: () => _openEditor(context),
                     ),
-                    const SizedBox(height: Spacing.xxl),
-                  ],
-                ),
+                                const SizedBox(height: Spacing.xxl),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : _buildFollowUpHistoryView(context),
               ),
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _buildFollowUpHistoryView(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    final visitsAsync = ref.watch(patientVisitsStreamProvider(widget.patient.id));
+    final complaintsAsync = ref.watch(patientComplaintsProvider(widget.patient.id));
+    final prescriptionsAsync = ref.watch(patientPrescriptionsProvider(widget.patient.id));
+    final investigationsAsync = ref.watch(patientInvestigationsProvider(widget.patient.id));
+
+    final allVisits = visitsAsync.value ?? [];
+    final allComplaints = complaintsAsync.value ?? [];
+    final allPrescriptions = prescriptionsAsync.value ?? [];
+    final allInvestigations = investigationsAsync.value ?? [];
+
+    final followUpComplaints = allComplaints.where((c) => !(c.isBaseline ?? true)).toList();
+    final followUpPrescriptions = allPrescriptions.where((p) => !(p.isBaseline ?? true)).toList();
+    final followUpInvestigations = allInvestigations.where((i) => !(i.isBaseline ?? true)).toList();
+
+    final hasFollowUps = allVisits.length > 1 ||
+        followUpComplaints.isNotEmpty ||
+        followUpPrescriptions.isNotEmpty ||
+        followUpInvestigations.isNotEmpty;
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
+      children: [
+        // Quick Action Bar
+        AppCard(
+          margin: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.add_circle_outline, color: scheme.primary, size: 20),
+                  const SizedBox(width: Spacing.xs),
+                  Text(
+                    'Quick Follow-Up Actions',
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Spacing.sm),
+              Wrap(
+                spacing: Spacing.sm,
+                runSpacing: Spacing.xs,
+                children: [
+                  AppButton.tonal(
+                    label: 'Add Follow-Up Complaint',
+                    icon: Icons.healing_outlined,
+                    onPressed: () {
+                      AppHaptics.selection();
+                      showDialog(
+                        context: context,
+                        builder: (_) => AddEditComplaintDialog(
+                          patientId: widget.patient.id,
+                          defaultIndex: allComplaints.length + 1,
+                          defaultIsBaseline: false,
+                        ),
+                      );
+                    },
+                  ),
+                  AppButton.tonal(
+                    label: 'Prescribe Follow-Up Remedy',
+                    icon: Icons.medication_outlined,
+                    onPressed: () {
+                      AppHaptics.selection();
+                      showDialog(
+                        context: context,
+                        builder: (_) => AddEditPrescriptionDialog(
+                          patientId: widget.patient.id,
+                          defaultIndex: allPrescriptions.length + 1,
+                          defaultIsBaseline: false,
+                        ),
+                      );
+                    },
+                  ),
+                  AppButton.tonal(
+                    label: 'Upload Lab / Scan Report',
+                    icon: Icons.biotech_outlined,
+                    onPressed: () {
+                      AppHaptics.selection();
+                      showDialog(
+                        context: context,
+                        builder: (_) => AddEditInvestigationDialog(
+                          patientId: widget.patient.id,
+                          defaultIsBaseline: false,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Spacing.md),
+
+        // Summary Metric Badges
+        Row(
+          children: [
+            Expanded(
+              child: _MetricPill(
+                icon: Icons.event_available,
+                label: 'Total Visits',
+                value: '${allVisits.length}',
+                color: scheme.primary,
+              ),
+            ),
+            const SizedBox(width: Spacing.sm),
+            Expanded(
+              child: _MetricPill(
+                icon: Icons.healing_outlined,
+                label: 'Follow-Up Complaints',
+                value: '${followUpComplaints.length}',
+                color: scheme.tertiary,
+              ),
+            ),
+            const SizedBox(width: Spacing.sm),
+            Expanded(
+              child: _MetricPill(
+                icon: Icons.medication_outlined,
+                label: 'Follow-Up Rx',
+                value: '${followUpPrescriptions.length}',
+                color: scheme.secondary,
+              ),
+            ),
+            const SizedBox(width: Spacing.sm),
+            Expanded(
+              child: _MetricPill(
+                icon: Icons.picture_as_pdf_outlined,
+                label: 'Test Reports',
+                value: '${followUpInvestigations.length}',
+                color: scheme.error,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: Spacing.md),
+
+        if (!hasFollowUps) ...[
+          AppCard(
+            margin: EdgeInsets.zero,
+            child: EmptyState(
+              icon: Icons.timeline,
+              title: 'No Follow-Up Visits Logged Yet',
+              message:
+                  'Initial Master Case Taking is safely locked as baseline. When the patient returns for subsequent visits, add new follow-up complaints, remedy adjustments, and progress photos here.',
+              actionLabel: 'Log First Follow-Up Complaint',
+              onAction: () {
+                AppHaptics.selection();
+                showDialog(
+                  context: context,
+                  builder: (_) => AddEditComplaintDialog(
+                    patientId: widget.patient.id,
+                    defaultIndex: allComplaints.length + 1,
+                    defaultIsBaseline: false,
+                  ),
+                );
+              },
+            ),
+          ),
+        ] else ...[
+          // Chronological Follow-Up Timeline Feed
+          Text(
+            'Chronological Follow-Up Encounters & Progression',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: Spacing.sm),
+
+          // Follow-up Complaints Section
+          if (followUpComplaints.isNotEmpty) ...[
+            _SectionHeaderCard(
+              title: 'Follow-Up Complaints & Condition Changes (${followUpComplaints.length})',
+              icon: Icons.healing,
+              color: scheme.tertiary,
+            ),
+            const SizedBox(height: Spacing.xs),
+            for (final c in followUpComplaints) ...[
+              _FollowUpComplaintCard(complaint: c, patientId: widget.patient.id),
+              const SizedBox(height: Spacing.xs),
+            ],
+            const SizedBox(height: Spacing.md),
+          ],
+
+          // Follow-up Prescriptions Section
+          if (followUpPrescriptions.isNotEmpty) ...[
+            _SectionHeaderCard(
+              title: 'Follow-Up Remedies Prescribed (${followUpPrescriptions.length})',
+              icon: Icons.medication,
+              color: scheme.secondary,
+            ),
+            const SizedBox(height: Spacing.xs),
+            for (final p in followUpPrescriptions) ...[
+              _FollowUpPrescriptionCard(prescription: p),
+              const SizedBox(height: Spacing.xs),
+            ],
+            const SizedBox(height: Spacing.md),
+          ],
+
+          // Follow-up Lab Tests Section
+          if (followUpInvestigations.isNotEmpty) ...[
+            _SectionHeaderCard(
+              title: 'Follow-Up Diagnostic Tests & Reports (${followUpInvestigations.length})',
+              icon: Icons.biotech,
+              color: scheme.error,
+            ),
+            const SizedBox(height: Spacing.xs),
+            for (final inv in followUpInvestigations) ...[
+              _FollowUpInvestigationCard(investigation: inv),
+              const SizedBox(height: Spacing.xs),
+            ],
+            const SizedBox(height: Spacing.md),
+          ],
+
+          // Clinical Visits Log
+          if (allVisits.isNotEmpty) ...[
+            _SectionHeaderCard(
+              title: 'Clinical Consultation History (${allVisits.length})',
+              icon: Icons.history_edu,
+              color: scheme.primary,
+            ),
+            const SizedBox(height: Spacing.xs),
+            for (final v in allVisits) ...[
+              _VisitSummaryCard(visitWithDetails: v),
+              const SizedBox(height: Spacing.xs),
+            ],
+          ],
+        ],
+        const SizedBox(height: Spacing.xxl),
+      ],
     );
   }
 
@@ -1047,11 +1334,18 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
   Widget _buildFollowUpSection(BuildContext context, MasterCaseRecordData record) {
     final fu = record.followUpDetails;
     final out = record.outcomeDetails;
+    final remarks = fu.followUpRemarks.isNotEmpty
+        ? fu.followUpRemarks
+        : (record.followUpNotes.isNotEmpty && !record.followUpNotes.startsWith('{')
+            ? record.followUpNotes
+            : '');
     final hasData = record.displayOutcome.isNotEmpty ||
         fu.overallResponse.isNotEmpty ||
         out.degreeOfImprovement.isNotEmpty ||
         out.treatmentDuration.isNotEmpty ||
-        record.followUpNotes.isNotEmpty;
+        remarks.isNotEmpty ||
+        fu.chiefComplaintChanges.isNotEmpty ||
+        fu.nextFollowUp.isNotEmpty;
 
     if (!hasData) return const SizedBox.shrink();
 
@@ -1063,7 +1357,9 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
         _ClinicalRow(label: 'Degree of Improvement', value: out.degreeOfImprovement),
         _ClinicalRow(label: 'Treatment Duration', value: out.treatmentDuration),
         _ClinicalRow(label: 'Overall Patient Response', value: fu.overallResponse),
-        _ClinicalRow(label: 'Case Notes & Observations', value: record.followUpNotes),
+        _ClinicalRow(label: 'Chief Complaint Changes', value: fu.chiefComplaintChanges),
+        _ClinicalRow(label: 'Next Follow-Up Target', value: fu.nextFollowUp),
+        _ClinicalRow(label: 'Case Notes & Observations', value: remarks),
       ],
     );
   }
@@ -1255,3 +1551,375 @@ class _ModalityRow extends StatelessWidget {
     );
   }
 }
+
+class _MetricPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _MetricPill({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs + 2),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: Radii.mdAll,
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeaderCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  const _SectionHeaderCard({
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: Spacing.xs),
+        Expanded(
+          child: Text(
+            title,
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FollowUpComplaintCard extends StatelessWidget {
+  final Complaint complaint;
+  final String patientId;
+
+  const _FollowUpComplaintCard({
+    required this.complaint,
+    required this.patientId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    final beforeImgs = ComplaintNotifier.parseImages(complaint.beforeImages);
+    final afterImgs = ComplaintNotifier.parseImages(complaint.afterImages);
+    final totalPhotos = beforeImgs.length + afterImgs.length;
+
+    return AppCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(Spacing.sm + 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: scheme.tertiaryContainer,
+                  borderRadius: Radii.smAll,
+                ),
+                child: Text(
+                  '#${complaint.complaintIndex}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: scheme.onTertiaryContainer,
+                  ),
+                ),
+              ),
+              const SizedBox(width: Spacing.xs),
+              Expanded(
+                child: Text(
+                  complaint.complaintName,
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              CustomBadge(
+                label: complaint.status,
+                color: scheme.tertiary,
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Recorded: ${Formatters.formatDate(complaint.complaintDate ?? complaint.createdAt)} • Severity: ${complaint.severity}/10',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontSize: 11,
+            ),
+          ),
+          if (totalPhotos > 0) ...[
+            const SizedBox(height: Spacing.xs),
+            Row(
+              children: [
+                Icon(Icons.photo_library_outlined, size: 14, color: scheme.primary),
+                const SizedBox(width: 4),
+                Text(
+                  '$totalPhotos progress photos (${beforeImgs.length} Before / ${afterImgs.length} After)',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if ((complaint.notes ?? '').isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              complaint.notes!,
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _FollowUpPrescriptionCard extends StatelessWidget {
+  final Prescription prescription;
+
+  const _FollowUpPrescriptionCard({required this.prescription});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final p = prescription;
+
+    return AppCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(Spacing.sm + 2),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(Spacing.xs),
+            decoration: BoxDecoration(
+              color: scheme.secondaryContainer,
+              borderRadius: Radii.smAll,
+            ),
+            child: Icon(Icons.medication, size: 16, color: scheme.onSecondaryContainer),
+          ),
+          const SizedBox(width: Spacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${p.remedyName} ${p.potency}',
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  '${Formatters.formatDate(p.prescriptionDate ?? p.createdAt)} • ${p.doseCount ?? ''} ${p.frequency ?? ''} • ${p.vehicle ?? ''}'.trim(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FollowUpInvestigationCard extends StatelessWidget {
+  final Investigation investigation;
+
+  const _FollowUpInvestigationCard({required this.investigation});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final inv = investigation;
+    final attachments = InvestigationNotifier.parseAttachments(inv.reportAttachments);
+
+    final (flagColor, flagBg) = switch (inv.flag) {
+      'High' => (scheme.error, scheme.errorContainer),
+      'Low' => (scheme.tertiary, scheme.tertiaryContainer),
+      'Abnormal' => (scheme.error, scheme.errorContainer),
+      _ => (scheme.primary, scheme.primaryContainer),
+    };
+
+    return AppCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(Spacing.sm + 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  inv.testName,
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: flagBg, borderRadius: Radii.smAll),
+                child: Text(
+                  inv.flag.toUpperCase(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: flagColor,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '${Formatters.formatDate(inv.testDate ?? inv.createdAt)} • Result: ${inv.numericValue != null ? '${inv.numericValue} ${inv.unit ?? ''}' : (inv.stringValue ?? 'Recorded')}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontSize: 11,
+            ),
+          ),
+          if (attachments.isNotEmpty) ...[
+            const SizedBox(height: Spacing.xs),
+            Wrap(
+              spacing: Spacing.xs,
+              children: attachments.map((a) {
+                return ActionChip(
+                  avatar: const Icon(Icons.attach_file, size: 12),
+                  label: Text('Report (${a.split(RegExp(r'[\\/]')).last})', style: const TextStyle(fontSize: 10)),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => MediaAttachmentService.openAttachment(a),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _VisitSummaryCard extends StatelessWidget {
+  final VisitWithDetails visitWithDetails;
+
+  const _VisitSummaryCard({required this.visitWithDetails});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final v = visitWithDetails.visit;
+
+    return AppCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(Spacing.sm + 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.event, size: 14, color: scheme.primary),
+              const SizedBox(width: 4),
+              Text(
+                Formatters.formatDate(v.visitDate),
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const Spacer(),
+              CustomBadge(
+                label: v.visitType,
+                color: scheme.primary,
+              ),
+            ],
+          ),
+          if ((v.disease).isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              'Condition: ${v.disease}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface,
+              ),
+            ),
+          ],
+          if ((v.notes ?? '').isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              v.notes!,
+              style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+          ],
+          if (v.nextFollowUpDate != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              'Next Follow-Up: ${Formatters.formatDate(v.nextFollowUpDate!)}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.tertiary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
