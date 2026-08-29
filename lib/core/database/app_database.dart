@@ -233,7 +233,9 @@ class AppDatabase extends _$AppDatabase {
             await _addColumnIfMissing(m, complaints, complaints.isBaseline);
             await _addColumnIfMissing(m, complaints, complaints.beforeImages);
             await _addColumnIfMissing(m, complaints, complaints.afterImages);
+            await _addColumnIfMissing(m, prescriptions, prescriptions.prescriptionDate);
             await _addColumnIfMissing(m, prescriptions, prescriptions.isBaseline);
+            await _addColumnIfMissing(m, investigations, investigations.testDate);
             await _addColumnIfMissing(m, investigations, investigations.isBaseline);
             await _addColumnIfMissing(m, investigations, investigations.reportAttachments);
           }

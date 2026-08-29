@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/seed_clinics.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:clinic_pilot/core/database/app_database.dart';
 
@@ -332,6 +332,90 @@ void main() {
         completes,
         reason: 'the v5 step must be safe to re-run',
       );
+
+      await db.close();
+    });
+
+    test('v14 -> v15 migration correctly adds nullable columns and backfills existing rows', () async {
+      final executor = NativeDatabase.memory();
+      final db = AppDatabase(executor);
+
+      // 1. Manually create tables up to schema v14 state (without v15 columns)
+      await db.createMigrator().createAll();
+
+      // Insert patient pat_1
+      await db.into(db.patients).insert(PatientsCompanion.insert(
+        id: 'pat_1',
+        name: 'Test Patient',
+        phone: '9876543210',
+        age: 30,
+        gender: 'Male',
+      ));
+
+      final nowTs = DateTime(2026, 8, 1, 10).millisecondsSinceEpoch ~/ 1000;
+
+      // Simulate legacy rows with NULL in the newly added v15 columns
+      await db.customStatement('''
+        INSERT INTO complaints (id, patient_id, complaint_name, severity, status, created_at, updated_at)
+        VALUES ('c_legacy_1', 'pat_1', 'Chronic Cough', 7, 'Active', $nowTs, $nowTs);
+      ''');
+
+      await db.customStatement('''
+        INSERT INTO prescriptions (id, patient_id, remedy_name, potency, created_at, updated_at)
+        VALUES ('rx_legacy_1', 'pat_1', 'Bryonia Alba', '30C', $nowTs, $nowTs);
+      ''');
+
+      await db.customStatement('''
+        INSERT INTO investigations (id, patient_id, test_name, numeric_value, created_at, updated_at)
+        VALUES ('inv_legacy_1', 'pat_1', 'Hemoglobin', 13.5, $nowTs, $nowTs);
+      ''');
+
+      // 2. Run migration from 14 to 15
+      await db.migration.onUpgrade(db.createMigrator(), 14, 15);
+      // Run beforeOpen backfills
+      await db.customStatement("UPDATE complaints SET complaint_date = created_at WHERE complaint_date IS NULL;");
+      await db.customStatement("UPDATE complaints SET is_baseline = 1 WHERE is_baseline IS NULL;");
+      await db.customStatement("UPDATE prescriptions SET prescription_date = created_at WHERE prescription_date IS NULL;");
+      await db.customStatement("UPDATE prescriptions SET is_baseline = 1 WHERE is_baseline IS NULL;");
+      await db.customStatement("UPDATE investigations SET test_date = created_at WHERE test_date IS NULL;");
+      await db.customStatement("UPDATE investigations SET is_baseline = 1 WHERE is_baseline IS NULL;");
+
+      // 3. Verify all legacy rows read back without throwing and have isBaseline = true
+      final complaints = await db.select(db.complaints).get();
+      expect(complaints.length, equals(1));
+      expect(complaints.first.complaintName, equals('Chronic Cough'));
+      expect(complaints.first.isBaseline, isTrue);
+      expect(complaints.first.complaintDate, isNot(isNull));
+
+      final prescriptions = await db.select(db.prescriptions).get();
+      expect(prescriptions.length, equals(1));
+      expect(prescriptions.first.remedyName, equals('Bryonia Alba'));
+      expect(prescriptions.first.isBaseline, isTrue);
+      expect(prescriptions.first.prescriptionDate, isNot(isNull));
+
+      final investigations = await db.select(db.investigations).get();
+      expect(investigations.length, equals(1));
+      expect(investigations.first.testName, equals('Hemoglobin'));
+      expect(investigations.first.isBaseline, isTrue);
+      expect(investigations.first.testDate, isNot(isNull));
+
+      // 4. Verify adding a new follow-up (non-baseline) row with media attachments works
+      await db.into(db.complaints).insert(ComplaintsCompanion.insert(
+        id: 'c_followup_1',
+        patientId: 'pat_1',
+        complaintName: 'Follow-up Cough',
+        severity: const Value(3),
+        status: const Value('Improving'),
+        isBaseline: const Value(false),
+        complaintDate: const Value.absent(),
+        beforeImages: const Value('["/path/before.jpg"]'),
+        afterImages: const Value('["/path/after.jpg"]'),
+      ));
+
+      final allComplaints = await db.select(db.complaints).get();
+      expect(allComplaints.length, equals(2));
+      expect(allComplaints.last.isBaseline, isFalse);
+      expect(allComplaints.last.beforeImages, equals('["/path/before.jpg"]'));
 
       await db.close();
     });
