@@ -130,9 +130,9 @@ void main() {
       await tester.tap(find.text('Prescribe Remedy'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Prescribe Homeopathic Remedy'), findsOneWidget);
+      expect(find.text('Prescribe Remedy (Rx #1)'), findsOneWidget);
       expect(find.text('Remedy (Latin Binomial) *'), findsOneWidget);
-      expect(find.text('Potency'), findsOneWidget);
+      expect(find.textContaining('Potency'), findsOneWidget);
       expect(find.text('Dose'), findsOneWidget);
     });
   });

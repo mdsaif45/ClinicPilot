@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../providers/expense_provider.dart';
@@ -10,6 +11,7 @@ import 'edit_expense_dialog.dart';
 
 /// Category icons, so a row can be identified without reading its label.
 IconData expenseCategoryIcon(String category) => switch (category) {
+      'All' => Icons.tune_rounded,
       'Rent' => Icons.home_outlined,
       'Electricity' || 'Utilities' => Icons.bolt_outlined,
       'Staff Salary' || 'Assistant Salary' => Icons.badge_outlined,
@@ -58,97 +60,130 @@ class ExpensesScreen extends ConsumerWidget {
     final selectedCategory = ref.watch(expenseCategoryFilterProvider);
     final theme = Theme.of(context);
 
+    final total = expensesAsync.asData?.value.fold<double>(
+          0,
+          (sum, e) => sum + e.expense.amount,
+        ) ??
+        0.0;
+    final count = expensesAsync.asData?.value.length ?? 0;
+
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddExpense(context),
         icon: const Icon(Icons.add),
         label: const Text('Add Expense'),
       ),
-      body: expensesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error loading expenses: $err')),
-        data: (expenses) {
-          final total =
-              expenses.fold<double>(0, (sum, e) => sum + e.expense.amount);
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.lg,
+              Spacing.md,
+              Spacing.lg,
+              Spacing.sm,
+            ),
+            child: _SummaryTile(
+              label: 'Expenses Recorded',
+              value: Formatters.formatCurrency(total),
+              caption: '$count ${count == 1 ? 'item' : 'items'}',
+              fg: theme.colorScheme.error,
+              bg: theme.colorScheme.errorContainer,
+            ),
+          ),
+          SizedBox(
+            height: 38,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+              itemCount: _categories.length,
+              separatorBuilder: (_, __) => const SizedBox(width: Spacing.xs),
+              itemBuilder: (context, i) {
+                final c = _categories[i];
+                final isSelected = c == 'All'
+                    ? (selectedCategory == null || selectedCategory == 'All')
+                    : selectedCategory == c;
+                final icon = expenseCategoryIcon(c);
 
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Spacing.lg,
-                  Spacing.md,
-                  Spacing.lg,
-                  Spacing.sm,
-                ),
-                child: _SummaryTile(
-                  label: 'Expenses Recorded',
-                  value: Formatters.formatCurrency(total),
-                  caption: '${expenses.length} '
-                      '${expenses.length == 1 ? 'item' : 'items'}',
-                  fg: theme.colorScheme.error,
-                  bg: theme.colorScheme.errorContainer,
-                ),
-              ),
-              SizedBox(
-                height: 44,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                  itemCount: _categories.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(width: Spacing.sm),
-                  itemBuilder: (context, i) {
-                    final c = _categories[i];
-                    final isSelected = c == 'All'
-                        ? (selectedCategory == null || selectedCategory == 'All')
-                        : selectedCategory == c;
-                    return ChoiceChip(
-                      label: Text(c),
-                      selected: isSelected,
-                      showCheckmark: false,
-                      visualDensity: VisualDensity.compact,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: Radii.mdAll,
-                        side: BorderSide(
+                return Material(
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+                  borderRadius: Radii.pillAll,
+                  child: InkWell(
+                    borderRadius: Radii.pillAll,
+                    onTap: () {
+                      AppHaptics.selection();
+                      ref.read(expenseCategoryFilterProvider.notifier).state =
+                          c == 'All' ? null : c;
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        borderRadius: Radii.pillAll,
+                        border: Border.all(
                           color: isSelected
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.outlineVariant,
+                              : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                          width: isSelected ? 1.5 : 1,
                         ),
                       ),
-                      onSelected: (_) => ref
-                          .read(expenseCategoryFilterProvider.notifier)
-                          .state = c == 'All' ? null : c,
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: Spacing.sm),
-              Expanded(
-                child: expenses.isEmpty
-                    ? EmptyState.expenses(
-                        title: selectedCategory == 'All'
-                            ? 'No expenses recorded'
-                            : 'Nothing under $selectedCategory',
-                        message:
-                            'Track clinic supplies, rent, and travel costs here.',
-                        onAction: () => showDialog(
-                          context: context,
-                          builder: (_) => const AddExpenseDialog(),
-                        ),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.only(bottom: 96),
-                        itemCount: expenses.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(height: 1, indent: Spacing.lg),
-                        itemBuilder: (context, i) =>
-                            _ExpenseRow(item: expenses[i]),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            icon,
+                            size: 15,
+                            color: isSelected
+                                ? theme.colorScheme.onPrimary
+                                : theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            c,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              color: isSelected
+                                  ? theme.colorScheme.onPrimary
+                                  : theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
                       ),
-              ),
-            ],
-          );
-        },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: Spacing.md),
+          Expanded(
+            child: expensesAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(child: Text('Error loading expenses: $err')),
+              data: (expenses) {
+                if (expenses.isEmpty) {
+                  return EmptyState.expenses(
+                    title: selectedCategory == 'All'
+                        ? 'No expenses recorded'
+                        : 'Nothing under $selectedCategory',
+                    message: 'Track clinic supplies, rent, and travel costs here.',
+                    onAction: () => showDialog(
+                      context: context,
+                      builder: (_) => const AddExpenseDialog(),
+                    ),
+                  );
+                }
+                return ListView.separated(
+                  padding: const EdgeInsets.only(bottom: 96),
+                  itemCount: expenses.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1, indent: Spacing.lg),
+                  itemBuilder: (context, i) => _ExpenseRow(item: expenses[i]),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -108,8 +108,8 @@ class PatientProfileScreen extends ConsumerWidget {
                     icon: Icons.local_hospital_outlined,
                     label: primaryClinic.name,
                   ),
-                if ((patient.area ?? '').isNotEmpty)
-                  _Badge(icon: Icons.place_outlined, label: patient.area!),
+                // if ((patient.area ?? '').isNotEmpty)
+                //   _Badge(icon: Icons.place_outlined, label: patient.area!),
                 _Badge(
                   icon: Icons.person_outline,
                   label: '${patient.gender}, ${patient.age}y',

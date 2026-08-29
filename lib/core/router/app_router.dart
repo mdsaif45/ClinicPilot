@@ -104,6 +104,20 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'profile',
+                    builder: (context, state) => const DoctorProfileScreen(),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
       GoRoute(
@@ -144,16 +158,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           final patientId = state.pathParameters['id']!;
           return PatientProfileLoaderScreen(patientId: patientId);
         },
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) => const SettingsScreen(),
-        routes: [
-          GoRoute(
-            path: 'profile',
-            builder: (context, state) => const DoctorProfileScreen(),
-          ),
-        ],
       ),
       GoRoute(
         path: '/clinics',
@@ -299,14 +303,10 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
           child: Row(
             children: [
               NavigationRail(
-                selectedIndex: navigationShell.currentIndex.clamp(0, 3),
+                selectedIndex: navigationShell.currentIndex.clamp(0, 4),
                 labelType: NavigationRailLabelType.all,
                 onDestinationSelected: (index) {
-                  if (index == 4) {
-                    context.push('/settings');
-                    return;
-                  }
-                  final alwaysReset = index == _growthIndex;
+                  final alwaysReset = index == _growthIndex || index == 4;
                   navigationShell.goBranch(
                     index,
                     initialLocation:
@@ -421,14 +421,10 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
       bottomNavigationBar: FloatingBottomNavBar(
         selectedIndex: navigationShell.currentIndex.clamp(0, 4),
         onDestinationSelected: (index) {
-          if (index == 4) {
-            context.push('/settings');
-            return;
-          }
           // Growth is a menu of sub-screens. A shell branch normally restores
           // whichever sub-route was last open, which would mean that once a
           // section had been visited the tab could never return to its menu.
-          final alwaysReset = index == _growthIndex;
+          final alwaysReset = index == _growthIndex || index == 4;
           navigationShell.goBranch(
             index,
             initialLocation:

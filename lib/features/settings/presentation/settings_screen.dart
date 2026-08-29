@@ -49,17 +49,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              context.go('/dashboard');
-            }
-          },
-        ),
+        automaticallyImplyLeading: false,
         title: Text(
           'Settings',
           style: theme.textTheme.titleLarge?.copyWith(

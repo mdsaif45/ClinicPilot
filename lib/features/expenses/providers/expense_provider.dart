@@ -17,33 +17,14 @@ class ExpenseWithClinic {
   });
 }
 
-final expensesStreamProvider = StreamProvider<List<ExpenseWithClinic>>((ref) {
+/// Streams all active expenses joined with clinic.
+final allExpensesStreamProvider = StreamProvider<List<ExpenseWithClinic>>((ref) {
   final db = ref.watch(databaseProvider);
-  final categoryFilter = ref.watch(expenseCategoryFilterProvider);
-
-  var query = db.select(db.expenses).join([
+  return (db.select(db.expenses).join([
     innerJoin(db.clinics, db.clinics.id.equalsExp(db.expenses.clinicId)),
-  ])..where(db.expenses.isDeleted.equals(false));
-
-  if (categoryFilter != null && categoryFilter.isNotEmpty && categoryFilter != 'All') {
-    final List<String> matchingCategories;
-    if (categoryFilter == 'Medicine Purchase' || categoryFilter == 'Medicine') {
-      matchingCategories = ['Medicine Purchase', 'Medicine'];
-    } else if (categoryFilter == 'Packaging & Dispensing' || categoryFilter == 'Packaging') {
-      matchingCategories = ['Packaging & Dispensing', 'Packaging'];
-    } else if (categoryFilter == 'Electricity' || categoryFilter == 'Utilities') {
-      matchingCategories = ['Electricity', 'Utilities'];
-    } else if (categoryFilter == 'Camp' || categoryFilter == 'Camp Expense') {
-      matchingCategories = ['Camp', 'Camp Expense'];
-    } else if (categoryFilter == 'Staff Salary' || categoryFilter == 'Assistant Salary') {
-      matchingCategories = ['Staff Salary', 'Assistant Salary'];
-    } else {
-      matchingCategories = [categoryFilter];
-    }
-    query = query..where(db.expenses.category.isIn(matchingCategories));
-  }
-
-  return (query..orderBy([OrderingTerm.desc(db.expenses.date)]))
+  ])
+        ..where(db.expenses.isDeleted.equals(false))
+        ..orderBy([OrderingTerm.desc(db.expenses.date)]))
       .watch()
       .map((rows) {
     return rows.map((row) {
@@ -52,6 +33,37 @@ final expensesStreamProvider = StreamProvider<List<ExpenseWithClinic>>((ref) {
         clinic: row.readTable(db.clinics),
       );
     }).toList();
+  });
+});
+
+/// Instantly filtered expenses provider (zero latency, zero database re-queries on chip tap).
+final expensesStreamProvider = Provider<AsyncValue<List<ExpenseWithClinic>>>((ref) {
+  final allAsync = ref.watch(allExpensesStreamProvider);
+  final categoryFilter = ref.watch(expenseCategoryFilterProvider);
+
+  return allAsync.whenData((allExpenses) {
+    if (categoryFilter == null || categoryFilter.isEmpty || categoryFilter == 'All') {
+      return allExpenses;
+    }
+
+    final List<String> matchingCategories;
+    if (categoryFilter == 'Medicine Purchase' || categoryFilter == 'Medicine') {
+      matchingCategories = const ['Medicine Purchase', 'Medicine'];
+    } else if (categoryFilter == 'Packaging & Dispensing' || categoryFilter == 'Packaging') {
+      matchingCategories = const ['Packaging & Dispensing', 'Packaging'];
+    } else if (categoryFilter == 'Electricity' || categoryFilter == 'Utilities') {
+      matchingCategories = const ['Electricity', 'Utilities'];
+    } else if (categoryFilter == 'Camp' || categoryFilter == 'Camp Expense') {
+      matchingCategories = const ['Camp', 'Camp Expense'];
+    } else if (categoryFilter == 'Staff Salary' || categoryFilter == 'Assistant Salary') {
+      matchingCategories = const ['Staff Salary', 'Assistant Salary'];
+    } else {
+      matchingCategories = [categoryFilter];
+    }
+
+    return allExpenses
+        .where((e) => matchingCategories.contains(e.expense.category))
+        .toList();
   });
 });
 

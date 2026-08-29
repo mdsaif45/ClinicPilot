@@ -23,7 +23,7 @@ class AddEditInvestigationDialog extends ConsumerStatefulWidget {
     required this.patientId,
     this.visitId,
     this.existingInvestigation,
-    this.defaultIsBaseline = true,
+    this.defaultIsBaseline = false,
   });
 
   @override
@@ -199,10 +199,9 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
       ],
       child: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               // Template Selector Quick Menu
               if (!isEditing) ...[
                 Text(
@@ -240,9 +239,17 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
               ),
               const SizedBox(height: Spacing.md),
 
-              // Category, Date & Visit Context
+              // Date & Category (2 clean fields)
               Row(
                 children: [
+                  Expanded(
+                    child: DateField(
+                      label: 'Test Date',
+                      value: _testDate,
+                      onChanged: (date) => setState(() => _testDate = date),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.md),
                   Expanded(
                     child: PickerField<String>(
                       label: 'Category',
@@ -262,83 +269,61 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
                       onChanged: (val) => setState(() => _category = val),
                     ),
                   ),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: DateField(
-                      label: 'Test Date',
-                      value: _testDate,
-                      onChanged: (date) => setState(() => _testDate = date),
-                    ),
-                  ),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: PickerField<bool>(
-                      label: 'Visit Context',
-                      value: _isBaseline,
-                      options: const [
-                        PickerOption(value: true, label: 'Initial Baseline'),
-                        PickerOption(value: false, label: 'Follow-Up Test'),
-                      ],
-                      onChanged: (val) => setState(() => _isBaseline = val),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: Spacing.md),
 
-              // Measured Value & Unit & Live Flag
+              // Diagnostic Lab Name
+              CustomTextField(
+                controller: _labController,
+                label: 'Diagnostic Lab Name (e.g. Metropolis, Quest)',
+                prefixIcon: Icons.local_hospital_outlined,
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Measured Value & Unit (2 clean fields with integrated live Flag badge)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    flex: 2,
+                    flex: 3,
                     child: CustomTextField(
                       controller: _valueController,
                       label: 'Measured Value *',
                       prefixIcon: Icons.analytics_outlined,
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: Spacing.sm),
+                        child: UnconstrainedBox(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: flagColor.withValues(alpha: 0.12),
+                              borderRadius: Radii.smAll,
+                              border: Border.all(color: flagColor.withValues(alpha: 0.4)),
+                            ),
+                            child: Text(
+                              _computedFlag.toUpperCase(),
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: flagColor,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Enter value' : null,
                     ),
                   ),
-                  const SizedBox(width: Spacing.sm),
+                  const SizedBox(width: Spacing.md),
                   Expanded(
-                    flex: 1,
+                    flex: 2,
                     child: CustomTextField(
                       controller: _unitController,
                       label: 'Unit',
                       prefixIcon: Icons.straighten_outlined,
                     ),
-                  ),
-                  const SizedBox(width: Spacing.sm),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Flag',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: scheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: Spacing.xs),
-                      Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: flagColor.withValues(alpha: 0.12),
-                          borderRadius: Radii.mdAll,
-                          border: Border.all(color: flagColor.withValues(alpha: 0.4)),
-                        ),
-                        child: Text(
-                          _computedFlag.toUpperCase(),
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: flagColor,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -366,14 +351,6 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
               ),
               const SizedBox(height: Spacing.md),
 
-              // Diagnostic Lab Name & Doctor Notes
-              CustomTextField(
-                controller: _labController,
-                label: 'Diagnostic Lab / Center Name',
-                prefixIcon: Icons.local_hospital_outlined,
-              ),
-              const SizedBox(height: Spacing.md),
-
               // Document / Report Attachment Gallery (PDF, Images)
               DocumentAttachmentGallery(
                 patientId: widget.patientId,
@@ -391,7 +368,6 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
             ],
           ),
         ),
-      ),
     );
   }
 }

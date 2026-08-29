@@ -116,10 +116,9 @@ class _AddEditReferralContactDialogState
       ],
       child: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -185,7 +184,6 @@ class _AddEditReferralContactDialogState
             ],
           ),
         ),
-      ),
     );
   }
 }

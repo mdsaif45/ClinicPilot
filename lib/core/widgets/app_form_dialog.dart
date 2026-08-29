@@ -33,8 +33,8 @@ class AppFormDialog extends StatelessWidget {
         ),
       ),
       insetPadding: const EdgeInsets.symmetric(
-        horizontal: Spacing.lg,
-        vertical: Spacing.xl,
+        horizontal: Spacing.md,
+        vertical: Spacing.lg,
       ),
       contentPadding: const EdgeInsets.fromLTRB(
         Spacing.xl,
@@ -52,9 +52,12 @@ class AppFormDialog extends StatelessWidget {
         width: maxWidth,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: media.size.height * (isShort ? 0.6 : 0.72),
+            maxHeight: media.size.height * (isShort ? 0.75 : 0.82),
           ),
-          child: SingleChildScrollView(child: child),
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: child,
+          ),
         ),
       ),
       actions: actions,

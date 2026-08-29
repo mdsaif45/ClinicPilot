@@ -26,7 +26,7 @@ class AddEditComplaintDialog extends ConsumerStatefulWidget {
     this.visitId,
     this.existingComplaint,
     this.defaultIndex = 1,
-    this.defaultIsBaseline = true,
+    this.defaultIsBaseline = false,
   });
 
   @override
@@ -187,7 +187,7 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
     final scheme = theme.colorScheme;
 
     return AppFormDialog(
-      title: isEditing ? 'Edit Complaint' : 'Add Clinical Complaint',
+      title: isEditing ? 'Edit Complaint (#$_complaintIndex)' : 'Add Clinical Complaint (#$_complaintIndex)',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -200,27 +200,21 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
       ],
       child: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Order, Date & Visit Classification
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+              // Complaint / Condition Name (Primary)
+              DiseaseAutocompleteField(
+                controller: _nameController,
+                label: 'Complaint / Condition *',
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Please enter complaint' : null,
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Date & Clinical Status (2 clean fields)
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 90,
-                    child: PickerField<int>(
-                      label: 'Order',
-                      value: _complaintIndex,
-                      options: List.generate(
-                        10,
-                        (i) => PickerOption(value: i + 1, label: '#${i + 1}'),
-                      ),
-                      onChanged: (val) => setState(() => _complaintIndex = val),
-                    ),
-                  ),
-                  const SizedBox(width: Spacing.md),
                   Expanded(
                     child: DateField(
                       label: 'Complaint Date',
@@ -230,26 +224,19 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
                   ),
                   const SizedBox(width: Spacing.md),
                   Expanded(
-                    child: PickerField<bool>(
-                      label: 'Visit Context',
-                      value: _isBaseline,
+                    child: PickerField<String>(
+                      label: 'Clinical Status',
+                      value: _status,
                       options: const [
-                        PickerOption(value: true, label: 'Initial Baseline'),
-                        PickerOption(value: false, label: 'Follow-Up Visit'),
+                        PickerOption(value: 'Active', label: 'Active (Ongoing)'),
+                        PickerOption(value: 'Improving', label: 'Improving (Under Care)'),
+                        PickerOption(value: 'Resolved', label: 'Resolved (Relieved)'),
+                        PickerOption(value: 'Recurrent', label: 'Recurrent (Periodic)'),
                       ],
-                      onChanged: (val) => setState(() => _isBaseline = val),
+                      onChanged: (val) => setState(() => _status = val),
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: Spacing.md),
-
-              // Complaint / Condition Name
-              DiseaseAutocompleteField(
-                controller: _nameController,
-                label: 'Complaint / Condition *',
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Please enter complaint' : null,
               ),
               const SizedBox(height: Spacing.md),
 
@@ -370,31 +357,11 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
               ),
               const SizedBox(height: Spacing.md),
 
-              // Periodicity & Clinical Status
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _periodicityController,
-                      label: 'Periodicity',
-                      prefixIcon: Icons.event_repeat_outlined,
-                    ),
-                  ),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: PickerField<String>(
-                      label: 'Clinical Status',
-                      value: _status,
-                      options: const [
-                        PickerOption(value: 'Active', label: 'Active (Ongoing)'),
-                        PickerOption(value: 'Improving', label: 'Improving (Under Care)'),
-                        PickerOption(value: 'Resolved', label: 'Resolved (Relieved)'),
-                        PickerOption(value: 'Recurrent', label: 'Recurrent (Periodic)'),
-                      ],
-                      onChanged: (val) => setState(() => _status = val),
-                    ),
-                  ),
-                ],
+              // Periodicity
+              CustomTextField(
+                controller: _periodicityController,
+                label: 'Periodicity / Timing Modality',
+                prefixIcon: Icons.event_repeat_outlined,
               ),
               const SizedBox(height: Spacing.md),
 
@@ -480,7 +447,6 @@ class _AddEditComplaintDialogState extends ConsumerState<AddEditComplaintDialog>
             ],
           ),
         ),
-      ),
     );
   }
 }

@@ -114,10 +114,9 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
       ],
       child: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               if (widget.isChangingPin) ...[
                 TextFormField(
                   controller: _oldPinController,
@@ -201,7 +200,6 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
             ],
           ),
         ),
-      ),
     );
   }
 }

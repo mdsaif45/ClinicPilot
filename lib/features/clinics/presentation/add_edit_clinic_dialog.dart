@@ -112,11 +112,10 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
       ],
       child: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               CustomTextField(
                 controller: _nameController,
                 label: 'Clinic Name',
@@ -208,7 +207,6 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
             ],
           ),
         ),
-      ),
     );
   }
 

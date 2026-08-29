@@ -86,7 +86,32 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
             fontWeight: FontWeight.w700,
           ),
         ),
+        actions: [
+          if (_selectedTab == 0)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Edit Master Case Taking',
+              onPressed: () => _openEditor(context),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              tooltip: 'Add Follow-Up Entry',
+              onPressed: () => _showFollowUpActionsSheet(context),
+            ),
+        ],
       ),
+      floatingActionButton: _selectedTab == 1
+          ? FloatingActionButton.extended(
+              onPressed: () => _showFollowUpActionsSheet(context),
+              icon: const Icon(Icons.add),
+              label: const Text('Add Entry'),
+            )
+          : FloatingActionButton.extended(
+              onPressed: () => _openEditor(context),
+              icon: const Icon(Icons.edit_note),
+              label: const Text('Edit Case Taking'),
+            ),
       body: recordAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(
@@ -142,28 +167,44 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
             children: [
               // Top Sub-segmented Navigation Bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
+                padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
                 color: scheme.surface,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<int>(
-                    segments: const [
-                      ButtonSegment<int>(
-                        value: 0,
-                        label: Text('📋 Master Case Record (Baseline)'),
-                        icon: Icon(Icons.assignment_outlined, size: 18),
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                    borderRadius: Radii.lgAll,
+                    border: Border.all(
+                      color: scheme.outlineVariant.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _SubTabButton(
+                          isSelected: _selectedTab == 0,
+                          icon: Icons.assignment_outlined,
+                          label: 'Master Baseline Record',
+                          onTap: () {
+                            AppHaptics.selection();
+                            setState(() => _selectedTab = 0);
+                          },
+                        ),
                       ),
-                      ButtonSegment<int>(
-                        value: 1,
-                        label: Text('🔄 Follow-Up Visits History'),
-                        icon: Icon(Icons.timeline_outlined, size: 18),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: _SubTabButton(
+                          isSelected: _selectedTab == 1,
+                          icon: Icons.timeline_outlined,
+                          label: 'Follow-Up Visits History',
+                          onTap: () {
+                            AppHaptics.selection();
+                            setState(() => _selectedTab = 1);
+                          },
+                        ),
                       ),
                     ],
-                    selected: {_selectedTab},
-                    onSelectionChanged: (set) {
-                      AppHaptics.selection();
-                      setState(() => _selectedTab = set.first);
-                    },
                   ),
                 ),
               ),
@@ -388,112 +429,40 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
       children: [
-        // Quick Action Bar
-        AppCard(
-          margin: EdgeInsets.zero,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.add_circle_outline, color: scheme.primary, size: 20),
-                  const SizedBox(width: Spacing.xs),
-                  Text(
-                    'Quick Follow-Up Actions',
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Spacing.sm),
-              Wrap(
-                spacing: Spacing.sm,
-                runSpacing: Spacing.xs,
-                children: [
-                  AppButton.tonal(
-                    label: 'Add Follow-Up Complaint',
-                    icon: Icons.healing_outlined,
-                    onPressed: () {
-                      AppHaptics.selection();
-                      showDialog(
-                        context: context,
-                        builder: (_) => AddEditComplaintDialog(
-                          patientId: widget.patient.id,
-                          defaultIndex: allComplaints.length + 1,
-                          defaultIsBaseline: false,
-                        ),
-                      );
-                    },
-                  ),
-                  AppButton.tonal(
-                    label: 'Prescribe Follow-Up Remedy',
-                    icon: Icons.medication_outlined,
-                    onPressed: () {
-                      AppHaptics.selection();
-                      showDialog(
-                        context: context,
-                        builder: (_) => AddEditPrescriptionDialog(
-                          patientId: widget.patient.id,
-                          defaultIndex: allPrescriptions.length + 1,
-                          defaultIsBaseline: false,
-                        ),
-                      );
-                    },
-                  ),
-                  AppButton.tonal(
-                    label: 'Upload Lab / Scan Report',
-                    icon: Icons.biotech_outlined,
-                    onPressed: () {
-                      AppHaptics.selection();
-                      showDialog(
-                        context: context,
-                        builder: (_) => AddEditInvestigationDialog(
-                          patientId: widget.patient.id,
-                          defaultIsBaseline: false,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: Spacing.md),
-
-        // Summary Metric Badges
+        // Summary Metric Badges (Visits, Complaints, Prescriptions, Lab Reports)
         Row(
           children: [
             Expanded(
               child: _MetricPill(
                 icon: Icons.event_available,
-                label: 'Total Visits',
+                label: 'Visits',
                 value: '${allVisits.length}',
                 color: scheme.primary,
               ),
             ),
-            const SizedBox(width: Spacing.sm),
+            const SizedBox(width: Spacing.xs),
             Expanded(
               child: _MetricPill(
                 icon: Icons.healing_outlined,
-                label: 'Follow-Up Complaints',
+                label: 'Complaints',
                 value: '${followUpComplaints.length}',
                 color: scheme.tertiary,
               ),
             ),
-            const SizedBox(width: Spacing.sm),
+            const SizedBox(width: Spacing.xs),
             Expanded(
               child: _MetricPill(
                 icon: Icons.medication_outlined,
-                label: 'Follow-Up Rx',
+                label: 'Remedies',
                 value: '${followUpPrescriptions.length}',
                 color: scheme.secondary,
               ),
             ),
-            const SizedBox(width: Spacing.sm),
+            const SizedBox(width: Spacing.xs),
             Expanded(
               child: _MetricPill(
-                icon: Icons.picture_as_pdf_outlined,
-                label: 'Test Reports',
+                icon: Icons.biotech_outlined,
+                label: 'Lab Tests',
                 value: '${followUpInvestigations.length}',
                 color: scheme.error,
               ),
@@ -603,6 +572,121 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) => MasterCaseTakingScreen(patient: widget.patient),
+      ),
+    );
+  }
+
+  void _showFollowUpActionsSheet(BuildContext context) {
+    AppHaptics.selection();
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    final allComplaints = ref.read(patientComplaintsProvider(widget.patient.id)).value ?? [];
+    final allPrescriptions = ref.read(patientPrescriptionsProvider(widget.patient.id)).value ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: scheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.lg,
+            0,
+            Spacing.lg,
+            Spacing.xl,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Add Follow-Up Entry',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: Spacing.xs),
+              Text(
+                'Record clinical progression for ${widget.patient.name}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: Spacing.md),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: scheme.tertiaryContainer,
+                  foregroundColor: scheme.tertiary,
+                  child: const Icon(Icons.healing_outlined, size: 20),
+                ),
+                title: const Text('Add Follow-Up Complaint'),
+                subtitle: const Text('Progress, new modalities, symptom severity'),
+                trailing: const Icon(Icons.chevron_right),
+                shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  showDialog(
+                    context: context,
+                    builder: (_) => AddEditComplaintDialog(
+                      patientId: widget.patient.id,
+                      defaultIndex: allComplaints.length + 1,
+                      defaultIsBaseline: false,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: Spacing.xs),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: scheme.secondaryContainer,
+                  foregroundColor: scheme.secondary,
+                  child: const Icon(Icons.medication_outlined, size: 20),
+                ),
+                title: const Text('Prescribe Follow-Up Remedy'),
+                subtitle: const Text('New potency, dose change, or repeat Rx'),
+                trailing: const Icon(Icons.chevron_right),
+                shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  showDialog(
+                    context: context,
+                    builder: (_) => AddEditPrescriptionDialog(
+                      patientId: widget.patient.id,
+                      defaultIndex: allPrescriptions.length + 1,
+                      defaultIsBaseline: false,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: Spacing.xs),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: scheme.errorContainer,
+                  foregroundColor: scheme.error,
+                  child: const Icon(Icons.biotech_outlined, size: 20),
+                ),
+                title: const Text('Upload Lab / Scan Report'),
+                subtitle: const Text('Test values, reference ranges, report scans'),
+                trailing: const Icon(Icons.chevron_right),
+                shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  showDialog(
+                    context: context,
+                    builder: (_) => AddEditInvestigationDialog(
+                      patientId: widget.patient.id,
+                      defaultIsBaseline: false,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1918,6 +2002,79 @@ class _VisitSummaryCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _SubTabButton extends StatelessWidget {
+  final bool isSelected;
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _SubTabButton({
+    required this.isSelected,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Material(
+      color: scheme.surface.withValues(alpha: 0),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: Radii.mdAll,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeInOut,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
+          decoration: BoxDecoration(
+            color: isSelected ? scheme.surface : scheme.surface.withValues(alpha: 0),
+            borderRadius: Radii.mdAll,
+            border: isSelected
+                ? Border.all(color: scheme.primary.withValues(alpha: 0.25))
+                : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: scheme.shadow.withValues(alpha: 0.06),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: Spacing.xs),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

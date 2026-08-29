@@ -124,7 +124,7 @@ void main() {
       await tester.tap(find.text('Add Complaint'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Add Clinical Complaint'), findsOneWidget);
+      expect(find.textContaining('Add Clinical Complaint'), findsOneWidget);
       expect(find.text('Complaint / Condition *'), findsOneWidget);
       expect(find.text('Location'), findsOneWidget);
       expect(find.text('Side'), findsOneWidget);
