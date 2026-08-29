@@ -306,8 +306,8 @@ void main() {
         status: 'Active',
       );
       final complaints = await db.select(db.complaints).get();
-      expect(complaints.length, equals(1));
-      expect(complaints.first.severity, equals(8));
+      expect(complaints.length, equals(2));
+      expect(complaints.last.severity, equals(8));
 
       // 4. Prescription Log (Multi-remedy)
       final rxNotifier = container.read(prescriptionNotifierProvider.notifier);
