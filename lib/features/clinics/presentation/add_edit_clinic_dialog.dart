@@ -105,10 +105,7 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(isEditing ? 'Save Changes' : 'Add Clinic'),
         ),

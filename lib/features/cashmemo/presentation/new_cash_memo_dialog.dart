@@ -152,10 +152,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Text('Save & Issue Memo'),
         ),
