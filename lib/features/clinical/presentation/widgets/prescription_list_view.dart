@@ -6,7 +6,6 @@ import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
 import '../../../../core/services/contact_service.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/empty_state.dart';

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../design/tokens.dart';
-import 'app_button.dart';
 
 /// Standard confirmation & deletion prompt dialog across the app.
 class AppConfirmDialog extends StatelessWidget {

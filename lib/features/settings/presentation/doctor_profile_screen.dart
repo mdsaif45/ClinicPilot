@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/app_list_tile.dart';

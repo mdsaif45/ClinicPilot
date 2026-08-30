@@ -1,7 +1,6 @@
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
-import 'package:clinic_pilot/core/widgets/app_card.dart';
 import 'package:clinic_pilot/features/clinical/models/case_record_models.dart';
 import 'package:clinic_pilot/features/clinical/presentation/master_case_taking_screen.dart';
 import 'package:clinic_pilot/features/clinical/providers/case_record_provider.dart';

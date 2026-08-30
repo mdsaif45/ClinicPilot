@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/providers/security_provider.dart';
 import '../../../core/services/app_haptics.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/picker_field.dart';
 import 'pin_setup_dialog.dart';

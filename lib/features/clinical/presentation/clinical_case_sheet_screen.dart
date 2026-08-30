@@ -32,8 +32,6 @@ class ClinicalCaseSheetScreen extends ConsumerStatefulWidget {
 
 class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScreen> {
   int _selectedTab = 0; // 0: Baseline Case Record, 1: Follow-Up Visits History
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
   String _selectedSection = 'All';
 
   static const List<String> _sections = [
@@ -53,23 +51,8 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     'Outcome',
   ];
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  bool _matchesSearch(List<String?> contents) {
-    if (_searchQuery.isEmpty) return true;
-    final q = _searchQuery.toLowerCase();
-    return contents.any((c) => c != null && c.toLowerCase().contains(q));
-  }
-
-  bool _isSectionVisible(String sectionKey, List<String?> contents) {
-    if (_selectedSection != 'All' && _selectedSection != sectionKey) {
-      return false;
-    }
-    return _matchesSearch(contents);
+  bool _isSectionVisible(String sectionKey) {
+    return _selectedSection == 'All' || _selectedSection == sectionKey;
   }
 
   @override
@@ -224,157 +207,61 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                               ),
                               children: [
                                 // 1. Patient & Executive Clinical Summary Card
-                                if (_selectedSection == 'All' && _searchQuery.isEmpty) ...[
+                                if (_selectedSection == 'All') ...[
                                   _buildPatientHeader(context, record),
                                   const SizedBox(height: Spacing.md),
                                 ],
 
                       // 2. Chief Complaints
-                      if (_isSectionVisible('Complaints', [
-                        ...record.chiefComplaints.map((c) => '${c.complaint} ${c.sensation} ${c.location} ${c.modalitiesAgg} ${c.modalitiesAmel} ${c.concomitants} ${c.causation}'),
-                        record.additionalComplaints,
-                      ]))
+                      if (_isSectionVisible('Complaints'))
                         _buildChiefComplaintsSection(context, record),
 
                     // 3. History of Present Illness (HPI)
-                    if (_isSectionVisible('HPI', [
-                      record.hpi.chronologicalDevelopment,
-                      record.hpi.firstOccurrence,
-                      record.hpi.progression,
-                      record.hpi.previousEpisodes,
-                      record.hpi.previousTreatment,
-                      record.hpi.responseToTreatment,
-                      record.hpi.relevantPrecipitatingFactors,
-                    ]))
+                    if (_isSectionVisible('HPI'))
                       _buildHpiSection(context, record),
 
                     // 4. Past Medical History & Allergies
-                    if (_isSectionVisible('Past History', [
-                      record.pastHistory.allergies,
-                      record.pastHistory.childhoodIllnesses,
-                      record.pastHistory.majorIllnesses,
-                      record.pastHistory.chronicDiseases,
-                      record.pastHistory.surgeries,
-                      record.pastHistory.previousHomeopathicTreatment,
-                    ]))
+                    if (_isSectionVisible('Past History'))
                       _buildPastHistorySection(context, record),
 
                     // 5. Family History
-                    if (_isSectionVisible('Family', [
-                      record.familyHistory.father,
-                      record.familyHistory.mother,
-                      record.familyHistory.siblings,
-                      record.familyHistory.majorFamilialDiseases,
-                      record.familyHistory.hereditaryDiseases,
-                    ]))
+                    if (_isSectionVisible('Family'))
                       _buildFamilyHistorySection(context, record),
 
                     // 6. Physical Generals
-                    if (_isSectionVisible('Physical Generals', [
-                      record.physicalGenerals.thermal,
-                      record.physicalGenerals.appetite,
-                      record.physicalGenerals.thirst,
-                      record.physicalGenerals.cravings,
-                      record.physicalGenerals.aversions,
-                      record.physicalGenerals.sleep,
-                      record.physicalGenerals.dreams,
-                      record.physicalGenerals.perspiration,
-                      record.physicalGenerals.stool,
-                      record.physicalGenerals.urine,
-                    ]))
+                    if (_isSectionVisible('Physical Generals'))
                       _buildPhysicalGeneralsSection(context, record),
 
                     // 7. Mental Generals
-                    if (_isSectionVisible('Mental Generals', [
-                      record.mentalGenerals.generalMentalState,
-                      record.mentalGenerals.disposition,
-                      record.mentalGenerals.anxiety,
-                      record.mentalGenerals.fears,
-                      record.mentalGenerals.sadnessGrief,
-                      record.mentalGenerals.anger,
-                      record.mentalGenerals.responseToStress,
-                    ]))
+                    if (_isSectionVisible('Mental Generals'))
                       _buildMentalGeneralsSection(context, record),
 
                     // 8. Lifestyle & Habits
-                    if (_isSectionVisible('Lifestyle', [
-                      record.lifestyleHabits.diet,
-                      record.lifestyleHabits.physicalActivity,
-                      record.lifestyleHabits.occupationWorkPattern,
-                      record.lifestyleHabits.financialOccupationalStressors,
-                      record.lifestyleHabits.otherHabits,
-                    ]))
+                    if (_isSectionVisible('Lifestyle'))
                       _buildLifestyleSection(context, record),
 
                     // 9. Clinical Examination & Vitals
-                    if (_isSectionVisible('Vitals & Exam', [
-                      record.clinicalExam.bloodPressure,
-                      record.clinicalExam.pulse,
-                      record.clinicalExam.temperature,
-                      record.clinicalExam.respiratoryRate,
-                      record.clinicalExam.spo2,
-                      record.clinicalExam.weightKg,
-                      record.clinicalExam.heightCm,
-                      record.clinicalExam.bmi,
-                      record.clinicalExam.generalAppearance,
-                      record.clinicalExam.respiratoryExamination,
-                      record.clinicalExam.cvsExamination,
-                      record.clinicalExam.abdominalExamination,
-                      record.clinicalExam.skinExamination,
-                    ]))
+                    if (_isSectionVisible('Vitals & Exam'))
                       _buildClinicalExamSection(context, record),
 
                     // 10. Miasmatic Analysis & Totality of Symptoms
-                    if (_isSectionVisible('Miasm & Totality', [
-                      record.miasmaticAnalysis.dominantMiasm,
-                      record.miasmaticAnalysis.secondaryMixedMiasm,
-                      record.caseTotality.totalityOfSymptoms,
-                      record.caseTotality.characteristicSymptoms,
-                      record.caseTotality.generals,
-                      record.caseTotality.finalRemedySelection,
-                      record.caseTotality.potency,
-                    ]))
+                    if (_isSectionVisible('Miasm & Totality'))
                       _buildMiasmAndTotalitySection(context, record),
 
                     // 11. Diagnosis & Working Assessment
-                    if (_isSectionVisible('Diagnosis', [
-                      record.clinicalAssessment.finalWorkingDiagnosis,
-                      record.clinicalAssessment.provisionalDiagnosis,
-                      record.clinicalAssessment.differentialDiagnosis,
-                      record.clinicalAssessment.clinicalRemarks,
-                    ]))
+                    if (_isSectionVisible('Diagnosis'))
                       _buildDiagnosisSection(context, record),
 
                     // 12. Baseline Prescription Plan
-                    if (_isSectionVisible('Prescription', [
-                      record.baselinePrescription.remedyName,
-                      record.baselinePrescription.potency,
-                      record.baselinePrescription.dose,
-                      record.baselinePrescription.repetitionFrequency,
-                      record.baselinePrescription.route,
-                      record.baselinePrescription.dietRegimenAdvice,
-                      record.baselinePrescription.lifestyleAdvice,
-                    ]))
+                    if (_isSectionVisible('Prescription'))
                       _buildPrescriptionSection(context, record),
 
                     // 13. Investigations & Diagnostic Reports
-                    if (_isSectionVisible('Investigations', [
-                      record.investigations.investigationName,
-                      record.investigations.reportSummary,
-                      record.investigations.normalAbnormal,
-                    ]))
+                    if (_isSectionVisible('Investigations'))
                       _buildInvestigationsSection(context, record),
 
                     // 14. Follow-Up & Outcome Notes
-                    if (_isSectionVisible('Outcome', [
-                      record.displayOutcome,
-                      record.outcomeDetails.degreeOfImprovement,
-                      record.outcomeDetails.treatmentDuration,
-                      record.followUpDetails.overallResponse,
-                      record.followUpDetails.followUpRemarks,
-                      record.followUpDetails.chiefComplaintChanges,
-                      record.followUpDetails.nextFollowUp,
-                    ]))
+                    if (_isSectionVisible('Outcome'))
                       _buildFollowUpSection(context, record),
 
                     const SizedBox(height: Spacing.sm),
