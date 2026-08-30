@@ -1,14 +1,19 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/app_database.dart';
+import '../../../core/database/database_provider.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/services/contact_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_confirm_dialog.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/whatsapp_template_picker.dart';
+import '../../visits/presentation/add_visit_dialog.dart';
 import '../providers/recall_provider.dart';
 import 'patient_profile_screen.dart';
 
@@ -105,13 +110,38 @@ class RecallScreen extends ConsumerWidget {
   }
 }
 
-class _RecallCard extends StatelessWidget {
+class _RecallCard extends ConsumerWidget {
   final RecallEntry entry;
 
   const _RecallCard({required this.entry});
 
+  Future<void> _confirmCancelFollowUp(BuildContext context, WidgetRef ref) async {
+    AppHaptics.medium();
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      title: 'Cancel Follow-up',
+      message:
+          'Are you sure you want to cancel the scheduled follow-up for ${entry.patient.name} (${entry.visit.disease})?',
+      confirmLabel: 'Cancel Follow-up',
+      isDestructive: true,
+    );
+
+    if (confirmed == true && context.mounted) {
+      final db = ref.read(databaseProvider);
+      await (db.update(db.visits)..where((t) => t.id.equals(entry.visit.id))).write(
+        const VisitsCompanion(nextFollowUpDate: Value(null)),
+      );
+      AppHaptics.medium();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Follow-up cancelled for ${entry.patient.name}.')),
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final p = entry.patient;
@@ -138,18 +168,54 @@ class _RecallCard extends StatelessWidget {
           builder: (_) => PatientProfileScreen(patient: p),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
+          // Left column: Patient identity, disease, clinic & last visit
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                   p.name,
-                  style: theme.textTheme.titleSmall,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
+                const SizedBox(height: 2),
+                Text(
+                  entry.visit.disease,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  entry.clinic.name,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Last visit ${Formatters.formatDate(entry.visit.visitDate)}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: Spacing.sm),
+          // Right column: Due status and compact action buttons
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
               Text(
                 label,
                 style: theme.textTheme.labelMedium?.copyWith(
@@ -157,46 +223,51 @@ class _RecallCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: Spacing.xs),
-          Text(
-            '${entry.visit.disease} · ${entry.clinic.name}',
-            style: theme.textTheme.labelMedium,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'Last visit ${Formatters.formatDate(entry.visit.visitDate)}',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: Spacing.sm),
-          Row(
-            children: [
-              const Spacer(),
-              IconButton.outlined(
-                onPressed: () {
-                  AppHaptics.selection();
-                  WhatsAppTemplatePickerSheet.show(
-                    context,
-                    patient: p,
-                    clinicName: entry.clinic.name,
-                    dueDate: entry.visit.nextFollowUpDate,
-                  );
-                },
-                icon: const Icon(Icons.chat_outlined, size: 18),
-                tooltip: 'WhatsApp reminder',
-              ),
-              const SizedBox(width: Spacing.sm),
-              IconButton.outlined(
-                onPressed: () {
-                  AppHaptics.selection();
-                  ContactService.call(p.phone);
-                },
-                icon: const Icon(Icons.phone_outlined, size: 18),
-                tooltip: 'Call patient',
+              const SizedBox(height: Spacing.sm),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton.outlined(
+                    onPressed: () => _confirmCancelFollowUp(context, ref),
+                    icon: Icon(Icons.event_busy_outlined, size: 18, color: scheme.error),
+                    tooltip: 'Cancel follow-up',
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  IconButton.outlined(
+                    onPressed: () {
+                      AppHaptics.selection();
+                      showDialog(
+                        context: context,
+                        builder: (_) => AddVisitDialog(patient: p),
+                      );
+                    },
+                    icon: Icon(Icons.event_available_outlined, size: 18, color: scheme.primary),
+                    tooltip: 'Record visit',
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  IconButton.outlined(
+                    onPressed: () {
+                      AppHaptics.selection();
+                      WhatsAppTemplatePickerSheet.show(
+                        context,
+                        patient: p,
+                        clinicName: entry.clinic.name,
+                        dueDate: entry.visit.nextFollowUpDate,
+                      );
+                    },
+                    icon: const Icon(Icons.chat_outlined, size: 18),
+                    tooltip: 'WhatsApp reminder',
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  IconButton.outlined(
+                    onPressed: () {
+                      AppHaptics.selection();
+                      ContactService.call(p.phone);
+                    },
+                    icon: const Icon(Icons.phone_outlined, size: 18),
+                    tooltip: 'Call patient',
+                  ),
+                ],
               ),
             ],
           ),

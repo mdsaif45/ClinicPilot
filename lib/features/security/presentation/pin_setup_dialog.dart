@@ -22,24 +22,8 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
   final _pinController = TextEditingController();
   final _confirmPinController = TextEditingController();
 
-  bool _enableBiometrics = true;
   int _autoLockMinutes = 5;
-  bool _biometricsAvailable = false;
   bool _submitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkBiometrics();
-  }
-
-  Future<void> _checkBiometrics() async {
-    final service = ref.read(securityServiceProvider);
-    final supported = await service.isBiometricsSupported();
-    if (mounted) {
-      setState(() => _biometricsAvailable = supported);
-    }
-  }
 
   @override
   void dispose() {
@@ -74,7 +58,7 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
 
       await notifier.setupPin(
         _pinController.text.trim(),
-        enableBiometrics: _enableBiometrics && _biometricsAvailable,
+        enableBiometrics: false,
         autoLockMinutes: _autoLockMinutes,
       );
 
@@ -83,7 +67,7 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.isChangingPin ? 'App PIN updated successfully' : 'App Lock enabled'),
+            content: Text(widget.isChangingPin ? '4-digit PIN updated successfully' : 'App Lock enabled'),
           ),
         );
       }
@@ -101,7 +85,7 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
   @override
   Widget build(BuildContext context) {
     return AppFormDialog(
-      title: widget.isChangingPin ? 'Change Security PIN' : 'Set Up App Lock PIN',
+      title: widget.isChangingPin ? 'Change 4-Digit PIN' : 'Set Up 4-Digit PIN',
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -117,74 +101,60 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              if (widget.isChangingPin) ...[
-                TextFormField(
-                  controller: _oldPinController,
-                  keyboardType: TextInputType.number,
-                  obscureText: true,
-                  maxLength: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Current PIN *',
-                    hintText: 'Enter current PIN',
-                    prefixIcon: Icon(Icons.lock_outline),
-                  ),
-                  validator: (v) =>
-                      v == null || v.trim().length < 4 ? 'Enter at least 4 digits' : null,
-                ),
-                const SizedBox(height: Spacing.sm),
-              ],
-
+            if (widget.isChangingPin) ...[
               TextFormField(
-                controller: _pinController,
+                controller: _oldPinController,
                 keyboardType: TextInputType.number,
                 obscureText: true,
-                maxLength: 6,
+                maxLength: 4,
                 decoration: const InputDecoration(
-                  labelText: 'New PIN (4-6 digits) *',
-                  hintText: 'Enter 4-6 digit numeric PIN',
-                  prefixIcon: Icon(Icons.pin_outlined),
+                  labelText: 'Current 4-Digit PIN *',
+                  prefixIcon: Icon(Icons.lock_outline),
                 ),
-                validator: (v) {
-                  final text = v?.trim() ?? '';
-                  if (text.length < 4 || text.length > 6) {
-                    return 'PIN must be between 4 and 6 digits';
-                  }
-                  return null;
-                },
+                validator: (v) =>
+                    v == null || v.trim().length != 4 ? 'Enter exactly 4 digits' : null,
               ),
               const SizedBox(height: Spacing.sm),
+            ],
 
-              TextFormField(
-                controller: _confirmPinController,
-                keyboardType: TextInputType.number,
-                obscureText: true,
-                maxLength: 6,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm PIN *',
-                  hintText: 'Re-enter same PIN',
-                  prefixIcon: Icon(Icons.check_circle_outline),
-                ),
-                validator: (v) {
-                  if (v?.trim() != _pinController.text.trim()) {
-                    return 'PINs do not match';
-                  }
-                  return null;
-                },
+            TextFormField(
+              controller: _pinController,
+              keyboardType: TextInputType.number,
+              obscureText: true,
+              maxLength: 4,
+              decoration: const InputDecoration(
+                labelText: 'New 4-Digit PIN *',
+                prefixIcon: Icon(Icons.pin_outlined),
               ),
-              const SizedBox(height: Spacing.md),
+              validator: (v) {
+                final text = v?.trim() ?? '';
+                if (text.length != 4 || int.tryParse(text) == null) {
+                  return 'PIN must be exactly 4 digits';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: Spacing.sm),
 
-              if (_biometricsAvailable) ...[
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: _enableBiometrics,
-                  onChanged: (val) => setState(() => _enableBiometrics = val),
-                  title: const Text('Enable Biometric Unlock'),
-                  subtitle: const Text('Unlock with Fingerprint or Face ID'),
-                  secondary: const Icon(Icons.fingerprint),
-                ),
-                const SizedBox(height: Spacing.sm),
-              ],
+            TextFormField(
+              controller: _confirmPinController,
+              keyboardType: TextInputType.number,
+              obscureText: true,
+              maxLength: 4,
+              decoration: const InputDecoration(
+                labelText: 'Confirm 4-Digit PIN *',
+                prefixIcon: Icon(Icons.check_circle_outline),
+              ),
+              validator: (v) {
+                if (v?.trim() != _pinController.text.trim()) {
+                  return 'PINs do not match';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: Spacing.md),
 
+            if (!widget.isChangingPin)
               PickerField<int>(
                 label: 'Auto-Lock Timeout',
                 value: _autoLockMinutes,
@@ -197,9 +167,9 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
                 ],
                 onChanged: (val) => setState(() => _autoLockMinutes = val),
               ),
-            ],
-          ),
+          ],
         ),
+      ),
     );
   }
 }

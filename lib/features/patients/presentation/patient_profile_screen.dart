@@ -10,6 +10,7 @@ import '../../../core/services/contact_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_confirm_dialog.dart';
 import '../../../core/widgets/chip_row.dart';
 import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -20,14 +21,19 @@ import '../../../core/widgets/money_text.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/segmented_tabs.dart';
 import '../../../core/widgets/whatsapp_template_picker.dart';
+import '../../cashmemo/presentation/new_cash_memo_dialog.dart';
 import '../../cashmemo/presentation/receipt_preview_dialog.dart';
 import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../../visits/presentation/add_visit_dialog.dart';
+import '../../visits/presentation/schedule_follow_up_dialog.dart';
 import '../../visits/providers/visit_provider.dart';
 import '../../growth/presentation/record_review_dialog.dart';
 import '../../clinical/presentation/clinical_case_sheet_screen.dart';
 import '../../clinical/presentation/master_case_taking_screen.dart';
+import '../../clinical/presentation/add_edit_complaint_dialog.dart';
+import '../../clinical/presentation/add_edit_prescription_dialog.dart';
+import '../../clinical/presentation/add_edit_investigation_dialog.dart';
 import '../../clinical/presentation/widgets/complaint_list_view.dart';
 import '../../clinical/presentation/widgets/prescription_list_view.dart';
 import '../../clinical/presentation/widgets/investigation_list_view.dart';
@@ -40,13 +46,137 @@ import 'edit_patient_dialog.dart';
 /// Uses segmented tabs rather than sub-navigation so identity, history, money
 /// and outcomes are each one tap away — the database already holds far more
 /// than the previous layout exposed.
-class PatientProfileScreen extends ConsumerWidget {
+class PatientProfileScreen extends ConsumerStatefulWidget {
   final Patient patient;
 
   const PatientProfileScreen({super.key, required this.patient});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PatientProfileScreen> createState() => _PatientProfileScreenState();
+}
+
+class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
+  int _selectedTabIndex = 0;
+
+  Widget _buildFloatingActionButton(BuildContext context, WidgetRef ref) {
+    switch (_selectedTabIndex) {
+      case 1: // Complaints
+        return FloatingActionButton.extended(
+          heroTag: 'fab-complaints',
+          onPressed: () {
+            AppHaptics.selection();
+            showDialog(
+              context: context,
+              builder: (_) => AddEditComplaintDialog(patientId: widget.patient.id),
+            );
+          },
+          icon: const Icon(Icons.healing_outlined),
+          label: const Text('Add Complaint'),
+        );
+      case 2: // Prescriptions
+        return FloatingActionButton.extended(
+          heroTag: 'fab-prescriptions',
+          onPressed: () {
+            AppHaptics.selection();
+            showDialog(
+              context: context,
+              builder: (_) => AddEditPrescriptionDialog(patientId: widget.patient.id),
+            );
+          },
+          icon: const Icon(Icons.medication_outlined),
+          label: const Text('Prescribe Remedy'),
+        );
+      case 3: // Visits
+        return FloatingActionButton.extended(
+          heroTag: 'fab-visits',
+          onPressed: () {
+            AppHaptics.selection();
+            showDialog(
+              context: context,
+              builder: (_) => AddVisitDialog(patient: widget.patient),
+            );
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('Add Visit'),
+        );
+      case 4: // Investigations
+        return FloatingActionButton.extended(
+          heroTag: 'fab-investigations',
+          onPressed: () {
+            AppHaptics.selection();
+            showDialog(
+              context: context,
+              builder: (_) => AddEditInvestigationDialog(patientId: widget.patient.id),
+            );
+          },
+          icon: const Icon(Icons.biotech_outlined),
+          label: const Text('Add Investigation'),
+        );
+      case 5: // Case Record
+        return FloatingActionButton.extended(
+          heroTag: 'fab-caserecord',
+          onPressed: () {
+            AppHaptics.selection();
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MasterCaseTakingScreen(patient: widget.patient),
+              ),
+            );
+          },
+          icon: const Icon(Icons.edit_note),
+          label: const Text('Case Taking'),
+        );
+      case 6: // Payments
+        return FloatingActionButton.extended(
+          heroTag: 'fab-payments',
+          onPressed: () {
+            AppHaptics.selection();
+            showDialog(
+              context: context,
+              builder: (_) => NewCashMemoDialog(initialPatient: widget.patient),
+            );
+          },
+          icon: const Icon(Icons.receipt_long_outlined),
+          label: const Text('New Cash Memo'),
+        );
+      case 7: // Follow-ups
+        return FloatingActionButton.extended(
+          heroTag: 'fab-followups',
+          onPressed: () {
+            AppHaptics.selection();
+            showDialog(
+              context: context,
+              builder: (_) => ScheduleFollowUpDialog(
+                patient: widget.patient,
+                defaultDisease: widget.patient.primaryDisease,
+                defaultClinicId: widget.patient.primaryClinicId,
+              ),
+            );
+          },
+          icon: const Icon(Icons.event_repeat_outlined),
+          label: const Text('Schedule Follow-up'),
+        );
+      case 0: // Information
+      case 8: // Insights
+      default:
+        return FloatingActionButton.extended(
+          heroTag: 'fab-default',
+          onPressed: () {
+            AppHaptics.selection();
+            showDialog(
+              context: context,
+              builder: (_) => AddVisitDialog(patient: widget.patient),
+            );
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('Add Visit'),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final patient = widget.patient;
     final visitsAsync = ref.watch(patientVisitsStreamProvider(patient.id));
     final memosAsync = ref.watch(cashMemosStreamProvider);
     final clinicsAsync = ref.watch(clinicsStreamProvider);
@@ -57,7 +187,8 @@ class PatientProfileScreen extends ConsumerWidget {
 
     final patientMemos = (memosAsync.value ?? [])
         .where((m) => m.memo.patientId == patient.id)
-        .toList();
+        .toList()
+      ..sort((a, b) => b.memo.memoDate.compareTo(a.memo.memoDate));
 
     final lifetimeRevenue =
         patientMemos.fold<double>(0.0, (s, m) => s + m.memo.total);
@@ -108,8 +239,6 @@ class PatientProfileScreen extends ConsumerWidget {
                     icon: Icons.local_hospital_outlined,
                     label: primaryClinic.name,
                   ),
-                // if ((patient.area ?? '').isNotEmpty)
-                //   _Badge(icon: Icons.place_outlined, label: patient.area!),
                 _Badge(
                   icon: Icons.person_outline,
                   label: '${patient.gender}, ${patient.age}y',
@@ -170,6 +299,10 @@ class PatientProfileScreen extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.only(top: Spacing.md, bottom: 96),
               child: SegmentedTabs(
+                selectedIndex: _selectedTabIndex,
+                onTabChanged: (i) {
+                  setState(() => _selectedTabIndex = i);
+                },
                 tabs: [
                   SegmentedTab(
                     icon: Icons.info_outline,
@@ -182,14 +315,14 @@ class PatientProfileScreen extends ConsumerWidget {
                     builder: (_) => ComplaintListView(patient: patient),
                   ),
                   SegmentedTab(
-                    icon: Icons.assignment_outlined,
-                    label: 'Case Record',
-                    builder: (_) => _ClinicalCaseRecordTab(patient: patient),
-                  ),
-                  SegmentedTab(
                     icon: Icons.medication_outlined,
                     label: 'Prescriptions',
                     builder: (_) => PrescriptionListView(patient: patient),
+                  ),
+                  SegmentedTab(
+                    icon: Icons.timeline,
+                    label: 'Visits',
+                    builder: (_) => _VisitsTab(visits: visits),
                   ),
                   SegmentedTab(
                     icon: Icons.biotech_outlined,
@@ -197,9 +330,9 @@ class PatientProfileScreen extends ConsumerWidget {
                     builder: (_) => InvestigationListView(patient: patient),
                   ),
                   SegmentedTab(
-                    icon: Icons.timeline,
-                    label: 'Visits',
-                    builder: (_) => _VisitsTab(visits: visits),
+                    icon: Icons.assignment_outlined,
+                    label: 'Case Record',
+                    builder: (_) => _ClinicalCaseRecordTab(patient: patient),
                   ),
                   SegmentedTab(
                     icon: Icons.receipt_long_outlined,
@@ -209,7 +342,7 @@ class PatientProfileScreen extends ConsumerWidget {
                   SegmentedTab(
                     icon: Icons.event_repeat_outlined,
                     label: 'Follow-ups',
-                    builder: (_) => _FollowUpsTab(visits: visits),
+                    builder: (_) => _FollowUpsTab(patient: patient, visits: visits),
                   ),
                   SegmentedTab(
                     icon: Icons.insights_outlined,
@@ -222,14 +355,7 @@ class PatientProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showDialog(
-          context: context,
-          builder: (_) => AddVisitDialog(patient: patient),
-        ),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Visit'),
-      ),
+      floatingActionButton: _buildFloatingActionButton(context, ref),
     );
   }
 }
@@ -743,9 +869,10 @@ class _InsightsTab extends StatelessWidget {
 /// show it, so an overdue patient was invisible unless the doctor happened to
 /// open the right visit.
 class _FollowUpsTab extends ConsumerWidget {
+  final Patient patient;
   final List<VisitWithDetails> visits;
 
-  const _FollowUpsTab({required this.visits});
+  const _FollowUpsTab({required this.patient, required this.visits});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -760,11 +887,22 @@ class _FollowUpsTab extends ConsumerWidget {
           a.visit.nextFollowUpDate!.compareTo(b.visit.nextFollowUpDate!));
 
     if (scheduled.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.event_repeat_outlined,
         title: 'No follow-ups scheduled',
-        message: 'Set a follow-up date when recording a visit and it '
-            'will appear here.',
+        message: 'Set a follow-up date when recording a visit or tap below to schedule a future check-in.',
+        actionLabel: 'Schedule Follow-up',
+        onAction: () {
+          AppHaptics.selection();
+          showDialog(
+            context: context,
+            builder: (_) => ScheduleFollowUpDialog(
+              patient: patient,
+              defaultDisease: patient.primaryDisease,
+              defaultClinicId: patient.primaryClinicId,
+            ),
+          );
+        },
       );
     }
 
@@ -829,6 +967,7 @@ class _FollowUpsTab extends ConsumerWidget {
           }
         },
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
               isOverdue ? Icons.warning_amber_outlined : Icons.event_available,
@@ -841,49 +980,114 @@ class _FollowUpsTab extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(Formatters.formatDate(due),
-                      style: theme.textTheme.titleSmall),
-                  const SizedBox(height: Spacing.xs),
                   Text(
-                    '${v.visit.disease} · ${v.clinic.name}',
-                    style: theme.textTheme.labelMedium,
+                    Formatters.formatDate(due),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    v.visit.disease,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    v.clinic.name,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: isOverdue
-                    ? theme.colorScheme.error
-                    : theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
             const SizedBox(width: Spacing.sm),
-            IconButton.outlined(
-              icon: const Icon(Icons.chat_outlined, size: 18),
-              tooltip: 'Send WhatsApp reminder',
-              onPressed: () {
-                AppHaptics.selection();
-                ContactService.openWhatsApp(
-                  phone: v.patient.whatsapp ?? v.patient.phone,
-                  message: ContactService.followUpMessage(
-                    patientName: v.patient.name,
-                    clinicName: v.clinic.name,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: isOverdue
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
                   ),
-                );
-              },
-            ),
-            const SizedBox(width: Spacing.xs),
-            IconButton.outlined(
-              icon: const Icon(Icons.phone_outlined, size: 18),
-              tooltip: 'Call Patient',
-              onPressed: () {
-                AppHaptics.selection();
-                ContactService.call(v.patient.phone);
-              },
+                ),
+                const SizedBox(height: Spacing.xs),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton.outlined(
+                      icon: Icon(Icons.event_busy_outlined, size: 18, color: theme.colorScheme.error),
+                      tooltip: 'Cancel follow-up',
+                      onPressed: () async {
+                        AppHaptics.medium();
+                        final confirmed = await AppConfirmDialog.show(
+                          context,
+                          title: 'Cancel Follow-up',
+                          message:
+                              'Are you sure you want to cancel the scheduled follow-up on ${Formatters.formatDate(due)} (${v.visit.disease})?',
+                          confirmLabel: 'Cancel Follow-up',
+                          isDestructive: true,
+                        );
+                        if (confirmed == true && context.mounted) {
+                          final db = ref.read(databaseProvider);
+                          await (db.update(db.visits)..where((t) => t.id.equals(v.visit.id))).write(
+                            const VisitsCompanion(nextFollowUpDate: Value(null)),
+                          );
+                          AppHaptics.medium();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Scheduled follow-up cancelled.')),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                    const SizedBox(width: Spacing.xs),
+                    IconButton.outlined(
+                      icon: Icon(Icons.event_available_outlined, size: 18, color: theme.colorScheme.primary),
+                      tooltip: 'Record visit',
+                      onPressed: () {
+                        AppHaptics.selection();
+                        showDialog(
+                          context: context,
+                          builder: (_) => AddVisitDialog(patient: patient),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: Spacing.xs),
+                    IconButton.outlined(
+                      icon: const Icon(Icons.chat_outlined, size: 18),
+                      tooltip: 'Send WhatsApp reminder',
+                      onPressed: () {
+                        AppHaptics.selection();
+                        WhatsAppTemplatePickerSheet.show(
+                          context,
+                          patient: patient,
+                          clinicName: v.clinic.name,
+                          dueDate: v.visit.nextFollowUpDate,
+                        );
+                      },
+                    ),
+                    const SizedBox(width: Spacing.xs),
+                    IconButton.outlined(
+                      icon: const Icon(Icons.phone_outlined, size: 18),
+                      tooltip: 'Call Patient',
+                      onPressed: () {
+                        AppHaptics.selection();
+                        ContactService.call(v.patient.phone);
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -1056,19 +1260,6 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
                           builder: (_) => ClinicalCaseSheetScreen(patient: patient),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  AppButton.outlined(
-                    label: 'Edit Case Record',
-                    icon: Icons.edit_outlined,
-                    fullWidth: true,
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).push(
-                        MaterialPageRoute(
-                          builder: (_) => MasterCaseTakingScreen(patient: patient),
                         ),
                       );
                     },

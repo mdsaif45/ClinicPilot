@@ -99,7 +99,7 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
             : (rawMax <= 10 ? 10.0 : (rawMax / 5).ceil() * 5.0))
         : (widget.metric == ActivityMetric.revenue ? 3000.0 : 10.0);
 
-    final midVal = maxVal * 0.35; // Google Fit mid grid height
+    final midVal = maxVal * 0.5; // Clean 50% mid grid height
 
     final maxLabel = widget.metric == ActivityMetric.revenue
         ? Formatters.formatCurrency(maxVal).replaceAll('.00', '').replaceAll('₹ ', '₹')
@@ -171,7 +171,7 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
 
               const SizedBox(width: 6),
 
-              // Right Y-Axis Labels (Max, Target, Mid)
+              // Right Y-Axis Labels with Collision Prevention (Max, Target, Mid)
               Padding(
                 padding: const EdgeInsets.only(top: 26, bottom: 34),
                 child: LayoutBuilder(
@@ -179,8 +179,16 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
                     final totalH = constraints.maxHeight;
                     final targetYRatio = (dailyTarget / maxVal).clamp(0.0, 1.0);
                     final targetTop = totalH * (1.0 - targetYRatio);
+                    final midTop = totalH * 0.5;
+
+                    // Dynamic collision avoidance
+                    final isTargetNearMax = targetTop < 18.0;
+                    final isTargetNearBottom = targetTop > (totalH - 18.0);
+                    final isMidNearTarget = dailyTarget > 0 && (targetTop - midTop).abs() < 22.0;
+                    final showMidLabel = !isMidNearTarget;
 
                     return Stack(
+                      clipBehavior: Clip.none,
                       children: [
                         // Max Label at Top
                         Align(
@@ -195,31 +203,33 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
                           ),
                         ),
                         // Target Benchmark Label
-                        Positioned(
-                          top: (targetTop - 6).clamp(16.0, totalH - 24.0),
-                          right: 0,
-                          child: Text(
-                            targetLabel,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: primaryColor,
+                        if (dailyTarget > 0 && !isTargetNearMax && !isTargetNearBottom)
+                          Positioned(
+                            top: (targetTop - 6).clamp(18.0, totalH - 18.0),
+                            right: 0,
+                            child: Text(
+                              targetLabel,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                              ),
                             ),
                           ),
-                        ),
-                        // Mid Label
-                        Positioned(
-                          bottom: totalH * 0.35 - 6,
-                          right: 0,
-                          child: Text(
-                            midLabel,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: scheme.onSurfaceVariant,
+                        // Mid Label (rendered only when safe clearance exists)
+                        if (showMidLabel)
+                          Positioned(
+                            top: midTop - 6,
+                            right: 0,
+                            child: Text(
+                              midLabel,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: scheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     );
                   },
@@ -359,19 +369,25 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
     // 1. Top and Mid Horizontal Grid Lines
     canvas.drawLine(Offset(0, topMargin), Offset(plotWidth, topMargin), gridPaint);
     final midY = baselineY - ((midVal / maxVal) * plotHeight);
-    canvas.drawLine(Offset(0, midY), Offset(plotWidth, midY), gridPaint);
-
-    // 2. Target Benchmark Dashed Horizontal Line
     final targetYRatio = (dailyTarget / maxVal).clamp(0.0, 1.0);
     final targetY = baselineY - (targetYRatio * plotHeight);
 
-    const dashWidth = 4.0;
-    const dashSpace = 3.0;
-    double startX = 0;
-    while (startX < plotWidth) {
-      final endX = math.min(startX + dashWidth, plotWidth);
-      canvas.drawLine(Offset(startX, targetY), Offset(endX, targetY), targetDashedPaint);
-      startX += dashWidth + dashSpace;
+    // Only draw mid grid line if it does not collide with the benchmark line
+    final isTargetNearMid = dailyTarget > 0 && (targetY - midY).abs() < 20.0;
+    if (!isTargetNearMid) {
+      canvas.drawLine(Offset(0, midY), Offset(plotWidth, midY), gridPaint);
+    }
+
+    // 2. Target Benchmark Dashed Horizontal Line
+    if (dailyTarget > 0) {
+      const dashWidth = 4.0;
+      const dashSpace = 3.0;
+      double startX = 0;
+      while (startX < plotWidth) {
+        final endX = math.min(startX + dashWidth, plotWidth);
+        canvas.drawLine(Offset(startX, targetY), Offset(endX, targetY), targetDashedPaint);
+        startX += dashWidth + dashSpace;
+      }
     }
 
     // 3. Draw Bottom Baseline Axis Line

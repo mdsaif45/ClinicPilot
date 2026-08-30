@@ -221,7 +221,6 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
                     child: CustomTextField(
                       controller: _doseController,
                       label: 'Dose',
-                      hint: 'e.g. 4 pills / 10 drops',
                       prefixIcon: Icons.medication_outlined,
                     ),
                   ),
@@ -268,7 +267,6 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
                     child: CustomTextField(
                       controller: _durationController,
                       label: 'Duration',
-                      hint: 'e.g. 7 days',
                       prefixIcon: Icons.timelapse_outlined,
                     ),
                   ),
@@ -280,7 +278,6 @@ class _AddEditPrescriptionDialogState extends ConsumerState<AddEditPrescriptionD
               CustomTextField(
                 controller: _instructionsController,
                 label: 'Timing / Instructions',
-                hint: 'e.g. Morning empty stomach',
                 prefixIcon: Icons.schedule_outlined,
               ),
               const SizedBox(height: Spacing.md),

@@ -99,13 +99,16 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        FilledButton(
           onPressed: _submitting ? null : _submit,
           child: _submitting
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : Text(isEditing ? 'Save Changes' : 'Add Clinic'),
         ),

@@ -106,13 +106,16 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        FilledButton(
           onPressed: _submitting ? null : _submit,
           child: _submitting
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : const Text('Save Expense'),
         ),
@@ -159,7 +162,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
             const SizedBox(height: Spacing.md),
             CustomTextField(
               controller: _subcategoryController,
-              label: 'Subcategory / Details (e.g. Camp Name)',
+              label: 'Subcategory / Details',
               prefixIcon: Icons.subtitles,
             ),
             const SizedBox(height: Spacing.md),

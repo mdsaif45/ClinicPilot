@@ -113,19 +113,22 @@ void main() {
       expect(find.text('Patient Identification'), findsOneWidget);
       expect(find.text('Save Case'), findsOneWidget);
 
-      final scrollable = find.byType(Scrollable).at(1);
+      // Verify all 4 stage tabs are rendered
+      expect(find.text('History'), findsOneWidget);
+      expect(find.text('Generals'), findsOneWidget);
+      expect(find.text('Analysis'), findsOneWidget);
+      expect(find.text('Prescription'), findsOneWidget);
 
-      final physicalFinder = find.widgetWithText(AppCard, 'Physical Generals');
-      await tester.scrollUntilVisible(physicalFinder, 300, scrollable: scrollable);
-      expect(physicalFinder, findsOneWidget);
+      // Tap Generals stage tab
+      await tester.tap(find.text('Generals'));
+      await tester.pumpAndSettle();
+      expect(find.text('Physical Generals'), findsOneWidget);
+      expect(find.text('Mental & Emotional Generals'), findsOneWidget);
 
-      final mentalFinder = find.widgetWithText(AppCard, 'Mental & Emotional Generals');
-      await tester.scrollUntilVisible(mentalFinder, 300, scrollable: scrollable);
-      expect(mentalFinder, findsOneWidget);
-
-      final miasmFinder = find.widgetWithText(AppCard, 'Miasmatic Analysis');
-      await tester.scrollUntilVisible(miasmFinder, 300, scrollable: scrollable);
-      expect(miasmFinder, findsOneWidget);
+      // Tap Analysis stage tab
+      await tester.tap(find.text('Analysis'));
+      await tester.pumpAndSettle();
+      expect(find.text('Miasmatic Analysis'), findsOneWidget);
     });
 
     testWidgets('renders EDIT mode when existing case record is present', (tester) async {
@@ -429,7 +432,8 @@ void main() {
       expect(find.text('Active Under Treatment'), findsOneWidget);
       expect(find.text('50% improved'), findsOneWidget);
       expect(find.text('3 months'), findsOneWidget);
-      expect(find.text('Edit Case Record'), findsOneWidget);
+      expect(find.text('View Full Case Sheet'), findsOneWidget);
+      expect(find.text('Case Taking'), findsOneWidget);
 
       // Verify NO raw JSON or brackets are visible in the UI
       expect(find.textContaining('{"finalStatus"'), findsNothing);

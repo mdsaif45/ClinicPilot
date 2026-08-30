@@ -149,11 +149,6 @@ class PrescriptionListView extends ConsumerWidget {
                 tooltip: 'Share Rx via WhatsApp',
                 onPressed: () => _shareViaWhatsApp(context, prescriptions),
               ),
-              AppButton.tonal(
-                label: 'Add Remedy',
-                icon: Icons.add,
-                onPressed: () => _openAddPrescription(context, prescriptions.length + 1),
-              ),
             ],
           ),
           const SizedBox(height: Spacing.sm),

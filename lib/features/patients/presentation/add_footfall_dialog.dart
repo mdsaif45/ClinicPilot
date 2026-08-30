@@ -87,10 +87,19 @@ class _AddFootfallDialogState extends ConsumerState<AddFootfallDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
+    final allClinics = ref.watch(clinicsStreamProvider).value ?? const [];
+    final clinics = allClinics.where((c) {
+      final name = c.name.toLowerCase();
+      return !name.contains('online') && !name.contains('teleconsultation');
+    }).toList();
 
-    if (_clinicId == null && clinics.isNotEmpty) {
-      _clinicId = clinics.first.id;
+    if ((_clinicId == null || clinics.every((c) => c.id != _clinicId)) && clinics.isNotEmpty) {
+      final active = ref.read(activeClinicProvider);
+      if (active != null && clinics.any((c) => c.id == active.id)) {
+        _clinicId = active.id;
+      } else {
+        _clinicId = clinics.first.id;
+      }
     }
 
     return AppFormDialog(

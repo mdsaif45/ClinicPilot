@@ -114,12 +114,6 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const Spacer(),
-              AppButton.tonal(
-                label: 'Add Lab Test',
-                icon: Icons.add,
-                onPressed: () => _openAddInvestigation(context),
-              ),
             ],
           ),
           const SizedBox(height: Spacing.sm),

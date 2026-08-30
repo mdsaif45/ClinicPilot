@@ -15,40 +15,18 @@ class LockScreen extends ConsumerStatefulWidget {
 class _LockScreenState extends ConsumerState<LockScreen> {
   String _enteredPin = '';
   String? _errorMessage;
-  bool _authenticating = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _tryBiometricUnlock();
-    });
-  }
-
-  Future<void> _tryBiometricUnlock() async {
-    final lockState = ref.read(appLockProvider);
-    if (!lockState.isEnabled || !lockState.isBiometricsEnabled || _authenticating) return;
-
-    setState(() => _authenticating = true);
-    final success = await ref.read(appLockProvider.notifier).unlockWithBiometrics();
-    if (!mounted) return;
-    setState(() => _authenticating = false);
-
-    if (success) {
-      AppHaptics.success();
-    }
-  }
 
   void _onDigitPressed(String digit) {
-    if (_enteredPin.length >= 6) return;
+    if (_enteredPin.length >= 4) return;
     AppHaptics.selection();
+    final newPin = _enteredPin + digit;
     setState(() {
-      _enteredPin += digit;
+      _enteredPin = newPin;
       _errorMessage = null;
     });
 
-    if (_enteredPin.length >= 4) {
-      _verifyPin();
+    if (newPin.length == 4) {
+      _verifyPin(newPin);
     }
   }
 
@@ -61,20 +39,27 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     });
   }
 
-  Future<void> _verifyPin() async {
-    final valid = await ref.read(appLockProvider.notifier).verifyAndUnlock(_enteredPin);
+  void _onClear() {
+    if (_enteredPin.isEmpty) return;
+    AppHaptics.light();
+    setState(() {
+      _enteredPin = '';
+      _errorMessage = null;
+    });
+  }
+
+  Future<void> _verifyPin(String pin) async {
+    final valid = await ref.read(appLockProvider.notifier).verifyAndUnlock(pin);
     if (!mounted) return;
 
     if (valid) {
       AppHaptics.success();
     } else {
-      if (_enteredPin.length >= 6) {
-        AppHaptics.error();
-        setState(() {
-          _errorMessage = 'Incorrect PIN';
-          _enteredPin = '';
-        });
-      }
+      AppHaptics.error();
+      setState(() {
+        _errorMessage = 'Incorrect 4-digit PIN';
+        _enteredPin = '';
+      });
     }
   }
 
@@ -82,7 +67,6 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final lockState = ref.watch(appLockProvider);
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -116,22 +100,22 @@ class _LockScreenState extends ConsumerState<LockScreen> {
               ),
               const SizedBox(height: Spacing.xs),
               Text(
-                'Enter security PIN to access clinical records',
+                'Enter 4-digit PIN to access clinical records',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: Spacing.xl),
 
-              // PIN Indicator Dots
+              // 4 PIN Indicator Dots
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(6, (index) {
+                children: List.generate(4, (index) {
                   final isFilled = index < _enteredPin.length;
                   return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    width: 16,
-                    height: 16,
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    width: 18,
+                    height: 18,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isFilled ? scheme.primary : scheme.surfaceContainerHighest,
@@ -157,7 +141,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
 
               const Spacer(flex: 3),
 
-              // Numeric Keypad Grid (1-9, Biometric/Clear, 0, Backspace)
+              // Numeric Keypad Grid (1-9, Clear, 0, Backspace)
               SizedBox(
                 width: 280,
                 child: Column(
@@ -171,13 +155,10 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        if (lockState.isBiometricsEnabled)
-                          _buildIconButton(
-                            icon: Icons.fingerprint,
-                            onTap: _tryBiometricUnlock,
-                          )
-                        else
-                          const SizedBox(width: 64, height: 64),
+                        _buildIconButton(
+                          icon: Icons.clear,
+                          onTap: _onClear,
+                        ),
                         _buildDigitButton('0'),
                         _buildIconButton(
                           icon: Icons.backspace_outlined,
@@ -239,7 +220,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         width: 64,
         height: 64,
         alignment: Alignment.center,
-        child: Icon(icon, size: 28, color: scheme.onSurfaceVariant),
+        child: Icon(icon, size: 26, color: scheme.onSurfaceVariant),
       ),
     );
   }

@@ -76,16 +76,21 @@ class AppConfirmDialog extends StatelessWidget {
         Spacing.md,
       ),
       actions: [
-        AppButton.text(
-          label: cancelLabel,
+        TextButton(
           onPressed: () => Navigator.of(context).pop(false),
+          child: Text(cancelLabel),
         ),
-        AppButton.primary(
-          label: confirmLabel,
-          isDestructive: isDestructive,
+        FilledButton(
+          style: isDestructive
+              ? FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Theme.of(context).colorScheme.onError,
+                )
+              : null,
           onPressed: () {
             onConfirm();
           },
+          child: Text(confirmLabel),
         ),
       ],
     );

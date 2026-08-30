@@ -160,7 +160,7 @@ void main() {
       expect(find.text('Remedy: Phosphorus 200C'), findsWidgets);
     });
 
-    testWidgets('renders structured clinical sections in readable format with search and chips', (tester) async {
+    testWidgets('renders structured clinical sections in readable format with section chips', (tester) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -168,9 +168,10 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest(record: testCaseRecord));
       await tester.pumpAndSettle();
 
-      // Top search box is available
-      expect(find.byType(TextField), findsOneWidget);
-      expect(find.text('Search symptoms, modalities, remedies...'), findsOneWidget);
+      // Top section quick-jump chips are available
+      expect(find.text('All'), findsOneWidget);
+      expect(find.text('Complaints'), findsWidgets);
+      expect(find.text('HPI'), findsOneWidget);
 
       // No editable form fields in clinical body
       expect(find.byType(TextFormField), findsNothing);
@@ -199,7 +200,7 @@ void main() {
       expect(find.text('Edit Master Case Record'), findsOneWidget);
     });
 
-    testWidgets('real-time search filters matching clinical sections', (tester) async {
+    testWidgets('quick-jump chip filters matching clinical section', (tester) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -207,8 +208,8 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest(record: testCaseRecord));
       await tester.pumpAndSettle();
 
-      // Enter search term "allergies"
-      await tester.enterText(find.byType(TextField), 'chemical hair');
+      // Tap "Past History" chip
+      await tester.tap(find.text('Past History'));
       await tester.pumpAndSettle();
 
       // Past History section is visible

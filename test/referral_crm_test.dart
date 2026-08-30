@@ -147,7 +147,7 @@ void main() {
       expect(find.text('Notes: Active partner referring chronic cases.'), findsNothing);
 
       // Tap to expand secondary details
-      await tester.tap(find.text('Active partner referring chronic cases.'));
+      await tester.tap(find.text('View contact & notes'));
       await tester.pumpAndSettle();
 
       // Now secondary details are revealed

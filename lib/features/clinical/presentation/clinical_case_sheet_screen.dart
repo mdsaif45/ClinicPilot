@@ -208,8 +208,6 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                   ),
                 ),
               ),
-              const Divider(height: 1),
-
               Expanded(
                 child: _selectedTab == 0
                     ? Column(
@@ -568,10 +566,13 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     );
   }
 
-  void _openEditor(BuildContext context) {
+  void _openEditor(BuildContext context, {int? sectionIndex}) {
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
-        builder: (_) => MasterCaseTakingScreen(patient: widget.patient),
+        builder: (_) => MasterCaseTakingScreen(
+          patient: widget.patient,
+          initialSectionIndex: sectionIndex,
+        ),
       ),
     );
   }
@@ -691,112 +692,54 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     );
   }
 
-  // --- Top Search & Section Quick-Jump Filter Header ---
+  // --- Top Section Quick-Jump Filter Header ---
   Widget _buildSearchAndFilterHeader(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.only(
-        left: Spacing.lg,
-        right: Spacing.lg,
-        top: Spacing.xs,
-        bottom: Spacing.sm,
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.lg,
+        vertical: Spacing.xs + 2,
       ),
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.4),
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Search Box
-          TextField(
-            controller: _searchController,
-            onChanged: (val) => setState(() => _searchQuery = val.trim()),
-            style: theme.textTheme.bodyMedium,
-            decoration: InputDecoration(
-              hintText: 'Search symptoms, modalities, remedies...',
-              hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
-              ),
-              prefixIcon: Icon(Icons.search, size: 20, color: scheme.primary),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: Spacing.md,
-                vertical: Spacing.sm,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: Radii.smAll,
-                borderSide: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: Radii.smAll,
-                borderSide: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: Radii.smAll,
-                borderSide: BorderSide(color: scheme.primary, width: 1.5),
-              ),
-            ),
-          ),
-          const SizedBox(height: Spacing.xs + 2),
+      color: scheme.surface,
+      child: SizedBox(
+        height: 32,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _sections.length,
+          separatorBuilder: (_, __) => const SizedBox(width: Spacing.xs),
+          itemBuilder: (context, index) {
+            final s = _sections[index];
+            final isSelected = _selectedSection == s;
 
-          // Horizontal Quick-Jump Chips
-          SizedBox(
-            height: 32,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _sections.length,
-              separatorBuilder: (_, __) => const SizedBox(width: Spacing.xs),
-              itemBuilder: (context, index) {
-                final s = _sections[index];
-                final isSelected = _selectedSection == s;
-
-                return ChoiceChip(
-                  showCheckmark: false,
-                  label: Text(s),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() => _selectedSection = s);
-                    }
-                  },
-                  labelStyle: TextStyle(
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
-                  ),
-                  selectedColor: scheme.primary,
-                  backgroundColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: Radii.pillAll,
-                    side: BorderSide(
-                      color: isSelected ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.4),
-                    ),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
-                  visualDensity: VisualDensity.compact,
-                );
+            return ChoiceChip(
+              showCheckmark: false,
+              label: Text(s),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() => _selectedSection = s);
+                }
               },
-            ),
-          ),
-        ],
+              labelStyle: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
+              ),
+              selectedColor: scheme.primary,
+              backgroundColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: Radii.pillAll,
+                side: BorderSide(
+                  color: isSelected ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.4),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
+              visualDensity: VisualDensity.compact,
+            );
+          },
+        ),
       ),
     );
   }
@@ -886,6 +829,11 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                   ],
                 ),
               ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 20),
+                tooltip: 'Edit Patient Identification (01)',
+                onPressed: () => _openEditor(context, sectionIndex: 0),
+              ),
             ],
           ),
           if (miasm.isNotEmpty || thermal.isNotEmpty || remedy.isNotEmpty || outcome.isNotEmpty) ...[
@@ -940,6 +888,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Chief Complaints',
       icon: Icons.healing_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 1),
       children: [
         for (final (i, c) in record.chiefComplaints.indexed) ...[
           if (c.complaint.isNotEmpty) ...[
@@ -1010,6 +959,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'History of Present Illness (HPI)',
       icon: Icons.history_edu_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 3),
       children: [
         _ClinicalRow(label: 'Chronological Development', value: hpi.chronologicalDevelopment),
         _ClinicalRow(label: 'First Occurrence & Trigger', value: hpi.firstOccurrence),
@@ -1039,6 +989,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Past Medical History & Allergies',
       icon: Icons.medical_information_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 4),
       children: [
         if (p.allergies.isNotEmpty)
           Container(
@@ -1104,6 +1055,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Family Medical History',
       icon: Icons.family_restroom_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 5),
       children: [
         _ClinicalRow(label: 'Father Health & Diseases', value: f.father),
         _ClinicalRow(label: 'Mother Health & Diseases', value: f.mother),
@@ -1133,6 +1085,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Physical Generals & Modalities',
       icon: Icons.accessibility_new_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 7),
       children: [
         _ClinicalRow(label: 'Thermal Reaction', value: pg.thermal),
         _ClinicalRow(label: 'Appetite & Hunger Timing', value: pg.appetite),
@@ -1164,6 +1117,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Mental Generals & Emotional Disposition',
       icon: Icons.psychology_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 8),
       children: [
         _ClinicalRow(label: 'General Mental State', value: mg.generalMentalState),
         _ClinicalRow(label: 'Disposition & Temperament', value: mg.disposition),
@@ -1189,6 +1143,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Lifestyle, Diet & Occupation',
       icon: Icons.nature_people_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 9),
       children: [
         _ClinicalRow(label: 'Dietary Habits', value: l.diet),
         _ClinicalRow(label: 'Physical Activity & Exercise', value: l.physicalActivity),
@@ -1218,6 +1173,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Clinical Examination & Physical Vitals',
       icon: Icons.monitor_heart_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 10),
       children: [
         if (ce.bloodPressure.isNotEmpty || ce.pulse.isNotEmpty || ce.temperature.isNotEmpty || ce.weightKg.isNotEmpty)
           Padding(
@@ -1282,6 +1238,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Miasmatic Analysis & Case Totality',
       icon: Icons.balance_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 11),
       children: [
         _ClinicalRow(label: 'Dominant Miasm', value: m.dominantMiasm),
         _ClinicalRow(label: 'Secondary / Mixed Miasm', value: m.secondaryMixedMiasm),
@@ -1312,6 +1269,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Diagnosis & Clinical Assessment',
       icon: Icons.fact_check_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 13),
       children: [
         _ClinicalRow(
           label: 'Final Working Diagnosis',
@@ -1341,6 +1299,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Baseline Prescription Plan',
       icon: Icons.local_pharmacy_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 14),
       children: [
         // Prescription Hero Card
         Container(
@@ -1406,6 +1365,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Diagnostic Investigations & Lab Tests',
       icon: Icons.biotech_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 15),
       children: [
         _ClinicalRow(label: 'Test Advised / Performed', value: inv.investigationName),
         _ClinicalRow(label: 'Report Findings Summary', value: inv.reportSummary),
@@ -1436,6 +1396,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     return _SectionCard(
       title: 'Treatment Outcome & Follow-Up',
       icon: Icons.insights_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 16),
       children: [
         _ClinicalRow(label: 'Current Clinical Status', value: record.displayOutcome),
         _ClinicalRow(label: 'Degree of Improvement', value: out.degreeOfImprovement),
@@ -1455,11 +1416,13 @@ class _SectionCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final List<Widget> children;
+  final VoidCallback? onEdit;
 
   const _SectionCard({
     required this.title,
     required this.icon,
     required this.children,
+    this.onEdit,
   });
 
   @override
@@ -1491,6 +1454,13 @@ class _SectionCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onEdit != null)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Edit $title',
+                  onPressed: onEdit,
+                ),
             ],
           ),
           const SizedBox(height: Spacing.sm),

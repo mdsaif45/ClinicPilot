@@ -26,11 +26,15 @@ class SegmentedTab {
 class SegmentedTabs extends StatefulWidget {
   final List<SegmentedTab> tabs;
   final int initialIndex;
+  final int? selectedIndex;
+  final ValueChanged<int>? onTabChanged;
 
   const SegmentedTabs({
     super.key,
     required this.tabs,
     this.initialIndex = 0,
+    this.selectedIndex,
+    this.onTabChanged,
   });
 
   @override
@@ -38,7 +42,8 @@ class SegmentedTabs extends StatefulWidget {
 }
 
 class _SegmentedTabsState extends State<SegmentedTabs> {
-  late int _index = widget.initialIndex.clamp(0, widget.tabs.length - 1);
+  late int _index = (widget.selectedIndex ?? widget.initialIndex)
+      .clamp(0, widget.tabs.length - 1);
   final ScrollController _pillScrollController = ScrollController();
   final List<GlobalKey> _pillKeys = [];
 
@@ -55,6 +60,10 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
       _pillKeys.clear();
       _pillKeys.addAll(List.generate(widget.tabs.length, (_) => GlobalKey()));
     }
+    if (widget.selectedIndex != null && widget.selectedIndex != _index) {
+      setState(() => _index = widget.selectedIndex!.clamp(0, widget.tabs.length - 1));
+      _scrollToPill(_index);
+    }
   }
 
   @override
@@ -68,6 +77,7 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
     if (_index == i) return;
     setState(() => _index = i);
     AppHaptics.selection();
+    widget.onTabChanged?.call(i);
     _scrollToPill(i);
   }
 

@@ -147,18 +147,6 @@ class GrowthHubScreen extends ConsumerWidget {
           onTap: () => context.push('/growth/overview'),
         ),
         _MenuCard(
-          icon: Icons.insights_outlined,
-          title: 'Practice Activity',
-          subtitle: 'Hourly OPD rush, weekly targets & monthly bubble heatmap',
-          onTap: () => context.push('/growth/activity'),
-        ),
-        _MenuCard(
-          icon: Icons.auto_stories_outlined,
-          title: 'Practice Journal',
-          subtitle: 'Chronological consultations, pharmacy invoices & receipts',
-          onTap: () => context.push('/growth/journal'),
-        ),
-        _MenuCard(
           icon: Icons.account_balance_wallet_outlined,
           title: 'Profit Summary',
           subtitle: 'Income, expenses, profit trend, best day',
@@ -174,16 +162,10 @@ class GrowthHubScreen extends ConsumerWidget {
           onTap: () => context.push('/comparison'),
         ),
         _MenuCard(
-          icon: Icons.share_outlined,
-          title: 'Referral Source',
-          subtitle: 'Where patients come from, and what each is worth',
-          onTap: () => context.push('/growth/referral'),
-        ),
-        _MenuCard(
-          icon: Icons.campaign_outlined,
-          title: 'Camp Manager & ROI',
-          subtitle: 'Free camp tracking, costs and patient follow-up revenue ROI',
-          onTap: () => context.push('/growth/camps'),
+          icon: Icons.insights_outlined,
+          title: 'Practice Activity',
+          subtitle: 'Hourly OPD rush, weekly targets & monthly bubble heatmap',
+          onTap: () => context.push('/growth/activity'),
         ),
         _MenuCard(
           icon: Icons.medical_services_outlined,
@@ -192,10 +174,10 @@ class GrowthHubScreen extends ConsumerWidget {
           onTap: () => context.push('/growth/diseases'),
         ),
         _MenuCard(
-          icon: Icons.store_outlined,
-          title: 'Referral Partner CRM',
-          subtitle: 'Pharmacies, labs, physios & local healthcare partner outreach',
-          onTap: () => context.push('/growth/referral-crm'),
+          icon: Icons.auto_stories_outlined,
+          title: 'Practice Journal',
+          subtitle: 'Chronological consultations, pharmacy invoices & receipts',
+          onTap: () => context.push('/growth/journal'),
         ),
         _MenuCard(
           icon: Icons.star_outline,
@@ -205,6 +187,24 @@ class GrowthHubScreen extends ConsumerWidget {
               ? '$reviewCount reviews • ${avgRating.toStringAsFixed(1)} ★'
               : 'View stats',
           onTap: () => _showGoogleReviewsSheet(context, reviews),
+        ),
+        _MenuCard(
+          icon: Icons.share_outlined,
+          title: 'Referral Source',
+          subtitle: 'Where patients come from, and what each is worth',
+          onTap: () => context.push('/growth/referral'),
+        ),
+        _MenuCard(
+          icon: Icons.store_outlined,
+          title: 'Referral Partner CRM',
+          subtitle: 'Pharmacies, labs, physios & local healthcare partner outreach',
+          onTap: () => context.push('/growth/referral-crm'),
+        ),
+        _MenuCard(
+          icon: Icons.campaign_outlined,
+          title: 'Camp Manager & ROI',
+          subtitle: 'Free camp tracking, costs and patient follow-up revenue ROI',
+          onTap: () => context.push('/growth/camps'),
         ),
       ],
     );

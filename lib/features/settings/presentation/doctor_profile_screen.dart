@@ -261,14 +261,22 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
     return AppFormDialog(
       title: 'Edit Doctor Profile',
       actions: [
-        AppButton.text(
-          label: 'Cancel',
+        TextButton(
           onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
         ),
-        AppButton.primary(
-          label: 'Save Profile',
-          loading: _saving,
+        FilledButton(
           onPressed: _saving ? null : _submit,
+          child: _saving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Save Profile'),
         ),
       ],
       child: Form(

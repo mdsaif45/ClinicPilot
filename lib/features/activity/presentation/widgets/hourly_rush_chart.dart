@@ -295,7 +295,7 @@ class _GoogleFitInteractiveChartPainter extends CustomPainter {
 
     for (int i = 0; i < totalSlots; i++) {
       final bin = bins[i];
-      final val = math.max(bin.revenue, bin.patients.toDouble());
+      final val = metric == ActivityMetric.revenue ? bin.revenue : bin.patients.toDouble();
       final ratio = (val / maxVal).clamp(0.0, 1.0);
       final barHeight = ratio * plotHeight * progress;
       final centerX = totalSlots > 1 ? (i / (totalSlots - 1.0)) * plotWidth : 0.0;

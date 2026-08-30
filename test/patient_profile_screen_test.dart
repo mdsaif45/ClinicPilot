@@ -289,4 +289,49 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Master Clinical Case Record'), findsOneWidget);
   });
+
+  testWidgets('PatientProfileScreen dynamically updates FAB per tab and opens ScheduleFollowUpDialog on Follow-ups tab',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          patientVisitsStreamProvider('p-1')
+              .overrideWith((ref) => Stream.value([testVisit])),
+          cashMemosStreamProvider
+              .overrideWith((ref) => Stream.value([testMemo])),
+          clinicsStreamProvider
+              .overrideWith((ref) => Stream.value([testClinic])),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: PatientProfileScreen(patient: testPatient),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Default Tab (Information): FAB says Add Visit
+    expect(find.text('Add Visit'), findsOneWidget);
+
+    // Switch to Follow-ups tab
+    await tester.tap(find.byIcon(Icons.event_repeat_outlined));
+    await tester.pumpAndSettle();
+
+    // FAB now dynamically switches to Schedule Follow-up
+    expect(find.text('Schedule Follow-up'), findsOneWidget);
+
+    // Tap Schedule Follow-up FAB
+    await tester.tap(find.text('Schedule Follow-up'));
+    await tester.pumpAndSettle();
+
+    // Verify ScheduleFollowUpDialog is shown with Quick presets and Target Date field
+    expect(find.text('Schedule Follow-up: Saifuddin'), findsOneWidget);
+    expect(find.text('Quick Follow-up Interval'), findsOneWidget);
+    expect(find.text('+7 Days (1 Wk)'), findsOneWidget);
+    expect(find.text('+15 Days (2 Wks)'), findsOneWidget);
+    expect(find.text('Target Follow-up Date *'), findsOneWidget);
+    expect(find.text('Review Objective / Notes'), findsOneWidget);
+    expect(find.text('Save Schedule'), findsOneWidget);
+  });
 }

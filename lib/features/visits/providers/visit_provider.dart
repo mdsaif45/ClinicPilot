@@ -157,6 +157,57 @@ class VisitNotifier extends StateNotifier<AsyncValue<void>> {
       );
     });
   }
+
+  Future<void> scheduleFollowUp({
+    required String patientId,
+    required DateTime nextFollowUpDate,
+    String? reason,
+    String? disease,
+    String? clinicId,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final latestVisits = await (_db.select(_db.visits)
+            ..where((tbl) => tbl.patientId.equals(patientId))
+            ..where((tbl) => tbl.isDeleted.equals(false))
+            ..orderBy([(tbl) => OrderingTerm.desc(tbl.visitDate)]))
+          .get();
+
+      if (latestVisits.isNotEmpty) {
+        final targetVisit = latestVisits.first;
+        final updatedNotes = reason != null && reason.trim().isNotEmpty
+            ? (targetVisit.notes != null && targetVisit.notes!.isNotEmpty
+                ? '${targetVisit.notes}\n[Follow-up Note: ${reason.trim()}]'
+                : 'Follow-up Note: ${reason.trim()}')
+            : targetVisit.notes;
+
+        await (_db.update(_db.visits)..where((tbl) => tbl.id.equals(targetVisit.id))).write(
+          VisitsCompanion(
+            nextFollowUpDate: Value(nextFollowUpDate),
+            notes: Value(updatedNotes),
+          ),
+        );
+      } else {
+        final defaultClinics = await _db.select(_db.clinics).get();
+        final finalClinicId = clinicId ?? (defaultClinics.firstOrNull?.id ?? 'default');
+        final finalDisease = (disease != null && disease.isNotEmpty) ? disease : 'General Consultation';
+        final id = IdGenerator.generate();
+
+        await _db.into(_db.visits).insert(
+          VisitsCompanion.insert(
+            id: id,
+            patientId: patientId,
+            clinicId: finalClinicId,
+            visitType: 'new',
+            disease: finalDisease,
+            visitDate: DateTime.now(),
+            nextFollowUpDate: Value(nextFollowUpDate),
+            notes: Value(reason),
+          ),
+        );
+      }
+    });
+  }
 }
 
 final visitNotifierProvider =

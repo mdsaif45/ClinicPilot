@@ -75,7 +75,7 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        FilledButton(
           onPressed: _saveChanges,
           child: const Text('Save Changes'),
         ),

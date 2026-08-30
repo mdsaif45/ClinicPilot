@@ -521,7 +521,7 @@ class _PartnerCardState extends State<_PartnerCard> {
             ],
           ),
 
-          // ── PROGRESSIVE DISCLOSURE AFFORDANCE / NOTE PREVIEW ──────
+          // ── PROGRESSIVE DISCLOSURE AFFORDANCE ─────────────────────
           if (hasSecondaryDetails) ...[
             const SizedBox(height: Spacing.xs),
             InkWell(
@@ -534,30 +534,14 @@ class _PartnerCardState extends State<_PartnerCard> {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
-                    if (hasNotes && !_expanded) ...[
-                      Icon(Icons.notes, size: 13, color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          contact.notes!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                    Text(
+                      _expanded ? 'Hide details' : 'View contact & notes',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ] else ...[
-                      Text(
-                        _expanded ? 'Hide details' : 'View contact & notes',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
+                    ),
+                    const Spacer(),
                     Icon(
                       _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                       size: 16,

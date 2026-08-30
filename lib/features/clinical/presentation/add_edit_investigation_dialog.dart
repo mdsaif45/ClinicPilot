@@ -276,7 +276,7 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
               // Diagnostic Lab Name
               CustomTextField(
                 controller: _labController,
-                label: 'Diagnostic Lab Name (e.g. Metropolis, Quest)',
+                label: 'Diagnostic Lab Name',
                 prefixIcon: Icons.local_hospital_outlined,
               ),
               const SizedBox(height: Spacing.md),

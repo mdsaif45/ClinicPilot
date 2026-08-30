@@ -47,10 +47,27 @@ class _ComplaintEntry {
   }
 }
 
+class _StageConfig {
+  final String title;
+  final IconData icon;
+  final int badgeCount;
+
+  const _StageConfig({
+    required this.title,
+    required this.icon,
+    required this.badgeCount,
+  });
+}
+
 class MasterCaseTakingScreen extends ConsumerStatefulWidget {
   final Patient patient;
+  final int? initialSectionIndex;
 
-  const MasterCaseTakingScreen({super.key, required this.patient});
+  const MasterCaseTakingScreen({
+    super.key,
+    required this.patient,
+    this.initialSectionIndex,
+  });
 
   @override
   ConsumerState<MasterCaseTakingScreen> createState() => _MasterCaseTakingScreenState();
@@ -62,8 +79,32 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
   bool _isDirty = false;
   bool _isPopulating = false;
   
-  // Default: keep 01 (index 0) expanded, collapse all other sections (1..18)
-  final Set<int> _collapsedSections = {for (int i = 1; i < 19; i++) i};
+  int _selectedStage = 0;
+
+  static const List<List<int>> _stageSectionIndices = [
+    [0, 1, 2, 3, 4, 5, 6],      // Phase 1: History (01 - 07)
+    [7, 8, 9],                  // Phase 2: Generals & Mind (08 - 10)
+    [10, 11, 12, 13],           // Phase 3: Analysis & Exam (11 - 14)
+    [14, 15, 16, 17, 18],       // Phase 4: Prescription & Plan (15 - 19)
+  ];
+
+  static const List<_StageConfig> _stages = [
+    _StageConfig(title: 'History', icon: Icons.history_edu_outlined, badgeCount: 7),
+    _StageConfig(title: 'Generals', icon: Icons.psychology_outlined, badgeCount: 3),
+    _StageConfig(title: 'Analysis', icon: Icons.analytics_outlined, badgeCount: 4),
+    _StageConfig(title: 'Prescription', icon: Icons.medication_outlined, badgeCount: 5),
+  ];
+
+  static int _getStageForSection(int sectionIndex) {
+    for (int s = 0; s < _stageSectionIndices.length; s++) {
+      if (_stageSectionIndices[s].contains(sectionIndex)) {
+        return s;
+      }
+    }
+    return 0;
+  }
+
+  late final Set<int> _collapsedSections;
   late final List<GlobalKey> _sectionKeys;
 
   static const List<String> _sectionTitles = [
@@ -638,6 +679,16 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
   @override
   void initState() {
     super.initState();
+    if (widget.initialSectionIndex != null) {
+      _selectedStage = _getStageForSection(widget.initialSectionIndex!);
+      _collapsedSections = {
+        for (int i = 0; i < 19; i++)
+          if (i != widget.initialSectionIndex) i,
+      };
+    } else {
+      _selectedStage = 0;
+      _collapsedSections = {for (int i = 1; i < 19; i++) i};
+    }
     _sectionKeys = List.generate(_sectionTitles.length, (_) => GlobalKey());
     _isPopulating = true;
     _initializeDefaultData();
@@ -648,6 +699,12 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
       _attachComplaintListeners(entry);
     }
     _isPopulating = false;
+
+    if (widget.initialSectionIndex != null && widget.initialSectionIndex! > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _jumpToSection(widget.initialSectionIndex!);
+      });
+    }
   }
 
   void _initializeDefaultData() {
@@ -1277,21 +1334,28 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
 
   void _jumpToSection(int index) {
     AppHaptics.selection();
-    // If target section is collapsed, expand it automatically on jump
-    if (_collapsedSections.contains(index)) {
+    final targetStage = _getStageForSection(index);
+    if (_selectedStage != targetStage) {
+      setState(() {
+        _selectedStage = targetStage;
+        _collapsedSections.remove(index);
+      });
+    } else if (_collapsedSections.contains(index)) {
       setState(() {
         _collapsedSections.remove(index);
       });
     }
-    final keyContext = _sectionKeys[index].currentContext;
-    if (keyContext != null) {
-      Scrollable.ensureVisible(
-        keyContext,
-        duration: Motion.base,
-        curve: Curves.easeInOut,
-        alignment: 0.05,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final keyContext = _sectionKeys[index].currentContext;
+      if (keyContext != null) {
+        Scrollable.ensureVisible(
+          keyContext,
+          duration: Motion.base,
+          curve: Curves.easeInOut,
+          alignment: 0.05,
+        );
+      }
+    });
   }
 
   void _toggleSection(int index) {
@@ -1739,16 +1803,21 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
             ),
             body: Column(
               children: [
-                // Sticky Quick Navigation Horizontal Bar
-                _buildQuickJumpBar(),
+                // 4-Phase Clinical Stage Switcher
+                _buildStageTabBar(),
                 const Divider(height: 1),
 
-                // Main Form ListView
+                // Main Form ListView for Active Stage
                 Expanded(
-                  child: ListView.builder(
+                  child: ListView(
+                    key: PageStorageKey('stage_$_selectedStage'),
                     padding: const EdgeInsets.only(top: Spacing.sm, bottom: Spacing.xxl),
-                    itemCount: _sectionTitles.length,
-                    itemBuilder: (context, index) => _buildSectionByIndex(index),
+                    children: [
+                      for (final index in _stageSectionIndices[_selectedStage])
+                        _buildSectionByIndex(index),
+                      const SizedBox(height: Spacing.md),
+                      _buildStageFooterButtons(context),
+                    ],
                   ),
                 ),
               ],
@@ -1759,57 +1828,74 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
     );
   }
 
-  Widget _buildQuickJumpBar() {
+  Widget _buildStageTabBar() {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
     return Container(
-      height: 48,
       color: scheme.surface,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
-        itemCount: _sectionTitles.length,
-        separatorBuilder: (_, __) => const SizedBox(width: Spacing.xs),
-        itemBuilder: (context, index) {
-          final isCollapsed = _collapsedSections.contains(index);
-          final numStr = (index + 1).toString().padLeft(2, '0');
-
-          return InkWell(
-            borderRadius: Radii.pillAll,
-            onTap: () => _jumpToSection(index),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
-              decoration: BoxDecoration(
-                color: isCollapsed ? scheme.surfaceContainerHighest.withValues(alpha: 0.5) : scheme.primaryContainer.withValues(alpha: 0.6),
-                borderRadius: Radii.pillAll,
-                border: Border.all(
-                  color: isCollapsed ? scheme.outlineVariant : scheme.primary.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    numStr,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isCollapsed ? scheme.onSurfaceVariant : scheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _sectionTitles[index],
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: isCollapsed ? scheme.onSurfaceVariant : scheme.onPrimaryContainer,
-                      fontWeight: isCollapsed ? FontWeight.normal : FontWeight.w600,
-                    ),
-                  ),
-                ],
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs + 2),
+      child: Row(
+        children: [
+          for (int i = 0; i < _stages.length; i++) ...[
+            if (i > 0) const SizedBox(width: 4),
+            Expanded(
+              child: _StageTabButton(
+                title: _stages[i].title,
+                icon: _stages[i].icon,
+                badgeCount: _stages[i].badgeCount,
+                isSelected: _selectedStage == i,
+                onTap: () {
+                  AppHaptics.selection();
+                  setState(() => _selectedStage = i);
+                },
               ),
             ),
-          );
-        },
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStageFooterButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.sm),
+      child: Row(
+        children: [
+          if (_selectedStage > 0) ...[
+            Expanded(
+              child: AppButton.tonal(
+                label: 'Back: ${_stages[_selectedStage - 1].title}',
+                icon: Icons.arrow_back,
+                onPressed: () {
+                  AppHaptics.selection();
+                  setState(() => _selectedStage -= 1);
+                },
+              ),
+            ),
+            const SizedBox(width: Spacing.md),
+          ],
+          if (_selectedStage < _stages.length - 1)
+            Expanded(
+              child: AppButton.primary(
+                label: 'Next: ${_stages[_selectedStage + 1].title}',
+                icon: Icons.arrow_forward,
+                onPressed: () {
+                  AppHaptics.selection();
+                  setState(() => _selectedStage += 1);
+                },
+              ),
+            )
+          else
+            Expanded(
+              child: AppButton.primary(
+                label: 'Save Case Changes',
+                icon: Icons.check,
+                loading: _saving,
+                onPressed: _saving ? null : _saveRecord,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -3161,6 +3247,73 @@ class _MasterCaseTakingScreenState extends ConsumerState<MasterCaseTakingScreen>
           ),
         ),
       ],
+    );
+  }
+}
+
+class _StageTabButton extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final int badgeCount;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _StageTabButton({
+    required this.title,
+    required this.icon,
+    required this.badgeCount,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: Radii.pillAll,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? scheme.primary
+              : scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          borderRadius: Radii.pillAll,
+          border: Border.all(
+            color: isSelected
+                ? scheme.primary
+                : scheme.outlineVariant.withValues(alpha: 0.5),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
+                  fontSize: 11.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

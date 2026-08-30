@@ -15,8 +15,9 @@ final patientComplaintsProvider =
   final query = db.select(db.complaints)
     ..where((t) => t.patientId.equals(patientId) & t.isDeleted.equals(false))
     ..orderBy([
-      (t) => OrderingTerm.asc(t.complaintIndex),
-      (t) => OrderingTerm.asc(t.createdAt),
+      (t) => OrderingTerm.desc(t.complaintDate),
+      (t) => OrderingTerm.desc(t.createdAt),
+      (t) => OrderingTerm.desc(t.complaintIndex),
     ]);
 
   return query.watch();

@@ -296,6 +296,41 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
 
     final isTablet = context.isTablet;
 
+    final recallLists = ref.watch(recallListProvider).value;
+    final overdueCount = recallLists == null
+        ? 0
+        : recallLists.overdue.length + recallLists.lapsed.length;
+    final hasUnreadAlerts = overdueCount > 0 || updateWaiting;
+
+    Widget buildNotificationIcon() {
+      return IconButton(
+        icon: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.notifications_none_outlined, size: 24),
+            if (hasUnreadAlerts)
+              Positioned(
+                right: 1,
+                top: 1,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: scheme.error,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        tooltip: 'Notifications',
+        onPressed: () {
+          AppHaptics.selection();
+          NotificationCenterSheet.show(context);
+        },
+      );
+    }
+
     if (isTablet) {
       return Scaffold(
         body: SafeArea(
@@ -331,7 +366,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                               icon: d.icon,
                               selectedIcon: d.selectedIcon,
                               selected:
-                                  navigationShell.currentIndex == d.index,
+                                    navigationShell.currentIndex == d.index,
                             ),
                       label: Text(d.label),
                     ),
@@ -343,16 +378,19 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (isDashboard)
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
                           Spacing.lg,
                           Spacing.md,
                           Spacing.lg,
                           0,
                         ),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: ClinicSwitcher(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const ClinicSwitcher(),
+                            buildNotificationIcon(),
+                          ],
                         ),
                       ),
                     Expanded(
@@ -369,12 +407,6 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
       );
     }
 
-    final recallLists = ref.watch(recallListProvider).value;
-    final overdueCount = recallLists == null
-        ? 0
-        : recallLists.overdue.length + recallLists.lapsed.length;
-    final hasUnreadAlerts = overdueCount > 0 || updateWaiting;
-
     return Scaffold(
       appBar: isDashboard
           ? AppBar(
@@ -387,32 +419,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: Spacing.sm),
-                  child: IconButton(
-                    icon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(Icons.notifications_none_outlined, size: 24),
-                        if (hasUnreadAlerts)
-                          Positioned(
-                            right: 1,
-                            top: 1,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: scheme.error,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    tooltip: 'Notifications',
-                    onPressed: () {
-                      AppHaptics.selection();
-                      NotificationCenterSheet.show(context);
-                    },
-                  ),
+                  child: buildNotificationIcon(),
                 ),
               ],
             )

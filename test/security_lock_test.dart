@@ -140,7 +140,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('ClinicPilot Locked'), findsOneWidget);
-      expect(find.text('Enter security PIN to access clinical records'), findsOneWidget);
+      expect(find.text('Enter 4-digit PIN to access clinical records'), findsOneWidget);
       expect(find.text('1'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
       expect(find.text('3'), findsOneWidget);
@@ -153,7 +153,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('renders SecuritySettingsCard and opens PinSetupDialog', (tester) async {
+    testWidgets('renders SecuritySettingsCard and navigates to SecurityPrivacyScreen', (tester) async {
       tester.view.physicalSize = const Size(1200, 2000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -178,14 +178,23 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('SECURITY & PRIVACY'), findsOneWidget);
-      expect(find.text('Enable App Lock'), findsOneWidget);
+      expect(find.text('Security & Privacy'), findsOneWidget);
+      expect(find.text('Off (protect patient records)'), findsOneWidget);
 
+      // Tap tile to open SecurityPrivacyScreen
+      await tester.tap(find.text('Security & Privacy'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Enable App Lock'), findsOneWidget);
+      expect(find.text('Protect patient records with a 4-digit PIN'), findsOneWidget);
+
+      // Tap Enable App Lock switch to open PinSetupDialog
       await tester.tap(find.text('Enable App Lock'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Set Up App Lock PIN'), findsOneWidget);
-      expect(find.text('New PIN (4-6 digits) *'), findsOneWidget);
-      expect(find.text('Confirm PIN *'), findsOneWidget);
+      expect(find.text('Set Up 4-Digit PIN'), findsOneWidget);
+      expect(find.text('New 4-Digit PIN *'), findsOneWidget);
+      expect(find.text('Confirm 4-Digit PIN *'), findsOneWidget);
     });
   });
 }

@@ -36,7 +36,6 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
   String _consultationType = 'clinic';
   String? _outcome;
   DateTime _visitDate = DateTime.now();
-  DateTime? _nextFollowUpDate;
 
   // Guards against a queued tap re-running _submit before the first write
   // finishes and the dialog closes.
@@ -92,13 +91,16 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        FilledButton(
           onPressed: _submitting ? null : _submit,
           child: _submitting
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : const Text('Save Visit'),
         ),
@@ -188,12 +190,6 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
               onChanged: (val) =>
                   setState(() => _outcome = val.isEmpty ? null : val),
             ),
-            DateField(
-              label: 'Next Follow-up (Optional)',
-              prefixIcon: Icons.event_repeat_outlined,
-              value: _nextFollowUpDate,
-              onChanged: (d) => setState(() => _nextFollowUpDate = d),
-            ),
           ],
         ),
       ),
@@ -226,7 +222,7 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
             consultationType: _consultationType,
             outcome: _outcome,
             visitDate: _visitDate,
-            nextFollowUpDate: _nextFollowUpDate,
+            nextFollowUpDate: null,
           );
     } catch (e) {
       if (mounted) {

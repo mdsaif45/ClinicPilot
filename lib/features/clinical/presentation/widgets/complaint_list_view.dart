@@ -94,12 +94,6 @@ class ComplaintListView extends ConsumerWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const Spacer(),
-              AppButton.tonal(
-                label: 'Add Complaint',
-                icon: Icons.add,
-                onPressed: () => _openAddComplaint(context, complaints.length + 1),
-              ),
             ],
           ),
           const SizedBox(height: Spacing.sm),
