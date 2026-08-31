@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../design/tokens.dart';
 import '../services/app_haptics.dart';
 import '../services/media_attachment_service.dart';
+import 'full_screen_image_viewer.dart';
 
 /// Interactive Before & After clinical image gallery for Complaints & Clinical Outcomes.
 class ImageComparisonGallery extends StatelessWidget {
@@ -48,49 +49,14 @@ class ImageComparisonGallery extends StatelessWidget {
     }
   }
 
-  void _previewImage(BuildContext context, String imagePath, String title) {
-    AppHaptics.selection();
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(Spacing.md),
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: Radii.lgAll,
-              ),
-              padding: const EdgeInsets.all(Spacing.md),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const SizedBox(height: Spacing.md),
-                  ClipRRect(
-                    borderRadius: Radii.mdAll,
-                    child: kIsWeb
-                        ? Image.network(imagePath, fit: BoxFit.contain, height: 360)
-                        : Image.file(File(imagePath), fit: BoxFit.contain, height: 360),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.of(ctx).pop(),
-            ),
-          ],
-        ),
-      ),
+  void _openFullScreenPreview(BuildContext context, {required bool isBefore, required int initialIndex}) {
+    final images = isBefore ? beforeImages : afterImages;
+    final title = isBefore ? 'Before Treatment Photo' : 'Follow-Up / After Photo';
+    FullScreenImageViewer.open(
+      context,
+      imagePaths: images,
+      initialIndex: initialIndex,
+      title: title,
     );
   }
 
@@ -123,7 +89,7 @@ class ImageComparisonGallery extends StatelessWidget {
                 readOnly: readOnly,
                 onAdd: () => _pickImageSection(context, true),
                 onRemove: (idx) => _removeImage(true, idx),
-                onPreview: (path) => _previewImage(context, path, 'Before Treatment Photo'),
+                onPreview: (idx) => _openFullScreenPreview(context, isBefore: true, initialIndex: idx),
               ),
             ),
             const SizedBox(width: Spacing.md),
@@ -137,7 +103,7 @@ class ImageComparisonGallery extends StatelessWidget {
                 readOnly: readOnly,
                 onAdd: () => _pickImageSection(context, false),
                 onRemove: (idx) => _removeImage(false, idx),
-                onPreview: (path) => _previewImage(context, path, 'Follow-Up / After Photo'),
+                onPreview: (idx) => _openFullScreenPreview(context, isBefore: false, initialIndex: idx),
               ),
             ),
           ],
@@ -155,7 +121,7 @@ class _PhotoSection extends StatelessWidget {
   final bool readOnly;
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
-  final ValueChanged<String> onPreview;
+  final ValueChanged<int> onPreview;
 
   const _PhotoSection({
     required this.title,
@@ -239,7 +205,7 @@ class _PhotoSection extends StatelessWidget {
                     alignment: Alignment.topRight,
                     children: [
                       GestureDetector(
-                        onTap: () => onPreview(path),
+                        onTap: () => onPreview(idx),
                         child: ClipRRect(
                           borderRadius: Radii.smAll,
                           child: Container(
@@ -251,22 +217,35 @@ class _PhotoSection extends StatelessWidget {
                                 : Image.file(
                                     File(path),
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 24),
+                                    errorBuilder: (_, __, ___) => Center(
+                                      child: Icon(
+                                        Icons.broken_image_outlined,
+                                        size: 24,
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                   ),
                           ),
                         ),
                       ),
                       if (!readOnly)
-                        GestureDetector(
-                          onTap: () => onRemove(idx),
-                          child: Container(
-                            margin: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: scheme.error,
-                              shape: BoxShape.circle,
+                        Positioned(
+                          top: 2,
+                          right: 2,
+                          child: GestureDetector(
+                            onTap: () => onRemove(idx),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: scheme.error,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close,
+                                size: 12,
+                                color: scheme.onError,
+                              ),
                             ),
-                            padding: const EdgeInsets.all(2),
-                            child: Icon(Icons.close, size: 12, color: scheme.onError),
                           ),
                         ),
                     ],

@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
+import '../../../../core/services/media_attachment_service.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/full_screen_image_viewer.dart';
 import '../add_edit_investigation_dialog.dart';
 import '../../providers/investigation_provider.dart';
 
@@ -431,7 +433,15 @@ class _InvestigationCard extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   onPressed: () {
                     AppHaptics.selection();
-                    // Open attachment
+                    if (isPdf) {
+                      MediaAttachmentService.openAttachment(path);
+                    } else {
+                      FullScreenImageViewer.open(
+                        context,
+                        imagePaths: [path],
+                        title: 'Lab Report: ${inv.testName}',
+                      );
+                    }
                   },
                 );
               }).toList(),
