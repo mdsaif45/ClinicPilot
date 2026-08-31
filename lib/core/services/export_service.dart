@@ -224,6 +224,147 @@ class ExportService {
       ]);
     }
 
+    // 6. Prescriptions Sheet
+    final prescriptionsSheet = excel['Prescriptions'];
+    final rxHeaders = [
+      'Prescription ID', 'Patient Code', 'Patient Name', 'Remedy Name',
+      'Potency', 'Vehicle', 'Dose', 'Frequency', 'Duration (Days)', 'Diet / Regimen Advice', 'Date',
+    ];
+    prescriptionsSheet.appendRow(rxHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(prescriptionsSheet, rxHeaders.length);
+
+    final prescriptions = await (_db.select(_db.prescriptions)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final r in prescriptions) {
+      final pCode = patientCodeById[r.patientId] ?? r.patientId;
+      final pName = patientNameById[r.patientId] ?? '';
+      prescriptionsSheet.appendRow([
+        _cellValue(r.id),
+        _cellValue(pCode),
+        _cellValue(pName),
+        _cellValue(r.remedyName),
+        _cellValue(r.potency),
+        _cellValue(r.vehicle ?? ''),
+        _cellValue(r.doseCount ?? ''),
+        _cellValue(r.frequency ?? ''),
+        _cellValue(r.durationDays ?? ''),
+        _cellValue(r.dietaryAdvice ?? ''),
+        _cellValue(r.createdAt),
+      ]);
+    }
+
+    // 7. Complaints Sheet
+    final complaintsSheet = excel['Complaints'];
+    final complaintHeaders = [
+      'Complaint ID', 'Patient Code', 'Patient Name', 'Complaint', 'Location',
+      'Side', 'Sensation', 'Severity (1-10)', 'Aggravation', 'Amelioration', 'Date',
+    ];
+    complaintsSheet.appendRow(complaintHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(complaintsSheet, complaintHeaders.length);
+
+    final complaints = await (_db.select(_db.complaints)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final comp in complaints) {
+      final pCode = patientCodeById[comp.patientId] ?? comp.patientId;
+      final pName = patientNameById[comp.patientId] ?? '';
+      complaintsSheet.appendRow([
+        _cellValue(comp.id),
+        _cellValue(pCode),
+        _cellValue(pName),
+        _cellValue(comp.complaintName),
+        _cellValue(comp.location ?? ''),
+        _cellValue(comp.side ?? ''),
+        _cellValue(comp.sensation ?? ''),
+        _cellValue(comp.severity),
+        _cellValue(comp.aggravatingFactors ?? ''),
+        _cellValue(comp.amelioratingFactors ?? ''),
+        _cellValue(comp.createdAt),
+      ]);
+    }
+
+    // 8. Investigations Sheet
+    final investigationsSheet = excel['Investigations'];
+    final investigationHeaders = [
+      'Test ID', 'Patient Code', 'Patient Name', 'Test Name',
+      'Category', 'Observed Value', 'Unit', 'Status', 'Date',
+    ];
+    investigationsSheet.appendRow(investigationHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(investigationsSheet, investigationHeaders.length);
+
+    final investigations = await (_db.select(_db.investigations)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final inv in investigations) {
+      final pCode = patientCodeById[inv.patientId] ?? inv.patientId;
+      final pName = patientNameById[inv.patientId] ?? '';
+      final val = inv.stringValue ?? (inv.numericValue?.toString() ?? '');
+      investigationsSheet.appendRow([
+        _cellValue(inv.id),
+        _cellValue(pCode),
+        _cellValue(pName),
+        _cellValue(inv.testName),
+        _cellValue(inv.testCategory),
+        _cellValue(val),
+        _cellValue(inv.unit ?? ''),
+        _cellValue(inv.flag),
+        _cellValue(inv.testDate),
+      ]);
+    }
+
+    // 9. Camps Sheet
+    final campsSheet = excel['Camps'];
+    final campHeaders = [
+      'Camp ID', 'Clinic', 'Camp Name', 'Location / Venue',
+      'Date', 'Cost / Budget', 'Attendance', 'Notes',
+    ];
+    campsSheet.appendRow(campHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(campsSheet, campHeaders.length);
+
+    final camps = await (_db.select(_db.camps)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final cmp in camps) {
+      final cName = clinicNameById[cmp.clinicId] ?? (cmp.clinicId ?? '');
+      campsSheet.appendRow([
+        _cellValue(cmp.id),
+        _cellValue(cName),
+        _cellValue(cmp.name),
+        _cellValue(cmp.location ?? ''),
+        _cellValue(cmp.date),
+        _cellValue(cmp.cost),
+        _cellValue(cmp.attendance),
+        _cellValue(cmp.notes ?? ''),
+      ]);
+    }
+
+    // 10. Referral Partners Sheet
+    final referralSheet = excel['Referral Partners'];
+    final referralHeaders = [
+      'Partner ID', 'Partner Name', 'Category', 'Contact Person',
+      'Phone', 'Address', 'Total Referrals', 'Visits Count', 'Notes',
+    ];
+    referralSheet.appendRow(referralHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    _styleHeaderRow(referralSheet, referralHeaders.length);
+
+    final referralContacts = await (_db.select(_db.referralContacts)
+          ..where((t) => t.isDeleted.equals(false)))
+        .get();
+    for (final refContact in referralContacts) {
+      referralSheet.appendRow([
+        _cellValue(refContact.id),
+        _cellValue(refContact.name),
+        _cellValue(refContact.category),
+        _cellValue(refContact.contactPerson ?? ''),
+        _cellValue(refContact.phone ?? ''),
+        _cellValue(refContact.address ?? ''),
+        _cellValue(refContact.referralCount),
+        _cellValue(refContact.visitCount),
+        _cellValue(refContact.notes ?? ''),
+      ]);
+    }
+
     final encoded = excel.encode();
     return encoded ?? [];
   }

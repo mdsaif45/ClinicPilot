@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'core/database/database_provider.dart';
 import 'core/providers/security_provider.dart';
 import 'core/router/app_router.dart';
+import 'core/services/periodic_backup_runner.dart';
 import 'core/theme/app_theme.dart';
 import 'features/security/presentation/lock_screen.dart';
 import 'features/settings/providers/theme_provider.dart';
@@ -54,6 +56,16 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPeriodicBackup();
+    });
+  }
+
+  void _checkPeriodicBackup() {
+    try {
+      final db = ref.read(databaseProvider);
+      PeriodicBackupRunner.checkAndRunPeriodicBackup(db);
+    } catch (_) {}
   }
 
   @override
@@ -69,6 +81,7 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
       notifier.onAppPaused();
     } else if (state == AppLifecycleState.resumed) {
       notifier.onAppResumed();
+      _checkPeriodicBackup();
     }
   }
 

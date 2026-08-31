@@ -111,4 +111,30 @@ class MediaAttachmentService {
       debugPrint('Error opening attachment: $e');
     }
   }
+
+  /// Returns the base directory where patient media and reports are stored
+  static Future<Directory?> getMediaRootDirectory() async {
+    if (kIsWeb) return null;
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      return Directory(p.join(appDir.path, 'clinic_pilot', 'patient_media'));
+    } catch (e) {
+      debugPrint('Error accessing media root: $e');
+      return null;
+    }
+  }
+
+  /// Returns a list of all existing media and attachment files
+  static Future<List<File>> getAllMediaFiles() async {
+    final rootDir = await getMediaRootDirectory();
+    if (rootDir == null || !await rootDir.exists()) return [];
+
+    final files = <File>[];
+    await for (final entity in rootDir.list(recursive: true, followLinks: false)) {
+      if (entity is File) {
+        files.add(entity);
+      }
+    }
+    return files;
+  }
 }
