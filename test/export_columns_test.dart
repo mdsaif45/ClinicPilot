@@ -3,16 +3,15 @@ import 'package:clinic_pilot/core/services/list_export_service.dart';
 import 'package:clinic_pilot/features/cashmemo/providers/cash_memo_provider.dart';
 import 'package:clinic_pilot/features/expenses/providers/expense_provider.dart';
 import 'package:clinic_pilot/features/finances/presentation/finances_screen.dart';
+import 'package:clinic_pilot/features/finances/providers/payment_method_breakdown_provider.dart';
 import 'package:clinic_pilot/features/growth/presentation/growth_screen.dart';
 import 'package:clinic_pilot/features/growth/providers/growth_provider.dart';
 import 'package:clinic_pilot/features/patients/presentation/patients_tab_screen.dart';
+import 'package:clinic_pilot/features/patients/providers/footfall_provider.dart';
+import 'package:clinic_pilot/features/patients/providers/recall_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Pins the exact CSV each screen's export produces. Uses the real
-/// ExportColumn spec each screen builds, run against hand-built
-/// Patient/CashMemoWithDetails/ExpenseWithClinic values - no database needed,
-/// since the spec functions take plain rows, not providers.
 void main() {
   group('patientsExportColumns', () {
     test('resolves the clinic id to a name, and falls back to the id itself',
@@ -54,16 +53,88 @@ void main() {
       expect(lines[0], contains('Clinic'));
       expect(lines[1], contains('14'));
       expect(lines[1], contains('Downtown Clinic'));
-      // Falls back to the raw id rather than blanking the cell, so a
-      // dangling clinic reference is still visible in the file.
       expect(lines[2], contains('ghost-clinic'));
     });
   });
 
-  group('cashMemoExportColumns / cashMemoExportTotals', () {
-    test('the totals row sums Total and Pending only', () {
+  group('followUpsExportColumns', () {
+    test('formats overdue and due status accurately', () {
       final patient = Patient(
-        id: 'p1', patientCode: 'P-1', serialNo: '1', name: 'A', phone: '1',
+        id: 'p1', patientCode: 'P-1', serialNo: '10', name: 'Zaid', phone: '9876543210',
+        whatsapp: null, age: 28, gender: 'Male', area: 'Banjara', address: null,
+        occupation: null, primaryClinicId: 'c1', primaryDisease: 'Asthma',
+        referralSource: null, notes: null, reviewAskedAt: null,
+        reviewGiven: false, isDeleted: false,
+        createdAt: DateTime(2026, 1, 1), updatedAt: DateTime(2026, 1, 1),
+      );
+      final clinic = Clinic(
+        id: 'c1', name: 'Downtown Clinic', address: null, phone: null,
+        monthlyRent: 0, defaultConsultationFee: 0, openDays: '1,2,3',
+        colorHex: '#0F5132', isActive: true, isDeleted: false,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      final visit = Visit(
+        id: 'v1', patientId: 'p1', clinicId: 'c1', visitType: 'New',
+        consultationType: 'Clinic', disease: 'Asthma', outcome: 'Improved',
+        visitDate: DateTime(2026, 8, 1), nextFollowUpDate: DateTime(2026, 8, 15),
+        isDeleted: false, createdAt: DateTime(2026, 8, 1),
+      );
+
+      final entry = RecallEntry(
+        patient: patient,
+        visit: visit,
+        clinic: clinic,
+        daysOverdue: 5,
+      );
+
+      final columns = followUpsExportColumns();
+      final csv = ListExportService.buildCsv([entry], columns);
+      expect(csv, contains('Overdue by 5 days'));
+      expect(csv, contains('Asthma'));
+      expect(csv, contains('Zaid'));
+    });
+  });
+
+  group('footfallsExportColumns', () {
+    test('formats walk-in lead with converted status', () {
+      final clinic = Clinic(
+        id: 'c1', name: 'Downtown Clinic', address: null, phone: null,
+        monthlyRent: 0, defaultConsultationFee: 0, openDays: '1,2,3',
+        colorHex: '#0F5132', isActive: true, isDeleted: false,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      final patient = Patient(
+        id: 'p1', patientCode: 'P-2026-00001', serialNo: '1', name: 'Imran Khan', phone: '9811001100',
+        whatsapp: null, age: 35, gender: 'Male', area: null, address: null,
+        occupation: null, primaryClinicId: 'c1', primaryDisease: 'Eczema',
+        referralSource: null, notes: null, reviewAskedAt: null,
+        reviewGiven: false, isDeleted: false,
+        createdAt: DateTime(2026, 1, 1), updatedAt: DateTime(2026, 1, 1),
+      );
+      final footfall = Footfall(
+        id: 'f1', clinicId: 'c1', name: 'Imran Khan', phone: '9811001100',
+        disease: 'Eczema', convertedPatientId: 'p1', notes: 'Walk-in inquiry',
+        date: DateTime(2026, 8, 1), isDeleted: false, createdAt: DateTime(2026, 8, 1),
+      );
+
+      final entry = FootfallWithDetails(
+        footfall: footfall,
+        clinic: clinic,
+        convertedPatient: patient,
+      );
+
+      final columns = footfallsExportColumns();
+      final csv = ListExportService.buildCsv([entry], columns);
+      expect(csv, contains('Converted to Patient'));
+      expect(csv, contains('P-2026-00001'));
+      expect(csv, contains('Imran Khan'));
+    });
+  });
+
+  group('cashMemoExportColumns / cashMemoExportTotals', () {
+    test('the totals row sums Total, Paid and Pending properly across enhanced columns', () {
+      final patient = Patient(
+        id: 'p1', patientCode: 'P-1', serialNo: '1', name: 'A', phone: '9800000000',
         whatsapp: null, age: 30, gender: 'Male', area: null, address: null,
         occupation: null, primaryClinicId: 'c1', primaryDisease: null,
         referralSource: null, notes: null, reviewAskedAt: null,
@@ -81,7 +152,7 @@ void main() {
             id: id, memoNumber: 'CM-$id', patientId: 'p1', clinicId: 'c1',
             visitId: null, consultationFee: total, medicineFee: 0,
             otherFee: 0, discount: 0, total: total, paidAmount: paid,
-            paymentMethod: 'Cash', notes: null, isDeleted: false,
+            paymentMethod: 'Cash', notes: 'Test note', isDeleted: false,
             memoDate: DateTime(2026, 3, 1), createdAt: DateTime(2026, 3, 1),
           );
 
@@ -99,8 +170,12 @@ void main() {
       );
       final lines = csv.trim().split('\n');
 
+      expect(lines[0], contains('Patient Code'));
+      expect(lines[0], contains('Serial No.'));
+      expect(lines[0], contains('Payment Status'));
       expect(lines.last, startsWith('TOTAL'));
       expect(lines.last, contains('800.0')); // Total: 500 + 300
+      expect(lines.last, contains('600.0')); // Paid: 500 + 100
       expect(lines.last, contains('200.0')); // Pending: 0 + 200
     });
   });
@@ -114,9 +189,9 @@ void main() {
         createdAt: DateTime(2026, 1, 1),
       );
       Expense expense(String id, double amount) => Expense(
-            id: id, clinicId: 'c1', category: 'Rent', subcategory: null,
+            id: id, clinicId: 'c1', category: 'Rent', subcategory: 'Main Branch',
             amount: amount, paymentMethod: 'Cash', isRecurring: true,
-            notes: null, date: DateTime(2026, 3, 1),
+            notes: 'Paid landlord', date: DateTime(2026, 3, 1),
             isDeleted: false, createdAt: DateTime(2026, 3, 1),
           );
 
@@ -132,7 +207,41 @@ void main() {
       );
       final lines = csv.trim().split('\n');
 
-      expect(lines.last, 'TOTAL,,,,4500.0,');
+      expect(lines[0], contains('Nature'));
+      expect(lines[0], contains('Notes / Vendor'));
+      expect(lines.last, 'TOTAL,,,,,4500.0,,,');
+    });
+  });
+
+  group('splitExportColumns / splitExportTotals', () {
+    test('summarizes payment methods and calculates totals', () {
+      const stats = [
+        PaymentMethodStat(
+          method: 'Cash',
+          totalCollected: 5000,
+          totalBilled: 5000,
+          count: 10,
+          percentage: 62.5,
+        ),
+        PaymentMethodStat(
+          method: 'UPI',
+          totalCollected: 3000,
+          totalBilled: 3000,
+          count: 6,
+          percentage: 37.5,
+        ),
+      ];
+
+      final csv = ListExportService.buildCsv(
+        stats,
+        splitExportColumns(),
+        totals: splitExportTotals(),
+      );
+      final lines = csv.trim().split('\n');
+
+      expect(lines[1], contains('Cash'));
+      expect(lines[2], contains('UPI'));
+      expect(lines.last, 'TOTAL,8000.0,8000.0,16,100.0%');
     });
   });
 

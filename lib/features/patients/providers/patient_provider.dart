@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
+import '../../../core/services/patient_export_service.dart';
 
 
 final patientSearchQueryProvider = StateProvider<String>((ref) => '');
@@ -340,3 +341,11 @@ final patientSearchProvider =
     );
   }).toList();
 });
+
+/// Rich aggregated patient data provider for complete exports across CSV, XLSX, and PDF.
+final patientExportRowsProvider =
+    FutureProvider.autoDispose<List<PatientExportRow>>((ref) async {
+  final db = ref.watch(databaseProvider);
+  return PatientExportService.fetchPatientExportRows(db);
+});
+

@@ -64,7 +64,9 @@ class ExportAction<T> extends StatelessWidget {
   final String? subtitle;
   final List<T> rows;
   final List<ExportColumn<T>> columns;
+  final List<ExportColumn<T>>? pdfColumns;
   final ExportTotals<T>? totals;
+  final Future<List<int>> Function()? customXlsxBuilder;
 
   const ExportAction({
     super.key,
@@ -73,7 +75,9 @@ class ExportAction<T> extends StatelessWidget {
     this.subtitle,
     required this.rows,
     required this.columns,
+    this.pdfColumns,
     this.totals,
+    this.customXlsxBuilder,
   });
 
   Future<void> _export(BuildContext context) async {
@@ -92,17 +96,19 @@ class ExportAction<T> extends StatelessWidget {
       ExportFormat.csv => ListExportService.encodeCsv(
           ListExportService.buildCsv(rows, columns, totals: totals),
         ),
-      ExportFormat.xlsx => ListExportService.buildXlsx(
-          rows,
-          columns,
-          totals: totals,
-          sheetName: screenSlug,
-        ),
+      ExportFormat.xlsx => customXlsxBuilder != null
+          ? await customXlsxBuilder!()
+          : ListExportService.buildXlsx(
+              rows,
+              columns,
+              totals: totals,
+              sheetName: screenSlug,
+            ),
       ExportFormat.pdf => await ListPdfExportService.buildRowsPdf(
           title: title,
           subtitle: subtitle,
           rows: rows,
-          columns: columns,
+          columns: pdfColumns ?? columns,
           totals: totals,
         ),
     };
