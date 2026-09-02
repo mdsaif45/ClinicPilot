@@ -7,7 +7,12 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../growth/providers/health_score_provider.dart';
 
 class ClinicHealthScoreCard extends ConsumerWidget {
-  const ClinicHealthScoreCard({super.key});
+  final EdgeInsetsGeometry? margin;
+
+  const ClinicHealthScoreCard({
+    super.key,
+    this.margin,
+  });
 
   void _showBreakdownSheet(BuildContext context, ClinicHealthScore score) {
     AppHaptics.selection();
@@ -38,12 +43,11 @@ class ClinicHealthScoreCard extends ConsumerWidget {
         };
 
         return AppCard(
-          margin: const EdgeInsets.fromLTRB(
-            Spacing.lg,
-            0,
-            Spacing.lg,
-            Spacing.md,
-          ),
+          margin: margin ??
+              const EdgeInsets.symmetric(
+                horizontal: Spacing.lg,
+                vertical: Spacing.xs,
+              ),
           onTap: () => _showBreakdownSheet(context, healthScore),
           child: Row(
             children: [

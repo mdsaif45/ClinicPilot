@@ -218,6 +218,9 @@ class ProfitSummaryScreen extends ConsumerWidget {
         touchTooltipData: LineTouchTooltipData(
           getTooltipColor: (_) => scheme.inverseSurface,
           tooltipRoundedRadius: 8,
+          fitInsideHorizontally: true,
+          fitInsideVertically: true,
+          tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
             final isPositive = s.y >= 0;
             return LineTooltipItem(

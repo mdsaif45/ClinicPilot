@@ -414,9 +414,12 @@ class GrowthScreen extends ConsumerWidget {
         touchTooltipData: LineTouchTooltipData(
           getTooltipColor: (_) => scheme.inverseSurface,
           tooltipRoundedRadius: 8,
+          fitInsideHorizontally: true,
+          fitInsideVertically: true,
+          tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
             return LineTooltipItem(
-              'Day ${s.x.toInt()}: ${s.y.toInt()} patients',
+              'Day ${s.x.toInt()}: ${s.y.toInt()} ${s.y.toInt() == 1 ? 'patient' : 'patients'}',
               TextStyle(
                 color: scheme.onInverseSurface,
                 fontWeight: FontWeight.w600,
@@ -530,6 +533,9 @@ class GrowthScreen extends ConsumerWidget {
         touchTooltipData: LineTouchTooltipData(
           getTooltipColor: (_) => scheme.inverseSurface,
           tooltipRoundedRadius: 8,
+          fitInsideHorizontally: true,
+          fitInsideVertically: true,
+          tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
             final isRevenue = s.barIndex == 0;
             return LineTooltipItem(

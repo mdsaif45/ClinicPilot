@@ -135,7 +135,6 @@ class GrowthHubScreen extends ConsumerWidget {
       // Standard top padding so first card never touches upper screen boundary
       padding: const EdgeInsets.fromLTRB(0, Spacing.md, 0, Spacing.xxl),
       children: [
-        const ClinicHealthScoreCard(),
         const PeriodSelector(),
         SettingsGroup(
           title: 'Practice Performance',
@@ -221,6 +220,8 @@ class GrowthHubScreen extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: Spacing.sm),
+        const ClinicHealthScoreCard(),
       ],
     );
   }
