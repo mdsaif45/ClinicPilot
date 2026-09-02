@@ -9,8 +9,9 @@ import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/custom_badge.dart';
 import '../../../../core/widgets/empty_state.dart';
-import '../add_edit_complaint_dialog.dart';
+import '../../../visits/providers/visit_provider.dart';
 import '../../providers/complaint_provider.dart';
+import '../add_edit_complaint_dialog.dart';
 
 class ComplaintListView extends ConsumerWidget {
   final Patient patient;
@@ -60,9 +61,11 @@ class ComplaintListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final complaintsAsync = ref.watch(patientComplaintsProvider(patient.id));
+    final visitsAsync = ref.watch(patientVisitsStreamProvider(patient.id));
     final theme = Theme.of(context);
 
     final complaints = complaintsAsync.value ?? [];
+    final visitCount = visitsAsync.value?.length ?? 0;
 
     if (complaints.isEmpty) {
       return Padding(
@@ -88,7 +91,9 @@ class ComplaintListView extends ConsumerWidget {
           Row(
             children: [
               Text(
-                '${complaints.length} ${complaints.length == 1 ? 'Complaint' : 'Complaints'}',
+                visitCount > 0
+                    ? '${complaints.length} ${complaints.length == 1 ? 'Complaint' : 'Complaints'} ($visitCount ${visitCount == 1 ? 'Visit' : 'Visits'})'
+                    : '${complaints.length} ${complaints.length == 1 ? 'Complaint' : 'Complaints'}',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -152,13 +157,62 @@ class _ComplaintCard extends StatelessWidget {
 
     return AppCard(
       margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(Spacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.sm + 4,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
+          // Top Row: Date & Visit Nature (Date-First Approach)
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.calendar_today_outlined, size: 13, color: scheme.primary),
+              const SizedBox(width: 5),
+              Text(
+                Formatters.formatDate(complaint.complaintDate ?? complaint.createdAt),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                ' • ${(complaint.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Visit'}',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onSelected: (val) {
+                    if (val == 'edit') onEdit();
+                    if (val == 'delete') onDelete();
+                  },
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(value: 'edit', child: Text('Edit Complaint')),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text('Delete', style: TextStyle(color: scheme.error)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.xs + 2),
+
+          // Main Title Row: Index + Complaint Name
+          Row(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -175,44 +229,18 @@ class _ComplaintCard extends StatelessWidget {
               ),
               const SizedBox(width: Spacing.xs),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      complaint.complaintName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '${Formatters.formatDate(complaint.complaintDate ?? complaint.createdAt)} • ${(complaint.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Visit'}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, size: 20),
-                onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  if (val == 'delete') onDelete();
-                },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit Complaint')),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete', style: TextStyle(color: scheme.error)),
+                child: Text(
+                  complaint.complaintName,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: Spacing.xs),
+          const SizedBox(height: Spacing.xs + 2),
 
-          // Badges: Severity + Side + Status Menu Pill + Photos count
+          // Badges: Severity + Status Menu Pill + Photos count
           Wrap(
             spacing: Spacing.xs,
             runSpacing: Spacing.xs,
@@ -222,11 +250,6 @@ class _ComplaintCard extends StatelessWidget {
                 label: 'Severity: ${complaint.severity}/10',
                 color: sevColor,
               ),
-              if (complaint.side != null && complaint.side != 'Not specified')
-                CustomBadge(
-                  label: complaint.side!,
-                  color: scheme.onSurfaceVariant,
-                ),
               PopupMenuButton<String>(
                 tooltip: 'Change Status',
                 onSelected: onStatusChanged,
@@ -247,95 +270,6 @@ class _ComplaintCard extends StatelessWidget {
                   color: scheme.tertiary,
                 ),
             ],
-          ),
-          const SizedBox(height: Spacing.sm),
-
-          // Location & Sensation
-          if ((complaint.location ?? '').isNotEmpty || (complaint.sensation ?? '').isNotEmpty) ...[
-            if ((complaint.location ?? '').isNotEmpty)
-              _FieldLine(
-                label: 'Location',
-                value: '${complaint.location!}${(complaint.extension ?? '').isNotEmpty ? ' → ${complaint.extension}' : ''}',
-              ),
-            if ((complaint.sensation ?? '').isNotEmpty)
-              _FieldLine(label: 'Sensation', value: complaint.sensation!),
-          ],
-
-          // Modalities Box
-          if ((complaint.aggravatingFactors ?? '').isNotEmpty || (complaint.amelioratingFactors ?? '').isNotEmpty) ...[
-            const SizedBox(height: Spacing.xs),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
-                borderRadius: Radii.smAll,
-                border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if ((complaint.aggravatingFactors ?? '').isNotEmpty)
-                    Text(
-                      '< Agg: ${complaint.aggravatingFactors}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.error,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  if ((complaint.amelioratingFactors ?? '').isNotEmpty)
-                    Text(
-                      '> Amel: ${complaint.amelioratingFactors}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-
-          if ((complaint.duration ?? '').isNotEmpty) ...[
-            const SizedBox(height: Spacing.xs),
-            _FieldLine(label: 'Duration', value: complaint.duration!),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _FieldLine extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _FieldLine({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label: ',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
           ),
         ],
       ),

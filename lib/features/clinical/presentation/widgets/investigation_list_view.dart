@@ -10,8 +10,9 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/full_screen_image_viewer.dart';
-import '../add_edit_investigation_dialog.dart';
+import '../../../visits/providers/visit_provider.dart';
 import '../../providers/investigation_provider.dart';
+import '../add_edit_investigation_dialog.dart';
 
 class InvestigationListView extends ConsumerStatefulWidget {
   final Patient patient;
@@ -74,9 +75,11 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
   @override
   Widget build(BuildContext context) {
     final investigationsAsync = ref.watch(patientInvestigationsProvider(widget.patient.id));
+    final visitsAsync = ref.watch(patientVisitsStreamProvider(widget.patient.id));
     final theme = Theme.of(context);
 
     final allInvestigations = investigationsAsync.value ?? [];
+    final visitCount = visitsAsync.value?.length ?? 0;
 
     if (allInvestigations.isEmpty) {
       return Padding(
@@ -110,7 +113,9 @@ class _InvestigationListViewState extends ConsumerState<InvestigationListView> {
           Row(
             children: [
               Text(
-                '${allInvestigations.length} ${allInvestigations.length == 1 ? 'Report' : 'Reports'}',
+                visitCount > 0
+                    ? '${allInvestigations.length} ${allInvestigations.length == 1 ? 'Report' : 'Reports'} ($visitCount ${visitCount == 1 ? 'Visit' : 'Visits'})'
+                    : '${allInvestigations.length} ${allInvestigations.length == 1 ? 'Report' : 'Reports'}',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -215,25 +220,13 @@ class _ParameterTrendCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: Spacing.xs),
-          Row(
-            children: [
-              Text(
-                'Latest: ${latest.numericValue} $unit',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurface,
-                ),
-              ),
-              const SizedBox(width: Spacing.sm),
+              const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: (delta > 0
-                          ? scheme.errorContainer
-                          : (delta < 0 ? scheme.tertiaryContainer : scheme.surfaceContainerHigh)),
+                  color: delta > 0
+                      ? scheme.errorContainer
+                      : (delta < 0 ? scheme.tertiaryContainer : scheme.surfaceContainerHighest),
                   borderRadius: Radii.smAll,
                 ),
                 child: Text(
@@ -247,6 +240,18 @@ class _ParameterTrendCard extends StatelessWidget {
                         : (delta < 0 ? scheme.onTertiaryContainer : scheme.onSurface)),
                     fontSize: 10,
                   ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.xs),
+          Row(
+            children: [
+              Text(
+                'Latest: ${latest.numericValue} $unit',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface,
                 ),
               ),
             ],
@@ -335,34 +340,38 @@ class _InvestigationCard extends StatelessWidget {
 
     return AppCard(
       margin: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.sm + 4,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Top Row: Date & Visit Nature (Date-First Approach) + Flag Badge + Actions
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      inv.testName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${inv.testCategory} • ${Formatters.formatDate(inv.testDate ?? inv.createdAt)} • ${(inv.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Test'}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+              Icon(Icons.calendar_today_outlined, size: 13, color: scheme.primary),
+              const SizedBox(width: 5),
+              Text(
+                Formatters.formatDate(inv.testDate ?? inv.createdAt),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
                 ),
               ),
+              Text(
+                ' • ${(inv.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Test'}',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                ),
+              ),
+              const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: flagBg,
                   borderRadius: Radii.smAll,
@@ -375,23 +384,51 @@ class _InvestigationCard extends StatelessWidget {
                   ),
                 ),
               ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, size: 20),
-                onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  if (val == 'delete') onDelete();
-                },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete', style: TextStyle(color: scheme.error)),
-                  ),
-                ],
+              const SizedBox(width: Spacing.xs),
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onSelected: (val) {
+                    if (val == 'edit') onEdit();
+                    if (val == 'delete') onDelete();
+                  },
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text('Delete', style: TextStyle(color: scheme.error)),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: Spacing.sm),
+          const SizedBox(height: Spacing.xs + 2),
+
+          // Main Title Row: Test Name + Category
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  inv.testName,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Text(
+                inv.testCategory,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.xs + 2),
 
           // Value & Reference Range
           Row(

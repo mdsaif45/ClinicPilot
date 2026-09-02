@@ -9,8 +9,9 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/empty_state.dart';
-import '../add_edit_prescription_dialog.dart';
+import '../../../visits/providers/visit_provider.dart';
 import '../../providers/prescription_provider.dart';
+import '../add_edit_prescription_dialog.dart';
 
 class PrescriptionListView extends ConsumerWidget {
   final Patient patient;
@@ -109,9 +110,11 @@ class PrescriptionListView extends ConsumerWidget {
     final prescriptionsAsync = visitId != null
         ? ref.watch(visitPrescriptionsProvider(visitId!))
         : ref.watch(patientPrescriptionsProvider(patient.id));
+    final visitsAsync = ref.watch(patientVisitsStreamProvider(patient.id));
     final theme = Theme.of(context);
 
     final prescriptions = prescriptionsAsync.value ?? [];
+    final visitCount = visitsAsync.value?.length ?? 0;
 
     if (prescriptions.isEmpty) {
       return Padding(
@@ -136,16 +139,21 @@ class PrescriptionListView extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Text(
-                '${prescriptions.length} ${prescriptions.length == 1 ? 'Remedy' : 'Remedies'} Prescribed',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  visitCount > 0
+                      ? '${prescriptions.length} ${prescriptions.length == 1 ? 'Remedy' : 'Remedies'} Prescribed ($visitCount ${visitCount == 1 ? 'Visit' : 'Visits'})'
+                      : '${prescriptions.length} ${prescriptions.length == 1 ? 'Remedy' : 'Remedies'} Prescribed',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-              const Spacer(),
               IconButton(
                 icon: const Icon(Icons.share_outlined, size: 20),
                 tooltip: 'Share Rx via WhatsApp',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
                 onPressed: () => _shareViaWhatsApp(context, prescriptions),
               ),
             ],
@@ -183,12 +191,77 @@ class _PrescriptionCard extends StatelessWidget {
 
     return AppCard(
       margin: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.sm + 4,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row: Remedy Name (Italic) + Potency Badge + Actions
+          // Top Row: Date & Visit Nature (Date-First Approach) + Potency Badge + Actions
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.calendar_today_outlined, size: 13, color: scheme.primary),
+              const SizedBox(width: 5),
+              Text(
+                Formatters.formatDate(rx.prescriptionDate ?? rx.createdAt),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                ' • ${(rx.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Rx'}',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer,
+                  borderRadius: Radii.smAll,
+                ),
+                child: Text(
+                  rx.potency,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: scheme.onSecondaryContainer,
+                  ),
+                ),
+              ),
+              const SizedBox(width: Spacing.xs),
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onSelected: (val) {
+                    if (val == 'edit') onEdit();
+                    if (val == 'delete') onDelete();
+                  },
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text('Delete', style: TextStyle(color: scheme.error)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.xs + 2),
+
+          // Main Title Row: Rx Index + Remedy Name
+          Row(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -204,58 +277,18 @@ class _PrescriptionCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: Spacing.sm),
+              const SizedBox(width: Spacing.xs),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      rx.remedyName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '${Formatters.formatDate(rx.prescriptionDate ?? rx.createdAt)} • ${(rx.isBaseline ?? true) ? 'Initial Baseline' : 'Follow-Up Rx'}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: scheme.secondaryContainer,
-                  borderRadius: Radii.smAll,
-                ),
                 child: Text(
-                  rx.potency,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: scheme.onSecondaryContainer,
+                  rx.remedyName,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, size: 20),
-                onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  if (val == 'delete') onDelete();
-                },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete', style: TextStyle(color: scheme.error)),
-                  ),
-                ],
               ),
             ],
           ),
-          const SizedBox(height: Spacing.sm),
+          const SizedBox(height: Spacing.xs + 2),
 
           // Posology details: Dose, Frequency, Vehicle
           Wrap(

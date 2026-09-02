@@ -6,14 +6,14 @@ import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/period_selector.dart';
 import '../../dashboard/presentation/widgets/clinic_health_score_card.dart';
 import '../providers/growth_provider.dart';
 import '../providers/profit_provider.dart';
 import '../providers/review_provider.dart';
 
-/// Landing screen for the Growth tab.
+/// Landing screen for the Growth tab with categorized sections.
 class GrowthHubScreen extends ConsumerWidget {
   const GrowthHubScreen({super.key});
 
@@ -137,74 +137,89 @@ class GrowthHubScreen extends ConsumerWidget {
       children: [
         const ClinicHealthScoreCard(),
         const PeriodSelector(),
-        _MenuCard(
-          icon: Icons.trending_up,
-          title: 'Growth Overview',
-          subtitle: 'New and repeat patients, trend, quick stats',
-          trailing: growth == null
-              ? null
-              : '${growth.totalNewPatients} new',
-          onTap: () => context.push('/growth/overview'),
+        SettingsGroup(
+          title: 'Practice Performance',
+          children: [
+            _GrowthHubTile(
+              icon: Icons.trending_up,
+              title: 'Growth Overview',
+              subtitle: 'New and repeat patients, trend, quick stats',
+              trailing: growth == null
+                  ? null
+                  : '${growth.totalNewPatients} new',
+              onTap: () => context.push('/growth/overview'),
+            ),
+            _GrowthHubTile(
+              icon: Icons.account_balance_wallet_outlined,
+              title: 'Profit Summary',
+              subtitle: 'Income, expenses, profit trend, best day',
+              trailing: profit == null
+                  ? null
+                  : Formatters.formatCurrency(profit.netProfit),
+              onTap: () => context.push('/growth/profit'),
+            ),
+            _GrowthHubTile(
+              icon: Icons.compare_arrows,
+              title: 'Clinic Comparison',
+              subtitle: 'Revenue, profit and patients per clinic',
+              onTap: () => context.push('/comparison'),
+            ),
+            _GrowthHubTile(
+              icon: Icons.insights_outlined,
+              title: 'Practice Activity',
+              subtitle: 'Hourly OPD rush, weekly targets & monthly bubble heatmap',
+              onTap: () => context.push('/growth/activity'),
+            ),
+          ],
         ),
-        _MenuCard(
-          icon: Icons.account_balance_wallet_outlined,
-          title: 'Profit Summary',
-          subtitle: 'Income, expenses, profit trend, best day',
-          trailing: profit == null
-              ? null
-              : Formatters.formatCurrency(profit.netProfit),
-          onTap: () => context.push('/growth/profit'),
+        SettingsGroup(
+          title: 'Clinical Insights',
+          children: [
+            _GrowthHubTile(
+              icon: Icons.medical_services_outlined,
+              title: 'Disease Analytics',
+              subtitle: 'Revenue per condition, patient volume and repeat retention',
+              onTap: () => context.push('/growth/diseases'),
+            ),
+            _GrowthHubTile(
+              icon: Icons.auto_stories_outlined,
+              title: 'Practice Journal',
+              subtitle: 'Chronological consultations, pharmacy invoices & receipts',
+              onTap: () => context.push('/growth/journal'),
+            ),
+          ],
         ),
-        _MenuCard(
-          icon: Icons.compare_arrows,
-          title: 'Clinic Comparison',
-          subtitle: 'Revenue, profit and patients per clinic',
-          onTap: () => context.push('/comparison'),
-        ),
-        _MenuCard(
-          icon: Icons.insights_outlined,
-          title: 'Practice Activity',
-          subtitle: 'Hourly OPD rush, weekly targets & monthly bubble heatmap',
-          onTap: () => context.push('/growth/activity'),
-        ),
-        _MenuCard(
-          icon: Icons.medical_services_outlined,
-          title: 'Disease Analytics',
-          subtitle: 'Revenue per condition, patient volume and repeat retention',
-          onTap: () => context.push('/growth/diseases'),
-        ),
-        _MenuCard(
-          icon: Icons.auto_stories_outlined,
-          title: 'Practice Journal',
-          subtitle: 'Chronological consultations, pharmacy invoices & receipts',
-          onTap: () => context.push('/growth/journal'),
-        ),
-        _MenuCard(
-          icon: Icons.star_outline,
-          title: 'Google Reviews & Reputation',
-          subtitle: 'Track positive patient reviews and 5-star Google rating',
-          trailing: reviewCount > 0
-              ? '$reviewCount reviews • ${avgRating.toStringAsFixed(1)} ★'
-              : 'View stats',
-          onTap: () => _showGoogleReviewsSheet(context, reviews),
-        ),
-        _MenuCard(
-          icon: Icons.share_outlined,
-          title: 'Referral Source',
-          subtitle: 'Where patients come from, and what each is worth',
-          onTap: () => context.push('/growth/referral'),
-        ),
-        _MenuCard(
-          icon: Icons.store_outlined,
-          title: 'Referral Partner CRM',
-          subtitle: 'Pharmacies, labs, physios & local healthcare partner outreach',
-          onTap: () => context.push('/growth/referral-crm'),
-        ),
-        _MenuCard(
-          icon: Icons.campaign_outlined,
-          title: 'Camp Manager & ROI',
-          subtitle: 'Free camp tracking, costs and patient follow-up revenue ROI',
-          onTap: () => context.push('/growth/camps'),
+        SettingsGroup(
+          title: 'Patient Acquisition & Reputation',
+          children: [
+            _GrowthHubTile(
+              icon: Icons.star_outline,
+              title: 'Google Reviews & Reputation',
+              subtitle: 'Track positive patient reviews and 5-star Google rating',
+              trailing: reviewCount > 0
+                  ? '$reviewCount reviews • ${avgRating.toStringAsFixed(1)} ★'
+                  : 'View stats',
+              onTap: () => _showGoogleReviewsSheet(context, reviews),
+            ),
+            _GrowthHubTile(
+              icon: Icons.share_outlined,
+              title: 'Referral Source',
+              subtitle: 'Where patients come from, and what each is worth',
+              onTap: () => context.push('/growth/referral'),
+            ),
+            _GrowthHubTile(
+              icon: Icons.store_outlined,
+              title: 'Referral Partner CRM',
+              subtitle: 'Pharmacies, labs, physios & local healthcare partner outreach',
+              onTap: () => context.push('/growth/referral-crm'),
+            ),
+            _GrowthHubTile(
+              icon: Icons.campaign_outlined,
+              title: 'Camp Manager & ROI',
+              subtitle: 'Free camp tracking, costs and patient follow-up revenue ROI',
+              onTap: () => context.push('/growth/camps'),
+            ),
+          ],
         ),
       ],
     );
@@ -259,14 +274,14 @@ class _ReviewStatBox extends StatelessWidget {
   }
 }
 
-class _MenuCard extends StatelessWidget {
+class _GrowthHubTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
   final String? trailing;
   final VoidCallback onTap;
 
-  const _MenuCard({
+  const _GrowthHubTile({
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -279,67 +294,68 @@ class _MenuCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return AppCard(
-      margin: const EdgeInsets.symmetric(
-        horizontal: Spacing.lg,
-        vertical: Spacing.xs + 1,
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: Spacing.lg,
-        vertical: Spacing.md,
-      ),
+    return InkWell(
       onTap: () {
         AppHaptics.selection();
         onTap();
       },
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(Spacing.sm),
-            decoration: BoxDecoration(
-              color: scheme.primaryContainer.withValues(alpha: 0.5),
-              borderRadius: Radii.mdAll,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.md,
+          vertical: Spacing.sm + 2,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: scheme.primaryContainer.withValues(alpha: 0.6),
+                borderRadius: Radii.smAll,
+              ),
+              child: Icon(icon, color: scheme.primary, size: 20),
             ),
-            child: Icon(icon, color: scheme.primary, size: 22),
-          ),
-          const SizedBox(width: Spacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          if (trailing != null) ...[
-            const SizedBox(width: Spacing.sm),
-            Text(
-              trailing!,
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: scheme.primary,
+                ],
               ),
             ),
+            if (trailing != null) ...[
+              const SizedBox(width: Spacing.sm),
+              Text(
+                trailing!,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: scheme.primary,
+                ),
+              ),
+            ],
+            const SizedBox(width: Spacing.xs),
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+            ),
           ],
-          const SizedBox(width: Spacing.xs),
-          Icon(
-            Icons.chevron_right,
-            size: 20,
-            color: scheme.onSurfaceVariant,
-          ),
-        ],
+        ),
       ),
     );
   }

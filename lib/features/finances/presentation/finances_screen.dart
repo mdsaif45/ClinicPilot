@@ -10,6 +10,7 @@ import '../../cashmemo/presentation/cash_memo_screen.dart';
 import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../expenses/presentation/expenses_screen.dart';
 import '../../expenses/providers/expense_provider.dart';
+import '../../clinics/providers/clinic_provider.dart';
 import '../providers/finances_clinic_filter_provider.dart';
 import '../providers/payment_method_breakdown_provider.dart';
 import '../providers/transaction_history_provider.dart';
@@ -85,10 +86,22 @@ class _HistoryExportAction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final groups = ref.watch(transactionHistoryGroupsProvider).value ?? const [];
     final allItems = groups.expand((g) => g.items).toList();
+    final selectedClinicId = ref.watch(financesClinicFilterProvider);
+    final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
+    final selectedClinic = selectedClinicId == null
+        ? null
+        : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
+
+    final title = selectedClinic != null
+        ? '${selectedClinic.name} - Transaction History'
+        : 'Practice Transaction History (All Clinics)';
+    final slug = selectedClinic != null
+        ? 'transaction-history-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
+        : 'transaction-history-all-clinics';
 
     return ExportAction<FinanceTransactionItem>(
-      screenSlug: 'transaction-history',
-      title: 'Practice Transaction History',
+      screenSlug: slug,
+      title: title,
       rows: allItems,
       columns: historyExportColumns(),
       totals: historyExportTotals(),
@@ -163,13 +176,25 @@ class _CashMemoExportAction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allMemos = ref.watch(cashMemosStreamProvider).value ?? const [];
     final selectedClinicId = ref.watch(financesClinicFilterProvider);
+    final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
+    final selectedClinic = selectedClinicId == null
+        ? null
+        : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
+
     final memos = selectedClinicId == null
         ? allMemos
         : allMemos.where((m) => m.memo.clinicId == selectedClinicId).toList();
 
+    final title = selectedClinic != null
+        ? '${selectedClinic.name} - Cash Memos'
+        : 'Practice Cash Memos (All Clinics)';
+    final slug = selectedClinic != null
+        ? 'cash-memos-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
+        : 'cash-memos-all-clinics';
+
     return ExportAction<CashMemoWithDetails>(
-      screenSlug: 'cash-memos',
-      title: 'Practice Cash Memos',
+      screenSlug: slug,
+      title: title,
       rows: memos,
       columns: cashMemoExportColumns(),
       pdfColumns: cashMemoPdfColumns(),
@@ -218,10 +243,22 @@ class _ExpensesExportAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expenses = ref.watch(expensesStreamProvider).value ?? const [];
+    final selectedClinicId = ref.watch(financesClinicFilterProvider);
+    final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
+    final selectedClinic = selectedClinicId == null
+        ? null
+        : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
+
+    final title = selectedClinic != null
+        ? '${selectedClinic.name} - Expenses'
+        : 'Practice Expenses (All Clinics)';
+    final slug = selectedClinic != null
+        ? 'expenses-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
+        : 'expenses-all-clinics';
 
     return ExportAction<ExpenseWithClinic>(
-      screenSlug: 'expenses',
-      title: 'Practice Expenses',
+      screenSlug: slug,
+      title: title,
       rows: expenses,
       columns: expensesExportColumns(),
       pdfColumns: expensesPdfColumns(),
@@ -257,10 +294,22 @@ class _SplitExportAction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final breakdown = ref.watch(paymentBreakdownProvider).value;
     final methods = breakdown?.methods ?? const [];
+    final selectedClinicId = ref.watch(financesClinicFilterProvider);
+    final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
+    final selectedClinic = selectedClinicId == null
+        ? null
+        : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
+
+    final title = selectedClinic != null
+        ? '${selectedClinic.name} - Payment Method Breakdown'
+        : 'Payment Method Breakdown (All Clinics)';
+    final slug = selectedClinic != null
+        ? 'payment-methods-split-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
+        : 'payment-methods-split-all-clinics';
 
     return ExportAction<PaymentMethodStat>(
-      screenSlug: 'payment-methods-split',
-      title: 'Payment Method Breakdown',
+      screenSlug: slug,
+      title: title,
       rows: methods,
       columns: splitExportColumns(),
       totals: splitExportTotals(),
