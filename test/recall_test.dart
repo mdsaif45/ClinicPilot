@@ -13,18 +13,22 @@ void main() {
   late ProviderContainer container;
 
   Future<void> addPatient(String id, String name) async {
-    await db.into(db.patients).insert(PatientsCompanion.insert(
-          id: id,
-          patientCode: Value('P-$id'),
-          name: name,
-          phone: '9800000000',
-          age: 30,
-          gender: 'Female',
-          primaryClinicId: const Value('clinic_old'),
-          // Distinct per patient at this clinic - the unique index on
-          // (clinic, serial_no) rejects a second patient sharing one.
-          serialNo: Value(id),
-        ));
+    await db
+        .into(db.patients)
+        .insert(
+          PatientsCompanion.insert(
+            id: id,
+            patientCode: Value('P-$id'),
+            name: name,
+            phone: '9800000000',
+            age: 30,
+            gender: 'Female',
+            primaryClinicId: const Value('clinic_old'),
+            // Distinct per patient at this clinic - the unique index on
+            // (clinic, serial_no) rejects a second patient sharing one.
+            serialNo: Value(id),
+          ),
+        );
   }
 
   Future<void> addVisit(
@@ -33,15 +37,19 @@ void main() {
     required DateTime visitDate,
     DateTime? followUp,
   }) async {
-    await db.into(db.visits).insert(VisitsCompanion.insert(
-          id: id,
-          patientId: patientId,
-          clinicId: 'clinic_old',
-          visitType: 'new',
-          disease: 'Migraine',
-          visitDate: visitDate,
-          nextFollowUpDate: Value(followUp),
-        ));
+    await db
+        .into(db.visits)
+        .insert(
+          VisitsCompanion.insert(
+            id: id,
+            patientId: patientId,
+            clinicId: 'clinic_old',
+            visitType: 'new',
+            disease: 'Migraine',
+            visitDate: visitDate,
+            nextFollowUpDate: Value(followUp),
+          ),
+        );
   }
 
   setUp(() async {
@@ -61,9 +69,12 @@ void main() {
 
   test('a past follow-up date lands in overdue', () async {
     await addPatient('1', 'Overdue Person');
-    await addVisit('v1', '1',
-        visitDate: now.subtract(const Duration(days: 40)),
-        followUp: now.subtract(const Duration(days: 10)));
+    await addVisit(
+      'v1',
+      '1',
+      visitDate: now.subtract(const Duration(days: 40)),
+      followUp: now.subtract(const Duration(days: 10)),
+    );
 
     final lists = await container.read(recallListProvider.future);
     expect(lists.overdue.length, 1);
@@ -72,9 +83,12 @@ void main() {
 
   test('a follow-up within a week lands in due soon', () async {
     await addPatient('2', 'Soon Person');
-    await addVisit('v2', '2',
-        visitDate: now.subtract(const Duration(days: 5)),
-        followUp: now.add(const Duration(days: 3)));
+    await addVisit(
+      'v2',
+      '2',
+      visitDate: now.subtract(const Duration(days: 5)),
+      followUp: now.add(const Duration(days: 3)),
+    );
 
     final lists = await container.read(recallListProvider.future);
     expect(lists.dueSoon.length, 1);
@@ -83,8 +97,12 @@ void main() {
 
   test('a follow-up far in the future is not listed at all', () async {
     await addPatient('3', 'Distant Person');
-    await addVisit('v3', '3',
-        visitDate: now, followUp: now.add(const Duration(days: 60)));
+    await addVisit(
+      'v3',
+      '3',
+      visitDate: now,
+      followUp: now.add(const Duration(days: 60)),
+    );
 
     final lists = await container.read(recallListProvider.future);
     expect(lists.total, 0);
@@ -92,7 +110,11 @@ void main() {
 
   test('no follow-up and a long silence counts as lapsed', () async {
     await addPatient('4', 'Lapsed Person');
-    await addVisit('v4', '4', visitDate: now.subtract(const Duration(days: 60)));
+    await addVisit(
+      'v4',
+      '4',
+      visitDate: now.subtract(const Duration(days: 60)),
+    );
 
     final lists = await container.read(recallListProvider.future);
     expect(lists.lapsed.length, 1);
@@ -109,12 +131,18 @@ void main() {
 
   test('a patient appears once, using their latest follow-up', () async {
     await addPatient('6', 'Repeat Person');
-    await addVisit('v6a', '6',
-        visitDate: now.subtract(const Duration(days: 60)),
-        followUp: now.subtract(const Duration(days: 30)));
-    await addVisit('v6b', '6',
-        visitDate: now.subtract(const Duration(days: 20)),
-        followUp: now.subtract(const Duration(days: 5)));
+    await addVisit(
+      'v6a',
+      '6',
+      visitDate: now.subtract(const Duration(days: 60)),
+      followUp: now.subtract(const Duration(days: 30)),
+    );
+    await addVisit(
+      'v6b',
+      '6',
+      visitDate: now.subtract(const Duration(days: 20)),
+      followUp: now.subtract(const Duration(days: 5)),
+    );
 
     final lists = await container.read(recallListProvider.future);
     expect(lists.overdue.length, 1);
@@ -123,13 +151,19 @@ void main() {
 
   test('the longest overdue patient is listed first', () async {
     await addPatient('7', 'Waiting Longer');
-    await addVisit('v7', '7',
-        visitDate: now.subtract(const Duration(days: 90)),
-        followUp: now.subtract(const Duration(days: 40)));
+    await addVisit(
+      'v7',
+      '7',
+      visitDate: now.subtract(const Duration(days: 90)),
+      followUp: now.subtract(const Duration(days: 40)),
+    );
     await addPatient('8', 'Waiting Less');
-    await addVisit('v8', '8',
-        visitDate: now.subtract(const Duration(days: 30)),
-        followUp: now.subtract(const Duration(days: 2)));
+    await addVisit(
+      'v8',
+      '8',
+      visitDate: now.subtract(const Duration(days: 30)),
+      followUp: now.subtract(const Duration(days: 2)),
+    );
 
     final lists = await container.read(recallListProvider.future);
     expect(lists.overdue.first.patient.name, 'Waiting Longer');

@@ -26,15 +26,9 @@ class PeriodState {
   final PeriodFilter filter;
   final DateTimeRange dateRange;
 
-  const PeriodState({
-    required this.filter,
-    required this.dateRange,
-  });
+  const PeriodState({required this.filter, required this.dateRange});
 
-  PeriodState copyWith({
-    PeriodFilter? filter,
-    DateTimeRange? dateRange,
-  }) {
+  PeriodState copyWith({PeriodFilter? filter, DateTimeRange? dateRange}) {
     return PeriodState(
       filter: filter ?? this.filter,
       dateRange: dateRange ?? this.dateRange,
@@ -74,7 +68,11 @@ class PeriodState {
     }
 
     if (isSingleDay || filter == PeriodFilter.today) {
-      return DateTime(start.year, start.month, start.day).isBefore(todayMidnight);
+      return DateTime(
+        start.year,
+        start.month,
+        start.day,
+      ).isBefore(todayMidnight);
     }
 
     if (filter == PeriodFilter.thisWeek) {
@@ -92,13 +90,15 @@ class PeriodState {
 
     // 1. Single day formatting (never show "01 Sep 2026 — 01 Sep 2026")
     if (isSingleDay) {
-      final isToday = start.year == now.year &&
+      final isToday =
+          start.year == now.year &&
           start.month == now.month &&
           start.day == now.day;
       if (isToday) return 'Today';
 
       final yesterday = now.subtract(const Duration(days: 1));
-      final isYesterday = start.year == yesterday.year &&
+      final isYesterday =
+          start.year == yesterday.year &&
           start.month == yesterday.month &&
           start.day == yesterday.day;
       if (isYesterday) return 'Yesterday';
@@ -151,26 +151,36 @@ class PeriodNotifier extends StateNotifier<PeriodState> {
   void setMonth(DateTime month) {
     final now = DateTime.now();
     // Future restriction: cannot select future months
-    final clampedMonth = (month.year > now.year ||
-            (month.year == now.year && month.month > now.month))
-        ? DateTime(now.year, now.month, 1)
-        : month;
+    final clampedMonth =
+        (month.year > now.year ||
+                (month.year == now.year && month.month > now.month))
+            ? DateTime(now.year, now.month, 1)
+            : month;
 
     final start = DateTime(clampedMonth.year, clampedMonth.month, 1, 0, 0, 0);
-    final end = DateTime(clampedMonth.year, clampedMonth.month + 1, 0, 23, 59, 59);
+    final end = DateTime(
+      clampedMonth.year,
+      clampedMonth.month + 1,
+      0,
+      23,
+      59,
+      59,
+    );
 
     final isThisMonth =
         clampedMonth.year == now.year && clampedMonth.month == now.month;
     final isLastMonth =
-        (clampedMonth.year == now.year && clampedMonth.month == now.month - 1) ||
-            (clampedMonth.year == now.year - 1 &&
-                now.month == 1 &&
-                clampedMonth.month == 12);
+        (clampedMonth.year == now.year &&
+            clampedMonth.month == now.month - 1) ||
+        (clampedMonth.year == now.year - 1 &&
+            now.month == 1 &&
+            clampedMonth.month == 12);
 
     state = PeriodState(
-      filter: isThisMonth
-          ? PeriodFilter.thisMonth
-          : (isLastMonth ? PeriodFilter.lastMonth : PeriodFilter.custom),
+      filter:
+          isThisMonth
+              ? PeriodFilter.thisMonth
+              : (isLastMonth ? PeriodFilter.lastMonth : PeriodFilter.custom),
       dateRange: DateTimeRange(start: start, end: end),
     );
   }
@@ -238,9 +248,10 @@ class PeriodNotifier extends StateNotifier<PeriodState> {
       final nxt = start.add(const Duration(days: 1));
       final s = DateTime(nxt.year, nxt.month, nxt.day, 0, 0, 0);
       final e = DateTime(nxt.year, nxt.month, nxt.day, 23, 59, 59);
-      final isToday = (nxt.year == now.year &&
-          nxt.month == now.month &&
-          nxt.day == now.day);
+      final isToday =
+          (nxt.year == now.year &&
+              nxt.month == now.month &&
+              nxt.day == now.day);
       state = PeriodState(
         filter: isToday ? PeriodFilter.today : PeriodFilter.custom,
         dateRange: DateTimeRange(start: s, end: e),
@@ -295,7 +306,14 @@ class PeriodNotifier extends StateNotifier<PeriodState> {
       case PeriodFilter.thisWeek:
         final weekday = now.weekday; // Mon = 1, Sun = 7
         start = DateTime(now.year, now.month, now.day - (weekday - 1), 0, 0, 0);
-        end = DateTime(now.year, now.month, now.day + (7 - weekday), 23, 59, 59);
+        end = DateTime(
+          now.year,
+          now.month,
+          now.day + (7 - weekday),
+          23,
+          59,
+          59,
+        );
         break;
       case PeriodFilter.thisMonth:
         start = DateTime(now.year, now.month, 1, 0, 0, 0);
@@ -307,10 +325,22 @@ class PeriodNotifier extends StateNotifier<PeriodState> {
         break;
       case PeriodFilter.custom:
         if (customRange != null) {
-          start = DateTime(customRange.start.year, customRange.start.month,
-              customRange.start.day, 0, 0, 0);
-          end = DateTime(customRange.end.year, customRange.end.month,
-              customRange.end.day, 23, 59, 59);
+          start = DateTime(
+            customRange.start.year,
+            customRange.start.month,
+            customRange.start.day,
+            0,
+            0,
+            0,
+          );
+          end = DateTime(
+            customRange.end.year,
+            customRange.end.month,
+            customRange.end.day,
+            23,
+            59,
+            59,
+          );
         } else {
           start = state.dateRange.start;
           end = state.dateRange.end;
@@ -325,7 +355,8 @@ class PeriodNotifier extends StateNotifier<PeriodState> {
   }
 }
 
-final periodProvider =
-    StateNotifierProvider<PeriodNotifier, PeriodState>((ref) {
+final periodProvider = StateNotifierProvider<PeriodNotifier, PeriodState>((
+  ref,
+) {
   return PeriodNotifier();
 });

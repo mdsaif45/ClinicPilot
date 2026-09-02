@@ -5,7 +5,6 @@ import 'package:excel/excel.dart' as xlsx;
 import '../database/app_database.dart';
 import 'import_template_service.dart';
 
-
 /// One row that could not be imported, with enough context to find and fix
 /// it in the spreadsheet.
 class ImportRowError {
@@ -278,7 +277,9 @@ class ImportService {
     for (var i = 1; i < patientRows.length; i++) {
       final rowNum = i + 1;
       final cells = _rowText(
-          patientRows[i], ImportTemplateSchema.patientsHeaders.length);
+        patientRows[i],
+        ImportTemplateSchema.patientsHeaders.length,
+      );
       if (_isExampleRow(cells)) continue;
       if (cells.every((c) => c.isEmpty)) continue; // a fully blank row
 
@@ -307,7 +308,8 @@ class ImportService {
       } else if (int.tryParse(ageRaw) == null) {
         error = 'Age must be a number';
       } else if (!ImportTemplateSchema.genders.contains(gender)) {
-        error = 'Gender must be one of: '
+        error =
+            'Gender must be one of: '
             '${ImportTemplateSchema.genders.join(', ')}';
       } else if (disease.isEmpty) {
         error = 'Disease is required';
@@ -317,14 +319,16 @@ class ImportService {
         final clinicId = clinicIdsByName[clinicName]!;
         final key = patientKey(serial, clinicId);
         if (patientLookup.containsKey(key)) {
-          error = 'Serial $serial is used twice for this clinic in this '
+          error =
+              'Serial $serial is used twice for this clinic in this '
               'sheet';
         }
       }
 
       if (error != null) {
-        errors.add(ImportRowError(
-            ImportTemplateSchema.patientsSheet, rowNum, error));
+        errors.add(
+          ImportRowError(ImportTemplateSchema.patientsSheet, rowNum, error),
+        );
         continue;
       }
 
@@ -352,8 +356,10 @@ class ImportService {
     final visitRows = book.tables[ImportTemplateSchema.visitsSheet]!.rows;
     for (var i = 1; i < visitRows.length; i++) {
       final rowNum = i + 1;
-      final cells =
-          _rowText(visitRows[i], ImportTemplateSchema.visitsHeaders.length);
+      final cells = _rowText(
+        visitRows[i],
+        ImportTemplateSchema.visitsHeaders.length,
+      );
       if (_isExampleRow(cells)) continue;
       if (cells.every((c) => c.isEmpty)) continue;
 
@@ -371,40 +377,48 @@ class ImportService {
         error = 'Clinic "$clinicName" not found';
       } else if (serial.isEmpty ||
           !patientLookup.containsKey(patientKey(serial, clinicId))) {
-        error = 'No valid patient with Serial $serial at "$clinicName" on '
+        error =
+            'No valid patient with Serial $serial at "$clinicName" on '
             'the Patients sheet';
       } else if (_parseDate(dateRaw) == null) {
         error = 'Visit Date is required and must be a real date';
       } else if (!ImportTemplateSchema.visitTypes.contains(visitType)) {
-        error = 'Visit Type must be one of: '
+        error =
+            'Visit Type must be one of: '
             '${ImportTemplateSchema.visitTypes.join(', ')}';
-      } else if (!ImportTemplateSchema.consultationTypes
-          .contains(consultationType)) {
-        error = 'Consultation Type must be one of: '
+      } else if (!ImportTemplateSchema.consultationTypes.contains(
+        consultationType,
+      )) {
+        error =
+            'Consultation Type must be one of: '
             '${ImportTemplateSchema.consultationTypes.join(', ')}';
       } else if (disease.isEmpty) {
         error = 'Disease is required';
       } else if (outcome.isNotEmpty &&
           !ImportTemplateSchema.outcomes.contains(outcome)) {
-        error = 'Outcome must be blank or one of: '
+        error =
+            'Outcome must be blank or one of: '
             '${ImportTemplateSchema.outcomes.join(', ')}';
       }
 
       if (error != null) {
         errors.add(
-            ImportRowError(ImportTemplateSchema.visitsSheet, rowNum, error));
+          ImportRowError(ImportTemplateSchema.visitsSheet, rowNum, error),
+        );
         continue;
       }
 
-      visits.add(_ValidVisitRow(
-        patientSerialNo: serial,
-        clinicId: clinicId!,
-        visitDate: _parseDate(dateRaw)!,
-        visitType: visitType,
-        consultationType: consultationType,
-        disease: disease,
-        outcome: outcome.isEmpty ? null : outcome,
-      ));
+      visits.add(
+        _ValidVisitRow(
+          patientSerialNo: serial,
+          clinicId: clinicId!,
+          visitDate: _parseDate(dateRaw)!,
+          visitType: visitType,
+          consultationType: consultationType,
+          disease: disease,
+          outcome: outcome.isEmpty ? null : outcome,
+        ),
+      );
     }
 
     // Pass 2: Cash Memos, same linking rule as Visits.
@@ -413,7 +427,9 @@ class ImportService {
     for (var i = 1; i < memoRows.length; i++) {
       final rowNum = i + 1;
       final cells = _rowText(
-          memoRows[i], ImportTemplateSchema.cashMemosHeaders.length);
+        memoRows[i],
+        ImportTemplateSchema.cashMemosHeaders.length,
+      );
       if (_isExampleRow(cells)) continue;
       if (cells.every((c) => c.isEmpty)) continue;
 
@@ -433,7 +449,8 @@ class ImportService {
         error = 'Clinic "$clinicName" not found';
       } else if (serial.isEmpty ||
           !patientLookup.containsKey(patientKey(serial, clinicId))) {
-        error = 'No valid patient with Serial $serial at "$clinicName" on '
+        error =
+            'No valid patient with Serial $serial at "$clinicName" on '
             'the Patients sheet';
       } else if (_parseDate(dateRaw) == null) {
         error = 'Date is required and must be a real date';
@@ -443,39 +460,43 @@ class ImportService {
           _parseAmount(discountRaw) == null ||
           _parseAmount(paidAmountRaw) == null) {
         error = 'Every fee, discount and paid amount must be a number';
-      } else if (!ImportTemplateSchema.paymentMethods
-          .contains(paymentMethod)) {
-        error = 'Payment Method must be one of: '
+      } else if (!ImportTemplateSchema.paymentMethods.contains(paymentMethod)) {
+        error =
+            'Payment Method must be one of: '
             '${ImportTemplateSchema.paymentMethods.join(', ')}';
       }
 
       if (error != null) {
-        errors.add(ImportRowError(
-            ImportTemplateSchema.cashMemosSheet, rowNum, error));
+        errors.add(
+          ImportRowError(ImportTemplateSchema.cashMemosSheet, rowNum, error),
+        );
         continue;
       }
 
-      memos.add(_ValidMemoRow(
-        patientSerialNo: serial,
-        clinicId: clinicId!,
-        date: _parseDate(dateRaw)!,
-        consultationFee: _parseAmount(consultationFeeRaw)!,
-        medicineFee: _parseAmount(medicineFeeRaw)!,
-        otherFee: _parseAmount(otherFeeRaw)!,
-        discount: _parseAmount(discountRaw)!,
-        paidAmount: _parseAmount(paidAmountRaw)!,
-        paymentMethod: paymentMethod,
-      ));
+      memos.add(
+        _ValidMemoRow(
+          patientSerialNo: serial,
+          clinicId: clinicId!,
+          date: _parseDate(dateRaw)!,
+          consultationFee: _parseAmount(consultationFeeRaw)!,
+          medicineFee: _parseAmount(medicineFeeRaw)!,
+          otherFee: _parseAmount(otherFeeRaw)!,
+          discount: _parseAmount(discountRaw)!,
+          paidAmount: _parseAmount(paidAmountRaw)!,
+          paymentMethod: paymentMethod,
+        ),
+      );
     }
 
     // Expenses: clinic-only, no patient link.
     final expenses = <_ValidExpenseRow>[];
-    final expenseRows =
-        book.tables[ImportTemplateSchema.expensesSheet]!.rows;
+    final expenseRows = book.tables[ImportTemplateSchema.expensesSheet]!.rows;
     for (var i = 1; i < expenseRows.length; i++) {
       final rowNum = i + 1;
       final cells = _rowText(
-          expenseRows[i], ImportTemplateSchema.expensesHeaders.length);
+        expenseRows[i],
+        ImportTemplateSchema.expensesHeaders.length,
+      );
       if (_isExampleRow(cells)) continue;
       if (cells.every((c) => c.isEmpty)) continue;
 
@@ -492,32 +513,35 @@ class ImportService {
         error = 'Clinic "$clinicName" not found';
       } else if (_parseDate(dateRaw) == null) {
         error = 'Date is required and must be a real date';
-      } else if (!ImportTemplateSchema.expenseCategories
-          .contains(category)) {
-        error = 'Category must be one of: '
+      } else if (!ImportTemplateSchema.expenseCategories.contains(category)) {
+        error =
+            'Category must be one of: '
             '${ImportTemplateSchema.expenseCategories.join(', ')}';
       } else if (_parseAmount(amountRaw) == null) {
         error = 'Amount must be a number';
-      } else if (!ImportTemplateSchema.paymentMethods
-          .contains(paymentMethod)) {
-        error = 'Payment Method must be one of: '
+      } else if (!ImportTemplateSchema.paymentMethods.contains(paymentMethod)) {
+        error =
+            'Payment Method must be one of: '
             '${ImportTemplateSchema.paymentMethods.join(', ')}';
       }
 
       if (error != null) {
-        errors.add(ImportRowError(
-            ImportTemplateSchema.expensesSheet, rowNum, error));
+        errors.add(
+          ImportRowError(ImportTemplateSchema.expensesSheet, rowNum, error),
+        );
         continue;
       }
 
-      expenses.add(_ValidExpenseRow(
-        clinicId: clinicId!,
-        date: _parseDate(dateRaw)!,
-        category: category,
-        subcategory: subcategory.isEmpty ? null : subcategory,
-        amount: _parseAmount(amountRaw)!,
-        paymentMethod: paymentMethod,
-      ));
+      expenses.add(
+        _ValidExpenseRow(
+          clinicId: clinicId!,
+          date: _parseDate(dateRaw)!,
+          category: category,
+          subcategory: subcategory.isEmpty ? null : subcategory,
+          amount: _parseAmount(amountRaw)!,
+          paymentMethod: paymentMethod,
+        ),
+      );
     }
 
     return _ValidatedImport(
@@ -568,71 +592,88 @@ class ImportService {
         final code = 'P-$year-${(i + 1).toString().padLeft(5, '0')}';
         patientIds[key(p.serialNo, p.clinicId)] = id;
 
-        await _db.into(_db.patients).insert(PatientsCompanion.insert(
-              id: id,
-              patientCode: Value(code),
-              serialNo: Value(p.serialNo),
-              name: p.name,
-              phone: p.phone,
-              whatsapp: Value(p.whatsapp),
-              age: p.age,
-              gender: p.gender,
-              area: Value(p.area),
-              primaryClinicId: Value(p.clinicId),
-              primaryDisease: Value(p.disease),
-              referralSource: Value(p.referralSource),
-              createdAt: Value(now),
-              updatedAt: Value(now),
-            ));
+        await _db
+            .into(_db.patients)
+            .insert(
+              PatientsCompanion.insert(
+                id: id,
+                patientCode: Value(code),
+                serialNo: Value(p.serialNo),
+                name: p.name,
+                phone: p.phone,
+                whatsapp: Value(p.whatsapp),
+                age: p.age,
+                gender: p.gender,
+                area: Value(p.area),
+                primaryClinicId: Value(p.clinicId),
+                primaryDisease: Value(p.disease),
+                referralSource: Value(p.referralSource),
+                createdAt: Value(now),
+                updatedAt: Value(now),
+              ),
+            );
       }
 
       for (final v in result.visits) {
         final patientId = patientIds[key(v.patientSerialNo, v.clinicId)]!;
-        await _db.into(_db.visits).insert(VisitsCompanion.insert(
-              id: IdGenerator.generate(),
-              patientId: patientId,
-              clinicId: v.clinicId,
-              visitType: v.visitType,
-              consultationType: Value(v.consultationType),
-              disease: v.disease,
-              outcome: Value(v.outcome),
-              visitDate: v.visitDate,
-              createdAt: Value(now),
-            ));
+        await _db
+            .into(_db.visits)
+            .insert(
+              VisitsCompanion.insert(
+                id: IdGenerator.generate(),
+                patientId: patientId,
+                clinicId: v.clinicId,
+                visitType: v.visitType,
+                consultationType: Value(v.consultationType),
+                disease: v.disease,
+                outcome: Value(v.outcome),
+                visitDate: v.visitDate,
+                createdAt: Value(now),
+              ),
+            );
       }
 
       for (final m in result.memos) {
         final patientId = patientIds[key(m.patientSerialNo, m.clinicId)]!;
         final total =
             (m.consultationFee + m.medicineFee + m.otherFee) - m.discount;
-        await _db.into(_db.cashMemos).insert(CashMemosCompanion.insert(
-              id: IdGenerator.generate(),
-              memoNumber: 'CM-IMPORT-${IdGenerator.generate().substring(0, 8)}',
-              patientId: patientId,
-              clinicId: Value(m.clinicId),
-              consultationFee: Value(m.consultationFee),
-              medicineFee: Value(m.medicineFee),
-              otherFee: Value(m.otherFee),
-              discount: Value(m.discount),
-              total: total,
-              paidAmount: Value(m.paidAmount),
-              paymentMethod: m.paymentMethod,
-              memoDate: Value(m.date),
-              createdAt: Value(now),
-            ));
+        await _db
+            .into(_db.cashMemos)
+            .insert(
+              CashMemosCompanion.insert(
+                id: IdGenerator.generate(),
+                memoNumber:
+                    'CM-IMPORT-${IdGenerator.generate().substring(0, 8)}',
+                patientId: patientId,
+                clinicId: Value(m.clinicId),
+                consultationFee: Value(m.consultationFee),
+                medicineFee: Value(m.medicineFee),
+                otherFee: Value(m.otherFee),
+                discount: Value(m.discount),
+                total: total,
+                paidAmount: Value(m.paidAmount),
+                paymentMethod: m.paymentMethod,
+                memoDate: Value(m.date),
+                createdAt: Value(now),
+              ),
+            );
       }
 
       for (final e in result.expenses) {
-        await _db.into(_db.expenses).insert(ExpensesCompanion.insert(
-              id: IdGenerator.generate(),
-              clinicId: e.clinicId,
-              category: e.category,
-              subcategory: Value(e.subcategory),
-              amount: e.amount,
-              paymentMethod: Value(e.paymentMethod),
-              date: e.date,
-              createdAt: Value(now),
-            ));
+        await _db
+            .into(_db.expenses)
+            .insert(
+              ExpensesCompanion.insert(
+                id: IdGenerator.generate(),
+                clinicId: e.clinicId,
+                category: e.category,
+                subcategory: Value(e.subcategory),
+                amount: e.amount,
+                paymentMethod: Value(e.paymentMethod),
+                date: e.date,
+                createdAt: Value(now),
+              ),
+            );
       }
     });
 

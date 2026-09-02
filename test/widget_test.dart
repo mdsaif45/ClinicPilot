@@ -4,11 +4,7 @@ import 'package:clinic_pilot/main.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: ClinicPilotApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: ClinicPilotApp()));
     expect(find.byType(ClinicPilotApp), findsOneWidget);
   });
 }

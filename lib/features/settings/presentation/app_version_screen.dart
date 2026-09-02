@@ -40,18 +40,21 @@ class AppVersionScreen extends ConsumerWidget {
       ),
       body: releaseAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => EmptyState(
-          icon: Icons.cloud_off,
-          title: 'Could not load release notes',
-          message: 'You are running v$running. '
-              'Connect to the internet and pull to refresh.',
-        ),
+        error:
+            (e, _) => EmptyState(
+              icon: Icons.cloud_off,
+              title: 'Could not load release notes',
+              message:
+                  'You are running v$running. '
+                  'Connect to the internet and pull to refresh.',
+            ),
         data: (release) {
           if (release == null) {
             return EmptyState(
               icon: Icons.cloud_off,
               title: 'No release information',
-              message: 'You are running v$running. Release notes will appear '
+              message:
+                  'You are running v$running. Release notes will appear '
                   'once this device has been online.',
             );
           }
@@ -73,9 +76,10 @@ class AppVersionScreen extends ConsumerWidget {
                           isUpdate
                               ? Icons.system_update
                               : Icons.check_circle_outline,
-                          color: isUpdate
-                              ? theme.colorScheme.tertiary
-                              : theme.colorScheme.primary,
+                          color:
+                              isUpdate
+                                  ? theme.colorScheme.tertiary
+                                  : theme.colorScheme.primary,
                         ),
                         const SizedBox(width: Spacing.md),
                         Expanded(
@@ -112,8 +116,9 @@ class AppVersionScreen extends ConsumerWidget {
                   children: [
                     Text(
                       release.tagName,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const Spacer(),
                     Text(
@@ -148,8 +153,10 @@ class _ReleaseNotes extends StatelessWidget {
     final theme = Theme.of(context);
 
     if (notes.trim().isEmpty) {
-      return Text('No notes for this release.',
-          style: theme.textTheme.bodyMedium);
+      return Text(
+        'No notes for this release.',
+        style: theme.textTheme.bodyMedium,
+      );
     }
 
     final widgets = <Widget>[];
@@ -162,36 +169,44 @@ class _ReleaseNotes extends StatelessWidget {
 
       if (line.startsWith('#')) {
         final text = line.replaceFirst(RegExp(r'^#+\s*'), '');
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(top: Spacing.md, bottom: Spacing.xs),
-          child: Text(text, style: theme.textTheme.titleSmall),
-        ));
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: Spacing.md, bottom: Spacing.xs),
+            child: Text(text, style: theme.textTheme.titleSmall),
+          ),
+        );
         continue;
       }
 
       if (line.trimLeft().startsWith('* ') ||
           line.trimLeft().startsWith('- ')) {
         final text = line.trimLeft().substring(2);
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(bottom: Spacing.xs),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('•  ', style: theme.textTheme.bodyMedium),
-              Expanded(
-                child: Text(_stripInline(text),
-                    style: theme.textTheme.bodyMedium),
-              ),
-            ],
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: Spacing.xs),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('•  ', style: theme.textTheme.bodyMedium),
+                Expanded(
+                  child: Text(
+                    _stripInline(text),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ));
+        );
         continue;
       }
 
-      widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: Spacing.xs),
-        child: Text(_stripInline(line), style: theme.textTheme.bodyMedium),
-      ));
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: Spacing.xs),
+          child: Text(_stripInline(line), style: theme.textTheme.bodyMedium),
+        ),
+      );
     }
 
     return Column(
@@ -279,7 +294,9 @@ class _DownloadButton extends ConsumerWidget {
         return '${(bytes / 1048576).toStringAsFixed(1)} MB';
       },
       loading: () => '',
-      error: (_, __) => '${(release.apkSizeBytes / 1048576).toStringAsFixed(1)} MB',
+      error:
+          (_, __) =>
+              '${(release.apkSizeBytes / 1048576).toStringAsFixed(1)} MB',
     );
 
     return Column(
@@ -288,8 +305,9 @@ class _DownloadButton extends ConsumerWidget {
         if (state.status == DownloadStatus.error) ...[
           Text(
             state.errorMessage ?? 'Download failed.',
-            style: theme.textTheme.labelMedium
-                ?.copyWith(color: theme.colorScheme.error),
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.error,
+            ),
           ),
           const SizedBox(height: Spacing.sm),
         ],

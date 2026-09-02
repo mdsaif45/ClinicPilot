@@ -17,10 +17,7 @@ import '../providers/review_provider.dart';
 class GrowthHubScreen extends ConsumerWidget {
   const GrowthHubScreen({super.key});
 
-  void _showGoogleReviewsSheet(
-    BuildContext context,
-    ReviewStats? reviews,
-  ) {
+  void _showGoogleReviewsSheet(BuildContext context, ReviewStats? reviews) {
     AppHaptics.selection();
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -34,91 +31,95 @@ class GrowthHubScreen extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(
-          Spacing.xl,
-          Spacing.sm,
-          Spacing.xl,
-          Spacing.xxl,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      builder:
+          (ctx) => Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.xl,
+              Spacing.sm,
+              Spacing.xl,
+              Spacing.xxl,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  backgroundColor: scheme.primaryContainer,
-                  foregroundColor: scheme.primary,
-                  child: const Icon(Icons.star, size: 22),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: scheme.primaryContainer,
+                      foregroundColor: scheme.primary,
+                      child: const Icon(Icons.star, size: 22),
+                    ),
+                    const SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Google Reviews & Reputation',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Patient ratings & Google review conversion',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Google Reviews & Reputation',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                const SizedBox(height: Spacing.lg),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ReviewStatBox(
+                        label: 'Total Reviews',
+                        value: '$total',
+                        color: scheme.primary,
                       ),
-                      Text(
-                        'Patient ratings & Google review conversion',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      child: _ReviewStatBox(
+                        label: 'This Month',
+                        value: '$thisMonth',
+                        color: scheme.tertiary,
                       ),
-                    ],
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      child: _ReviewStatBox(
+                        label: 'Avg. Rating',
+                        value:
+                            avgRating > 0
+                                ? '${avgRating.toStringAsFixed(1)} ★'
+                                : '—',
+                        color: scheme.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Spacing.lg),
+                Text(
+                  'Tip: Send a review request to happy patients directly from the Patient Profile > WhatsApp quick actions after a successful consultation.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    height: 1.4,
                   ),
+                ),
+                const SizedBox(height: Spacing.lg),
+                AppButton.primary(
+                  label: 'Close',
+                  fullWidth: true,
+                  onPressed: () => Navigator.of(ctx).pop(),
                 ),
               ],
             ),
-            const SizedBox(height: Spacing.lg),
-            Row(
-              children: [
-                Expanded(
-                  child: _ReviewStatBox(
-                    label: 'Total Reviews',
-                    value: '$total',
-                    color: scheme.primary,
-                  ),
-                ),
-                const SizedBox(width: Spacing.sm),
-                Expanded(
-                  child: _ReviewStatBox(
-                    label: 'This Month',
-                    value: '$thisMonth',
-                    color: scheme.tertiary,
-                  ),
-                ),
-                const SizedBox(width: Spacing.sm),
-                Expanded(
-                  child: _ReviewStatBox(
-                    label: 'Avg. Rating',
-                    value: avgRating > 0 ? '${avgRating.toStringAsFixed(1)} ★' : '—',
-                    color: scheme.secondary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.lg),
-            Text(
-              'Tip: Send a review request to happy patients directly from the Patient Profile > WhatsApp quick actions after a successful consultation.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: Spacing.lg),
-            AppButton.primary(
-              label: 'Close',
-              fullWidth: true,
-              onPressed: () => Navigator.of(ctx).pop(),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -143,18 +144,18 @@ class GrowthHubScreen extends ConsumerWidget {
               icon: Icons.trending_up,
               title: 'Growth Overview',
               subtitle: 'New and repeat patients, trend, quick stats',
-              trailing: growth == null
-                  ? null
-                  : '${growth.totalNewPatients} new',
+              trailing:
+                  growth == null ? null : '${growth.totalNewPatients} new',
               onTap: () => context.push('/growth/overview'),
             ),
             _GrowthHubTile(
               icon: Icons.account_balance_wallet_outlined,
               title: 'Profit Summary',
               subtitle: 'Income, expenses, profit trend, best day',
-              trailing: profit == null
-                  ? null
-                  : Formatters.formatCurrency(profit.netProfit),
+              trailing:
+                  profit == null
+                      ? null
+                      : Formatters.formatCurrency(profit.netProfit),
               onTap: () => context.push('/growth/profit'),
             ),
             _GrowthHubTile(
@@ -166,7 +167,8 @@ class GrowthHubScreen extends ConsumerWidget {
             _GrowthHubTile(
               icon: Icons.insights_outlined,
               title: 'Practice Activity',
-              subtitle: 'Hourly OPD rush, weekly targets & monthly bubble heatmap',
+              subtitle:
+                  'Hourly OPD rush, weekly targets & monthly bubble heatmap',
               onTap: () => context.push('/growth/activity'),
             ),
           ],
@@ -177,13 +179,15 @@ class GrowthHubScreen extends ConsumerWidget {
             _GrowthHubTile(
               icon: Icons.medical_services_outlined,
               title: 'Disease Analytics',
-              subtitle: 'Revenue per condition, patient volume and repeat retention',
+              subtitle:
+                  'Revenue per condition, patient volume and repeat retention',
               onTap: () => context.push('/growth/diseases'),
             ),
             _GrowthHubTile(
               icon: Icons.auto_stories_outlined,
               title: 'Practice Journal',
-              subtitle: 'Chronological consultations, pharmacy invoices & receipts',
+              subtitle:
+                  'Chronological consultations, pharmacy invoices & receipts',
               onTap: () => context.push('/growth/journal'),
             ),
           ],
@@ -194,10 +198,12 @@ class GrowthHubScreen extends ConsumerWidget {
             _GrowthHubTile(
               icon: Icons.star_outline,
               title: 'Google Reviews & Reputation',
-              subtitle: 'Track positive patient reviews and 5-star Google rating',
-              trailing: reviewCount > 0
-                  ? '$reviewCount reviews • ${avgRating.toStringAsFixed(1)} ★'
-                  : 'View stats',
+              subtitle:
+                  'Track positive patient reviews and 5-star Google rating',
+              trailing:
+                  reviewCount > 0
+                      ? '$reviewCount reviews • ${avgRating.toStringAsFixed(1)} ★'
+                      : 'View stats',
               onTap: () => _showGoogleReviewsSheet(context, reviews),
             ),
             _GrowthHubTile(
@@ -209,13 +215,15 @@ class GrowthHubScreen extends ConsumerWidget {
             _GrowthHubTile(
               icon: Icons.store_outlined,
               title: 'Referral Partner CRM',
-              subtitle: 'Pharmacies, labs, physios & local healthcare partner outreach',
+              subtitle:
+                  'Pharmacies, labs, physios & local healthcare partner outreach',
               onTap: () => context.push('/growth/referral-crm'),
             ),
             _GrowthHubTile(
               icon: Icons.campaign_outlined,
               title: 'Camp Manager & ROI',
-              subtitle: 'Free camp tracking, costs and patient follow-up revenue ROI',
+              subtitle:
+                  'Free camp tracking, costs and patient follow-up revenue ROI',
               onTap: () => context.push('/growth/camps'),
             ),
           ],
@@ -248,9 +256,7 @@ class _ReviewStatBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
         borderRadius: Radii.mdAll,
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

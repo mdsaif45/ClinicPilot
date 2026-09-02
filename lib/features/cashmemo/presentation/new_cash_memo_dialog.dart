@@ -50,7 +50,8 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
   void initState() {
     super.initState();
     _selectedPatient = widget.initialPatient;
-    if (widget.initialPatient != null && widget.initialPatient!.primaryClinicId == 'clinic_online') {
+    if (widget.initialPatient != null &&
+        widget.initialPatient!.primaryClinicId == 'clinic_online') {
       _selectedClinicId = 'clinic_online';
       _paymentMethod = 'UPI';
     } else {
@@ -59,8 +60,8 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
 
     final activeClinic = ref.read(activeClinicProvider);
     if (activeClinic != null) {
-      _consultationController.text =
-          activeClinic.defaultConsultationFee.toStringAsFixed(0);
+      _consultationController.text = activeClinic.defaultConsultationFee
+          .toStringAsFixed(0);
     }
   }
 
@@ -101,7 +102,9 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     if (_selectedClinicId == null && clinics.length == 1) {
       _selectedClinicId = clinics.first.id;
       final cl = clinics.first;
-      _consultationController.text = cl.defaultConsultationFee.toStringAsFixed(0);
+      _consultationController.text = cl.defaultConsultationFee.toStringAsFixed(
+        0,
+      );
       if (_autoSyncPaidAmount) {
         _paidAmountController.text = _total.toStringAsFixed(0);
       }
@@ -148,13 +151,14 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
         ),
         FilledButton(
           onPressed: _submitting ? null : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Save & Issue Memo'),
+          child:
+              _submitting
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Save & Issue Memo'),
         ),
       ],
       child: Form(
@@ -168,20 +172,23 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
               prefixIcon: Icons.local_hospital,
               value: _selectedClinicId,
               errorText: _clinicError,
-              options: clinics
-                  .map((c) => PickerOption(
-                        value: c.id,
-                        label: c.name,
-                        subtitle: c.address,
-                      ))
-                  .toList(),
+              options:
+                  clinics
+                      .map(
+                        (c) => PickerOption(
+                          value: c.id,
+                          label: c.name,
+                          subtitle: c.address,
+                        ),
+                      )
+                      .toList(),
               onChanged: (val) {
                 setState(() {
                   _selectedClinicId = val;
                   _clinicError = null;
                   final cl = clinics.firstWhere((c) => c.id == val);
-                  _consultationController.text =
-                      cl.defaultConsultationFee.toStringAsFixed(0);
+                  _consultationController.text = cl.defaultConsultationFee
+                      .toStringAsFixed(0);
                   if (_autoSyncPaidAmount) {
                     _paidAmountController.text = _total.toStringAsFixed(0);
                   }
@@ -197,14 +204,15 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
             const SizedBox(height: Spacing.md),
             PatientPickerField(
               selected: _selectedPatient,
-              onSelected: (p) => setState(() {
-                _selectedPatient = p;
-                _patientError = null;
-                if (p.primaryClinicId == 'clinic_online') {
-                  _selectedClinicId = 'clinic_online';
-                  _paymentMethod = 'UPI';
-                }
-              }),
+              onSelected:
+                  (p) => setState(() {
+                    _selectedPatient = p;
+                    _patientError = null;
+                    if (p.primaryClinicId == 'clinic_online') {
+                      _selectedClinicId = 'clinic_online';
+                      _paymentMethod = 'UPI';
+                    }
+                  }),
               errorText: _patientError,
             ),
             const SizedBox(height: Spacing.md),
@@ -262,7 +270,9 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                   onPressed: () {
                     setState(() {
                       _autoSyncPaidAmount = true;
-                      _paidAmountController.text = currentTotal.toStringAsFixed(0);
+                      _paidAmountController.text = currentTotal.toStringAsFixed(
+                        0,
+                      );
                     });
                   },
                 ),
@@ -339,7 +349,8 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
       _clinicError = _selectedClinicId == null ? 'Select a clinic' : null;
     });
 
-    if (!formOk || _selectedPatient == null || _selectedClinicId == null) return;
+    if (!formOk || _selectedPatient == null || _selectedClinicId == null)
+      return;
 
     setState(() => _submitting = true);
 
@@ -350,7 +361,9 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     final paid = double.tryParse(_paidAmountController.text) ?? _total;
 
     try {
-      await ref.read(cashMemoNotifierProvider.notifier).createCashMemo(
+      await ref
+          .read(cashMemoNotifierProvider.notifier)
+          .createCashMemo(
             patientId: _selectedPatient!.id,
             clinicId: _selectedClinicId!,
             consultationFee: consult,
@@ -364,9 +377,9 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not create memo: \$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not create memo: \$e')));
       }
       return;
     }

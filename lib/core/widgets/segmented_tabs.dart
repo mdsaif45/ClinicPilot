@@ -42,8 +42,10 @@ class SegmentedTabs extends StatefulWidget {
 }
 
 class _SegmentedTabsState extends State<SegmentedTabs> {
-  late int _index = (widget.selectedIndex ?? widget.initialIndex)
-      .clamp(0, widget.tabs.length - 1);
+  late int _index = (widget.selectedIndex ?? widget.initialIndex).clamp(
+    0,
+    widget.tabs.length - 1,
+  );
   final ScrollController _pillScrollController = ScrollController();
   final List<GlobalKey> _pillKeys = [];
 
@@ -61,7 +63,9 @@ class _SegmentedTabsState extends State<SegmentedTabs> {
       _pillKeys.addAll(List.generate(widget.tabs.length, (_) => GlobalKey()));
     }
     if (widget.selectedIndex != null && widget.selectedIndex != _index) {
-      setState(() => _index = widget.selectedIndex!.clamp(0, widget.tabs.length - 1));
+      setState(
+        () => _index = widget.selectedIndex!.clamp(0, widget.tabs.length - 1),
+      );
       _scrollToPill(_index);
     }
   }
@@ -152,7 +156,9 @@ class _TabPill extends StatelessWidget {
     final scheme = theme.colorScheme;
     final animate = !MediaQuery.of(context).disableAnimations;
     final duration = animate ? Motion.base : Duration.zero;
-    final borderRadius = BorderRadius.circular(selected ? Radii.pill : Radii.md);
+    final borderRadius = BorderRadius.circular(
+      selected ? Radii.pill : Radii.md,
+    );
 
     return Tooltip(
       message: tab.label,
@@ -165,63 +171,68 @@ class _TabPill extends StatelessWidget {
         // panel below never needs a separate heading repeating it. Unselected
         // tabs stay icon-only, which keeps five of them on a phone width.
         child: AnimatedContainer(
-        duration: duration,
-        curve: Motion.curve,
-        height: 44,
-        decoration: BoxDecoration(
-          color: selected
-              ? scheme.secondaryContainer
-              : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: borderRadius,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
+          duration: duration,
+          curve: Motion.curve,
+          height: 44,
+          decoration: BoxDecoration(
+            color:
+                selected
+                    ? scheme.secondaryContainer
+                    : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
             borderRadius: borderRadius,
-            child: AnimatedContainer(
-              duration: duration,
-              curve: Motion.curve,
-              height: 44,
-              padding: EdgeInsets.symmetric(
-                horizontal: selected ? Spacing.lg : Spacing.md,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    tab.icon,
-                    size: 20,
-                    color: selected
-                        ? scheme.onSecondaryContainer
-                        : scheme.onSurfaceVariant,
-                  ),
-                  // Width animates from zero, so the label slides out of the
-                  // icon rather than appearing beside it.
-                  AnimatedSize(
-                    duration: duration,
-                    curve: Motion.curve,
-                    child: selected
-                        ? Padding(
-                            padding: const EdgeInsets.only(left: Spacing.sm),
-                            child: Text(
-                              tab.label,
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: scheme.onSecondaryContainer,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: borderRadius,
+              child: AnimatedContainer(
+                duration: duration,
+                curve: Motion.curve,
+                height: 44,
+                padding: EdgeInsets.symmetric(
+                  horizontal: selected ? Spacing.lg : Spacing.md,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      tab.icon,
+                      size: 20,
+                      color:
+                          selected
+                              ? scheme.onSecondaryContainer
+                              : scheme.onSurfaceVariant,
+                    ),
+                    // Width animates from zero, so the label slides out of the
+                    // icon rather than appearing beside it.
+                    AnimatedSize(
+                      duration: duration,
+                      curve: Motion.curve,
+                      child:
+                          selected
+                              ? Padding(
+                                padding: const EdgeInsets.only(
+                                  left: Spacing.sm,
+                                ),
+                                child: Text(
+                                  tab.label,
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: scheme.onSecondaryContainer,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              )
+                              : const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

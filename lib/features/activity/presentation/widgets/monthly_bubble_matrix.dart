@@ -24,9 +24,8 @@ class MonthlyBubbleMatrix extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final primaryColor = metric == ActivityMetric.revenue
-        ? scheme.primary
-        : scheme.secondary;
+    final primaryColor =
+        metric == ActivityMetric.revenue ? scheme.primary : scheme.secondary;
 
     const weekHeaderDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -36,19 +35,20 @@ class MonthlyBubbleMatrix extends StatelessWidget {
         // Days of week header
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: weekHeaderDays.map((day) {
-            return SizedBox(
-              width: 36,
-              child: Text(
-                day,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-            );
-          }).toList(),
+          children:
+              weekHeaderDays.map((day) {
+                return SizedBox(
+                  width: 36,
+                  child: Text(
+                    day,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                );
+              }).toList(),
         ),
 
         const SizedBox(height: Spacing.sm),
@@ -71,10 +71,14 @@ class MonthlyBubbleMatrix extends StatelessWidget {
             }
 
             final hasActivity = day.intensity > 0;
-            final bubbleSize = (20.0 + (day.intensity * 18.0)).clamp(20.0, 38.0);
-            final valText = metric == ActivityMetric.revenue
-                ? Formatters.formatCurrency(day.revenue)
-                : '${day.patients} ${day.patients == 1 ? 'patient' : 'patients'}';
+            final bubbleSize = (20.0 + (day.intensity * 18.0)).clamp(
+              20.0,
+              38.0,
+            );
+            final valText =
+                metric == ActivityMetric.revenue
+                    ? Formatters.formatCurrency(day.revenue)
+                    : '${day.patients} ${day.patients == 1 ? 'patient' : 'patients'}';
 
             return Tooltip(
               message: valText,
@@ -97,7 +101,9 @@ class MonthlyBubbleMatrix extends StatelessWidget {
                           height: bubbleSize,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: primaryColor.withValues(alpha: 0.35 + (day.intensity * 0.65)),
+                            color: primaryColor.withValues(
+                              alpha: 0.35 + (day.intensity * 0.65),
+                            ),
                           ),
                         ),
                       // Day Number
@@ -105,12 +111,14 @@ class MonthlyBubbleMatrix extends StatelessWidget {
                         '${day.dayNumber}',
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 11,
-                          fontWeight: day.intensity > 0.4
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          color: day.intensity > 0.4
-                              ? scheme.onPrimary
-                              : scheme.onSurface,
+                          fontWeight:
+                              day.intensity > 0.4
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                          color:
+                              day.intensity > 0.4
+                                  ? scheme.onPrimary
+                                  : scheme.onSurface,
                         ),
                       ),
                     ],
@@ -133,9 +141,10 @@ class MonthlyBubbleMatrix extends StatelessWidget {
         ),
         const SizedBox(height: Spacing.xs),
         ...weeklySubtotals.map((w) {
-          final val = metric == ActivityMetric.revenue
-              ? Formatters.formatCurrency(w.revenue)
-              : '${w.patients} patients';
+          final val =
+              metric == ActivityMetric.revenue
+                  ? Formatters.formatCurrency(w.revenue)
+                  : '${w.patients} patients';
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 3),

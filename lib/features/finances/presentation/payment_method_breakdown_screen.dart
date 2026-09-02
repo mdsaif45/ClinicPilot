@@ -61,12 +61,14 @@ class PaymentMethodBreakdownScreen extends ConsumerWidget {
                       child: _SummaryCard(
                         label: 'Pending Balance',
                         value: Formatters.formatCurrency(data.totalPending),
-                        fg: data.totalPending > 0
-                            ? scheme.error
-                            : scheme.onSurfaceVariant,
-                        bg: data.totalPending > 0
-                            ? scheme.errorContainer
-                            : scheme.surfaceContainerHighest,
+                        fg:
+                            data.totalPending > 0
+                                ? scheme.error
+                                : scheme.onSurfaceVariant,
+                        bg:
+                            data.totalPending > 0
+                                ? scheme.errorContainer
+                                : scheme.surfaceContainerHighest,
                       ),
                     ),
                   ],
@@ -82,19 +84,21 @@ class PaymentMethodBreakdownScreen extends ConsumerWidget {
                       PieChartData(
                         sectionsSpace: 2,
                         centerSpaceRadius: 40,
-                        sections: data.methods.map((m) {
-                          final color = _colorForMethod(m.method, scheme);
-                          return PieChartSectionData(
-                            color: color,
-                            value: m.totalCollected,
-                            title: '${m.percentage.toStringAsFixed(0)}%',
-                            radius: 50,
-                            titleStyle: theme.textTheme.labelMedium?.copyWith(
-                              color: scheme.onPrimary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          );
-                        }).toList(),
+                        sections:
+                            data.methods.map((m) {
+                              final color = _colorForMethod(m.method, scheme);
+                              return PieChartSectionData(
+                                color: color,
+                                value: m.totalCollected,
+                                title: '${m.percentage.toStringAsFixed(0)}%',
+                                radius: 50,
+                                titleStyle: theme.textTheme.labelMedium
+                                    ?.copyWith(
+                                      color: scheme.onPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              );
+                            }).toList(),
                       ),
                     ),
                   ),

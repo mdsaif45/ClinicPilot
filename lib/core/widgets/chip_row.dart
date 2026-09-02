@@ -25,11 +25,18 @@ class ChipRow extends StatelessWidget {
       child: Wrap(
         spacing: Spacing.sm,
         runSpacing: Spacing.sm,
-        children: visible
-            .map((l) => onTap == null
-                ? Chip(label: Text(l))
-                : ActionChip(label: Text(l), onPressed: () => onTap!(l)))
-            .toList(),
+        children:
+            visible
+                .map(
+                  (l) =>
+                      onTap == null
+                          ? Chip(label: Text(l))
+                          : ActionChip(
+                            label: Text(l),
+                            onPressed: () => onTap!(l),
+                          ),
+                )
+                .toList(),
       ),
     );
   }

@@ -66,7 +66,9 @@ class PatientExportService {
 
   static void _styleHeaderRow(xlsx.Sheet sheet, int colCount) {
     for (var col = 0; col < colCount; col++) {
-      final cell = sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0));
+      final cell = sheet.cell(
+        xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0),
+      );
       cell.cellStyle = ListExportService.headerStyle;
     }
   }
@@ -95,11 +97,14 @@ class PatientExportService {
 
   static String _formatPastHistory(PastHistoryDetails p) {
     final parts = <String>[];
-    if (p.majorIllnesses.isNotEmpty) parts.add('Illnesses: ${p.majorIllnesses}');
+    if (p.majorIllnesses.isNotEmpty)
+      parts.add('Illnesses: ${p.majorIllnesses}');
     if (p.surgeries.isNotEmpty) parts.add('Surgeries: ${p.surgeries}');
-    if (p.hospitalisations.isNotEmpty) parts.add('Hospitalizations: ${p.hospitalisations}');
+    if (p.hospitalisations.isNotEmpty)
+      parts.add('Hospitalizations: ${p.hospitalisations}');
     if (p.allergies.isNotEmpty) parts.add('Allergies: ${p.allergies}');
-    if (p.childhoodIllnesses.isNotEmpty) parts.add('Childhood: ${p.childhoodIllnesses}');
+    if (p.childhoodIllnesses.isNotEmpty)
+      parts.add('Childhood: ${p.childhoodIllnesses}');
     return parts.join('; ');
   }
 
@@ -108,8 +113,10 @@ class PatientExportService {
     if (f.father.isNotEmpty) parts.add('Father: ${f.father}');
     if (f.mother.isNotEmpty) parts.add('Mother: ${f.mother}');
     if (f.siblings.isNotEmpty) parts.add('Siblings: ${f.siblings}');
-    if (f.majorFamilialDiseases.isNotEmpty) parts.add('Familial: ${f.majorFamilialDiseases}');
-    if (f.hereditaryDiseases.isNotEmpty) parts.add('Hereditary: ${f.hereditaryDiseases}');
+    if (f.majorFamilialDiseases.isNotEmpty)
+      parts.add('Familial: ${f.majorFamilialDiseases}');
+    if (f.hereditaryDiseases.isNotEmpty)
+      parts.add('Hereditary: ${f.hereditaryDiseases}');
     return parts.join('; ');
   }
 
@@ -130,13 +137,15 @@ class PatientExportService {
 
   static String _formatMentalGeneralsSummary(MentalGenerals mg) {
     final parts = <String>[];
-    if (mg.generalMentalState.isNotEmpty) parts.add('State: ${mg.generalMentalState}');
+    if (mg.generalMentalState.isNotEmpty)
+      parts.add('State: ${mg.generalMentalState}');
     if (mg.disposition.isNotEmpty) parts.add('Disposition: ${mg.disposition}');
     if (mg.fears.isNotEmpty) parts.add('Fears: ${mg.fears}');
     if (mg.anxiety.isNotEmpty) parts.add('Anxiety: ${mg.anxiety}');
     if (mg.anger.isNotEmpty) parts.add('Anger: ${mg.anger}');
     if (mg.memory.isNotEmpty) parts.add('Memory: ${mg.memory}');
-    if (mg.responseToStress.isNotEmpty) parts.add('Stress: ${mg.responseToStress}');
+    if (mg.responseToStress.isNotEmpty)
+      parts.add('Stress: ${mg.responseToStress}');
     return parts.join('; ');
   }
 
@@ -148,27 +157,36 @@ class PatientExportService {
     if (v.heightCm.isNotEmpty) parts.add('Height: ${v.heightCm} cm');
     if (v.bmi.isNotEmpty) parts.add('BMI: ${v.bmi}');
     if (v.temperature.isNotEmpty) parts.add('Temp: ${v.temperature}');
-    if (v.otherExaminationFindings.isNotEmpty) parts.add('Exam: ${v.otherExaminationFindings}');
+    if (v.otherExaminationFindings.isNotEmpty)
+      parts.add('Exam: ${v.otherExaminationFindings}');
     return parts.join('; ');
   }
 
   static String _formatMiasm(MiasmaticAnalysis m) {
     final parts = <String>[];
     if (m.dominantMiasm.isNotEmpty) parts.add('Dominant: ${m.dominantMiasm}');
-    if (m.secondaryMixedMiasm.isNotEmpty) parts.add('Secondary: ${m.secondaryMixedMiasm}');
+    if (m.secondaryMixedMiasm.isNotEmpty)
+      parts.add('Secondary: ${m.secondaryMixedMiasm}');
     if (m.psoricFeatures.isNotEmpty) parts.add('Psora: ${m.psoricFeatures}');
-    if (m.sycoticFeatures.isNotEmpty) parts.add('Sycosis: ${m.sycoticFeatures}');
-    if (m.syphiliticFeatures.isNotEmpty) parts.add('Syphilis: ${m.syphiliticFeatures}');
-    if (m.tubercularFeatures.isNotEmpty) parts.add('Tubercular: ${m.tubercularFeatures}');
+    if (m.sycoticFeatures.isNotEmpty)
+      parts.add('Sycosis: ${m.sycoticFeatures}');
+    if (m.syphiliticFeatures.isNotEmpty)
+      parts.add('Syphilis: ${m.syphiliticFeatures}');
+    if (m.tubercularFeatures.isNotEmpty)
+      parts.add('Tubercular: ${m.tubercularFeatures}');
     return parts.join('; ');
   }
 
   static String _formatTotality(CaseTotality t) {
     final parts = <String>[];
-    if (t.characteristicSymptoms.isNotEmpty) parts.add('Keynotes: ${t.characteristicSymptoms}');
-    if (t.totalityOfSymptoms.isNotEmpty) parts.add('Totality: ${t.totalityOfSymptoms}');
-    if (t.rubricsSelected.isNotEmpty) parts.add('Rubrics: ${t.rubricsSelected}');
-    if (t.finalRemedySelection.isNotEmpty) parts.add('Selected: ${t.finalRemedySelection} ${t.potency}'.trim());
+    if (t.characteristicSymptoms.isNotEmpty)
+      parts.add('Keynotes: ${t.characteristicSymptoms}');
+    if (t.totalityOfSymptoms.isNotEmpty)
+      parts.add('Totality: ${t.totalityOfSymptoms}');
+    if (t.rubricsSelected.isNotEmpty)
+      parts.add('Rubrics: ${t.rubricsSelected}');
+    if (t.finalRemedySelection.isNotEmpty)
+      parts.add('Selected: ${t.finalRemedySelection} ${t.potency}'.trim());
     return parts.join('; ');
   }
 
@@ -178,45 +196,53 @@ class PatientExportService {
       parts.add('${rx.remedyName} ${rx.potency}'.trim());
     }
     if (rx.dose.isNotEmpty) parts.add('Dose: ${rx.dose}');
-    if (rx.repetitionFrequency.isNotEmpty) parts.add('Freq: ${rx.repetitionFrequency}');
-    if (rx.pharmaceuticalForm.isNotEmpty) parts.add('Form: ${rx.pharmaceuticalForm}');
-    if (rx.dietRegimenAdvice.isNotEmpty) parts.add('Diet: ${rx.dietRegimenAdvice}');
+    if (rx.repetitionFrequency.isNotEmpty)
+      parts.add('Freq: ${rx.repetitionFrequency}');
+    if (rx.pharmaceuticalForm.isNotEmpty)
+      parts.add('Form: ${rx.pharmaceuticalForm}');
+    if (rx.dietRegimenAdvice.isNotEmpty)
+      parts.add('Diet: ${rx.dietRegimenAdvice}');
     return parts.join(', ');
   }
 
   /// Queries database and computes rich [PatientExportRow] objects for all active patients.
-  static Future<List<PatientExportRow>> fetchPatientExportRows(AppDatabase db) async {
-    final patients = await (db.select(db.patients)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.asc(t.serialNo)]))
-        .get();
+  static Future<List<PatientExportRow>> fetchPatientExportRows(
+    AppDatabase db,
+  ) async {
+    final patients =
+        await (db.select(db.patients)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.asc(t.serialNo)]))
+            .get();
 
-    final clinics = await (db.select(db.clinics)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final clinics =
+        await (db.select(db.clinics)
+          ..where((t) => t.isDeleted.equals(false))).get();
     final clinicMap = {for (final c in clinics) c.id: c.name};
 
-    final allVisits = await (db.select(db.visits)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.asc(t.visitDate)]))
-        .get();
+    final allVisits =
+        await (db.select(db.visits)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.asc(t.visitDate)]))
+            .get();
 
-    final allMemos = await (db.select(db.cashMemos)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final allMemos =
+        await (db.select(db.cashMemos)
+          ..where((t) => t.isDeleted.equals(false))).get();
 
-    final allComplaints = await (db.select(db.complaints)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final allComplaints =
+        await (db.select(db.complaints)
+          ..where((t) => t.isDeleted.equals(false))).get();
 
-    final allRx = await (db.select(db.prescriptions)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .get();
+    final allRx =
+        await (db.select(db.prescriptions)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+            .get();
 
-    final allInvestigations = await (db.select(db.investigations)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final allInvestigations =
+        await (db.select(db.investigations)
+          ..where((t) => t.isDeleted.equals(false))).get();
 
     // Group by patientId
     final visitsByPatient = <String, List<Visit>>{};
@@ -258,7 +284,8 @@ class PatientExportService {
 
       // 1. Visit Metrics
       final totalVisits = pVisits.length;
-      final firstVisitDate = pVisits.isNotEmpty ? pVisits.first.visitDate : null;
+      final firstVisitDate =
+          pVisits.isNotEmpty ? pVisits.first.visitDate : null;
       final lastVisit = pVisits.isNotEmpty ? pVisits.last : null;
       final lastVisitDate = lastVisit?.visitDate;
       final lastVisitOutcome = lastVisit?.outcome;
@@ -274,7 +301,11 @@ class PatientExportService {
 
       String followUpStatus = 'None';
       if (nextFollowUpDate != null) {
-        final fDate = DateTime(nextFollowUpDate.year, nextFollowUpDate.month, nextFollowUpDate.day);
+        final fDate = DateTime(
+          nextFollowUpDate.year,
+          nextFollowUpDate.month,
+          nextFollowUpDate.day,
+        );
         final diff = today.difference(fDate).inDays;
         if (diff > 0) {
           followUpStatus = 'Overdue by $diff day${diff == 1 ? '' : 's'}';
@@ -286,10 +317,16 @@ class PatientExportService {
       }
 
       // 2. Clinical Metrics
-      final activeComplaintsList = pComplaints
-          .where((c) => c.status.toLowerCase() != 'resolved')
-          .map((c) => c.severity > 0 ? '${c.complaintName} (Severity ${c.severity}/10)' : c.complaintName)
-          .toList();
+      final activeComplaintsList =
+          pComplaints
+              .where((c) => c.status.toLowerCase() != 'resolved')
+              .map(
+                (c) =>
+                    c.severity > 0
+                        ? '${c.complaintName} (Severity ${c.severity}/10)'
+                        : c.complaintName,
+              )
+              .toList();
       final activeComplaints = activeComplaintsList.join('; ');
 
       String lastRxText = '';
@@ -317,16 +354,18 @@ class PatientExportService {
         totalBilled += m.total.toDouble();
         totalPaid += m.paidAmount.toDouble();
         if (m.paymentMethod.isNotEmpty) {
-          paymentMethodCounts[m.paymentMethod] = (paymentMethodCounts[m.paymentMethod] ?? 0) + 1;
+          paymentMethodCounts[m.paymentMethod] =
+              (paymentMethodCounts[m.paymentMethod] ?? 0) + 1;
         }
       }
 
       final outstandingBalance = totalBilled - totalPaid;
       String preferredPayment = 'Cash';
       if (paymentMethodCounts.isNotEmpty) {
-        preferredPayment = paymentMethodCounts.entries
-            .reduce((a, b) => a.value >= b.value ? a : b)
-            .key;
+        preferredPayment =
+            paymentMethodCounts.entries
+                .reduce((a, b) => a.value >= b.value ? a : b)
+                .key;
       }
 
       result.add(
@@ -371,17 +410,41 @@ class PatientExportService {
       ExportColumn('Area / Locality', (r) => r.patient.area ?? ''),
       ExportColumn('Full Address', (r) => r.patient.address ?? ''),
       ExportColumn('Primary Clinic', (r) => r.clinicName),
-      ExportColumn('Primary Disease / Chief Condition', (r) => r.patient.primaryDisease ?? ''),
+      ExportColumn(
+        'Primary Disease / Chief Condition',
+        (r) => r.patient.primaryDisease ?? '',
+      ),
       ExportColumn('Active Complaints', (r) => r.activeComplaints),
       ExportColumn('Total Visits', (r) => r.totalVisits),
-      ExportColumn('First Visit Date', (r) => r.firstVisitDate != null ? Formatters.formatDate(r.firstVisitDate!) : ''),
-      ExportColumn('Last Visit Date', (r) => r.lastVisitDate != null ? Formatters.formatDate(r.lastVisitDate!) : ''),
+      ExportColumn(
+        'First Visit Date',
+        (r) =>
+            r.firstVisitDate != null
+                ? Formatters.formatDate(r.firstVisitDate!)
+                : '',
+      ),
+      ExportColumn(
+        'Last Visit Date',
+        (r) =>
+            r.lastVisitDate != null
+                ? Formatters.formatDate(r.lastVisitDate!)
+                : '',
+      ),
       ExportColumn('Last Visit Outcome', (r) => r.lastVisitOutcome ?? ''),
       ExportColumn('Last Prescribed Remedy', (r) => r.lastPrescription),
       ExportColumn('Total Lab Tests', (r) => r.totalInvestigations),
-      ExportColumn('Next Follow-Up Date', (r) => r.nextFollowUpDate != null ? Formatters.formatDate(r.nextFollowUpDate!) : ''),
+      ExportColumn(
+        'Next Follow-Up Date',
+        (r) =>
+            r.nextFollowUpDate != null
+                ? Formatters.formatDate(r.nextFollowUpDate!)
+                : '',
+      ),
       ExportColumn('Follow-Up Status', (r) => r.followUpStatus),
-      ExportColumn('Total Consultation Fees (Rs.)', (r) => r.totalConsultationFees),
+      ExportColumn(
+        'Total Consultation Fees (Rs.)',
+        (r) => r.totalConsultationFees,
+      ),
       ExportColumn('Total Medicine Fees (Rs.)', (r) => r.totalMedicineFees),
       ExportColumn('Total Discounts (Rs.)', (r) => r.totalDiscounts),
       ExportColumn('Total Amount Billed (Rs.)', (r) => r.totalBilled),
@@ -389,10 +452,25 @@ class PatientExportService {
       ExportColumn('Outstanding Balance (Rs.)', (r) => r.outstandingBalance),
       ExportColumn('Preferred Payment Mode', (r) => r.preferredPaymentMode),
       ExportColumn('Referral Source', (r) => r.patient.referralSource ?? ''),
-      ExportColumn('Google Review Given', (r) => r.patient.reviewGiven ? 'Yes' : 'No'),
-      ExportColumn('Google Review Asked Date', (r) => r.patient.reviewAskedAt != null ? Formatters.formatDate(r.patient.reviewAskedAt!) : ''),
-      ExportColumn('Registration Date', (r) => Formatters.formatDate(r.patient.createdAt)),
-      ExportColumn('Last Updated', (r) => Formatters.formatDate(r.patient.updatedAt)),
+      ExportColumn(
+        'Google Review Given',
+        (r) => r.patient.reviewGiven ? 'Yes' : 'No',
+      ),
+      ExportColumn(
+        'Google Review Asked Date',
+        (r) =>
+            r.patient.reviewAskedAt != null
+                ? Formatters.formatDate(r.patient.reviewAskedAt!)
+                : '',
+      ),
+      ExportColumn(
+        'Registration Date',
+        (r) => Formatters.formatDate(r.patient.createdAt),
+      ),
+      ExportColumn(
+        'Last Updated',
+        (r) => Formatters.formatDate(r.patient.updatedAt),
+      ),
       ExportColumn('General Clinical Notes', (r) => r.patient.notes ?? ''),
     ];
   }
@@ -404,14 +482,36 @@ class PatientExportService {
       ExportColumn('Code', (r) => r.patient.patientCode),
       ExportColumn('Name', (r) => r.patient.name),
       ExportColumn('Phone', (r) => r.patient.phone),
-      ExportColumn('Age/Gender', (r) => '${r.patient.age} ${r.patient.gender.isNotEmpty ? r.patient.gender[0].toUpperCase() : ''}'),
+      ExportColumn(
+        'Age/Gender',
+        (r) =>
+            '${r.patient.age} ${r.patient.gender.isNotEmpty ? r.patient.gender[0].toUpperCase() : ''}',
+      ),
       ExportColumn('Area', (r) => r.patient.area ?? ''),
       ExportColumn('Primary Disease', (r) => r.patient.primaryDisease ?? ''),
       ExportColumn('Visits', (r) => r.totalVisits),
-      ExportColumn('Last Visit', (r) => r.lastVisitDate != null ? Formatters.formatDate(r.lastVisitDate!) : '-'),
-      ExportColumn('Next Follow-up', (r) => r.nextFollowUpDate != null ? Formatters.formatDate(r.nextFollowUpDate!) : '-'),
-      ExportColumn('Total Paid', (r) => 'Rs. ${r.totalPaid.toStringAsFixed(0)}'),
-      ExportColumn('Balance', (r) => 'Rs. ${r.outstandingBalance.toStringAsFixed(0)}'),
+      ExportColumn(
+        'Last Visit',
+        (r) =>
+            r.lastVisitDate != null
+                ? Formatters.formatDate(r.lastVisitDate!)
+                : '-',
+      ),
+      ExportColumn(
+        'Next Follow-up',
+        (r) =>
+            r.nextFollowUpDate != null
+                ? Formatters.formatDate(r.nextFollowUpDate!)
+                : '-',
+      ),
+      ExportColumn(
+        'Total Paid',
+        (r) => 'Rs. ${r.totalPaid.toStringAsFixed(0)}',
+      ),
+      ExportColumn(
+        'Balance',
+        (r) => 'Rs. ${r.outstandingBalance.toStringAsFixed(0)}',
+      ),
     ];
   }
 
@@ -426,22 +526,27 @@ class PatientExportService {
     // 1. Sheet: Patients Master
     final masterSheet = excel['Patients Master'];
     final masterColumns = getMasterExportColumns();
-    masterSheet.appendRow(masterColumns.map((c) => xlsx.TextCellValue(c.header)).toList());
+    masterSheet.appendRow(
+      masterColumns.map((c) => xlsx.TextCellValue(c.header)).toList(),
+    );
     _styleHeaderRow(masterSheet, masterColumns.length);
 
     for (final row in rows) {
-      masterSheet.appendRow(masterColumns.map((c) => _cellValue(c.value(row))).toList());
+      masterSheet.appendRow(
+        masterColumns.map((c) => _cellValue(c.value(row))).toList(),
+      );
     }
 
     // 2. Sheet: Visits History
-    final allVisits = await (db.select(db.visits)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.visitDate)]))
-        .get();
+    final allVisits =
+        await (db.select(db.visits)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.desc(t.visitDate)]))
+            .get();
 
-    final allClinics = await (db.select(db.clinics)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final allClinics =
+        await (db.select(db.clinics)
+          ..where((t) => t.isDeleted.equals(false))).get();
     final clinicNameById = {for (final c in allClinics) c.id: c.name};
 
     final visitsSheet = excel['Visits History'];
@@ -459,7 +564,9 @@ class PatientExportService {
       'Next Follow-Up Date',
       'Notes',
     ];
-    visitsSheet.appendRow(visitHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    visitsSheet.appendRow(
+      visitHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(visitsSheet, visitHeaders.length);
 
     for (final v in allVisits) {
@@ -481,10 +588,11 @@ class PatientExportService {
     }
 
     // 3. Sheet: Clinical Complaints
-    final allComplaints = await (db.select(db.complaints)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.asc(t.complaintIndex)]))
-        .get();
+    final allComplaints =
+        await (db.select(db.complaints)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.asc(t.complaintIndex)]))
+            .get();
 
     final complaintsSheet = excel['Clinical Complaints'];
     final compHeaders = [
@@ -506,7 +614,9 @@ class PatientExportService {
       'Status',
       'Notes',
     ];
-    complaintsSheet.appendRow(compHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    complaintsSheet.appendRow(
+      compHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(complaintsSheet, compHeaders.length);
 
     for (final c in allComplaints) {
@@ -533,10 +643,11 @@ class PatientExportService {
     }
 
     // 4. Sheet: Prescriptions History
-    final allPrescriptions = await (db.select(db.prescriptions)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .get();
+    final allPrescriptions =
+        await (db.select(db.prescriptions)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+            .get();
 
     final rxSheet = excel['Prescriptions History'];
     final rxHeaders = [
@@ -575,10 +686,11 @@ class PatientExportService {
     }
 
     // 5. Sheet: Lab Investigations
-    final allInvestigations = await (db.select(db.investigations)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.testDate)]))
-        .get();
+    final allInvestigations =
+        await (db.select(db.investigations)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.desc(t.testDate)]))
+            .get();
 
     final invSheet = excel['Lab Investigations'];
     final invHeaders = [
@@ -601,7 +713,10 @@ class PatientExportService {
 
     for (final inv in allInvestigations) {
       final p = patientMap[inv.patientId];
-      final val = inv.numericValue != null ? inv.numericValue.toString() : (inv.stringValue ?? '');
+      final val =
+          inv.numericValue != null
+              ? inv.numericValue.toString()
+              : (inv.stringValue ?? '');
       invSheet.appendRow([
         _cellValue(inv.testDate),
         _cellValue(p?.serialNo ?? ''),
@@ -620,10 +735,11 @@ class PatientExportService {
     }
 
     // 6. Sheet: Billing & Cash Memos
-    final allMemos = await (db.select(db.cashMemos)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.memoDate)]))
-        .get();
+    final allMemos =
+        await (db.select(db.cashMemos)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.desc(t.memoDate)]))
+            .get();
 
     final memoSheet = excel['Billing & Cash Memos'];
     final memoHeaders = [
@@ -680,7 +796,9 @@ class PatientExportService {
       'Follow-Up Status',
       'Last Prescribed Remedy',
     ];
-    followUpSheet.appendRow(followUpHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    followUpSheet.appendRow(
+      followUpHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(followUpSheet, followUpHeaders.length);
 
     for (final r in rows) {
@@ -692,8 +810,16 @@ class PatientExportService {
           _cellValue(r.patient.phone),
           _cellValue(r.clinicName),
           _cellValue(r.patient.primaryDisease ?? ''),
-          _cellValue(r.lastVisitDate != null ? Formatters.formatDate(r.lastVisitDate!) : ''),
-          _cellValue(r.nextFollowUpDate != null ? Formatters.formatDate(r.nextFollowUpDate!) : ''),
+          _cellValue(
+            r.lastVisitDate != null
+                ? Formatters.formatDate(r.lastVisitDate!)
+                : '',
+          ),
+          _cellValue(
+            r.nextFollowUpDate != null
+                ? Formatters.formatDate(r.nextFollowUpDate!)
+                : '',
+          ),
           _cellValue(r.followUpStatus),
           _cellValue(r.lastPrescription),
         ]);
@@ -701,9 +827,9 @@ class PatientExportService {
     }
 
     // 8. Sheet: Master Case Records (Human-Readable Clinical Summaries)
-    final allCaseRecords = await (db.select(db.patientCaseRecords)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final allCaseRecords =
+        await (db.select(db.patientCaseRecords)
+          ..where((t) => t.isDeleted.equals(false))).get();
 
     final caseSheet = excel['Master Case Records'];
     final caseHeaders = [
@@ -753,21 +879,41 @@ class PatientExportService {
       'Response to Stress',
       'Dominant Miasm',
     ];
-    generalsSheet.appendRow(generalsHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    generalsSheet.appendRow(
+      generalsHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(generalsSheet, generalsHeaders.length);
 
     for (final rec in allCaseRecords) {
       final p = patientMap[rec.patientId];
-      final complaints = MasterCaseRecordData.parseChiefComplaints(rec.chiefComplaintsJson);
+      final complaints = MasterCaseRecordData.parseChiefComplaints(
+        rec.chiefComplaintsJson,
+      );
       final hpi = MasterCaseRecordData.parseHpi(rec.hpi);
-      final pastHistory = MasterCaseRecordData.parsePastHistory(rec.pastHistoryJson);
-      final familyHistory = MasterCaseRecordData.parseFamilyHistory(rec.familyHistoryJson);
-      final physicalGenerals = MasterCaseRecordData.parsePhysicalGenerals(rec.physicalGeneralsJson);
-      final mentalGenerals = MasterCaseRecordData.parseMentalGenerals(rec.mentalGeneralsJson);
-      final clinicalExam = MasterCaseRecordData.parseClinicalExam(rec.clinicalExamJson);
-      final miasm = MasterCaseRecordData.parseMiasmaticAnalysis(rec.miasmaticAnalysisJson);
-      final totality = MasterCaseRecordData.parseCaseTotality(rec.caseTotalityJson);
-      final prescription = MasterCaseRecordData.parsePrescription(rec.baselinePrescriptionJson);
+      final pastHistory = MasterCaseRecordData.parsePastHistory(
+        rec.pastHistoryJson,
+      );
+      final familyHistory = MasterCaseRecordData.parseFamilyHistory(
+        rec.familyHistoryJson,
+      );
+      final physicalGenerals = MasterCaseRecordData.parsePhysicalGenerals(
+        rec.physicalGeneralsJson,
+      );
+      final mentalGenerals = MasterCaseRecordData.parseMentalGenerals(
+        rec.mentalGeneralsJson,
+      );
+      final clinicalExam = MasterCaseRecordData.parseClinicalExam(
+        rec.clinicalExamJson,
+      );
+      final miasm = MasterCaseRecordData.parseMiasmaticAnalysis(
+        rec.miasmaticAnalysisJson,
+      );
+      final totality = MasterCaseRecordData.parseCaseTotality(
+        rec.caseTotalityJson,
+      );
+      final prescription = MasterCaseRecordData.parsePrescription(
+        rec.baselinePrescriptionJson,
+      );
       final outcome = MasterCaseRecordData.parseOutcome(rec.outcome);
 
       // Add to Master Case Records Sheet
@@ -787,7 +933,11 @@ class PatientExportService {
         _cellValue(_formatTotality(totality)),
         _cellValue(_formatPrescriptionPlan(prescription)),
         _cellValue(rec.followUpNotes ?? ''),
-        _cellValue(outcome.finalStatus.isNotEmpty ? outcome.finalStatus : (rec.outcome ?? '')),
+        _cellValue(
+          outcome.finalStatus.isNotEmpty
+              ? outcome.finalStatus
+              : (rec.outcome ?? ''),
+        ),
       ]);
 
       // Add to Physical & Mental Generals Repertory Sheet
@@ -818,10 +968,11 @@ class PatientExportService {
     }
 
     // 10. Sheet: Walk-in Leads & Footfalls
-    final allFootfalls = await (db.select(db.footfalls)
-          ..where((t) => t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
-        .get();
+    final allFootfalls =
+        await (db.select(db.footfalls)
+              ..where((t) => t.isDeleted.equals(false))
+              ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+            .get();
 
     final footfallsSheet = excel['Walk-in Leads & Footfalls'];
     final footfallHeaders = [
@@ -835,11 +986,16 @@ class PatientExportService {
       'Converted Patient Name',
       'Reception Notes',
     ];
-    footfallsSheet.appendRow(footfallHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    footfallsSheet.appendRow(
+      footfallHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(footfallsSheet, footfallHeaders.length);
 
     for (final f in allFootfalls) {
-      final convertedP = f.convertedPatientId != null ? patientMap[f.convertedPatientId] : null;
+      final convertedP =
+          f.convertedPatientId != null
+              ? patientMap[f.convertedPatientId]
+              : null;
       final isConverted = f.convertedPatientId != null;
       footfallsSheet.appendRow([
         _cellValue(f.date),

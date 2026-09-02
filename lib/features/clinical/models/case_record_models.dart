@@ -27,17 +27,17 @@ class PatientIdentificationDetails {
   });
 
   Map<String, dynamic> toJson() => {
-        'regNo': regNo,
-        'firstVisitDate': firstVisitDate,
-        'patientName': patientName,
-        'age': age,
-        'gender': gender,
-        'dob': dob,
-        'occupation': occupation,
-        'address': address,
-        'phone': phone,
-        'maritalStatus': maritalStatus,
-      };
+    'regNo': regNo,
+    'firstVisitDate': firstVisitDate,
+    'patientName': patientName,
+    'age': age,
+    'gender': gender,
+    'dob': dob,
+    'occupation': occupation,
+    'address': address,
+    'phone': phone,
+    'maritalStatus': maritalStatus,
+  };
 
   factory PatientIdentificationDetails.fromJson(Map<String, dynamic> json) =>
       PatientIdentificationDetails(
@@ -89,21 +89,21 @@ class ChiefComplaintDetail {
   });
 
   Map<String, dynamic> toJson() => {
-        'complaint': complaint,
-        'location': location,
-        'onset': onset,
-        'duration': duration,
-        'sensation': sensation,
-        'extensionRadiation': extensionRadiation,
-        'modalitiesAgg': modalitiesAgg,
-        'modalitiesAmel': modalitiesAmel,
-        'concomitants': concomitants,
-        'causation': causation,
-        'periodicity': periodicity,
-        'time': time,
-        'severity': severity,
-        'associatedSymptoms': associatedSymptoms,
-      };
+    'complaint': complaint,
+    'location': location,
+    'onset': onset,
+    'duration': duration,
+    'sensation': sensation,
+    'extensionRadiation': extensionRadiation,
+    'modalitiesAgg': modalitiesAgg,
+    'modalitiesAmel': modalitiesAmel,
+    'concomitants': concomitants,
+    'causation': causation,
+    'periodicity': periodicity,
+    'time': time,
+    'severity': severity,
+    'associatedSymptoms': associatedSymptoms,
+  };
 
   factory ChiefComplaintDetail.fromJson(Map<String, dynamic> json) =>
       ChiefComplaintDetail(
@@ -151,26 +151,38 @@ class HpiDetails {
   String get precipitatingFactors => relevantPrecipitatingFactors;
 
   Map<String, dynamic> toJson() => {
-        'chronologicalDevelopment': chronologicalDevelopment,
-        'firstOccurrence': firstOccurrence,
-        'progression': progression,
-        'previousEpisodes': previousEpisodes,
-        'previousTreatment': previousTreatment,
-        'responseToTreatment': responseToTreatment,
-        'relevantPrecipitatingFactors': relevantPrecipitatingFactors,
-        'otherRelevantHistory': otherRelevantHistory,
-      };
+    'chronologicalDevelopment': chronologicalDevelopment,
+    'firstOccurrence': firstOccurrence,
+    'progression': progression,
+    'previousEpisodes': previousEpisodes,
+    'previousTreatment': previousTreatment,
+    'responseToTreatment': responseToTreatment,
+    'relevantPrecipitatingFactors': relevantPrecipitatingFactors,
+    'otherRelevantHistory': otherRelevantHistory,
+  };
 
   factory HpiDetails.fromJson(Map<String, dynamic> json) => HpiDetails(
-        chronologicalDevelopment: json['chronologicalDevelopment'] as String? ?? json['progression'] as String? ?? '',
-        firstOccurrence: json['firstOccurrence'] as String? ?? '',
-        progression: json['progression'] as String? ?? json['chronologicalDevelopment'] as String? ?? '',
-        previousEpisodes: json['previousEpisodes'] as String? ?? '',
-        previousTreatment: json['previousTreatment'] as String? ?? json['previousTreatments'] as String? ?? '',
-        responseToTreatment: json['responseToTreatment'] as String? ?? '',
-        relevantPrecipitatingFactors: json['relevantPrecipitatingFactors'] as String? ?? json['precipitatingFactors'] as String? ?? '',
-        otherRelevantHistory: json['otherRelevantHistory'] as String? ?? '',
-      );
+    chronologicalDevelopment:
+        json['chronologicalDevelopment'] as String? ??
+        json['progression'] as String? ??
+        '',
+    firstOccurrence: json['firstOccurrence'] as String? ?? '',
+    progression:
+        json['progression'] as String? ??
+        json['chronologicalDevelopment'] as String? ??
+        '',
+    previousEpisodes: json['previousEpisodes'] as String? ?? '',
+    previousTreatment:
+        json['previousTreatment'] as String? ??
+        json['previousTreatments'] as String? ??
+        '',
+    responseToTreatment: json['responseToTreatment'] as String? ?? '',
+    relevantPrecipitatingFactors:
+        json['relevantPrecipitatingFactors'] as String? ??
+        json['precipitatingFactors'] as String? ??
+        '',
+    otherRelevantHistory: json['otherRelevantHistory'] as String? ?? '',
+  );
 
   factory HpiDetails.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const HpiDetails();
@@ -218,18 +230,18 @@ class PastHistoryDetails {
   String get previousTreatments => previousHomeopathicTreatment;
 
   Map<String, dynamic> toJson() => {
-        'childhoodIllnesses': childhoodIllnesses,
-        'majorIllnesses': majorIllnesses,
-        'chronicDiseases': chronicDiseases,
-        'surgeries': surgeries,
-        'injuriesTrauma': injuriesTrauma,
-        'hospitalisations': hospitalisations,
-        'infections': infections,
-        'allergies': allergies,
-        'previousMedications': previousMedications,
-        'previousHomeopathicTreatment': previousHomeopathicTreatment,
-        'otherPastHistory': otherPastHistory,
-      };
+    'childhoodIllnesses': childhoodIllnesses,
+    'majorIllnesses': majorIllnesses,
+    'chronicDiseases': chronicDiseases,
+    'surgeries': surgeries,
+    'injuriesTrauma': injuriesTrauma,
+    'hospitalisations': hospitalisations,
+    'infections': infections,
+    'allergies': allergies,
+    'previousMedications': previousMedications,
+    'previousHomeopathicTreatment': previousHomeopathicTreatment,
+    'otherPastHistory': otherPastHistory,
+  };
 
   factory PastHistoryDetails.fromJson(Map<String, dynamic> json) =>
       PastHistoryDetails(
@@ -242,7 +254,10 @@ class PastHistoryDetails {
         infections: json['infections'] as String? ?? '',
         allergies: json['allergies'] as String? ?? '',
         previousMedications: json['previousMedications'] as String? ?? '',
-        previousHomeopathicTreatment: json['previousHomeopathicTreatment'] as String? ?? json['previousTreatments'] as String? ?? '',
+        previousHomeopathicTreatment:
+            json['previousHomeopathicTreatment'] as String? ??
+            json['previousTreatments'] as String? ??
+            '',
         otherPastHistory: json['otherPastHistory'] as String? ?? '',
       );
 
@@ -250,7 +265,8 @@ class PastHistoryDetails {
     if (raw == null || raw.isEmpty) return const PastHistoryDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return PastHistoryDetails.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return PastHistoryDetails.fromJson(decoded);
     } catch (_) {}
     return PastHistoryDetails(chronicDiseases: raw);
   }
@@ -285,23 +301,26 @@ class FamilyHistoryDetails {
   String get siblingsChildren => '$siblings $children'.trim();
 
   Map<String, dynamic> toJson() => {
-        'father': father,
-        'mother': mother,
-        'siblings': siblings,
-        'spouse': spouse,
-        'children': children,
-        'grandparentsRelatives': grandparentsRelatives,
-        'hereditaryDiseases': hereditaryDiseases,
-        'majorFamilialDiseases': majorFamilialDiseases,
-        'psychiatricHistory': psychiatricHistory,
-        'otherFamilyHistory': otherFamilyHistory,
-      };
+    'father': father,
+    'mother': mother,
+    'siblings': siblings,
+    'spouse': spouse,
+    'children': children,
+    'grandparentsRelatives': grandparentsRelatives,
+    'hereditaryDiseases': hereditaryDiseases,
+    'majorFamilialDiseases': majorFamilialDiseases,
+    'psychiatricHistory': psychiatricHistory,
+    'otherFamilyHistory': otherFamilyHistory,
+  };
 
   factory FamilyHistoryDetails.fromJson(Map<String, dynamic> json) =>
       FamilyHistoryDetails(
         father: json['father'] as String? ?? '',
         mother: json['mother'] as String? ?? '',
-        siblings: json['siblings'] as String? ?? json['siblingsChildren'] as String? ?? '',
+        siblings:
+            json['siblings'] as String? ??
+            json['siblingsChildren'] as String? ??
+            '',
         spouse: json['spouse'] as String? ?? '',
         children: json['children'] as String? ?? '',
         grandparentsRelatives: json['grandparentsRelatives'] as String? ?? '',
@@ -315,7 +334,8 @@ class FamilyHistoryDetails {
     if (raw == null || raw.isEmpty) return const FamilyHistoryDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return FamilyHistoryDetails.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return FamilyHistoryDetails.fromJson(decoded);
     } catch (_) {}
     return FamilyHistoryDetails(hereditaryDiseases: raw);
   }
@@ -363,22 +383,22 @@ class DevelopmentalHistoryDetails {
   String get otherDevelopmentalNotes => otherBirthDevelopmentalHistory;
 
   Map<String, dynamic> toJson() => {
-        'maternalHealth': maternalHealth,
-        'pregnancyComplications': pregnancyComplications,
-        'maternalInfections': maternalInfections,
-        'maternalMedications': maternalMedications,
-        'antenatalCare': antenatalCare,
-        'nutritionDuringPregnancy': nutritionDuringPregnancy,
-        'gestationalAge': gestationalAge,
-        'birthOrder': birthOrder,
-        'modeOfDelivery': modeOfDelivery,
-        'birthWeight': birthWeight,
-        'neonatalHistory': neonatalHistory,
-        'breastfeeding': breastfeeding,
-        'developmentalMilestones': developmentalMilestones,
-        'childhoodDevelopment': childhoodDevelopment,
-        'otherBirthDevelopmentalHistory': otherBirthDevelopmentalHistory,
-      };
+    'maternalHealth': maternalHealth,
+    'pregnancyComplications': pregnancyComplications,
+    'maternalInfections': maternalInfections,
+    'maternalMedications': maternalMedications,
+    'antenatalCare': antenatalCare,
+    'nutritionDuringPregnancy': nutritionDuringPregnancy,
+    'gestationalAge': gestationalAge,
+    'birthOrder': birthOrder,
+    'modeOfDelivery': modeOfDelivery,
+    'birthWeight': birthWeight,
+    'neonatalHistory': neonatalHistory,
+    'breastfeeding': breastfeeding,
+    'developmentalMilestones': developmentalMilestones,
+    'childhoodDevelopment': childhoodDevelopment,
+    'otherBirthDevelopmentalHistory': otherBirthDevelopmentalHistory,
+  };
 
   factory DevelopmentalHistoryDetails.fromJson(Map<String, dynamic> json) =>
       DevelopmentalHistoryDetails(
@@ -387,23 +407,34 @@ class DevelopmentalHistoryDetails {
         maternalInfections: json['maternalInfections'] as String? ?? '',
         maternalMedications: json['maternalMedications'] as String? ?? '',
         antenatalCare: json['antenatalCare'] as String? ?? '',
-        nutritionDuringPregnancy: json['nutritionDuringPregnancy'] as String? ?? '',
+        nutritionDuringPregnancy:
+            json['nutritionDuringPregnancy'] as String? ?? '',
         gestationalAge: json['gestationalAge'] as String? ?? '',
         birthOrder: json['birthOrder'] as String? ?? '',
-        modeOfDelivery: json['modeOfDelivery'] as String? ?? json['deliveryComplications'] as String? ?? '',
+        modeOfDelivery:
+            json['modeOfDelivery'] as String? ??
+            json['deliveryComplications'] as String? ??
+            '',
         birthWeight: json['birthWeight'] as String? ?? '',
         neonatalHistory: json['neonatalHistory'] as String? ?? '',
         breastfeeding: json['breastfeeding'] as String? ?? '',
-        developmentalMilestones: json['developmentalMilestones'] as String? ?? json['milestonesDentition'] as String? ?? '',
+        developmentalMilestones:
+            json['developmentalMilestones'] as String? ??
+            json['milestonesDentition'] as String? ??
+            '',
         childhoodDevelopment: json['childhoodDevelopment'] as String? ?? '',
-        otherBirthDevelopmentalHistory: json['otherBirthDevelopmentalHistory'] as String? ?? json['otherDevelopmentalNotes'] as String? ?? '',
+        otherBirthDevelopmentalHistory:
+            json['otherBirthDevelopmentalHistory'] as String? ??
+            json['otherDevelopmentalNotes'] as String? ??
+            '',
       );
 
   factory DevelopmentalHistoryDetails.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const DevelopmentalHistoryDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return DevelopmentalHistoryDetails.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return DevelopmentalHistoryDetails.fromJson(decoded);
     } catch (_) {}
     return DevelopmentalHistoryDetails(maternalHealth: raw);
   }
@@ -498,106 +529,114 @@ class PhysicalGenerals {
   });
 
   String get thirstFrequencyTiming => '$thirstFrequency $thirstTiming'.trim();
-  String get stoolFrequencyConsistency => '$stoolFrequency $stoolConsistency'.trim();
-  String get perspirationOdourTiming => '$perspirationOdour $perspirationTimingDistribution'.trim();
-  String get sleepQualityDisturbances => '$sleepQuality $sleepDisturbances'.trim();
+  String get stoolFrequencyConsistency =>
+      '$stoolFrequency $stoolConsistency'.trim();
+  String get perspirationOdourTiming =>
+      '$perspirationOdour $perspirationTimingDistribution'.trim();
+  String get sleepQualityDisturbances =>
+      '$sleepQuality $sleepDisturbances'.trim();
   String get energyFatigue => '$energyVitality $fatigue'.trim();
-  String get sexualMenstrualObstetric => '$sexualHistory $menstrualHistory $obstetricHistory'.trim();
+  String get sexualMenstrualObstetric =>
+      '$sexualHistory $menstrualHistory $obstetricHistory'.trim();
 
   Map<String, dynamic> toJson() => {
-        'thermal': thermal,
-        'hotChilly': hotChilly,
-        'weatherPreference': weatherPreference,
-        'sensitivityToTemperature': sensitivityToTemperature,
-        'thirst': thirst,
-        'thirstFrequency': thirstFrequency,
-        'thirstTiming': thirstTiming,
-        'appetite': appetite,
-        'hungerFasting': hungerFasting,
-        'cravings': cravings,
-        'aversions': aversions,
-        'intolerances': intolerances,
-        'stool': stool,
-        'stoolFrequency': stoolFrequency,
-        'stoolConsistency': stoolConsistency,
-        'stoolColourOdour': stoolColourOdour,
-        'stoolDifficultiesModalities': stoolDifficultiesModalities,
-        'urine': urine,
-        'urineFrequency': urineFrequency,
-        'urineQuantity': urineQuantity,
-        'urineColourOdour': urineColourOdour,
-        'urinarySymptoms': urinarySymptoms,
-        'perspiration': perspiration,
-        'perspirationOdour': perspirationOdour,
-        'perspirationTimingDistribution': perspirationTimingDistribution,
-        'sleep': sleep,
-        'sleepQuantity': sleepQuantity,
-        'sleepQuality': sleepQuality,
-        'sleepPosition': sleepPosition,
-        'sleepOnset': sleepOnset,
-        'sleepDisturbances': sleepDisturbances,
-        'dreams': dreams,
-        'dreamsRecurrentPeculiar': dreamsRecurrentPeculiar,
-        'energyVitality': energyVitality,
-        'fatigue': fatigue,
-        'sexualHistory': sexualHistory,
-        'menstrualHistory': menstrualHistory,
-        'obstetricHistory': obstetricHistory,
-        'skinHairNails': skinHairNails,
-        'generalDischarges': generalDischarges,
-        'otherPhysicalGenerals': otherPhysicalGenerals,
-      };
+    'thermal': thermal,
+    'hotChilly': hotChilly,
+    'weatherPreference': weatherPreference,
+    'sensitivityToTemperature': sensitivityToTemperature,
+    'thirst': thirst,
+    'thirstFrequency': thirstFrequency,
+    'thirstTiming': thirstTiming,
+    'appetite': appetite,
+    'hungerFasting': hungerFasting,
+    'cravings': cravings,
+    'aversions': aversions,
+    'intolerances': intolerances,
+    'stool': stool,
+    'stoolFrequency': stoolFrequency,
+    'stoolConsistency': stoolConsistency,
+    'stoolColourOdour': stoolColourOdour,
+    'stoolDifficultiesModalities': stoolDifficultiesModalities,
+    'urine': urine,
+    'urineFrequency': urineFrequency,
+    'urineQuantity': urineQuantity,
+    'urineColourOdour': urineColourOdour,
+    'urinarySymptoms': urinarySymptoms,
+    'perspiration': perspiration,
+    'perspirationOdour': perspirationOdour,
+    'perspirationTimingDistribution': perspirationTimingDistribution,
+    'sleep': sleep,
+    'sleepQuantity': sleepQuantity,
+    'sleepQuality': sleepQuality,
+    'sleepPosition': sleepPosition,
+    'sleepOnset': sleepOnset,
+    'sleepDisturbances': sleepDisturbances,
+    'dreams': dreams,
+    'dreamsRecurrentPeculiar': dreamsRecurrentPeculiar,
+    'energyVitality': energyVitality,
+    'fatigue': fatigue,
+    'sexualHistory': sexualHistory,
+    'menstrualHistory': menstrualHistory,
+    'obstetricHistory': obstetricHistory,
+    'skinHairNails': skinHairNails,
+    'generalDischarges': generalDischarges,
+    'otherPhysicalGenerals': otherPhysicalGenerals,
+  };
 
-  factory PhysicalGenerals.fromJson(Map<String, dynamic> json) =>
-      PhysicalGenerals(
-        thermal: json['thermal'] as String? ?? 'Ambithermal',
-        hotChilly: json['hotChilly'] as String? ?? 'Ambithermal',
-        weatherPreference: json['weatherPreference'] as String? ?? '',
-        sensitivityToTemperature: json['sensitivityToTemperature'] as String? ?? '',
-        thirst: json['thirst'] as String? ?? '',
-        thirstFrequency: json['thirstFrequency'] as String? ?? '',
-        thirstTiming: json['thirstTiming'] as String? ?? '',
-        appetite: json['appetite'] as String? ?? '',
-        hungerFasting: json['hungerFasting'] as String? ?? '',
-        cravings: json['cravings'] as String? ?? '',
-        aversions: json['aversions'] as String? ?? '',
-        intolerances: json['intolerances'] as String? ?? '',
-        stool: json['stool'] as String? ?? '',
-        stoolFrequency: json['stoolFrequency'] as String? ?? '',
-        stoolConsistency: json['stoolConsistency'] as String? ?? '',
-        stoolColourOdour: json['stoolColourOdour'] as String? ?? '',
-        stoolDifficultiesModalities: json['stoolDifficultiesModalities'] as String? ?? '',
-        urine: json['urine'] as String? ?? '',
-        urineFrequency: json['urineFrequency'] as String? ?? '',
-        urineQuantity: json['urineQuantity'] as String? ?? '',
-        urineColourOdour: json['urineColourOdour'] as String? ?? '',
-        urinarySymptoms: json['urinarySymptoms'] as String? ?? '',
-        perspiration: json['perspiration'] as String? ?? '',
-        perspirationOdour: json['perspirationOdour'] as String? ?? '',
-        perspirationTimingDistribution: json['perspirationTimingDistribution'] as String? ?? '',
-        sleep: json['sleep'] as String? ?? '',
-        sleepQuantity: json['sleepQuantity'] as String? ?? '',
-        sleepQuality: json['sleepQuality'] as String? ?? '',
-        sleepPosition: json['sleepPosition'] as String? ?? '',
-        sleepOnset: json['sleepOnset'] as String? ?? '',
-        sleepDisturbances: json['sleepDisturbances'] as String? ?? '',
-        dreams: json['dreams'] as String? ?? '',
-        dreamsRecurrentPeculiar: json['dreamsRecurrentPeculiar'] as String? ?? '',
-        energyVitality: json['energyVitality'] as String? ?? '',
-        fatigue: json['fatigue'] as String? ?? '',
-        sexualHistory: json['sexualHistory'] as String? ?? '',
-        menstrualHistory: json['menstrualHistory'] as String? ?? '',
-        obstetricHistory: json['obstetricHistory'] as String? ?? '',
-        skinHairNails: json['skinHairNails'] as String? ?? '',
-        generalDischarges: json['generalDischarges'] as String? ?? '',
-        otherPhysicalGenerals: json['otherPhysicalGenerals'] as String? ?? '',
-      );
+  factory PhysicalGenerals.fromJson(
+    Map<String, dynamic> json,
+  ) => PhysicalGenerals(
+    thermal: json['thermal'] as String? ?? 'Ambithermal',
+    hotChilly: json['hotChilly'] as String? ?? 'Ambithermal',
+    weatherPreference: json['weatherPreference'] as String? ?? '',
+    sensitivityToTemperature: json['sensitivityToTemperature'] as String? ?? '',
+    thirst: json['thirst'] as String? ?? '',
+    thirstFrequency: json['thirstFrequency'] as String? ?? '',
+    thirstTiming: json['thirstTiming'] as String? ?? '',
+    appetite: json['appetite'] as String? ?? '',
+    hungerFasting: json['hungerFasting'] as String? ?? '',
+    cravings: json['cravings'] as String? ?? '',
+    aversions: json['aversions'] as String? ?? '',
+    intolerances: json['intolerances'] as String? ?? '',
+    stool: json['stool'] as String? ?? '',
+    stoolFrequency: json['stoolFrequency'] as String? ?? '',
+    stoolConsistency: json['stoolConsistency'] as String? ?? '',
+    stoolColourOdour: json['stoolColourOdour'] as String? ?? '',
+    stoolDifficultiesModalities:
+        json['stoolDifficultiesModalities'] as String? ?? '',
+    urine: json['urine'] as String? ?? '',
+    urineFrequency: json['urineFrequency'] as String? ?? '',
+    urineQuantity: json['urineQuantity'] as String? ?? '',
+    urineColourOdour: json['urineColourOdour'] as String? ?? '',
+    urinarySymptoms: json['urinarySymptoms'] as String? ?? '',
+    perspiration: json['perspiration'] as String? ?? '',
+    perspirationOdour: json['perspirationOdour'] as String? ?? '',
+    perspirationTimingDistribution:
+        json['perspirationTimingDistribution'] as String? ?? '',
+    sleep: json['sleep'] as String? ?? '',
+    sleepQuantity: json['sleepQuantity'] as String? ?? '',
+    sleepQuality: json['sleepQuality'] as String? ?? '',
+    sleepPosition: json['sleepPosition'] as String? ?? '',
+    sleepOnset: json['sleepOnset'] as String? ?? '',
+    sleepDisturbances: json['sleepDisturbances'] as String? ?? '',
+    dreams: json['dreams'] as String? ?? '',
+    dreamsRecurrentPeculiar: json['dreamsRecurrentPeculiar'] as String? ?? '',
+    energyVitality: json['energyVitality'] as String? ?? '',
+    fatigue: json['fatigue'] as String? ?? '',
+    sexualHistory: json['sexualHistory'] as String? ?? '',
+    menstrualHistory: json['menstrualHistory'] as String? ?? '',
+    obstetricHistory: json['obstetricHistory'] as String? ?? '',
+    skinHairNails: json['skinHairNails'] as String? ?? '',
+    generalDischarges: json['generalDischarges'] as String? ?? '',
+    otherPhysicalGenerals: json['otherPhysicalGenerals'] as String? ?? '',
+  );
 
   factory PhysicalGenerals.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const PhysicalGenerals();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return PhysicalGenerals.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return PhysicalGenerals.fromJson(decoded);
     } catch (_) {}
     return PhysicalGenerals(thermal: raw);
   }
@@ -667,80 +706,96 @@ class MentalGenerals {
   String get anxietyFears => '$anxiety $fears'.trim();
   String get sadnessGriefDepression => '$sadnessGrief $depression'.trim();
   String get jealousySuspicion => '$jealousy $suspicion'.trim();
-  String get companySolitude => '$companyDesireAversion $desireForSolitude'.trim();
+  String get companySolitude =>
+      '$companyDesireAversion $desireForSolitude'.trim();
   String get attentionConsolation => desireForAttentionConsolation;
   String get consolationReaction => desireForAttentionConsolation;
-  String get confidenceWillIndecision => '$confidenceSelfEsteem $willDetermination $indecision'.trim();
+  String get confidenceWillIndecision =>
+      '$confidenceSelfEsteem $willDetermination $indecision'.trim();
   String get memoryConcentration => '$memory $concentration'.trim();
   String get restlessnessWorkStudy => '$restlessness $workStudyResponse'.trim();
   String get stressResponse => responseToStress;
-  String get responseToContradictionReprimand => '$responseToContradictionOpposition $responseToReprimand'.trim();
+  String get responseToContradictionReprimand =>
+      '$responseToContradictionOpposition $responseToReprimand'.trim();
 
   Map<String, dynamic> toJson() => {
-        'generalMentalState': generalMentalState,
-        'disposition': disposition,
-        'irritability': irritability,
-        'anger': anger,
-        'anxiety': anxiety,
-        'fears': fears,
-        'specificFearsPhobias': specificFearsPhobias,
-        'sadnessGrief': sadnessGrief,
-        'depression': depression,
-        'jealousy': jealousy,
-        'suspicion': suspicion,
-        'companyDesireAversion': companyDesireAversion,
-        'desireForSolitude': desireForSolitude,
-        'desireForAttentionConsolation': desireForAttentionConsolation,
-        'talkativenessQuietness': talkativenessQuietness,
-        'confidenceSelfEsteem': confidenceSelfEsteem,
-        'willDetermination': willDetermination,
-        'indecision': indecision,
-        'memory': memory,
-        'concentration': concentration,
-        'workStudyResponse': workStudyResponse,
-        'restlessness': restlessness,
-        'responseToStress': responseToStress,
-        'responseToContradictionOpposition': responseToContradictionOpposition,
-        'responseToReprimand': responseToReprimand,
-        'compulsionsObsessions': compulsionsObsessions,
-        'otherCharacteristicMentalSymptoms': otherCharacteristicMentalSymptoms,
-      };
+    'generalMentalState': generalMentalState,
+    'disposition': disposition,
+    'irritability': irritability,
+    'anger': anger,
+    'anxiety': anxiety,
+    'fears': fears,
+    'specificFearsPhobias': specificFearsPhobias,
+    'sadnessGrief': sadnessGrief,
+    'depression': depression,
+    'jealousy': jealousy,
+    'suspicion': suspicion,
+    'companyDesireAversion': companyDesireAversion,
+    'desireForSolitude': desireForSolitude,
+    'desireForAttentionConsolation': desireForAttentionConsolation,
+    'talkativenessQuietness': talkativenessQuietness,
+    'confidenceSelfEsteem': confidenceSelfEsteem,
+    'willDetermination': willDetermination,
+    'indecision': indecision,
+    'memory': memory,
+    'concentration': concentration,
+    'workStudyResponse': workStudyResponse,
+    'restlessness': restlessness,
+    'responseToStress': responseToStress,
+    'responseToContradictionOpposition': responseToContradictionOpposition,
+    'responseToReprimand': responseToReprimand,
+    'compulsionsObsessions': compulsionsObsessions,
+    'otherCharacteristicMentalSymptoms': otherCharacteristicMentalSymptoms,
+  };
 
   factory MentalGenerals.fromJson(Map<String, dynamic> json) => MentalGenerals(
-        generalMentalState: json['generalMentalState'] as String? ?? '',
-        disposition: json['disposition'] as String? ?? '',
-        irritability: json['irritability'] as String? ?? '',
-        anger: json['anger'] as String? ?? '',
-        anxiety: json['anxiety'] as String? ?? '',
-        fears: json['fears'] as String? ?? '',
-        specificFearsPhobias: json['specificFearsPhobias'] as String? ?? '',
-        sadnessGrief: json['sadnessGrief'] as String? ?? '',
-        depression: json['depression'] as String? ?? '',
-        jealousy: json['jealousy'] as String? ?? '',
-        suspicion: json['suspicion'] as String? ?? '',
-        companyDesireAversion: json['companyDesireAversion'] as String? ?? json['companySolitude'] as String? ?? '',
-        desireForSolitude: json['desireForSolitude'] as String? ?? '',
-        desireForAttentionConsolation: json['desireForAttentionConsolation'] as String? ?? json['consolationReaction'] as String? ?? json['attentionConsolation'] as String? ?? '',
-        talkativenessQuietness: json['talkativenessQuietness'] as String? ?? '',
-        confidenceSelfEsteem: json['confidenceSelfEsteem'] as String? ?? '',
-        willDetermination: json['willDetermination'] as String? ?? '',
-        indecision: json['indecision'] as String? ?? '',
-        memory: json['memory'] as String? ?? '',
-        concentration: json['concentration'] as String? ?? '',
-        workStudyResponse: json['workStudyResponse'] as String? ?? '',
-        restlessness: json['restlessness'] as String? ?? '',
-        responseToStress: json['responseToStress'] as String? ?? json['stressResponse'] as String? ?? '',
-        responseToContradictionOpposition: json['responseToContradictionOpposition'] as String? ?? '',
-        responseToReprimand: json['responseToReprimand'] as String? ?? '',
-        compulsionsObsessions: json['compulsionsObsessions'] as String? ?? '',
-        otherCharacteristicMentalSymptoms: json['otherCharacteristicMentalSymptoms'] as String? ?? '',
-      );
+    generalMentalState: json['generalMentalState'] as String? ?? '',
+    disposition: json['disposition'] as String? ?? '',
+    irritability: json['irritability'] as String? ?? '',
+    anger: json['anger'] as String? ?? '',
+    anxiety: json['anxiety'] as String? ?? '',
+    fears: json['fears'] as String? ?? '',
+    specificFearsPhobias: json['specificFearsPhobias'] as String? ?? '',
+    sadnessGrief: json['sadnessGrief'] as String? ?? '',
+    depression: json['depression'] as String? ?? '',
+    jealousy: json['jealousy'] as String? ?? '',
+    suspicion: json['suspicion'] as String? ?? '',
+    companyDesireAversion:
+        json['companyDesireAversion'] as String? ??
+        json['companySolitude'] as String? ??
+        '',
+    desireForSolitude: json['desireForSolitude'] as String? ?? '',
+    desireForAttentionConsolation:
+        json['desireForAttentionConsolation'] as String? ??
+        json['consolationReaction'] as String? ??
+        json['attentionConsolation'] as String? ??
+        '',
+    talkativenessQuietness: json['talkativenessQuietness'] as String? ?? '',
+    confidenceSelfEsteem: json['confidenceSelfEsteem'] as String? ?? '',
+    willDetermination: json['willDetermination'] as String? ?? '',
+    indecision: json['indecision'] as String? ?? '',
+    memory: json['memory'] as String? ?? '',
+    concentration: json['concentration'] as String? ?? '',
+    workStudyResponse: json['workStudyResponse'] as String? ?? '',
+    restlessness: json['restlessness'] as String? ?? '',
+    responseToStress:
+        json['responseToStress'] as String? ??
+        json['stressResponse'] as String? ??
+        '',
+    responseToContradictionOpposition:
+        json['responseToContradictionOpposition'] as String? ?? '',
+    responseToReprimand: json['responseToReprimand'] as String? ?? '',
+    compulsionsObsessions: json['compulsionsObsessions'] as String? ?? '',
+    otherCharacteristicMentalSymptoms:
+        json['otherCharacteristicMentalSymptoms'] as String? ?? '',
+  );
 
   factory MentalGenerals.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const MentalGenerals();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return MentalGenerals.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return MentalGenerals.fromJson(decoded);
     } catch (_) {}
     return MentalGenerals(disposition: raw);
   }
@@ -787,21 +842,21 @@ class LifestyleHistoryDetails {
   String get socialStressors => socialHistory;
 
   Map<String, dynamic> toJson() => {
-        'diet': diet,
-        'mealPattern': mealPattern,
-        'teaCoffee': teaCoffee,
-        'tobacco': tobacco,
-        'alcohol': alcohol,
-        'otherSubstanceUse': otherSubstanceUse,
-        'physicalActivity': physicalActivity,
-        'occupationWorkPattern': occupationWorkPattern,
-        'sedentaryBehaviour': sedentaryBehaviour,
-        'sleepRoutine': sleepRoutine,
-        'personalHygiene': personalHygiene,
-        'socialHistory': socialHistory,
-        'financialOccupationalStressors': financialOccupationalStressors,
-        'otherHabits': otherHabits,
-      };
+    'diet': diet,
+    'mealPattern': mealPattern,
+    'teaCoffee': teaCoffee,
+    'tobacco': tobacco,
+    'alcohol': alcohol,
+    'otherSubstanceUse': otherSubstanceUse,
+    'physicalActivity': physicalActivity,
+    'occupationWorkPattern': occupationWorkPattern,
+    'sedentaryBehaviour': sedentaryBehaviour,
+    'sleepRoutine': sleepRoutine,
+    'personalHygiene': personalHygiene,
+    'socialHistory': socialHistory,
+    'financialOccupationalStressors': financialOccupationalStressors,
+    'otherHabits': otherHabits,
+  };
 
   factory LifestyleHistoryDetails.fromJson(Map<String, dynamic> json) =>
       LifestyleHistoryDetails(
@@ -810,14 +865,24 @@ class LifestyleHistoryDetails {
         teaCoffee: json['teaCoffee'] as String? ?? '',
         tobacco: json['tobacco'] as String? ?? '',
         alcohol: json['alcohol'] as String? ?? '',
-        otherSubstanceUse: json['otherSubstanceUse'] as String? ?? json['substanceUse'] as String? ?? '',
+        otherSubstanceUse:
+            json['otherSubstanceUse'] as String? ??
+            json['substanceUse'] as String? ??
+            '',
         physicalActivity: json['physicalActivity'] as String? ?? '',
-        occupationWorkPattern: json['occupationWorkPattern'] as String? ?? json['occupationalHazards'] as String? ?? '',
+        occupationWorkPattern:
+            json['occupationWorkPattern'] as String? ??
+            json['occupationalHazards'] as String? ??
+            '',
         sedentaryBehaviour: json['sedentaryBehaviour'] as String? ?? '',
         sleepRoutine: json['sleepRoutine'] as String? ?? '',
         personalHygiene: json['personalHygiene'] as String? ?? '',
-        socialHistory: json['socialHistory'] as String? ?? json['socialStressors'] as String? ?? '',
-        financialOccupationalStressors: json['financialOccupationalStressors'] as String? ?? '',
+        socialHistory:
+            json['socialHistory'] as String? ??
+            json['socialStressors'] as String? ??
+            '',
+        financialOccupationalStressors:
+            json['financialOccupationalStressors'] as String? ?? '',
         otherHabits: json['otherHabits'] as String? ?? '',
       );
 
@@ -825,7 +890,8 @@ class LifestyleHistoryDetails {
     if (raw == null || raw.isEmpty) return const LifestyleHistoryDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return LifestyleHistoryDetails.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return LifestyleHistoryDetails.fromJson(decoded);
     } catch (_) {}
     return LifestyleHistoryDetails(diet: raw);
   }
@@ -887,40 +953,43 @@ class ClinicalExamVitals {
 
   String get bp => bloodPressure;
   String get pallorIcterus => '$pallor $icterus'.trim();
-  String get cyanosisClubbingOedemaLymph => '$cyanosis $clubbing $oedema $lymphadenopathy'.trim();
-  String get cvsRespiratoryExam => '$cvsExamination $respiratoryExamination'.trim();
+  String get cyanosisClubbingOedemaLymph =>
+      '$cyanosis $clubbing $oedema $lymphadenopathy'.trim();
+  String get cvsRespiratoryExam =>
+      '$cvsExamination $respiratoryExamination'.trim();
   String get abdominalCnsExam => '$abdominalExamination $cnsExamination'.trim();
-  String get musculoskeletalSkinExam => '$musculoskeletalExamination $skinExamination'.trim();
+  String get musculoskeletalSkinExam =>
+      '$musculoskeletalExamination $skinExamination'.trim();
   String get tongueExam => entOralExamination;
   String get entOralExam => entOralExamination;
   String get systemicFindings => otherExaminationFindings;
 
   Map<String, dynamic> toJson() => {
-        'generalAppearance': generalAppearance,
-        'buildNutrition': buildNutrition,
-        'pallor': pallor,
-        'icterus': icterus,
-        'cyanosis': cyanosis,
-        'clubbing': clubbing,
-        'lymphadenopathy': lymphadenopathy,
-        'oedema': oedema,
-        'temperature': temperature,
-        'pulse': pulse,
-        'bloodPressure': bloodPressure,
-        'respiratoryRate': respiratoryRate,
-        'spo2': spo2,
-        'weightKg': weightKg,
-        'heightCm': heightCm,
-        'bmi': bmi,
-        'cvsExamination': cvsExamination,
-        'respiratoryExamination': respiratoryExamination,
-        'abdominalExamination': abdominalExamination,
-        'cnsExamination': cnsExamination,
-        'musculoskeletalExamination': musculoskeletalExamination,
-        'skinExamination': skinExamination,
-        'entOralExamination': entOralExamination,
-        'otherExaminationFindings': otherExaminationFindings,
-      };
+    'generalAppearance': generalAppearance,
+    'buildNutrition': buildNutrition,
+    'pallor': pallor,
+    'icterus': icterus,
+    'cyanosis': cyanosis,
+    'clubbing': clubbing,
+    'lymphadenopathy': lymphadenopathy,
+    'oedema': oedema,
+    'temperature': temperature,
+    'pulse': pulse,
+    'bloodPressure': bloodPressure,
+    'respiratoryRate': respiratoryRate,
+    'spo2': spo2,
+    'weightKg': weightKg,
+    'heightCm': heightCm,
+    'bmi': bmi,
+    'cvsExamination': cvsExamination,
+    'respiratoryExamination': respiratoryExamination,
+    'abdominalExamination': abdominalExamination,
+    'cnsExamination': cnsExamination,
+    'musculoskeletalExamination': musculoskeletalExamination,
+    'skinExamination': skinExamination,
+    'entOralExamination': entOralExamination,
+    'otherExaminationFindings': otherExaminationFindings,
+  };
 
   factory ClinicalExamVitals.fromJson(Map<String, dynamic> json) =>
       ClinicalExamVitals(
@@ -934,7 +1003,8 @@ class ClinicalExamVitals {
         oedema: json['oedema'] as String? ?? '',
         temperature: json['temperature'] as String? ?? '',
         pulse: json['pulse'] as String? ?? '',
-        bloodPressure: json['bloodPressure'] as String? ?? json['bp'] as String? ?? '',
+        bloodPressure:
+            json['bloodPressure'] as String? ?? json['bp'] as String? ?? '',
         respiratoryRate: json['respiratoryRate'] as String? ?? '',
         spo2: json['spo2'] as String? ?? '',
         weightKg: json['weightKg'] as String? ?? '',
@@ -944,17 +1014,25 @@ class ClinicalExamVitals {
         respiratoryExamination: json['respiratoryExamination'] as String? ?? '',
         abdominalExamination: json['abdominalExamination'] as String? ?? '',
         cnsExamination: json['cnsExamination'] as String? ?? '',
-        musculoskeletalExamination: json['musculoskeletalExamination'] as String? ?? '',
+        musculoskeletalExamination:
+            json['musculoskeletalExamination'] as String? ?? '',
         skinExamination: json['skinExamination'] as String? ?? '',
-        entOralExamination: json['entOralExamination'] as String? ?? json['tongueExam'] as String? ?? '',
-        otherExaminationFindings: json['otherExaminationFindings'] as String? ?? json['systemicFindings'] as String? ?? '',
+        entOralExamination:
+            json['entOralExamination'] as String? ??
+            json['tongueExam'] as String? ??
+            '',
+        otherExaminationFindings:
+            json['otherExaminationFindings'] as String? ??
+            json['systemicFindings'] as String? ??
+            '',
       );
 
   factory ClinicalExamVitals.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const ClinicalExamVitals();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return ClinicalExamVitals.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return ClinicalExamVitals.fromJson(decoded);
     } catch (_) {}
     return ClinicalExamVitals(otherExaminationFindings: raw);
   }
@@ -987,17 +1065,17 @@ class MiasmaticAnalysis {
   });
 
   Map<String, dynamic> toJson() => {
-        'dominantMiasm': dominantMiasm,
-        'secondaryMixedMiasm': secondaryMixedMiasm,
-        'psoricFeatures': psoricFeatures,
-        'sycoticFeatures': sycoticFeatures,
-        'syphiliticFeatures': syphiliticFeatures,
-        'tubercularFeatures': tubercularFeatures,
-        'cancerinicFeatures': cancerinicFeatures,
-        'otherMiasmaticIndicators': otherMiasmaticIndicators,
-        'characteristicSymptoms': characteristicSymptoms,
-        'finalMiasmaticInterpretation': finalMiasmaticInterpretation,
-      };
+    'dominantMiasm': dominantMiasm,
+    'secondaryMixedMiasm': secondaryMixedMiasm,
+    'psoricFeatures': psoricFeatures,
+    'sycoticFeatures': sycoticFeatures,
+    'syphiliticFeatures': syphiliticFeatures,
+    'tubercularFeatures': tubercularFeatures,
+    'cancerinicFeatures': cancerinicFeatures,
+    'otherMiasmaticIndicators': otherMiasmaticIndicators,
+    'characteristicSymptoms': characteristicSymptoms,
+    'finalMiasmaticInterpretation': finalMiasmaticInterpretation,
+  };
 
   factory MiasmaticAnalysis.fromJson(Map<String, dynamic> json) =>
       MiasmaticAnalysis(
@@ -1008,16 +1086,19 @@ class MiasmaticAnalysis {
         syphiliticFeatures: json['syphiliticFeatures'] as String? ?? '',
         tubercularFeatures: json['tubercularFeatures'] as String? ?? '',
         cancerinicFeatures: json['cancerinicFeatures'] as String? ?? '',
-        otherMiasmaticIndicators: json['otherMiasmaticIndicators'] as String? ?? '',
+        otherMiasmaticIndicators:
+            json['otherMiasmaticIndicators'] as String? ?? '',
         characteristicSymptoms: json['characteristicSymptoms'] as String? ?? '',
-        finalMiasmaticInterpretation: json['finalMiasmaticInterpretation'] as String? ?? '',
+        finalMiasmaticInterpretation:
+            json['finalMiasmaticInterpretation'] as String? ?? '',
       );
 
   factory MiasmaticAnalysis.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const MiasmaticAnalysis();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return MiasmaticAnalysis.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return MiasmaticAnalysis.fromJson(decoded);
     } catch (_) {}
     return MiasmaticAnalysis(dominantMiasm: raw);
   }
@@ -1067,44 +1148,47 @@ class CaseTotality {
   String get generalsParticulars => '$generals $particulars'.trim();
 
   Map<String, dynamic> toJson() => {
-        'totalityOfSymptoms': totalityOfSymptoms,
-        'characteristicSymptoms': characteristicSymptoms,
-        'generals': generals,
-        'particulars': particulars,
-        'mentalGenerals': mentalGenerals,
-        'physicalGenerals': physicalGenerals,
-        'modalities': modalities,
-        'concomitants': concomitants,
-        'causation': causation,
-        'repertoryUsed': repertoryUsed,
-        'rubricsSelected': rubricsSelected,
-        'repertorialResult': repertorialResult,
-        'materiaMedicaCorrelation': materiaMedicaCorrelation,
-        'differentialRemedies': differentialRemedies,
-        'finalRemedySelection': finalRemedySelection,
-        'potency': potency,
-        'justification': justification,
-      };
+    'totalityOfSymptoms': totalityOfSymptoms,
+    'characteristicSymptoms': characteristicSymptoms,
+    'generals': generals,
+    'particulars': particulars,
+    'mentalGenerals': mentalGenerals,
+    'physicalGenerals': physicalGenerals,
+    'modalities': modalities,
+    'concomitants': concomitants,
+    'causation': causation,
+    'repertoryUsed': repertoryUsed,
+    'rubricsSelected': rubricsSelected,
+    'repertorialResult': repertorialResult,
+    'materiaMedicaCorrelation': materiaMedicaCorrelation,
+    'differentialRemedies': differentialRemedies,
+    'finalRemedySelection': finalRemedySelection,
+    'potency': potency,
+    'justification': justification,
+  };
 
   factory CaseTotality.fromJson(Map<String, dynamic> json) => CaseTotality(
-        totalityOfSymptoms: json['totalityOfSymptoms'] as String? ?? '',
-        characteristicSymptoms: json['characteristicSymptoms'] as String? ?? '',
-        generals: json['generals'] as String? ?? '',
-        particulars: json['particulars'] as String? ?? '',
-        mentalGenerals: json['mentalGenerals'] as String? ?? '',
-        physicalGenerals: json['physicalGenerals'] as String? ?? '',
-        modalities: json['modalities'] as String? ?? '',
-        concomitants: json['concomitants'] as String? ?? '',
-        causation: json['causation'] as String? ?? '',
-        repertoryUsed: json['repertoryUsed'] as String? ?? '',
-        rubricsSelected: json['rubricsSelected'] as String? ?? '',
-        repertorialResult: json['repertorialResult'] as String? ?? '',
-        materiaMedicaCorrelation: json['materiaMedicaCorrelation'] as String? ?? '',
-        differentialRemedies: json['differentialRemedies'] as String? ?? '',
-        finalRemedySelection: json['finalRemedySelection'] as String? ?? json['selectedRemedy'] as String? ?? '',
-        potency: json['potency'] as String? ?? '200CH',
-        justification: json['justification'] as String? ?? '',
-      );
+    totalityOfSymptoms: json['totalityOfSymptoms'] as String? ?? '',
+    characteristicSymptoms: json['characteristicSymptoms'] as String? ?? '',
+    generals: json['generals'] as String? ?? '',
+    particulars: json['particulars'] as String? ?? '',
+    mentalGenerals: json['mentalGenerals'] as String? ?? '',
+    physicalGenerals: json['physicalGenerals'] as String? ?? '',
+    modalities: json['modalities'] as String? ?? '',
+    concomitants: json['concomitants'] as String? ?? '',
+    causation: json['causation'] as String? ?? '',
+    repertoryUsed: json['repertoryUsed'] as String? ?? '',
+    rubricsSelected: json['rubricsSelected'] as String? ?? '',
+    repertorialResult: json['repertorialResult'] as String? ?? '',
+    materiaMedicaCorrelation: json['materiaMedicaCorrelation'] as String? ?? '',
+    differentialRemedies: json['differentialRemedies'] as String? ?? '',
+    finalRemedySelection:
+        json['finalRemedySelection'] as String? ??
+        json['selectedRemedy'] as String? ??
+        '',
+    potency: json['potency'] as String? ?? '200CH',
+    justification: json['justification'] as String? ?? '',
+  );
 
   factory CaseTotality.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const CaseTotality();
@@ -1112,7 +1196,9 @@ class CaseTotality {
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) {
         if (decoded.containsKey('caseTotality')) {
-          return CaseTotality.fromJson(decoded['caseTotality'] as Map<String, dynamic>);
+          return CaseTotality.fromJson(
+            decoded['caseTotality'] as Map<String, dynamic>,
+          );
         }
         return CaseTotality.fromJson(decoded);
       }
@@ -1140,13 +1226,13 @@ class ClinicalAssessmentDetails {
   });
 
   Map<String, dynamic> toJson() => {
-        'provisionalDiagnosis': provisionalDiagnosis,
-        'finalWorkingDiagnosis': finalWorkingDiagnosis,
-        'differentialDiagnosis': differentialDiagnosis,
-        'comorbidities': comorbidities,
-        'redFlagsReferrals': redFlagsReferrals,
-        'clinicalRemarks': clinicalRemarks,
-      };
+    'provisionalDiagnosis': provisionalDiagnosis,
+    'finalWorkingDiagnosis': finalWorkingDiagnosis,
+    'differentialDiagnosis': differentialDiagnosis,
+    'comorbidities': comorbidities,
+    'redFlagsReferrals': redFlagsReferrals,
+    'clinicalRemarks': clinicalRemarks,
+  };
 
   factory ClinicalAssessmentDetails.fromJson(Map<String, dynamic> json) =>
       ClinicalAssessmentDetails(
@@ -1164,7 +1250,9 @@ class ClinicalAssessmentDetails {
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) {
         if (decoded.containsKey('assessment')) {
-          return ClinicalAssessmentDetails.fromJson(decoded['assessment'] as Map<String, dynamic>);
+          return ClinicalAssessmentDetails.fromJson(
+            decoded['assessment'] as Map<String, dynamic>,
+          );
         }
         return ClinicalAssessmentDetails.fromJson(decoded);
       }
@@ -1218,21 +1306,21 @@ class PrescriptionPlanDetails {
   String get notes => prescriptionNotes;
 
   Map<String, dynamic> toJson() => {
-        'prescriptionDate': prescriptionDate,
-        'remedyName': remedyName,
-        'potency': potency,
-        'dose': dose,
-        'repetitionFrequency': repetitionFrequency,
-        'route': route,
-        'pharmaceuticalForm': pharmaceuticalForm,
-        'quantityDispensed': quantityDispensed,
-        'dietRegimenAdvice': dietRegimenAdvice,
-        'lifestyleAdvice': lifestyleAdvice,
-        'investigationsAdvised': investigationsAdvised,
-        'referralAdvised': referralAdvised,
-        'prescriptionRationale': prescriptionRationale,
-        'prescriptionNotes': prescriptionNotes,
-      };
+    'prescriptionDate': prescriptionDate,
+    'remedyName': remedyName,
+    'potency': potency,
+    'dose': dose,
+    'repetitionFrequency': repetitionFrequency,
+    'route': route,
+    'pharmaceuticalForm': pharmaceuticalForm,
+    'quantityDispensed': quantityDispensed,
+    'dietRegimenAdvice': dietRegimenAdvice,
+    'lifestyleAdvice': lifestyleAdvice,
+    'investigationsAdvised': investigationsAdvised,
+    'referralAdvised': referralAdvised,
+    'prescriptionRationale': prescriptionRationale,
+    'prescriptionNotes': prescriptionNotes,
+  };
 
   factory PrescriptionPlanDetails.fromJson(Map<String, dynamic> json) =>
       PrescriptionPlanDetails(
@@ -1240,23 +1328,43 @@ class PrescriptionPlanDetails {
         remedyName: json['remedyName'] as String? ?? '',
         potency: json['potency'] as String? ?? '',
         dose: json['dose'] as String? ?? json['doseCount'] as String? ?? '',
-        repetitionFrequency: json['repetitionFrequency'] as String? ?? json['frequency'] as String? ?? '',
+        repetitionFrequency:
+            json['repetitionFrequency'] as String? ??
+            json['frequency'] as String? ??
+            '',
         route: json['route'] as String? ?? '',
-        pharmaceuticalForm: json['pharmaceuticalForm'] as String? ?? json['dosageForm'] as String? ?? '',
+        pharmaceuticalForm:
+            json['pharmaceuticalForm'] as String? ??
+            json['dosageForm'] as String? ??
+            '',
         quantityDispensed: json['quantityDispensed'] as String? ?? '',
-        dietRegimenAdvice: json['dietRegimenAdvice'] as String? ?? json['dietaryAdvice'] as String? ?? json['instructions'] as String? ?? '',
+        dietRegimenAdvice:
+            json['dietRegimenAdvice'] as String? ??
+            json['dietaryAdvice'] as String? ??
+            json['instructions'] as String? ??
+            '',
         lifestyleAdvice: json['lifestyleAdvice'] as String? ?? '',
         investigationsAdvised: json['investigationsAdvised'] as String? ?? '',
-        referralAdvised: json['referralAdvised'] as String? ?? json['referralAdvice'] as String? ?? '',
-        prescriptionRationale: json['prescriptionRationale'] as String? ?? json['rationale'] as String? ?? '',
-        prescriptionNotes: json['prescriptionNotes'] as String? ?? json['notes'] as String? ?? '',
+        referralAdvised:
+            json['referralAdvised'] as String? ??
+            json['referralAdvice'] as String? ??
+            '',
+        prescriptionRationale:
+            json['prescriptionRationale'] as String? ??
+            json['rationale'] as String? ??
+            '',
+        prescriptionNotes:
+            json['prescriptionNotes'] as String? ??
+            json['notes'] as String? ??
+            '',
       );
 
   factory PrescriptionPlanDetails.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const PrescriptionPlanDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return PrescriptionPlanDetails.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return PrescriptionPlanDetails.fromJson(decoded);
     } catch (_) {}
     return PrescriptionPlanDetails(remedyName: raw);
   }
@@ -1292,29 +1400,35 @@ class InvestigationsPlanDetails {
   String get resultsInterpretation => clinicalInterpretation;
 
   Map<String, dynamic> toJson() => {
-        'investigationDate': investigationDate,
-        'investigationName': investigationName,
-        'typePanel': typePanel,
-        'resultValue': resultValue,
-        'unit': unit,
-        'referenceRange': referenceRange,
-        'normalAbnormal': normalAbnormal,
-        'reportSummary': reportSummary,
-        'clinicalInterpretation': clinicalInterpretation,
-        'reportReference': reportReference,
-      };
+    'investigationDate': investigationDate,
+    'investigationName': investigationName,
+    'typePanel': typePanel,
+    'resultValue': resultValue,
+    'unit': unit,
+    'referenceRange': referenceRange,
+    'normalAbnormal': normalAbnormal,
+    'reportSummary': reportSummary,
+    'clinicalInterpretation': clinicalInterpretation,
+    'reportReference': reportReference,
+  };
 
   factory InvestigationsPlanDetails.fromJson(Map<String, dynamic> json) =>
       InvestigationsPlanDetails(
         investigationDate: json['investigationDate'] as String? ?? '',
-        investigationName: json['investigationName'] as String? ?? json['testsAdvised'] as String? ?? '',
+        investigationName:
+            json['investigationName'] as String? ??
+            json['testsAdvised'] as String? ??
+            '',
         typePanel: json['typePanel'] as String? ?? '',
         resultValue: json['resultValue'] as String? ?? '',
         unit: json['unit'] as String? ?? '',
         referenceRange: json['referenceRange'] as String? ?? '',
         normalAbnormal: json['normalAbnormal'] as String? ?? '',
         reportSummary: json['reportSummary'] as String? ?? '',
-        clinicalInterpretation: json['clinicalInterpretation'] as String? ?? json['resultsInterpretation'] as String? ?? '',
+        clinicalInterpretation:
+            json['clinicalInterpretation'] as String? ??
+            json['resultsInterpretation'] as String? ??
+            '',
         reportReference: json['reportReference'] as String? ?? '',
       );
 
@@ -1322,7 +1436,8 @@ class InvestigationsPlanDetails {
     if (raw == null || raw.isEmpty) return const InvestigationsPlanDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return InvestigationsPlanDetails.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return InvestigationsPlanDetails.fromJson(decoded);
     } catch (_) {}
     return InvestigationsPlanDetails(investigationName: raw);
   }
@@ -1375,31 +1490,33 @@ class FollowUpDetails {
   });
 
   Map<String, dynamic> toJson() => {
-        'followUpDate': followUpDate,
-        'intervalSincePreviousVisit': intervalSincePreviousVisit,
-        'overallResponse': overallResponse,
-        'chiefComplaintChanges': chiefComplaintChanges,
-        'newSymptoms': newSymptoms,
-        'aggravation': aggravation,
-        'improvement': improvement,
-        'generalSymptomsChange': generalSymptomsChange,
-        'mentalSymptomsChange': mentalSymptomsChange,
-        'sleepChange': sleepChange,
-        'appetiteThirstChange': appetiteThirstChange,
-        'stoolUrineChange': stoolUrineChange,
-        'perspirationChange': perspirationChange,
-        'energyChange': energyChange,
-        'adverseNewSymptoms': adverseNewSymptoms,
-        'followUpPrescription': followUpPrescription,
-        'potency': potency,
-        'doseRepetition': doseRepetition,
-        'nextFollowUp': nextFollowUp,
-        'followUpRemarks': followUpRemarks,
-      };
+    'followUpDate': followUpDate,
+    'intervalSincePreviousVisit': intervalSincePreviousVisit,
+    'overallResponse': overallResponse,
+    'chiefComplaintChanges': chiefComplaintChanges,
+    'newSymptoms': newSymptoms,
+    'aggravation': aggravation,
+    'improvement': improvement,
+    'generalSymptomsChange': generalSymptomsChange,
+    'mentalSymptomsChange': mentalSymptomsChange,
+    'sleepChange': sleepChange,
+    'appetiteThirstChange': appetiteThirstChange,
+    'stoolUrineChange': stoolUrineChange,
+    'perspirationChange': perspirationChange,
+    'energyChange': energyChange,
+    'adverseNewSymptoms': adverseNewSymptoms,
+    'followUpPrescription': followUpPrescription,
+    'potency': potency,
+    'doseRepetition': doseRepetition,
+    'nextFollowUp': nextFollowUp,
+    'followUpRemarks': followUpRemarks,
+  };
 
-  factory FollowUpDetails.fromJson(Map<String, dynamic> json) => FollowUpDetails(
+  factory FollowUpDetails.fromJson(Map<String, dynamic> json) =>
+      FollowUpDetails(
         followUpDate: json['followUpDate'] as String? ?? '',
-        intervalSincePreviousVisit: json['intervalSincePreviousVisit'] as String? ?? '',
+        intervalSincePreviousVisit:
+            json['intervalSincePreviousVisit'] as String? ?? '',
         overallResponse: json['overallResponse'] as String? ?? '',
         chiefComplaintChanges: json['chiefComplaintChanges'] as String? ?? '',
         newSymptoms: json['newSymptoms'] as String? ?? '',
@@ -1440,22 +1557,22 @@ class OutcomeDetails {
   });
 
   Map<String, dynamic> toJson() => {
-        'finalStatus': finalStatus,
-        'degreeOfImprovement': degreeOfImprovement,
-        'treatmentDuration': treatmentDuration,
-        'reasonForDiscontinuation': reasonForDiscontinuation,
-        'lostToFollowUp': lostToFollowUp,
-        'finalOutcomeNotes': finalOutcomeNotes,
-      };
+    'finalStatus': finalStatus,
+    'degreeOfImprovement': degreeOfImprovement,
+    'treatmentDuration': treatmentDuration,
+    'reasonForDiscontinuation': reasonForDiscontinuation,
+    'lostToFollowUp': lostToFollowUp,
+    'finalOutcomeNotes': finalOutcomeNotes,
+  };
 
   factory OutcomeDetails.fromJson(Map<String, dynamic> json) => OutcomeDetails(
-        finalStatus: json['finalStatus'] as String? ?? 'Under Active Treatment',
-        degreeOfImprovement: json['degreeOfImprovement'] as String? ?? '',
-        treatmentDuration: json['treatmentDuration'] as String? ?? '',
-        reasonForDiscontinuation: json['reasonForDiscontinuation'] as String? ?? '',
-        lostToFollowUp: json['lostToFollowUp'] as String? ?? '',
-        finalOutcomeNotes: json['finalOutcomeNotes'] as String? ?? '',
-      );
+    finalStatus: json['finalStatus'] as String? ?? 'Under Active Treatment',
+    degreeOfImprovement: json['degreeOfImprovement'] as String? ?? '',
+    treatmentDuration: json['treatmentDuration'] as String? ?? '',
+    reasonForDiscontinuation: json['reasonForDiscontinuation'] as String? ?? '',
+    lostToFollowUp: json['lostToFollowUp'] as String? ?? '',
+    finalOutcomeNotes: json['finalOutcomeNotes'] as String? ?? '',
+  );
 }
 
 // 19. DOCUMENTATION
@@ -1473,16 +1590,17 @@ class DocumentationDetails {
   });
 
   Map<String, dynamic> toJson() => {
-        'dataSource': dataSource,
-        'originalRegisterReference': originalRegisterReference,
-        'transcriptionNotes': transcriptionNotes,
-        'unclearInformation': unclearInformation,
-      };
+    'dataSource': dataSource,
+    'originalRegisterReference': originalRegisterReference,
+    'transcriptionNotes': transcriptionNotes,
+    'unclearInformation': unclearInformation,
+  };
 
   factory DocumentationDetails.fromJson(Map<String, dynamic> json) =>
       DocumentationDetails(
         dataSource: json['dataSource'] as String? ?? '',
-        originalRegisterReference: json['originalRegisterReference'] as String? ?? '',
+        originalRegisterReference:
+            json['originalRegisterReference'] as String? ?? '',
         transcriptionNotes: json['transcriptionNotes'] as String? ?? '',
         unclearInformation: json['unclearInformation'] as String? ?? '',
       );
@@ -1542,28 +1660,31 @@ class MasterCaseRecordData {
   });
 
   String get identificationJson => jsonEncode(identification.toJson());
-  String get chiefComplaintsJson => jsonEncode(chiefComplaints.map((c) => c.toJson()).toList());
+  String get chiefComplaintsJson =>
+      jsonEncode(chiefComplaints.map((c) => c.toJson()).toList());
   String get hpiPackedJson => jsonEncode({
-        'hpi': hpi.toJson(),
-        'additionalComplaints': additionalComplaints,
-        'identification': identification.toJson(),
-        'documentation': documentation.toJson(),
-      });
+    'hpi': hpi.toJson(),
+    'additionalComplaints': additionalComplaints,
+    'identification': identification.toJson(),
+    'documentation': documentation.toJson(),
+  });
   String get hpiJson => hpiPackedJson;
   String get pastHistoryJson => jsonEncode(pastHistory.toJson());
   String get familyHistoryJson => jsonEncode(familyHistory.toJson());
-  String get developmentalHistoryJson => jsonEncode(developmentalHistory.toJson());
+  String get developmentalHistoryJson =>
+      jsonEncode(developmentalHistory.toJson());
   String get physicalGeneralsJson => jsonEncode(physicalGenerals.toJson());
   String get mentalGeneralsJson => jsonEncode(mentalGenerals.toJson());
   String get lifestyleJson => jsonEncode(lifestyleHabits.toJson());
   String get clinicalExamJson => jsonEncode(clinicalExam.toJson());
   String get miasmaticAnalysisJson => jsonEncode(miasmaticAnalysis.toJson());
   String get caseTotalityPackedJson => jsonEncode({
-        'caseTotality': caseTotality.toJson(),
-        'assessment': clinicalAssessment.toJson(),
-      });
+    'caseTotality': caseTotality.toJson(),
+    'assessment': clinicalAssessment.toJson(),
+  });
   String get caseTotalityJson => caseTotalityPackedJson;
-  String get baselinePrescriptionJson => jsonEncode(baselinePrescription.toJson());
+  String get baselinePrescriptionJson =>
+      jsonEncode(baselinePrescription.toJson());
   String get investigationsJson => jsonEncode(investigations.toJson());
   String get followUpPackedJson => jsonEncode(followUpDetails.toJson());
   String get outcomePackedJson => jsonEncode(outcomeDetails.toJson());
@@ -1575,7 +1696,10 @@ class MasterCaseRecordData {
       final decoded = jsonDecode(raw);
       if (decoded is List) {
         return decoded
-            .map((item) => ChiefComplaintDetail.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) =>
+                  ChiefComplaintDetail.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
       }
     } catch (_) {}
@@ -1588,7 +1712,9 @@ class MasterCaseRecordData {
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) {
         if (decoded.containsKey('identification')) {
-          return PatientIdentificationDetails.fromJson(decoded['identification'] as Map<String, dynamic>);
+          return PatientIdentificationDetails.fromJson(
+            decoded['identification'] as Map<String, dynamic>,
+          );
         }
         return PatientIdentificationDetails.fromJson(decoded);
       }
@@ -1600,7 +1726,8 @@ class MasterCaseRecordData {
     if (raw == null || raw.isEmpty) return '';
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic> && decoded.containsKey('additionalComplaints')) {
+      if (decoded is Map<String, dynamic> &&
+          decoded.containsKey('additionalComplaints')) {
         return decoded['additionalComplaints'] as String? ?? '';
       }
     } catch (_) {}
@@ -1613,7 +1740,9 @@ class MasterCaseRecordData {
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) {
         if (decoded.containsKey('documentation')) {
-          return DocumentationDetails.fromJson(decoded['documentation'] as Map<String, dynamic>);
+          return DocumentationDetails.fromJson(
+            decoded['documentation'] as Map<String, dynamic>,
+          );
         }
         return DocumentationDetails.fromJson(decoded);
       }
@@ -1635,18 +1764,30 @@ class MasterCaseRecordData {
     return HpiDetails(chronologicalDevelopment: raw);
   }
 
-  static PastHistoryDetails parsePastHistory(String? raw) => PastHistoryDetails.fromString(raw);
-  static FamilyHistoryDetails parseFamilyHistory(String? raw) => FamilyHistoryDetails.fromString(raw);
-  static DevelopmentalHistoryDetails parseDevHistory(String? raw) => DevelopmentalHistoryDetails.fromString(raw);
-  static PhysicalGenerals parsePhysicalGenerals(String? raw) => PhysicalGenerals.fromString(raw);
-  static MentalGenerals parseMentalGenerals(String? raw) => MentalGenerals.fromString(raw);
-  static LifestyleHistoryDetails parseLifestyle(String? raw) => LifestyleHistoryDetails.fromString(raw);
-  static ClinicalExamVitals parseClinicalExam(String? raw) => ClinicalExamVitals.fromString(raw);
-  static MiasmaticAnalysis parseMiasmaticAnalysis(String? raw) => MiasmaticAnalysis.fromString(raw);
-  static CaseTotality parseCaseTotality(String? raw) => CaseTotality.fromString(raw);
-  static ClinicalAssessmentDetails parseAssessment(String? raw) => ClinicalAssessmentDetails.fromString(raw);
-  static PrescriptionPlanDetails parsePrescription(String? raw) => PrescriptionPlanDetails.fromString(raw);
-  static InvestigationsPlanDetails parseInvestigations(String? raw) => InvestigationsPlanDetails.fromString(raw);
+  static PastHistoryDetails parsePastHistory(String? raw) =>
+      PastHistoryDetails.fromString(raw);
+  static FamilyHistoryDetails parseFamilyHistory(String? raw) =>
+      FamilyHistoryDetails.fromString(raw);
+  static DevelopmentalHistoryDetails parseDevHistory(String? raw) =>
+      DevelopmentalHistoryDetails.fromString(raw);
+  static PhysicalGenerals parsePhysicalGenerals(String? raw) =>
+      PhysicalGenerals.fromString(raw);
+  static MentalGenerals parseMentalGenerals(String? raw) =>
+      MentalGenerals.fromString(raw);
+  static LifestyleHistoryDetails parseLifestyle(String? raw) =>
+      LifestyleHistoryDetails.fromString(raw);
+  static ClinicalExamVitals parseClinicalExam(String? raw) =>
+      ClinicalExamVitals.fromString(raw);
+  static MiasmaticAnalysis parseMiasmaticAnalysis(String? raw) =>
+      MiasmaticAnalysis.fromString(raw);
+  static CaseTotality parseCaseTotality(String? raw) =>
+      CaseTotality.fromString(raw);
+  static ClinicalAssessmentDetails parseAssessment(String? raw) =>
+      ClinicalAssessmentDetails.fromString(raw);
+  static PrescriptionPlanDetails parsePrescription(String? raw) =>
+      PrescriptionPlanDetails.fromString(raw);
+  static InvestigationsPlanDetails parseInvestigations(String? raw) =>
+      InvestigationsPlanDetails.fromString(raw);
 
   String get displayOutcome {
     final status = outcomeDetails.finalStatus.trim();
@@ -1664,7 +1805,8 @@ class MasterCaseRecordData {
     if (raw == null || raw.isEmpty) return const FollowUpDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return FollowUpDetails.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return FollowUpDetails.fromJson(decoded);
     } catch (_) {}
     return FollowUpDetails(followUpRemarks: raw);
   }
@@ -1673,7 +1815,8 @@ class MasterCaseRecordData {
     if (raw == null || raw.isEmpty) return const OutcomeDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return OutcomeDetails.fromJson(decoded);
+      if (decoded is Map<String, dynamic>)
+        return OutcomeDetails.fromJson(decoded);
     } catch (_) {}
     if (raw.startsWith('{')) return const OutcomeDetails();
     return OutcomeDetails(finalStatus: raw);

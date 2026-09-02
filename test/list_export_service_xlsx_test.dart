@@ -16,10 +16,10 @@ class _Row {
 /// value through this rather than pinning to whichever CellValue subtype
 /// happened to come back.
 num? _numericValue(xlsx.CellValue? value) => switch (value) {
-      xlsx.IntCellValue v => v.value,
-      xlsx.DoubleCellValue v => v.value,
-      _ => null,
-    };
+  xlsx.IntCellValue v => v.value,
+  xlsx.DoubleCellValue v => v.value,
+  _ => null,
+};
 
 void main() {
   final columns = [

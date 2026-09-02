@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:clinic_pilot/core/widgets/floating_bottom_nav_bar.dart';
 
 void main() {
-  testWidgets('FloatingBottomNavBar renders items and responds to taps', (tester) async {
+  testWidgets('FloatingBottomNavBar renders items and responds to taps', (
+    tester,
+  ) async {
     int selected = 0;
 
     await tester.pumpWidget(

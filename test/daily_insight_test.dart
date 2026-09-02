@@ -11,7 +11,8 @@ void main() {
       const insight = CoachInsight(
         id: 'recall_overdue',
         title: '3 Patients Overdue for Follow-up',
-        message: 'Send WhatsApp check-ins to ensure continuous homeopathic care.',
+        message:
+            'Send WhatsApp check-ins to ensure continuous homeopathic care.',
         actionLabel: 'View Follow-ups',
         actionRoute: '/patients',
         icon: Icons.notifications_active_outlined,
@@ -39,14 +40,10 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            dailyInsightProvider.overrideWithValue(insight),
-          ],
+          overrides: [dailyInsightProvider.overrideWithValue(insight)],
           child: MaterialApp(
             theme: AppTheme.lightTheme,
-            home: const Scaffold(
-              body: DailyInsightCard(),
-            ),
+            home: const Scaffold(body: DailyInsightCard()),
           ),
         ),
       );
@@ -56,7 +53,10 @@ void main() {
       expect(find.text("TODAY'S INSIGHT"), findsOneWidget);
       expect(find.text('Health Camps Yielded +150% ROI'), findsOneWidget);
       expect(find.text('Open Camp Manager'), findsOneWidget);
-      expect(find.text('12 patients acquired generated follow-up revenue.'), findsOneWidget);
+      expect(
+        find.text('12 patients acquired generated follow-up revenue.'),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -24,8 +24,10 @@ class ClinicSwitcher extends ConsumerWidget {
     final onBar = scheme.onSurface;
 
     if (active == null) {
-      return Text('ClinicPilot',
-          style: TextStyle(color: onBar, fontWeight: FontWeight.w600));
+      return Text(
+        'ClinicPilot',
+        style: TextStyle(color: onBar, fontWeight: FontWeight.w600),
+      );
     }
 
     return InkWell(
@@ -84,35 +86,40 @@ class ClinicSwitcher extends ConsumerWidget {
     final chosen = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-              child: Text('Active clinic',
-                  style: Theme.of(ctx).textTheme.titleMedium),
-            ),
-            const SizedBox(height: Spacing.sm),
-            for (final c in clinics)
-              ListTile(
-                title: Text(
-                  c.name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+                  child: Text(
+                    'Active clinic',
+                    style: Theme.of(ctx).textTheme.titleMedium,
+                  ),
                 ),
-                subtitle: (c.address == null || (c.address as String).isEmpty)
-                    ? null
-                    : Text(c.address as String),
-                trailing: c.id == activeId
-                    ? Icon(Icons.check_circle, color: scheme.primary)
-                    : null,
-                onTap: () => Navigator.of(ctx).pop(c.id as String),
-              ),
-            const SizedBox(height: Spacing.sm),
-          ],
-        ),
-      ),
+                const SizedBox(height: Spacing.sm),
+                for (final c in clinics)
+                  ListTile(
+                    title: Text(
+                      c.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle:
+                        (c.address == null || (c.address as String).isEmpty)
+                            ? null
+                            : Text(c.address as String),
+                    trailing:
+                        c.id == activeId
+                            ? Icon(Icons.check_circle, color: scheme.primary)
+                            : null,
+                    onTap: () => Navigator.of(ctx).pop(c.id as String),
+                  ),
+                const SizedBox(height: Spacing.sm),
+              ],
+            ),
+          ),
     );
 
     if (chosen != null) {

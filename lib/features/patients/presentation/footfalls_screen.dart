@@ -29,15 +29,18 @@ class FootfallsScreen extends ConsumerWidget {
     AppHaptics.selection();
     showDialog<String>(
       context: context,
-      builder: (_) => AddPatientDialog(
-        initialName: footfall.footfall.name,
-        initialPhone: footfall.footfall.phone,
-        initialDisease: footfall.footfall.disease,
-        initialClinicId: footfall.footfall.clinicId,
-      ),
+      builder:
+          (_) => AddPatientDialog(
+            initialName: footfall.footfall.name,
+            initialPhone: footfall.footfall.phone,
+            initialDisease: footfall.footfall.disease,
+            initialClinicId: footfall.footfall.clinicId,
+          ),
     ).then((newPatientId) {
       if (newPatientId != null && newPatientId.isNotEmpty) {
-        ref.read(footfallNotifierProvider.notifier).convertFootfall(
+        ref
+            .read(footfallNotifierProvider.notifier)
+            .convertFootfall(
               footfallId: footfall.footfall.id,
               patientId: newPatientId,
             );
@@ -75,7 +78,12 @@ class FootfallsScreen extends ConsumerWidget {
           final stats = statsAsync.value;
 
           return ListView(
-            padding: const EdgeInsets.fromLTRB(0, Spacing.lg, 0, Spacing.xxl * 2),
+            padding: const EdgeInsets.fromLTRB(
+              0,
+              Spacing.lg,
+              0,
+              Spacing.xxl * 2,
+            ),
             children: [
               if (stats != null)
                 MetricStrip(
@@ -142,9 +150,8 @@ class FootfallsScreen extends ConsumerWidget {
                           ),
                           CustomBadge(
                             label: f.isConverted ? 'Converted' : 'Lead',
-                            color: f.isConverted
-                                ? scheme.primary
-                                : scheme.outline,
+                            color:
+                                f.isConverted ? scheme.primary : scheme.outline,
                           ),
                         ],
                       ),
@@ -179,10 +186,12 @@ class FootfallsScreen extends ConsumerWidget {
                             const Spacer(),
                           if (!f.isConverted)
                             FilledButton.tonalIcon(
-                              onPressed: () =>
-                                  _convertToPatient(context, ref, f),
-                              icon: const Icon(Icons.person_add_outlined,
-                                  size: 16),
+                              onPressed:
+                                  () => _convertToPatient(context, ref, f),
+                              icon: const Icon(
+                                Icons.person_add_outlined,
+                                size: 16,
+                              ),
                               label: const Text('Convert to Patient'),
                             ),
                         ],

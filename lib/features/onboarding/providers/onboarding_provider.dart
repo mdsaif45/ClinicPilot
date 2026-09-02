@@ -19,9 +19,9 @@ const kDefaultOpenDays = '1,2,3,4,5,6';
 /// Doctor's name, shown in the dashboard greeting.
 final doctorNameProvider = FutureProvider<String>((ref) async {
   final db = ref.watch(databaseProvider);
-  final row = await (db.select(db.settings)
-        ..where((t) => t.key.equals(kDoctorNameKey)))
-      .getSingleOrNull();
+  final row =
+      await (db.select(db.settings)
+        ..where((t) => t.key.equals(kDoctorNameKey))).getSingleOrNull();
   return row?.value ?? '';
 });
 
@@ -29,9 +29,9 @@ final doctorNameProvider = FutureProvider<String>((ref) async {
 final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
   final db = ref.watch(databaseProvider);
 
-  final flag = await (db.select(db.settings)
-        ..where((t) => t.key.equals(kOnboardingDoneKey)))
-      .getSingleOrNull();
+  final flag =
+      await (db.select(db.settings)
+        ..where((t) => t.key.equals(kOnboardingDoneKey))).getSingleOrNull();
   if (flag?.value == 'true') {
     try {
       if (Hive.isBoxOpen('settings')) {
@@ -42,9 +42,9 @@ final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
   }
 
   // An install that already holds clinics predates this flow.
-  final clinics = await (db.select(db.clinics)
-        ..where((t) => t.isDeleted.equals(false)))
-      .get();
+  final clinics =
+      await (db.select(db.clinics)
+        ..where((t) => t.isDeleted.equals(false))).get();
   if (clinics.isNotEmpty) {
     await _write(db, kOnboardingDoneKey, 'true');
     try {
@@ -66,7 +66,9 @@ Future<void> _write(AppDatabase db, String key, String value) async {
       }
     } catch (_) {}
   }
-  await db.into(db.settings).insertOnConflictUpdate(
+  await db
+      .into(db.settings)
+      .insertOnConflictUpdate(
         SettingsCompanion.insert(
           key: key,
           value: value,
@@ -130,7 +132,6 @@ class OnboardingController {
       }
     }
 
-    
     await _db.transaction(() async {
       if (fn.isNotEmpty) await _write(_db, 'doctor_first_name', fn);
       if (ln.isNotEmpty) await _write(_db, 'doctor_last_name', ln);
@@ -153,14 +154,18 @@ class OnboardingController {
         if (c.name.trim().isEmpty) continue;
         final id = IdGenerator.generate();
         firstId ??= id;
-        await _db.into(_db.clinics).insert(
+        await _db
+            .into(_db.clinics)
+            .insert(
               ClinicsCompanion.insert(
                 id: id,
                 name: c.name.trim(),
                 address: drift.Value(
-                    c.address.trim().isEmpty ? null : c.address.trim()),
+                  c.address.trim().isEmpty ? null : c.address.trim(),
+                ),
                 phone: drift.Value(
-                    c.phone.trim().isEmpty ? null : c.phone.trim()),
+                  c.phone.trim().isEmpty ? null : c.phone.trim(),
+                ),
                 monthlyRent: drift.Value(c.rent),
                 defaultConsultationFee: drift.Value(c.consultationFee),
                 openDays: drift.Value(c.openDays),
@@ -168,10 +173,16 @@ class OnboardingController {
             );
 
         // Save clinic-level target goals
-        await _write(_db, 'monthly_revenue_goal_$id',
-            c.revenueGoal.round().toString());
         await _write(
-            _db, 'monthly_new_patient_goal_$id', c.patientGoal.toString());
+          _db,
+          'monthly_revenue_goal_$id',
+          c.revenueGoal.round().toString(),
+        );
+        await _write(
+          _db,
+          'monthly_new_patient_goal_$id',
+          c.patientGoal.toString(),
+        );
       }
 
       if (firstId != null) {

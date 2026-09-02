@@ -26,9 +26,9 @@ class EmptyState extends StatelessWidget {
     this.onAction,
     this.actionIcon,
   }) : assert(
-          icon != null || illustration != null,
-          'Either icon or illustration must be provided to EmptyState',
-        );
+         icon != null || illustration != null,
+         'Either icon or illustration must be provided to EmptyState',
+       );
 
   /// Empty state for patients list.
   const factory EmptyState.patients({
@@ -96,10 +96,7 @@ class EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final artwork = illustration ??
-        EmptyIllustration.generic(
-          icon: icon!,
-        );
+    final artwork = illustration ?? EmptyIllustration.generic(icon: icon!);
 
     return Center(
       child: Padding(
@@ -149,9 +146,9 @@ class _PatientsEmptyState extends EmptyState {
     super.actionLabel = 'Add Patient',
     super.onAction,
   }) : super(
-          illustration: const EmptyIllustration.patients(),
-          actionIcon: Icons.person_add_outlined,
-        );
+         illustration: const EmptyIllustration.patients(),
+         actionIcon: Icons.person_add_outlined,
+       );
 }
 
 class _CashMemosEmptyState extends EmptyState {
@@ -162,9 +159,9 @@ class _CashMemosEmptyState extends EmptyState {
     super.actionLabel = 'New Memo',
     super.onAction,
   }) : super(
-          illustration: const EmptyIllustration.cashMemos(),
-          actionIcon: Icons.add_card_outlined,
-        );
+         illustration: const EmptyIllustration.cashMemos(),
+         actionIcon: Icons.add_card_outlined,
+       );
 }
 
 class _ExpensesEmptyState extends EmptyState {
@@ -175,9 +172,9 @@ class _ExpensesEmptyState extends EmptyState {
     super.actionLabel = 'Add Expense',
     super.onAction,
   }) : super(
-          illustration: const EmptyIllustration.expenses(),
-          actionIcon: Icons.add_circle_outline,
-        );
+         illustration: const EmptyIllustration.expenses(),
+         actionIcon: Icons.add_circle_outline,
+       );
 }
 
 class _GrowthEmptyState extends EmptyState {
@@ -187,9 +184,7 @@ class _GrowthEmptyState extends EmptyState {
     super.message = 'Log visits and memos to unlock practice growth insights.',
     super.actionLabel,
     super.onAction,
-  }) : super(
-          illustration: const EmptyIllustration.growth(),
-        );
+  }) : super(illustration: const EmptyIllustration.growth());
 }
 
 class _RecallEmptyState extends EmptyState {
@@ -199,9 +194,7 @@ class _RecallEmptyState extends EmptyState {
     super.message = 'No patients are currently due for follow-up.',
     super.actionLabel,
     super.onAction,
-  }) : super(
-          illustration: const EmptyIllustration.recall(),
-        );
+  }) : super(illustration: const EmptyIllustration.recall());
 }
 
 class _ClinicsEmptyState extends EmptyState {
@@ -212,9 +205,9 @@ class _ClinicsEmptyState extends EmptyState {
     super.actionLabel = 'Add Clinic',
     super.onAction,
   }) : super(
-          illustration: const EmptyIllustration.clinics(),
-          actionIcon: Icons.add_business_outlined,
-        );
+         illustration: const EmptyIllustration.clinics(),
+         actionIcon: Icons.add_business_outlined,
+       );
 }
 
 class _SearchEmptyState extends EmptyState {
@@ -224,7 +217,5 @@ class _SearchEmptyState extends EmptyState {
     super.message = 'Try searching with a different name, code, or disease.',
     super.actionLabel,
     super.onAction,
-  }) : super(
-          illustration: const EmptyIllustration.search(),
-        );
+  }) : super(illustration: const EmptyIllustration.search());
 }

@@ -66,11 +66,9 @@ class AppButton extends StatelessWidget {
     final Color textColor = switch (_variant) {
       _ButtonVariant.primary =>
         isDestructive ? scheme.onError : scheme.onPrimary,
-      _ButtonVariant.tonal => isDestructive
-          ? scheme.onErrorContainer
-          : scheme.onSecondaryContainer,
-      _ButtonVariant.outlined =>
-        isDestructive ? scheme.error : scheme.primary,
+      _ButtonVariant.tonal =>
+        isDestructive ? scheme.onErrorContainer : scheme.onSecondaryContainer,
+      _ButtonVariant.outlined => isDestructive ? scheme.error : scheme.primary,
       _ButtonVariant.text => isDestructive ? scheme.error : scheme.primary,
     };
 
@@ -79,10 +77,7 @@ class AppButton extends StatelessWidget {
       childContent = SizedBox(
         width: 18,
         height: 18,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: textColor,
-        ),
+        child: CircularProgressIndicator(strokeWidth: 2, color: textColor),
       );
     } else {
       childContent = Row(
@@ -151,9 +146,10 @@ class AppButton extends StatelessWidget {
             minimumSize: Size(fullWidth ? double.infinity : 0, minHeight),
             shape: shape,
             side: BorderSide(
-              color: isDestructive
-                  ? scheme.error.withValues(alpha: 0.5)
-                  : scheme.outlineVariant,
+              color:
+                  isDestructive
+                      ? scheme.error.withValues(alpha: 0.5)
+                      : scheme.outlineVariant,
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: Spacing.lg,

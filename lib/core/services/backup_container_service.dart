@@ -39,17 +39,19 @@ class BackupMetadata {
   int get totalRecords => counts.values.fold(0, (sum, count) => sum + count);
 
   factory BackupMetadata.fromJson(Map<String, dynamic> json) {
-    final countsMap = (json['counts'] as Map<String, dynamic>? ?? {})
-        .map((k, v) => MapEntry(k, (v as num).toInt()));
+    final countsMap = (json['counts'] as Map<String, dynamic>? ?? {}).map(
+      (k, v) => MapEntry(k, (v as num).toInt()),
+    );
 
     return BackupMetadata(
       app: json['app'] as String? ?? 'ClinicPilot',
       formatVersion: (json['formatVersion'] as num?)?.toInt() ?? 2,
       appVersion: json['appVersion'] as String? ?? '0.8.8',
       schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 15,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.parse(json['createdAt'] as String)
+              : DateTime.now(),
       checksumSha256: json['checksumSha256'] as String? ?? '',
       isEncrypted: json['isEncrypted'] as bool? ?? false,
       mediaCount: (json['mediaCount'] as num?)?.toInt() ?? 0,
@@ -59,17 +61,17 @@ class BackupMetadata {
   }
 
   Map<String, dynamic> toJson() => {
-        'app': app,
-        'formatVersion': formatVersion,
-        'appVersion': appVersion,
-        'schemaVersion': schemaVersion,
-        'createdAt': createdAt.toIso8601String(),
-        'checksumSha256': checksumSha256,
-        'isEncrypted': isEncrypted,
-        'mediaCount': mediaCount,
-        'hasMedia': hasMedia,
-        'counts': counts,
-      };
+    'app': app,
+    'formatVersion': formatVersion,
+    'appVersion': appVersion,
+    'schemaVersion': schemaVersion,
+    'createdAt': createdAt.toIso8601String(),
+    'checksumSha256': checksumSha256,
+    'isEncrypted': isEncrypted,
+    'mediaCount': mediaCount,
+    'hasMedia': hasMedia,
+    'counts': counts,
+  };
 }
 
 /// Result of a backup restoration attempt.
@@ -166,7 +168,10 @@ class BackupContainerService {
     final checksumSha256 = sha256.convert(rawBytes).toString();
 
     // 5. Gather physical patient media files (photos & PDF reports)
-    final mediaFiles = includeMedia ? await MediaAttachmentService.getAllMediaFiles() : <File>[];
+    final mediaFiles =
+        includeMedia
+            ? await MediaAttachmentService.getAllMediaFiles()
+            : <File>[];
     final mediaRootDir = await MediaAttachmentService.getMediaRootDirectory();
 
     // 6. Build container manifest
@@ -188,7 +193,9 @@ class BackupContainerService {
 
     // Add manifest.json
     final manifestBytes = utf8.encode(jsonEncode(metadata.toJson()));
-    archive.addFile(ArchiveFile('manifest.json', manifestBytes.length, manifestBytes));
+    archive.addFile(
+      ArchiveFile('manifest.json', manifestBytes.length, manifestBytes),
+    );
 
     // Add database.json
     archive.addFile(ArchiveFile('database.json', rawBytes.length, rawBytes));
@@ -198,7 +205,9 @@ class BackupContainerService {
       for (final file in mediaFiles) {
         if (!await file.exists()) continue;
         try {
-          final relPath = p.relative(file.path, from: mediaRootDir.path).replaceAll(r'\', '/');
+          final relPath = p
+              .relative(file.path, from: mediaRootDir.path)
+              .replaceAll(r'\', '/');
           final bytes = await file.readAsBytes();
           archive.addFile(ArchiveFile('media/$relPath', bytes.length, bytes));
         } catch (e) {
@@ -220,7 +229,9 @@ class BackupContainerService {
         final archive = ZipDecoder().decodeBytes(bytes);
         final manifestFile = archive.findFile('manifest.json');
         if (manifestFile == null) {
-          throw const BackupCorruptedException('Missing manifest.json in backup archive.');
+          throw const BackupCorruptedException(
+            'Missing manifest.json in backup archive.',
+          );
         }
         final manifestBytes = manifestFile.content as List<int>;
         final manifestStr = utf8.decode(manifestBytes);
@@ -228,7 +239,9 @@ class BackupContainerService {
 
         final app = manifestMap['app'] as String?;
         if (app != 'ClinicPilot') {
-          throw BackupCorruptedException('Invalid backup: Expected ClinicPilot backup, but got "$app".');
+          throw BackupCorruptedException(
+            'Invalid backup: Expected ClinicPilot backup, but got "$app".',
+          );
         }
         return BackupMetadata.fromJson(manifestMap);
       }
@@ -244,7 +257,9 @@ class BackupContainerService {
 
       final app = header['app'] as String?;
       if (app != 'ClinicPilot') {
-        throw BackupCorruptedException('Invalid backup file: Expected ClinicPilot backup, but got "$app".');
+        throw BackupCorruptedException(
+          'Invalid backup file: Expected ClinicPilot backup, but got "$app".',
+        );
       }
 
       return BackupMetadata.fromJson(header);
@@ -270,7 +285,9 @@ class BackupContainerService {
       archive = ZipDecoder().decodeBytes(bytes);
       final dbFile = archive.findFile('database.json');
       if (dbFile == null) {
-        throw const BackupCorruptedException('Missing database.json in backup archive.');
+        throw const BackupCorruptedException(
+          'Missing database.json in backup archive.',
+        );
       }
       rawBytes = dbFile.content as List<int>;
     } else {
@@ -315,7 +332,8 @@ class BackupContainerService {
 
     // 4. Normalize file paths for complaints and investigations to point to local media
     String normalizeAttachmentPath(String oldPath, String patientId) {
-      if (kIsWeb || mediaRootDir == null || oldPath.trim().isEmpty) return oldPath;
+      if (kIsWeb || mediaRootDir == null || oldPath.trim().isEmpty)
+        return oldPath;
       final fileName = p.basename(oldPath);
       return p.join(mediaRootDir.path, patientId, fileName);
     }
@@ -323,12 +341,16 @@ class BackupContainerService {
     String? normalizeJsonList(dynamic rawJson, String patientId) {
       if (rawJson == null) return null;
       try {
-        final list = (rawJson is List)
-            ? rawJson
-            : (jsonDecode(rawJson.toString()) as List<dynamic>);
-        final normalized = list
-            .map((item) => normalizeAttachmentPath(item.toString(), patientId))
-            .toList();
+        final list =
+            (rawJson is List)
+                ? rawJson
+                : (jsonDecode(rawJson.toString()) as List<dynamic>);
+        final normalized =
+            list
+                .map(
+                  (item) => normalizeAttachmentPath(item.toString(), patientId),
+                )
+                .toList();
         return jsonEncode(normalized);
       } catch (_) {
         return rawJson.toString();
@@ -344,7 +366,9 @@ class BackupContainerService {
       // 1. Clinics
       final clinics = payloadMap['clinics'] as List<dynamic>? ?? [];
       for (final item in clinics) {
-        await _db.into(_db.clinics).insert(
+        await _db
+            .into(_db.clinics)
+            .insert(
               Clinic.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
@@ -353,16 +377,21 @@ class BackupContainerService {
       // 2. Patients
       final patients = payloadMap['patients'] as List<dynamic>? ?? [];
       for (final item in patients) {
-        await _db.into(_db.patients).insert(
+        await _db
+            .into(_db.patients)
+            .insert(
               Patient.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
       }
 
       // 3. Patient Case Records
-      final caseRecords = payloadMap['patientCaseRecords'] as List<dynamic>? ?? [];
+      final caseRecords =
+          payloadMap['patientCaseRecords'] as List<dynamic>? ?? [];
       for (final item in caseRecords) {
-        await _db.into(_db.patientCaseRecords).insert(
+        await _db
+            .into(_db.patientCaseRecords)
+            .insert(
               PatientCaseRecord.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
@@ -374,37 +403,47 @@ class BackupContainerService {
         final map = Map<String, dynamic>.from(item as Map<String, dynamic>);
         final patientId = map['patientId']?.toString() ?? '';
         if (map['beforeImages'] != null) {
-          map['beforeImages'] = normalizeJsonList(map['beforeImages'], patientId);
+          map['beforeImages'] = normalizeJsonList(
+            map['beforeImages'],
+            patientId,
+          );
         }
         if (map['afterImages'] != null) {
           map['afterImages'] = normalizeJsonList(map['afterImages'], patientId);
         }
 
-        await _db.into(_db.complaints).insert(
-              Complaint.fromJson(map),
-              mode: InsertMode.insertOrReplace,
-            );
+        await _db
+            .into(_db.complaints)
+            .insert(Complaint.fromJson(map), mode: InsertMode.insertOrReplace);
       }
 
       // 5. Prescriptions
       final prescriptions = payloadMap['prescriptions'] as List<dynamic>? ?? [];
       for (final item in prescriptions) {
-        await _db.into(_db.prescriptions).insert(
+        await _db
+            .into(_db.prescriptions)
+            .insert(
               Prescription.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
       }
 
       // 6. Investigations (with normalized report PDF/image paths)
-      final investigations = payloadMap['investigations'] as List<dynamic>? ?? [];
+      final investigations =
+          payloadMap['investigations'] as List<dynamic>? ?? [];
       for (final item in investigations) {
         final map = Map<String, dynamic>.from(item as Map<String, dynamic>);
         final patientId = map['patientId']?.toString() ?? '';
         if (map['reportAttachments'] != null) {
-          map['reportAttachments'] = normalizeJsonList(map['reportAttachments'], patientId);
+          map['reportAttachments'] = normalizeJsonList(
+            map['reportAttachments'],
+            patientId,
+          );
         }
 
-        await _db.into(_db.investigations).insert(
+        await _db
+            .into(_db.investigations)
+            .insert(
               Investigation.fromJson(map),
               mode: InsertMode.insertOrReplace,
             );
@@ -413,7 +452,9 @@ class BackupContainerService {
       // 7. Visits
       final visits = payloadMap['visits'] as List<dynamic>? ?? [];
       for (final item in visits) {
-        await _db.into(_db.visits).insert(
+        await _db
+            .into(_db.visits)
+            .insert(
               Visit.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
@@ -422,7 +463,9 @@ class BackupContainerService {
       // 8. Cash Memos
       final cashMemos = payloadMap['cashMemos'] as List<dynamic>? ?? [];
       for (final item in cashMemos) {
-        await _db.into(_db.cashMemos).insert(
+        await _db
+            .into(_db.cashMemos)
+            .insert(
               CashMemo.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
@@ -431,7 +474,9 @@ class BackupContainerService {
       // 9. Expenses
       final expenses = payloadMap['expenses'] as List<dynamic>? ?? [];
       for (final item in expenses) {
-        await _db.into(_db.expenses).insert(
+        await _db
+            .into(_db.expenses)
+            .insert(
               Expense.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
@@ -440,7 +485,9 @@ class BackupContainerService {
       // 10. Camps
       final camps = payloadMap['camps'] as List<dynamic>? ?? [];
       for (final item in camps) {
-        await _db.into(_db.camps).insert(
+        await _db
+            .into(_db.camps)
+            .insert(
               Camp.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
@@ -449,25 +496,33 @@ class BackupContainerService {
       // 11. Footfalls
       final footfalls = payloadMap['footfalls'] as List<dynamic>? ?? [];
       for (final item in footfalls) {
-        await _db.into(_db.footfalls).insert(
+        await _db
+            .into(_db.footfalls)
+            .insert(
               Footfall.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
       }
 
       // 12. Referral Contacts
-      final referralContacts = payloadMap['referralContacts'] as List<dynamic>? ?? [];
+      final referralContacts =
+          payloadMap['referralContacts'] as List<dynamic>? ?? [];
       for (final item in referralContacts) {
-        await _db.into(_db.referralContacts).insert(
+        await _db
+            .into(_db.referralContacts)
+            .insert(
               ReferralContact.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
       }
 
       // 13. Review Requests
-      final reviewRequests = payloadMap['reviewRequests'] as List<dynamic>? ?? [];
+      final reviewRequests =
+          payloadMap['reviewRequests'] as List<dynamic>? ?? [];
       for (final item in reviewRequests) {
-        await _db.into(_db.reviewRequests).insert(
+        await _db
+            .into(_db.reviewRequests)
+            .insert(
               ReviewRequest.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
@@ -476,7 +531,9 @@ class BackupContainerService {
       // 14. Settings
       final settings = payloadMap['settings'] as List<dynamic>? ?? [];
       for (final item in settings) {
-        await _db.into(_db.settings).insert(
+        await _db
+            .into(_db.settings)
+            .insert(
               Setting.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );

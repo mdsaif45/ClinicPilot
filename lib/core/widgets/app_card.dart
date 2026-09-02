@@ -19,7 +19,10 @@ class AppCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(Spacing.md),
-    this.margin = const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
+    this.margin = const EdgeInsets.symmetric(
+      horizontal: Spacing.lg,
+      vertical: Spacing.xs,
+    ),
     this.borderRadius,
     this.color,
     this.borderColor,

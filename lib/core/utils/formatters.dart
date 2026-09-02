@@ -146,9 +146,12 @@ class Formatters {
     if (trimmed.isEmpty) return '';
     return trimmed
         .split(RegExp(r'\s+'))
-        .map((word) => word.isEmpty
-            ? ''
-            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
+        .map(
+          (word) =>
+              word.isEmpty
+                  ? ''
+                  : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+        )
         .join(' ');
   }
 }

@@ -36,7 +36,9 @@ void main() {
       addTearDown(container.dispose);
 
       // Create a test patient
-      await db.into(db.patients).insert(
+      await db
+          .into(db.patients)
+          .insert(
             PatientsCompanion.insert(
               id: 'p_lab_1',
               name: 'John Doe',
@@ -80,19 +82,25 @@ void main() {
         notes: 'Normalized after remedy',
       );
 
-      final updated = await (db.select(db.investigations)..where((t) => t.id.equals(invId))).getSingle();
+      final updated =
+          await (db.select(db.investigations)
+            ..where((t) => t.id.equals(invId))).getSingle();
       expect(updated.numericValue, equals(92.0));
       expect(updated.flag, equals('Normal'));
 
       // Soft delete
       await notifier.deleteInvestigation(invId);
-      final activeList = await (db.select(db.investigations)..where((t) => t.isDeleted.equals(false))).get();
+      final activeList =
+          await (db.select(db.investigations)
+            ..where((t) => t.isDeleted.equals(false))).get();
       expect(activeList, isEmpty);
     });
   });
 
   group('InvestigationListView & AddEditInvestigationDialog Widget Tests', () {
-    testWidgets('renders empty state and opens record lab test dialog', (tester) async {
+    testWidgets('renders empty state and opens record lab test dialog', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 2000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -117,13 +125,13 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            patientInvestigationsProvider(patient.id).overrideWith((ref) => Stream.value([])),
+            patientInvestigationsProvider(
+              patient.id,
+            ).overrideWith((ref) => Stream.value([])),
           ],
           child: MaterialApp(
             theme: AppTheme.lightTheme,
-            home: Scaffold(
-              body: InvestigationListView(patient: patient),
-            ),
+            home: Scaffold(body: InvestigationListView(patient: patient)),
           ),
         ),
       );

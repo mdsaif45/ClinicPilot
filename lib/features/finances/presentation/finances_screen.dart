@@ -64,17 +64,27 @@ List<ExportColumn<FinanceTransactionItem>> historyExportColumns() {
     ExportColumn('Details', (t) => t.subtitle),
     ExportColumn('Payment Method', (t) => t.paymentMethod),
     ExportColumn('Clinic', (t) => t.clinicName),
-    ExportColumn('Inflow / Credit (Rs.)', (t) => t.isExpense ? 0.0 : t.amount, pdfFormat: _pdfMoney),
-    ExportColumn('Outflow / Debit (Rs.)', (t) => t.isExpense ? t.amount : 0.0, pdfFormat: _pdfMoney),
+    ExportColumn(
+      'Inflow / Credit (Rs.)',
+      (t) => t.isExpense ? 0.0 : t.amount,
+      pdfFormat: _pdfMoney,
+    ),
+    ExportColumn(
+      'Outflow / Debit (Rs.)',
+      (t) => t.isExpense ? t.amount : 0.0,
+      pdfFormat: _pdfMoney,
+    ),
   ];
 }
 
 ExportTotals<FinanceTransactionItem> historyExportTotals() {
   return ExportTotals((rows) {
-    final totalInflow =
-        rows.where((r) => !r.isExpense).fold<double>(0, (sum, r) => sum + r.amount);
-    final totalOutflow =
-        rows.where((r) => r.isExpense).fold<double>(0, (sum, r) => sum + r.amount);
+    final totalInflow = rows
+        .where((r) => !r.isExpense)
+        .fold<double>(0, (sum, r) => sum + r.amount);
+    final totalOutflow = rows
+        .where((r) => r.isExpense)
+        .fold<double>(0, (sum, r) => sum + r.amount);
     return ['TOTAL', null, null, null, null, null, totalInflow, totalOutflow];
   });
 }
@@ -84,20 +94,24 @@ class _HistoryExportAction extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final groups = ref.watch(transactionHistoryGroupsProvider).value ?? const [];
+    final groups =
+        ref.watch(transactionHistoryGroupsProvider).value ?? const [];
     final allItems = groups.expand((g) => g.items).toList();
     final selectedClinicId = ref.watch(financesClinicFilterProvider);
     final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
-    final selectedClinic = selectedClinicId == null
-        ? null
-        : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
+    final selectedClinic =
+        selectedClinicId == null
+            ? null
+            : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
 
-    final title = selectedClinic != null
-        ? '${selectedClinic.name} - Transaction History'
-        : 'Practice Transaction History (All Clinics)';
-    final slug = selectedClinic != null
-        ? 'transaction-history-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
-        : 'transaction-history-all-clinics';
+    final title =
+        selectedClinic != null
+            ? '${selectedClinic.name} - Transaction History'
+            : 'Practice Transaction History (All Clinics)';
+    final slug =
+        selectedClinic != null
+            ? 'transaction-history-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
+            : 'transaction-history-all-clinics';
 
     return ExportAction<FinanceTransactionItem>(
       screenSlug: slug,
@@ -120,17 +134,37 @@ List<ExportColumn<CashMemoWithDetails>> cashMemoExportColumns() {
     ExportColumn('Phone', (m) => m.patient.phone),
     ExportColumn('Area', (m) => m.patient.area ?? ''),
     ExportColumn('Clinic', (m) => m.clinic.name),
-    ExportColumn('Disease', (m) => m.visit?.disease ?? m.patient.primaryDisease ?? ''),
-    ExportColumn('Consultation Mode', (m) => m.visit?.consultationType ?? 'Clinic'),
+    ExportColumn(
+      'Disease',
+      (m) => m.visit?.disease ?? m.patient.primaryDisease ?? '',
+    ),
+    ExportColumn(
+      'Consultation Mode',
+      (m) => m.visit?.consultationType ?? 'Clinic',
+    ),
     ExportColumn('Visit Type', (m) => m.visit?.visitType ?? ''),
-    ExportColumn('Consultation Fee', (m) => m.memo.consultationFee, pdfFormat: _pdfMoney),
-    ExportColumn('Medicine Fee', (m) => m.memo.medicineFee, pdfFormat: _pdfMoney),
+    ExportColumn(
+      'Consultation Fee',
+      (m) => m.memo.consultationFee,
+      pdfFormat: _pdfMoney,
+    ),
+    ExportColumn(
+      'Medicine Fee',
+      (m) => m.memo.medicineFee,
+      pdfFormat: _pdfMoney,
+    ),
     ExportColumn('Other Fee', (m) => m.memo.otherFee, pdfFormat: _pdfMoney),
     ExportColumn('Discount', (m) => m.memo.discount, pdfFormat: _pdfMoney),
     ExportColumn('Total', (m) => m.memo.total, pdfFormat: _pdfMoney),
     ExportColumn('Paid', (m) => m.memo.paidAmount, pdfFormat: _pdfMoney),
     ExportColumn('Pending', (m) => m.pendingAmount, pdfFormat: _pdfMoney),
-    ExportColumn('Payment Status', (m) => m.isFullyPaid ? 'Fully Paid' : (m.memo.paidAmount > 0 ? 'Partially Paid' : 'Unpaid')),
+    ExportColumn(
+      'Payment Status',
+      (m) =>
+          m.isFullyPaid
+              ? 'Fully Paid'
+              : (m.memo.paidAmount > 0 ? 'Partially Paid' : 'Unpaid'),
+    ),
     ExportColumn('Payment Method', (m) => m.memo.paymentMethod),
     ExportColumn('Notes', (m) => m.memo.notes ?? ''),
     ExportColumn('Entry Date', (m) => Formatters.formatDate(m.memo.createdAt)),
@@ -139,7 +173,10 @@ List<ExportColumn<CashMemoWithDetails>> cashMemoExportColumns() {
 
 ExportTotals<CashMemoWithDetails> cashMemoExportTotals() {
   return ExportTotals((rows) {
-    final consult = rows.fold<double>(0, (sum, m) => sum + m.memo.consultationFee);
+    final consult = rows.fold<double>(
+      0,
+      (sum, m) => sum + m.memo.consultationFee,
+    );
     final med = rows.fold<double>(0, (sum, m) => sum + m.memo.medicineFee);
     final other = rows.fold<double>(0, (sum, m) => sum + m.memo.otherFee);
     final discount = rows.fold<double>(0, (sum, m) => sum + m.memo.discount);
@@ -148,8 +185,28 @@ ExportTotals<CashMemoWithDetails> cashMemoExportTotals() {
     final pending = rows.fold<double>(0, (sum, m) => sum + m.pendingAmount);
 
     return [
-      'TOTAL', null, null, null, null, null, null, null, null, null, null,
-      consult, med, other, discount, revenue, paid, pending, null, null, null, null,
+      'TOTAL',
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      consult,
+      med,
+      other,
+      discount,
+      revenue,
+      paid,
+      pending,
+      null,
+      null,
+      null,
+      null,
     ];
   });
 }
@@ -177,20 +234,26 @@ class _CashMemoExportAction extends ConsumerWidget {
     final allMemos = ref.watch(cashMemosStreamProvider).value ?? const [];
     final selectedClinicId = ref.watch(financesClinicFilterProvider);
     final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
-    final selectedClinic = selectedClinicId == null
-        ? null
-        : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
+    final selectedClinic =
+        selectedClinicId == null
+            ? null
+            : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
 
-    final memos = selectedClinicId == null
-        ? allMemos
-        : allMemos.where((m) => m.memo.clinicId == selectedClinicId).toList();
+    final memos =
+        selectedClinicId == null
+            ? allMemos
+            : allMemos
+                .where((m) => m.memo.clinicId == selectedClinicId)
+                .toList();
 
-    final title = selectedClinic != null
-        ? '${selectedClinic.name} - Cash Memos'
-        : 'Practice Cash Memos (All Clinics)';
-    final slug = selectedClinic != null
-        ? 'cash-memos-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
-        : 'cash-memos-all-clinics';
+    final title =
+        selectedClinic != null
+            ? '${selectedClinic.name} - Cash Memos'
+            : 'Practice Cash Memos (All Clinics)';
+    final slug =
+        selectedClinic != null
+            ? 'cash-memos-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
+            : 'cash-memos-all-clinics';
 
     return ExportAction<CashMemoWithDetails>(
       screenSlug: slug,
@@ -209,12 +272,21 @@ List<ExportColumn<ExpenseWithClinic>> expensesExportColumns() {
     ExportColumn('Date', (e) => Formatters.formatDate(e.expense.date)),
     ExportColumn('Category', (e) => e.expense.category),
     ExportColumn('Subcategory', (e) => e.expense.subcategory ?? ''),
-    ExportColumn('Nature', (e) => e.expense.isRecurring ? 'Recurring (Fixed Overhead)' : 'One-time (Variable Spend)'),
+    ExportColumn(
+      'Nature',
+      (e) =>
+          e.expense.isRecurring
+              ? 'Recurring (Fixed Overhead)'
+              : 'One-time (Variable Spend)',
+    ),
     ExportColumn('Amount', (e) => e.expense.amount, pdfFormat: _pdfMoney),
     ExportColumn('Payment Method', (e) => e.expense.paymentMethod),
     ExportColumn('Clinic', (e) => e.clinic.name),
     ExportColumn('Notes / Vendor', (e) => e.expense.notes ?? ''),
-    ExportColumn('Entry Date', (e) => Formatters.formatDate(e.expense.createdAt)),
+    ExportColumn(
+      'Entry Date',
+      (e) => Formatters.formatDate(e.expense.createdAt),
+    ),
   ];
 }
 
@@ -245,16 +317,19 @@ class _ExpensesExportAction extends ConsumerWidget {
     final expenses = ref.watch(expensesStreamProvider).value ?? const [];
     final selectedClinicId = ref.watch(financesClinicFilterProvider);
     final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
-    final selectedClinic = selectedClinicId == null
-        ? null
-        : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
+    final selectedClinic =
+        selectedClinicId == null
+            ? null
+            : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
 
-    final title = selectedClinic != null
-        ? '${selectedClinic.name} - Expenses'
-        : 'Practice Expenses (All Clinics)';
-    final slug = selectedClinic != null
-        ? 'expenses-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
-        : 'expenses-all-clinics';
+    final title =
+        selectedClinic != null
+            ? '${selectedClinic.name} - Expenses'
+            : 'Practice Expenses (All Clinics)';
+    final slug =
+        selectedClinic != null
+            ? 'expenses-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
+            : 'expenses-all-clinics';
 
     return ExportAction<ExpenseWithClinic>(
       screenSlug: slug,
@@ -271,10 +346,21 @@ class _ExpensesExportAction extends ConsumerWidget {
 List<ExportColumn<PaymentMethodStat>> splitExportColumns() {
   return [
     ExportColumn('Payment Method', (s) => s.method),
-    ExportColumn('Total Collected (Rs.)', (s) => s.totalCollected, pdfFormat: _pdfMoney),
-    ExportColumn('Total Billed (Rs.)', (s) => s.totalBilled, pdfFormat: _pdfMoney),
+    ExportColumn(
+      'Total Collected (Rs.)',
+      (s) => s.totalCollected,
+      pdfFormat: _pdfMoney,
+    ),
+    ExportColumn(
+      'Total Billed (Rs.)',
+      (s) => s.totalBilled,
+      pdfFormat: _pdfMoney,
+    ),
     ExportColumn('Transaction Count', (s) => s.count),
-    ExportColumn('Share of Collections (%)', (s) => '${s.percentage.toStringAsFixed(1)}%'),
+    ExportColumn(
+      'Share of Collections (%)',
+      (s) => '${s.percentage.toStringAsFixed(1)}%',
+    ),
   ];
 }
 
@@ -296,16 +382,19 @@ class _SplitExportAction extends ConsumerWidget {
     final methods = breakdown?.methods ?? const [];
     final selectedClinicId = ref.watch(financesClinicFilterProvider);
     final clinics = ref.watch(clinicsStreamProvider).value ?? const [];
-    final selectedClinic = selectedClinicId == null
-        ? null
-        : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
+    final selectedClinic =
+        selectedClinicId == null
+            ? null
+            : clinics.where((c) => c.id == selectedClinicId).firstOrNull;
 
-    final title = selectedClinic != null
-        ? '${selectedClinic.name} - Payment Method Breakdown'
-        : 'Payment Method Breakdown (All Clinics)';
-    final slug = selectedClinic != null
-        ? 'payment-methods-split-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
-        : 'payment-methods-split-all-clinics';
+    final title =
+        selectedClinic != null
+            ? '${selectedClinic.name} - Payment Method Breakdown'
+            : 'Payment Method Breakdown (All Clinics)';
+    final slug =
+        selectedClinic != null
+            ? 'payment-methods-split-${selectedClinic.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '-')}'
+            : 'payment-methods-split-all-clinics';
 
     return ExportAction<PaymentMethodStat>(
       screenSlug: slug,

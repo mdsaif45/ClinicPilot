@@ -26,7 +26,8 @@ class WeeklyBenchmarkChart extends StatefulWidget {
   State<WeeklyBenchmarkChart> createState() => _WeeklyBenchmarkChartState();
 }
 
-class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with SingleTickerProviderStateMixin {
+class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _barGrowthAnim;
   int? _hoveredDayIndex;
@@ -48,7 +49,9 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
   @override
   void didUpdateWidget(covariant WeeklyBenchmarkChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.metric != widget.metric || oldWidget.bins != widget.bins || oldWidget.targetValue != widget.targetValue) {
+    if (oldWidget.metric != widget.metric ||
+        oldWidget.bins != widget.bins ||
+        oldWidget.targetValue != widget.targetValue) {
       _animController.reset();
       _animController.forward();
       _hoveredDayIndex = null;
@@ -64,7 +67,10 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
   void _handleTouch(Offset localPosition, double plotWidth) {
     if (plotWidth <= 0 || widget.bins.isEmpty) return;
     final slotWidth = plotWidth / widget.bins.length;
-    final index = (localPosition.dx / slotWidth).floor().clamp(0, widget.bins.length - 1);
+    final index = (localPosition.dx / slotWidth).floor().clamp(
+      0,
+      widget.bins.length - 1,
+    );
     if (index != _hoveredDayIndex) {
       AppHaptics.selection();
       setState(() {
@@ -78,9 +84,10 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final primaryColor = widget.metric == ActivityMetric.revenue
-        ? scheme.primary
-        : scheme.secondary;
+    final primaryColor =
+        widget.metric == ActivityMetric.revenue
+            ? scheme.primary
+            : scheme.secondary;
 
     final dailyTarget = widget.targetValue / 6; // 6 working days benchmark
 
@@ -88,30 +95,42 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
       dailyTarget * 1.3,
       (max, b) => math.max(
         max,
-        widget.metric == ActivityMetric.revenue ? b.revenue : b.patients.toDouble(),
+        widget.metric == ActivityMetric.revenue
+            ? b.revenue
+            : b.patients.toDouble(),
       ),
     );
 
     // Calculate rounded ceiling for Y-axis (e.g. 60 / 20)
-    final maxVal = rawMax > 0
-        ? (widget.metric == ActivityMetric.revenue
-            ? (rawMax <= 3000 ? 3000.0 : (rawMax / 1000).ceil() * 1000.0)
-            : (rawMax <= 10 ? 10.0 : (rawMax / 5).ceil() * 5.0))
-        : (widget.metric == ActivityMetric.revenue ? 3000.0 : 10.0);
+    final maxVal =
+        rawMax > 0
+            ? (widget.metric == ActivityMetric.revenue
+                ? (rawMax <= 3000 ? 3000.0 : (rawMax / 1000).ceil() * 1000.0)
+                : (rawMax <= 10 ? 10.0 : (rawMax / 5).ceil() * 5.0))
+            : (widget.metric == ActivityMetric.revenue ? 3000.0 : 10.0);
 
     final midVal = maxVal * 0.5; // Clean 50% mid grid height
 
-    final maxLabel = widget.metric == ActivityMetric.revenue
-        ? Formatters.formatCurrency(maxVal).replaceAll('.00', '').replaceAll('₹ ', '₹')
-        : maxVal.toInt().toString();
+    final maxLabel =
+        widget.metric == ActivityMetric.revenue
+            ? Formatters.formatCurrency(
+              maxVal,
+            ).replaceAll('.00', '').replaceAll('₹ ', '₹')
+            : maxVal.toInt().toString();
 
-    final midLabel = widget.metric == ActivityMetric.revenue
-        ? Formatters.formatCurrency(midVal).replaceAll('.00', '').replaceAll('₹ ', '₹')
-        : midVal.toInt().toString();
+    final midLabel =
+        widget.metric == ActivityMetric.revenue
+            ? Formatters.formatCurrency(
+              midVal,
+            ).replaceAll('.00', '').replaceAll('₹ ', '₹')
+            : midVal.toInt().toString();
 
-    final targetLabel = widget.metric == ActivityMetric.revenue
-        ? Formatters.formatCurrency(dailyTarget).replaceAll('.00', '').replaceAll('₹ ', '₹')
-        : dailyTarget.toInt().toString();
+    final targetLabel =
+        widget.metric == ActivityMetric.revenue
+            ? Formatters.formatCurrency(
+              dailyTarget,
+            ).replaceAll('.00', '').replaceAll('₹ ', '₹')
+            : dailyTarget.toInt().toString();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -130,12 +149,20 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
 
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTapDown: (details) => _handleTouch(details.localPosition, plotWidth),
-                      onHorizontalDragStart: (details) => _handleTouch(details.localPosition, plotWidth),
-                      onHorizontalDragUpdate: (details) => _handleTouch(details.localPosition, plotWidth),
+                      onTapDown:
+                          (details) =>
+                              _handleTouch(details.localPosition, plotWidth),
+                      onHorizontalDragStart:
+                          (details) =>
+                              _handleTouch(details.localPosition, plotWidth),
+                      onHorizontalDragUpdate:
+                          (details) =>
+                              _handleTouch(details.localPosition, plotWidth),
                       onHorizontalDragEnd: (_) {},
                       child: MouseRegion(
-                        onHover: (event) => _handleTouch(event.localPosition, plotWidth),
+                        onHover:
+                            (event) =>
+                                _handleTouch(event.localPosition, plotWidth),
                         onExit: (_) {
                           setState(() {
                             _hoveredDayIndex = null;
@@ -152,9 +179,15 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
                                 dailyTarget: dailyTarget,
                                 progress: _barGrowthAnim.value,
                                 primaryColor: primaryColor,
-                                gridColor: scheme.outlineVariant.withValues(alpha: 0.35),
-                                axisColor: scheme.outlineVariant.withValues(alpha: 0.65),
-                                labelColor: scheme.onSurfaceVariant.withValues(alpha: 0.8),
+                                gridColor: scheme.outlineVariant.withValues(
+                                  alpha: 0.35,
+                                ),
+                                axisColor: scheme.outlineVariant.withValues(
+                                  alpha: 0.65,
+                                ),
+                                labelColor: scheme.onSurfaceVariant.withValues(
+                                  alpha: 0.8,
+                                ),
                                 tooltipBgColor: scheme.surfaceContainerHighest,
                                 tooltipTextColor: scheme.onSurface,
                                 selectedDayIndex: _hoveredDayIndex,
@@ -184,7 +217,8 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
                     // Dynamic collision avoidance
                     final isTargetNearMax = targetTop < 18.0;
                     final isTargetNearBottom = targetTop > (totalH - 18.0);
-                    final isMidNearTarget = dailyTarget > 0 && (targetTop - midTop).abs() < 22.0;
+                    final isMidNearTarget =
+                        dailyTarget > 0 && (targetTop - midTop).abs() < 22.0;
                     final showMidLabel = !isMidNearTarget;
 
                     return Stack(
@@ -203,7 +237,9 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
                           ),
                         ),
                         // Target Benchmark Label
-                        if (dailyTarget > 0 && !isTargetNearMax && !isTargetNearBottom)
+                        if (dailyTarget > 0 &&
+                            !isTargetNearMax &&
+                            !isTargetNearBottom)
                           Positioned(
                             top: (targetTop - 6).clamp(18.0, totalH - 18.0),
                             right: 0,
@@ -243,11 +279,16 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
 
         // 2. Google Fit Celebration Card (Like ❤️ You hit the magic number! 150)
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.md,
+            vertical: Spacing.md,
+          ),
           decoration: BoxDecoration(
             color: scheme.surfaceContainerLow,
             borderRadius: Radii.mdAll,
-            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.35),
+            ),
           ),
           child: Row(
             children: [
@@ -258,7 +299,9 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
                   color: primaryColor.withValues(alpha: 0.15),
                 ),
                 child: Icon(
-                  widget.achievementPercent >= 1.0 ? Icons.favorite_outline : Icons.track_changes,
+                  widget.achievementPercent >= 1.0
+                      ? Icons.favorite_outline
+                      : Icons.track_changes,
                   size: 20,
                   color: primaryColor,
                 ),
@@ -287,7 +330,10 @@ class _WeeklyBenchmarkChartState extends State<WeeklyBenchmarkChart> with Single
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
@@ -347,27 +393,35 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
     final plotWidth = size.width;
     final baselineY = topMargin + plotHeight;
 
-    final gridPaint = Paint()
-      ..color = gridColor
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
+    final gridPaint =
+        Paint()
+          ..color = gridColor
+          ..strokeWidth = 0.8
+          ..style = PaintingStyle.stroke;
 
-    final axisPaint = Paint()
-      ..color = axisColor
-      ..strokeWidth = 1.2
-      ..style = PaintingStyle.stroke;
+    final axisPaint =
+        Paint()
+          ..color = axisColor
+          ..strokeWidth = 1.2
+          ..style = PaintingStyle.stroke;
 
-    final targetDashedPaint = Paint()
-      ..color = primaryColor.withValues(alpha: 0.7)
-      ..strokeWidth = 1.2
-      ..style = PaintingStyle.stroke;
+    final targetDashedPaint =
+        Paint()
+          ..color = primaryColor.withValues(alpha: 0.7)
+          ..strokeWidth = 1.2
+          ..style = PaintingStyle.stroke;
 
-    final barPaint = Paint()
-      ..color = primaryColor
-      ..style = PaintingStyle.fill;
+    final barPaint =
+        Paint()
+          ..color = primaryColor
+          ..style = PaintingStyle.fill;
 
     // 1. Top and Mid Horizontal Grid Lines
-    canvas.drawLine(Offset(0, topMargin), Offset(plotWidth, topMargin), gridPaint);
+    canvas.drawLine(
+      Offset(0, topMargin),
+      Offset(plotWidth, topMargin),
+      gridPaint,
+    );
     final midY = baselineY - ((midVal / maxVal) * plotHeight);
     final targetYRatio = (dailyTarget / maxVal).clamp(0.0, 1.0);
     final targetY = baselineY - (targetYRatio * plotHeight);
@@ -385,13 +439,21 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
       double startX = 0;
       while (startX < plotWidth) {
         final endX = math.min(startX + dashWidth, plotWidth);
-        canvas.drawLine(Offset(startX, targetY), Offset(endX, targetY), targetDashedPaint);
+        canvas.drawLine(
+          Offset(startX, targetY),
+          Offset(endX, targetY),
+          targetDashedPaint,
+        );
         startX += dashWidth + dashSpace;
       }
     }
 
     // 3. Draw Bottom Baseline Axis Line
-    canvas.drawLine(Offset(0, baselineY), Offset(plotWidth, baselineY), axisPaint);
+    canvas.drawLine(
+      Offset(0, baselineY),
+      Offset(plotWidth, baselineY),
+      axisPaint,
+    );
 
     // 4. Draw 7 Daily Bars with Tick Icons for Target Met
     final dayCount = bins.length;
@@ -403,7 +465,10 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
 
     for (int i = 0; i < dayCount; i++) {
       final bin = bins[i];
-      final val = metric == ActivityMetric.revenue ? bin.revenue : bin.patients.toDouble();
+      final val =
+          metric == ActivityMetric.revenue
+              ? bin.revenue
+              : bin.patients.toDouble();
       final ratio = (val / maxVal).clamp(0.0, 1.0);
       final barHeight = ratio * plotHeight * progress;
       final centerX = (i + 0.5) * slotWidth;
@@ -424,18 +489,20 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
 
         // Checkmark Icon on top of bar if target met (Google Fit style)
         if (bin.isTargetMet && progress > 0.7 && barHeight > 16.0) {
-          final checkPaint = Paint()
-            ..color = tooltipBgColor
-            ..strokeWidth = 2.0
-            ..strokeCap = StrokeCap.round
-            ..strokeJoin = StrokeJoin.round
-            ..style = PaintingStyle.stroke;
+          final checkPaint =
+              Paint()
+                ..color = tooltipBgColor
+                ..strokeWidth = 2.0
+                ..strokeCap = StrokeCap.round
+                ..strokeJoin = StrokeJoin.round
+                ..style = PaintingStyle.stroke;
 
           final checkY = topY + 7.5;
-          final checkPath = Path()
-            ..moveTo(centerX - 3.5, checkY)
-            ..lineTo(centerX - 0.8, checkY + 2.8)
-            ..lineTo(centerX + 3.8, checkY - 2.5);
+          final checkPath =
+              Path()
+                ..moveTo(centerX - 3.5, checkY)
+                ..lineTo(centerX - 0.8, checkY + 2.8)
+                ..lineTo(centerX + 3.8, checkY - 2.5);
 
           canvas.drawPath(checkPath, checkPaint);
         }
@@ -470,45 +537,56 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
     }
 
     // 5. Draw Interactive Scrubber Cursor & Floating Tooltip
-    if (selectedDayIndex != null && selectedCenterX != null && selectedDayIndex! < bins.length) {
+    if (selectedDayIndex != null &&
+        selectedCenterX != null &&
+        selectedDayIndex! < bins.length) {
       final bin = bins[selectedDayIndex!];
       final cursorX = selectedCenterX;
       final cursorY = selectedBarTopY ?? baselineY;
 
       // Vertical Dashed Cursor Line (aligned 100% with centerX and day tick)
-      final dashedPaint = Paint()
-        ..color = primaryColor.withValues(alpha: 0.8)
-        ..strokeWidth = 1.4
-        ..style = PaintingStyle.stroke;
+      final dashedPaint =
+          Paint()
+            ..color = primaryColor.withValues(alpha: 0.8)
+            ..strokeWidth = 1.4
+            ..style = PaintingStyle.stroke;
 
       const dashHeight = 3.5;
       const dashSpace = 2.5;
       double cursorStartY = topMargin;
       while (cursorStartY < baselineY) {
         final endY = math.min(cursorStartY + dashHeight, baselineY);
-        canvas.drawLine(Offset(cursorX, cursorStartY), Offset(cursorX, endY), dashedPaint);
+        canvas.drawLine(
+          Offset(cursorX, cursorStartY),
+          Offset(cursorX, endY),
+          dashedPaint,
+        );
         cursorStartY += dashHeight + dashSpace;
       }
 
       // Indicator Dot (Glowing ring on bar/axis)
-      final dotRingPaint = Paint()
-        ..color = primaryColor.withValues(alpha: 0.3)
-        ..style = PaintingStyle.fill;
-      final dotSolidPaint = Paint()
-        ..color = primaryColor
-        ..style = PaintingStyle.fill;
-      final dotCenterWhitePaint = Paint()
-        ..color = tooltipBgColor
-        ..style = PaintingStyle.fill;
+      final dotRingPaint =
+          Paint()
+            ..color = primaryColor.withValues(alpha: 0.3)
+            ..style = PaintingStyle.fill;
+      final dotSolidPaint =
+          Paint()
+            ..color = primaryColor
+            ..style = PaintingStyle.fill;
+      final dotCenterWhitePaint =
+          Paint()
+            ..color = tooltipBgColor
+            ..style = PaintingStyle.fill;
 
       canvas.drawCircle(Offset(cursorX, cursorY), 6.0, dotRingPaint);
       canvas.drawCircle(Offset(cursorX, cursorY), 3.8, dotSolidPaint);
       canvas.drawCircle(Offset(cursorX, cursorY), 1.6, dotCenterWhitePaint);
 
       // Tooltip Text: e.g. "₹ 2,800 on Thursday" or "12 patients on Thursday"
-      final valStr = metric == ActivityMetric.revenue
-          ? Formatters.formatCurrency(bin.revenue)
-          : '${bin.patients} ${bin.patients == 1 ? 'patient' : 'patients'}';
+      final valStr =
+          metric == ActivityMetric.revenue
+              ? Formatters.formatCurrency(bin.revenue)
+              : '${bin.patients} ${bin.patients == 1 ? 'patient' : 'patients'}';
 
       final tooltipTextSpan = TextSpan(
         children: [
@@ -542,7 +620,10 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
       final bubbleWidth = tooltipPainter.width + (bubblePaddingH * 2);
       final bubbleHeight = tooltipPainter.height + (bubblePaddingV * 2);
 
-      final bubbleLeft = (cursorX - (bubbleWidth / 2)).clamp(4.0, plotWidth - bubbleWidth - 4.0);
+      final bubbleLeft = (cursorX - (bubbleWidth / 2)).clamp(
+        4.0,
+        plotWidth - bubbleWidth - 4.0,
+      );
       const bubbleTop = 0.0;
 
       final bubbleRect = RRect.fromRectAndRadius(
@@ -551,19 +632,24 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
       );
 
       // Shadow
-      final shadowPaint = Paint()
-        ..color = tooltipTextColor.withValues(alpha: 0.18)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+      final shadowPaint =
+          Paint()
+            ..color = tooltipTextColor.withValues(alpha: 0.18)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
       canvas.drawRRect(bubbleRect.shift(const Offset(0, 2)), shadowPaint);
 
-      final bubbleBgPaint = Paint()
-        ..color = tooltipBgColor
-        ..style = PaintingStyle.fill;
+      final bubbleBgPaint =
+          Paint()
+            ..color = tooltipBgColor
+            ..style = PaintingStyle.fill;
       canvas.drawRRect(bubbleRect, bubbleBgPaint);
 
       // Pointer
       final pointerPath = Path();
-      final pointerCenterX = cursorX.clamp(bubbleLeft + 8.0, bubbleLeft + bubbleWidth - 8.0);
+      final pointerCenterX = cursorX.clamp(
+        bubbleLeft + 8.0,
+        bubbleLeft + bubbleWidth - 8.0,
+      );
       pointerPath.moveTo(pointerCenterX - 4.5, bubbleHeight);
       pointerPath.lineTo(pointerCenterX, bubbleHeight + 4.5);
       pointerPath.lineTo(pointerCenterX + 4.5, bubbleHeight);
@@ -571,10 +657,11 @@ class _GoogleFitWeekChartPainter extends CustomPainter {
       canvas.drawPath(pointerPath, bubbleBgPaint);
 
       // Outline
-      final borderPaint = Paint()
-        ..color = primaryColor.withValues(alpha: 0.35)
-        ..strokeWidth = 1.0
-        ..style = PaintingStyle.stroke;
+      final borderPaint =
+          Paint()
+            ..color = primaryColor.withValues(alpha: 0.35)
+            ..strokeWidth = 1.0
+            ..style = PaintingStyle.stroke;
       canvas.drawRRect(bubbleRect, borderPaint);
 
       tooltipPainter.paint(

@@ -22,7 +22,9 @@ class DocumentAttachmentGallery extends StatelessWidget {
 
   Future<void> _pickDocuments(BuildContext context) async {
     AppHaptics.selection();
-    final picked = await MediaAttachmentService.pickDocuments(patientId: patientId);
+    final picked = await MediaAttachmentService.pickDocuments(
+      patientId: patientId,
+    );
     if (picked.isEmpty) return;
     onAttachmentsChanged([...attachments, ...picked]);
   }
@@ -75,7 +77,10 @@ class DocumentAttachmentGallery extends StatelessWidget {
         const SizedBox(height: Spacing.xs),
         if (attachments.isEmpty)
           Container(
-            padding: const EdgeInsets.symmetric(vertical: Spacing.md, horizontal: Spacing.md),
+            padding: const EdgeInsets.symmetric(
+              vertical: Spacing.md,
+              horizontal: Spacing.md,
+            ),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: scheme.surfaceContainerLow,
@@ -122,7 +127,9 @@ class DocumentAttachmentGallery extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: scheme.surfaceContainerLow,
                   borderRadius: Radii.mdAll,
-                  border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -136,7 +143,9 @@ class DocumentAttachmentGallery extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () => _openFile(path),
                         child: Text(
-                          fileName.isNotEmpty ? fileName : 'Attached Report #${index + 1}',
+                          fileName.isNotEmpty
+                              ? fileName
+                              : 'Attached Report #${index + 1}',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: scheme.primary,
@@ -154,7 +163,11 @@ class DocumentAttachmentGallery extends StatelessWidget {
                     ),
                     if (!readOnly)
                       IconButton(
-                        icon: Icon(Icons.delete_outline, size: 18, color: scheme.error),
+                        icon: Icon(
+                          Icons.delete_outline,
+                          size: 18,
+                          color: scheme.error,
+                        ),
                         tooltip: 'Remove file',
                         onPressed: () => _removeAttachment(index),
                       ),

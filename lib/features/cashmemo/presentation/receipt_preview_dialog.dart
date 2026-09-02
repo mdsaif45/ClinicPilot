@@ -29,11 +29,12 @@ class ReceiptPreviewDialog extends StatelessWidget {
         ],
       ),
       body: PdfPreview(
-        build: (format) => PdfService.generateCashMemoPdf(
-          cashMemo: cashMemo,
-          patient: patient,
-          clinicName: clinicName,
-        ),
+        build:
+            (format) => PdfService.generateCashMemoPdf(
+              cashMemo: cashMemo,
+              patient: patient,
+              clinicName: clinicName,
+            ),
         allowPrinting: true,
         allowSharing: true,
         canChangeOrientation: false,

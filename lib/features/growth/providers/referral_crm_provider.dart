@@ -5,16 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-
 final referralContactsProvider = StreamProvider<List<ReferralContact>>((ref) {
   final db = ref.watch(databaseProvider);
 
-  final query = db.select(db.referralContacts)
-    ..where((t) => t.isDeleted.equals(false))
-    ..orderBy([
-      (t) => OrderingTerm.desc(t.referralCount),
-      (t) => OrderingTerm.asc(t.name),
-    ]);
+  final query =
+      db.select(db.referralContacts)
+        ..where((t) => t.isDeleted.equals(false))
+        ..orderBy([
+          (t) => OrderingTerm.desc(t.referralCount),
+          (t) => OrderingTerm.asc(t.name),
+        ]);
 
   return query.watch();
 });
@@ -103,7 +103,8 @@ class ReferralCrmNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.referralContacts)..where((t) => t.id.equals(id))).write(
+      await (_db.update(_db.referralContacts)
+        ..where((t) => t.id.equals(id))).write(
         ReferralContactsCompanion(
           name: Value(name.trim()),
           contactPerson: Value(contactPerson?.trim()),
@@ -122,8 +123,11 @@ class ReferralCrmNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      final existing = await (_db.select(_db.referralContacts)..where((t) => t.id.equals(id))).getSingle();
-      await (_db.update(_db.referralContacts)..where((t) => t.id.equals(id))).write(
+      final existing =
+          await (_db.select(_db.referralContacts)
+            ..where((t) => t.id.equals(id))).getSingle();
+      await (_db.update(_db.referralContacts)
+        ..where((t) => t.id.equals(id))).write(
         ReferralContactsCompanion(
           visitCount: Value(existing.visitCount + 1),
           lastVisitedDate: Value(now),
@@ -138,8 +142,11 @@ class ReferralCrmNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      final existing = await (_db.select(_db.referralContacts)..where((t) => t.id.equals(id))).getSingle();
-      await (_db.update(_db.referralContacts)..where((t) => t.id.equals(id))).write(
+      final existing =
+          await (_db.select(_db.referralContacts)
+            ..where((t) => t.id.equals(id))).getSingle();
+      await (_db.update(_db.referralContacts)
+        ..where((t) => t.id.equals(id))).write(
         ReferralContactsCompanion(
           referralCount: Value(existing.referralCount + 1),
           updatedAt: Value(now),
@@ -153,7 +160,8 @@ class ReferralCrmNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.referralContacts)..where((t) => t.id.equals(id))).write(
+      await (_db.update(_db.referralContacts)
+        ..where((t) => t.id.equals(id))).write(
         ReferralContactsCompanion(
           isDeleted: const Value(true),
           updatedAt: Value(now),
@@ -165,6 +173,6 @@ class ReferralCrmNotifier extends StateNotifier<AsyncValue<void>> {
 
 final referralCrmNotifierProvider =
     StateNotifierProvider<ReferralCrmNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return ReferralCrmNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return ReferralCrmNotifier(db);
+    });

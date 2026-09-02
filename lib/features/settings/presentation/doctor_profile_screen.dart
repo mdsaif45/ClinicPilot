@@ -27,13 +27,18 @@ class DoctorProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final profile = ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
+    final profile =
+        ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
     final clinics = ref.watch(clinicsStreamProvider).value ?? [];
 
-    final displayName = profile.name.isNotEmpty ? profile.name : 'Doctor Profile';
-    final initial = profile.name.isNotEmpty
-        ? profile.name.replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '').trim()
-        : 'D';
+    final displayName =
+        profile.name.isNotEmpty ? profile.name : 'Doctor Profile';
+    final initial =
+        profile.name.isNotEmpty
+            ? profile.name
+                .replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '')
+                .trim()
+            : 'D';
     final avatarLetter = initial.isNotEmpty ? initial[0].toUpperCase() : 'D';
 
     return Scaffold(
@@ -131,23 +136,26 @@ class DoctorProfileScreen extends ConsumerWidget {
               AppListTile(
                 icon: Icons.school_outlined,
                 title: 'Qualifications / Degrees',
-                subtitle: profile.qualification.isNotEmpty
-                    ? profile.qualification
-                    : 'Not set',
+                subtitle:
+                    profile.qualification.isNotEmpty
+                        ? profile.qualification
+                        : 'Not set',
                 onTap: () => _openEditDialog(context, profile),
               ),
               AppListTile(
                 icon: Icons.badge_outlined,
                 title: 'Medical Registration No.',
-                subtitle: profile.regNumber.isNotEmpty
-                    ? profile.regNumber
-                    : 'Not set',
+                subtitle:
+                    profile.regNumber.isNotEmpty
+                        ? profile.regNumber
+                        : 'Not set',
                 onTap: () => _openEditDialog(context, profile),
               ),
               AppListTile(
                 icon: Icons.local_hospital_outlined,
                 title: 'Clinics Managed',
-                subtitle: '${clinics.length} ${clinics.length == 1 ? 'Clinic' : 'Clinics'}',
+                subtitle:
+                    '${clinics.length} ${clinics.length == 1 ? 'Clinic' : 'Clinics'}',
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push('/clinics'),
               ),
@@ -161,7 +169,8 @@ class DoctorProfileScreen extends ConsumerWidget {
               const AppListTile(
                 icon: Icons.cloud_off_outlined,
                 title: 'Offline Safe Storage',
-                subtitle: 'All records stored 100% locally and privately on this device',
+                subtitle:
+                    'All records stored 100% locally and privately on this device',
               ),
               const AppListTile(
                 icon: Icons.sync_outlined,
@@ -182,10 +191,12 @@ class EditDoctorProfileDialog extends ConsumerStatefulWidget {
   const EditDoctorProfileDialog({super.key, required this.profile});
 
   @override
-  ConsumerState<EditDoctorProfileDialog> createState() => _EditDoctorProfileDialogState();
+  ConsumerState<EditDoctorProfileDialog> createState() =>
+      _EditDoctorProfileDialogState();
 }
 
-class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialog> {
+class _EditDoctorProfileDialogState
+    extends ConsumerState<EditDoctorProfileDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
@@ -199,15 +210,20 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
   @override
   void initState() {
     super.initState();
-    final initialFirst = widget.profile.firstName.isNotEmpty
-        ? widget.profile.firstName
-        : (widget.profile.name.isNotEmpty ? widget.profile.name : 'Dr. ');
+    final initialFirst =
+        widget.profile.firstName.isNotEmpty
+            ? widget.profile.firstName
+            : (widget.profile.name.isNotEmpty ? widget.profile.name : 'Dr. ');
     _firstNameController = TextEditingController(text: initialFirst);
     _lastNameController = TextEditingController(text: widget.profile.lastName);
     _emailController = TextEditingController(text: widget.profile.email);
     _phoneController = TextEditingController(text: widget.profile.phone);
-    _qualificationController = TextEditingController(text: widget.profile.qualification);
-    _regNumberController = TextEditingController(text: widget.profile.regNumber);
+    _qualificationController = TextEditingController(
+      text: widget.profile.qualification,
+    );
+    _regNumberController = TextEditingController(
+      text: widget.profile.regNumber,
+    );
   }
 
   @override
@@ -228,7 +244,9 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
     setState(() => _saving = true);
 
     try {
-      await ref.read(doctorProfileNotifierProvider.notifier).updateProfile(
+      await ref
+          .read(doctorProfileNotifierProvider.notifier)
+          .updateProfile(
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
             email: _emailController.text.trim(),
@@ -248,9 +266,9 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
       if (mounted) {
         setState(() => _saving = false);
         AppHaptics.error();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
       }
     }
   }
@@ -266,13 +284,14 @@ class _EditDoctorProfileDialogState extends ConsumerState<EditDoctorProfileDialo
         ),
         FilledButton(
           onPressed: _saving ? null : _submit,
-          child: _saving
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Save Profile'),
+          child:
+              _saving
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Save Profile'),
         ),
       ],
       child: Form(

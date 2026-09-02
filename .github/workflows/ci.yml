@@ -6,21 +6,27 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyze-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       pull-requests: write
       issues: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.29.2'
           channel: 'stable'
@@ -29,8 +35,19 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Check code formatting
+        run: dart format --output=none --set-exit-if-changed .
+
       - name: Code generation (Drift ORM)
         run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Verify generated files are up to date
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Error: Uncommitted changes found after code generation. Please run 'dart run build_runner build' locally and commit the changes."
+            git diff
+            exit 1
+          fi
 
       - name: Static Analysis
         run: flutter analyze --no-fatal-infos
@@ -51,7 +68,7 @@ jobs:
               '',
               '#### 🛠 How to Resolve & Retry:',
               '1. Review the failing step in the **Checks** tab of this PR.',
-              '2. Run `flutter analyze --no-fatal-infos` and `flutter test` locally to reproduce and fix the issues.',
+              '2. Run `dart format .`, `flutter analyze --no-fatal-infos` and `flutter test` locally to reproduce and fix the issues.',
               '3. Push your fix commits to this branch. Stale runs will cancel and CI will re-verify automatically.'
             ].join('\n');
 

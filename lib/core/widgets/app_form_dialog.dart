@@ -40,7 +40,8 @@ class AppFormDialog extends StatelessWidget {
         Spacing.xl,
         Spacing.md,
         Spacing.xl,
-        Spacing.lg, // Enforce clean 16dp separation between bottom form field and action buttons
+        Spacing
+            .lg, // Enforce clean 16dp separation between bottom form field and action buttons
       ),
       actionsPadding: const EdgeInsets.fromLTRB(
         Spacing.lg,

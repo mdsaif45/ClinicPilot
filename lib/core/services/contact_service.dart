@@ -52,7 +52,8 @@ class ContactService {
     required String clinicName,
     String? campDetails,
   }) {
-    final details = campDetails ?? 'our upcoming free homeopathic health check-up camp';
+    final details =
+        campDetails ?? 'our upcoming free homeopathic health check-up camp';
     return 'Hello $patientName, $clinicName invites you and your family to $details. '
         'Free consultations and personalized care available.';
   }

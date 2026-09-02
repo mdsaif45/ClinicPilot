@@ -4,11 +4,7 @@ import 'package:intl/intl.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
 
-enum JournalEventType {
-  consultation,
-  dispense,
-  expense,
-}
+enum JournalEventType { consultation, dispense, expense }
 
 class PracticeJournalEntry {
   final String id;
@@ -73,7 +69,9 @@ class JournalDayGroup {
 }
 
 /// Category filter provider for the Practice Journal (All, Consultations, Dispenses, Expenses)
-final journalCategoryFilterProvider = StateProvider<JournalEventType?>((ref) => null);
+final journalCategoryFilterProvider = StateProvider<JournalEventType?>(
+  (ref) => null,
+);
 
 /// Search query provider for the Practice Journal
 final journalSearchQueryProvider = StateProvider<String>((ref) => '');
@@ -84,11 +82,13 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
   final activeClinic = ref.watch(activeClinicProvider);
   final clinicId = activeClinic?.id;
   final categoryFilter = ref.watch(journalCategoryFilterProvider);
-  final searchQuery = ref.watch(journalSearchQueryProvider).trim().toLowerCase();
+  final searchQuery =
+      ref.watch(journalSearchQueryProvider).trim().toLowerCase();
 
   if (rawData == null) return const [];
 
-  bool inClinic(String? rowClinicId) => clinicId == null || rowClinicId == clinicId;
+  bool inClinic(String? rowClinicId) =>
+      clinicId == null || rowClinicId == clinicId;
 
   final patientMap = {for (final p in rawData.patients) p.id: p};
 
@@ -100,7 +100,8 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
     final patient = patientMap[v.patientId];
     final patientName = patient?.name ?? 'Patient';
     final isNew = v.visitType.toLowerCase() == 'new';
-    final visitTypeLabel = isNew ? 'New Consultation' : 'Follow-up Consultation';
+    final visitTypeLabel =
+        isNew ? 'New Consultation' : 'Follow-up Consultation';
 
     allEntries.add(
       PracticeJournalEntry(
@@ -108,7 +109,10 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
         timestamp: v.visitDate,
         type: JournalEventType.consultation,
         title: '$patientName • $visitTypeLabel',
-        subtitle: v.disease.isNotEmpty ? 'Condition: ${v.disease}' : 'General Consultation',
+        subtitle:
+            v.disease.isNotEmpty
+                ? 'Condition: ${v.disease}'
+                : 'General Consultation',
         patientName: patientName,
         patientId: v.patientId,
         patientCode: patient?.patientCode,
@@ -168,17 +172,21 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
   // Filter by category
   var filteredEntries = allEntries;
   if (categoryFilter != null) {
-    filteredEntries = filteredEntries.where((e) => e.type == categoryFilter).toList();
+    filteredEntries =
+        filteredEntries.where((e) => e.type == categoryFilter).toList();
   }
 
   // Filter by search query
   if (searchQuery.isNotEmpty) {
-    filteredEntries = filteredEntries.where((e) {
-      final matchesTitle = e.title.toLowerCase().contains(searchQuery);
-      final matchesSubtitle = e.subtitle?.toLowerCase().contains(searchQuery) ?? false;
-      final matchesPatient = e.patientName?.toLowerCase().contains(searchQuery) ?? false;
-      return matchesTitle || matchesSubtitle || matchesPatient;
-    }).toList();
+    filteredEntries =
+        filteredEntries.where((e) {
+          final matchesTitle = e.title.toLowerCase().contains(searchQuery);
+          final matchesSubtitle =
+              e.subtitle?.toLowerCase().contains(searchQuery) ?? false;
+          final matchesPatient =
+              e.patientName?.toLowerCase().contains(searchQuery) ?? false;
+          return matchesTitle || matchesSubtitle || matchesPatient;
+        }).toList();
   }
 
   // Sort all entries descending by timestamp
@@ -192,7 +200,11 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
   final Map<DateTime, List<PracticeJournalEntry>> groupedMap = {};
 
   for (final entry in filteredEntries) {
-    final entryDate = DateTime(entry.timestamp.year, entry.timestamp.month, entry.timestamp.day);
+    final entryDate = DateTime(
+      entry.timestamp.year,
+      entry.timestamp.month,
+      entry.timestamp.day,
+    );
     groupedMap.putIfAbsent(entryDate, () => []).add(entry);
   }
 
@@ -241,20 +253,39 @@ final practiceJournalProvider = Provider<List<JournalDayGroup>>((ref) {
     }
 
     final clinicRevenueGoal =
-        clinicId != null ? settingValue('monthly_revenue_goal_$clinicId') : null;
+        clinicId != null
+            ? settingValue('monthly_revenue_goal_$clinicId')
+            : null;
     final clinicPatientGoal =
-        clinicId != null ? settingValue('monthly_new_patient_goal_$clinicId') : null;
+        clinicId != null
+            ? settingValue('monthly_new_patient_goal_$clinicId')
+            : null;
 
     final monthlyRevenueGoal =
-        double.tryParse(clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '') ?? 50000.0;
+        double.tryParse(
+          clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '',
+        ) ??
+        50000.0;
     final monthlyPatientGoal =
-        int.tryParse(clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '') ?? 50;
+        int.tryParse(
+          clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '',
+        ) ??
+        50;
 
     final dailyRevenueGoal = monthlyRevenueGoal / 25.0; // ~₹2,000 / day
-    final dailyPatientGoal = (monthlyPatientGoal / 25.0).clamp(1.0, 100.0); // ~2-5 patients / day
+    final dailyPatientGoal = (monthlyPatientGoal / 25.0).clamp(
+      1.0,
+      100.0,
+    ); // ~2-5 patients / day
 
-    final revProg = dailyRevenueGoal > 0 ? (dayRevenue / dailyRevenueGoal).clamp(0.0, 1.0) : 0.0;
-    final patProg = dailyPatientGoal > 0 ? (dayPatients / dailyPatientGoal).clamp(0.0, 1.0) : 0.0;
+    final revProg =
+        dailyRevenueGoal > 0
+            ? (dayRevenue / dailyRevenueGoal).clamp(0.0, 1.0)
+            : 0.0;
+    final patProg =
+        dailyPatientGoal > 0
+            ? (dayPatients / dailyPatientGoal).clamp(0.0, 1.0)
+            : 0.0;
 
     dayGroups.add(
       JournalDayGroup(

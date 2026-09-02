@@ -5,7 +5,6 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/services/patient_export_service.dart';
 
-
 final patientSearchQueryProvider = StateProvider<String>((ref) => '');
 
 /// Whether a serial number is already used by another patient at the same
@@ -37,15 +36,17 @@ class SerialLookupArgs {
   int get hashCode => Object.hash(clinicId, serialNo, excludingPatientId);
 }
 
-final serialNoInUseProvider =
-    FutureProvider.autoDispose.family<bool, SerialLookupArgs>((ref, args) async {
+final serialNoInUseProvider = FutureProvider.autoDispose.family<
+  bool,
+  SerialLookupArgs
+>((ref, args) async {
   final db = ref.watch(databaseProvider);
   final trimmed = args.serialNo.trim();
   if (trimmed.isEmpty) return false;
 
-  var query = db.select(db.patients)
-    ..where((t) =>
-        t.primaryClinicId.equals(args.clinicId) & t.serialNo.equals(trimmed));
+  var query = db.select(db.patients)..where(
+    (t) => t.primaryClinicId.equals(args.clinicId) & t.serialNo.equals(trimmed),
+  );
   if (args.excludingPatientId != null) {
     query = query..where((t) => t.id.equals(args.excludingPatientId!).not());
   }
@@ -56,7 +57,8 @@ final serialNoInUseProvider =
 
 final patientByIdProvider = StreamProvider.family<Patient?, String>((ref, id) {
   final db = ref.watch(databaseProvider);
-  return (db.select(db.patients)..where((tbl) => tbl.id.equals(id))).watchSingleOrNull();
+  return (db.select(db.patients)
+    ..where((tbl) => tbl.id.equals(id))).watchSingleOrNull();
 });
 
 final patientsStreamProvider = StreamProvider<List<Patient>>((ref) {
@@ -67,15 +69,17 @@ final patientsStreamProvider = StreamProvider<List<Patient>>((ref) {
     ..where((tbl) => tbl.isDeleted.equals(false));
 
   if (query.isNotEmpty) {
-    select = select
-      ..where((tbl) =>
-          tbl.name.lower().contains(query) |
-          tbl.phone.contains(query) |
-          tbl.email.lower().contains(query) |
-          tbl.patientCode.lower().contains(query) |
-          tbl.serialNo.lower().contains(query) |
-          tbl.primaryDisease.lower().contains(query) |
-          tbl.referralSource.lower().contains(query));
+    select =
+        select..where(
+          (tbl) =>
+              tbl.name.lower().contains(query) |
+              tbl.phone.contains(query) |
+              tbl.email.lower().contains(query) |
+              tbl.patientCode.lower().contains(query) |
+              tbl.serialNo.lower().contains(query) |
+              tbl.primaryDisease.lower().contains(query) |
+              tbl.referralSource.lower().contains(query),
+        );
   }
 
   return (select..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
@@ -114,11 +118,13 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     final nextNum = (allPatients.length + 1).toString().padLeft(5, '0');
     final patientCode = 'P-$year-$nextNum';
 
-    final effectiveSerial = serialNo.trim().isNotEmpty
-        ? serialNo.trim()
-        : (consultationType == 'online' || primaryClinicId == 'clinic_online'
-            ? 'ONL-$nextNum'
-            : nextNum);
+    final effectiveSerial =
+        serialNo.trim().isNotEmpty
+            ? serialNo.trim()
+            : (consultationType == 'online' ||
+                    primaryClinicId == 'clinic_online'
+                ? 'ONL-$nextNum'
+                : nextNum);
 
     final patientId = IdGenerator.generate();
 
@@ -149,11 +155,13 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     await _db.transaction(() async {
       // Ensure virtual online clinic exists if registering an online patient
       if (primaryClinicId == 'clinic_online') {
-        final existingOnline = await (_db.select(_db.clinics)
-              ..where((c) => c.id.equals('clinic_online')))
-            .getSingleOrNull();
+        final existingOnline =
+            await (_db.select(_db.clinics)
+              ..where((c) => c.id.equals('clinic_online'))).getSingleOrNull();
         if (existingOnline == null) {
-          await _db.into(_db.clinics).insertOnConflictUpdate(
+          await _db
+              .into(_db.clinics)
+              .insertOnConflictUpdate(
                 ClinicsCompanion.insert(
                   id: 'clinic_online',
                   name: 'Online / Teleconsultation',
@@ -172,7 +180,9 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
 
       // Register initial visit (visitType = 'new')
       final visitId = IdGenerator.generate();
-      await _db.into(_db.visits).insert(
+      await _db
+          .into(_db.visits)
+          .insert(
             VisitsCompanion.insert(
               id: visitId,
               patientId: patientId,
@@ -189,8 +199,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
 
     state = const AsyncData(null);
     return await (_db.select(_db.patients)
-          ..where((tbl) => tbl.id.equals(patientId)))
-        .getSingle();
+      ..where((tbl) => tbl.id.equals(patientId))).getSingle();
   }
 
   Future<void> updatePatient({
@@ -223,7 +232,8 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
           occupation: Value(occupation),
           notes: Value(notes),
           serialNo: Value(serialNo),
-          createdAt: createdAt != null ? Value(createdAt) : const Value.absent(),
+          createdAt:
+              createdAt != null ? Value(createdAt) : const Value.absent(),
           updatedAt: Value(DateTime.now()),
         ),
       );
@@ -248,38 +258,40 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
     required bool asked,
     required bool given,
   }) async {
-    await (_db.update(_db.patients)..where((t) => t.id.equals(patientId)))
-        .write(PatientsCompanion(
-      reviewAskedAt: Value(asked ? DateTime.now() : null),
-      reviewGiven: Value(given),
-      updatedAt: Value(DateTime.now()),
-    ));
+    await (_db.update(_db.patients)
+      ..where((t) => t.id.equals(patientId))).write(
+      PatientsCompanion(
+        reviewAskedAt: Value(asked ? DateTime.now() : null),
+        reviewGiven: Value(given),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
   }
 
   Future<void> archivePatient(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.patients)..where((tbl) => tbl.id.equals(id))).write(
-        const PatientsCompanion(isDeleted: Value(true)),
-      );
+      await (_db.update(_db.patients)..where(
+        (tbl) => tbl.id.equals(id),
+      )).write(const PatientsCompanion(isDeleted: Value(true)));
     });
   }
 
   Future<void> restorePatient(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.patients)..where((tbl) => tbl.id.equals(id))).write(
-        const PatientsCompanion(isDeleted: Value(false)),
-      );
+      await (_db.update(_db.patients)..where(
+        (tbl) => tbl.id.equals(id),
+      )).write(const PatientsCompanion(isDeleted: Value(false)));
     });
   }
 }
 
 final patientNotifierProvider =
     StateNotifierProvider<PatientNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return PatientNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return PatientNotifier(db);
+    });
 
 /// A patient plus the fields needed to tell two same-named people apart.
 class PatientSearchResult {
@@ -300,15 +312,16 @@ class PatientSearchResult {
 /// memo is nearly always for someone just consulted. Filtering happens in SQL
 /// with a LIMIT so this stays constant-cost as the patient list grows — never
 /// load every patient into memory and filter in Dart.
-final patientSearchProvider =
-    FutureProvider.autoDispose.family<List<PatientSearchResult>, String>(
-        (ref, query) async {
-  final db = ref.watch(databaseProvider);
-  final q = query.trim().toLowerCase();
-  const limit = 50;
+final patientSearchProvider = FutureProvider.autoDispose
+    .family<List<PatientSearchResult>, String>((ref, query) async {
+      final db = ref.watch(databaseProvider);
+      final q = query.trim().toLowerCase();
+      const limit = 50;
 
-  final rows = await db.customSelect(
-    '''
+      final rows =
+          await db
+              .customSelect(
+                '''
     SELECT p.*,
            MAX(v.visit_date) AS last_visit,
            COUNT(v.id)       AS visit_count
@@ -326,26 +339,27 @@ final patientSearchProvider =
     ORDER BY last_visit DESC NULLS LAST, p.created_at DESC
     LIMIT $limit
     ''',
-    variables: [Variable<String>(q)],
-    readsFrom: {db.patients, db.visits},
-  ).get();
+                variables: [Variable<String>(q)],
+                readsFrom: {db.patients, db.visits},
+              )
+              .get();
 
-  return rows.map((row) {
-    final lastVisitRaw = row.data['last_visit'] as int?;
-    return PatientSearchResult(
-      patient: db.patients.map(row.data),
-      lastVisitDate: lastVisitRaw == null
-          ? null
-          : DateTime.fromMillisecondsSinceEpoch(lastVisitRaw * 1000),
-      visitCount: (row.data['visit_count'] as int?) ?? 0,
-    );
-  }).toList();
-});
+      return rows.map((row) {
+        final lastVisitRaw = row.data['last_visit'] as int?;
+        return PatientSearchResult(
+          patient: db.patients.map(row.data),
+          lastVisitDate:
+              lastVisitRaw == null
+                  ? null
+                  : DateTime.fromMillisecondsSinceEpoch(lastVisitRaw * 1000),
+          visitCount: (row.data['visit_count'] as int?) ?? 0,
+        );
+      }).toList();
+    });
 
 /// Rich aggregated patient data provider for complete exports across CSV, XLSX, and PDF.
 final patientExportRowsProvider =
     FutureProvider.autoDispose<List<PatientExportRow>>((ref) async {
-  final db = ref.watch(databaseProvider);
-  return PatientExportService.fetchPatientExportRows(db);
-});
-
+      final db = ref.watch(databaseProvider);
+      return PatientExportService.fetchPatientExportRows(db);
+    });

@@ -46,7 +46,8 @@ class _DiseaseAutocompleteFieldState
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final diseaseOptions =
-        ref.watch(masterDiseasesListProvider).value ?? kDefaultHomeopathicDiseases;
+        ref.watch(masterDiseasesListProvider).value ??
+        kDefaultHomeopathicDiseases;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,9 +74,10 @@ class _DiseaseAutocompleteFieldState
             });
           },
           onSelected: (String selection) {
-            final formatted = selection == 'Other'
-                ? ''
-                : Formatters.toTitleCase(selection.trim());
+            final formatted =
+                selection == 'Other'
+                    ? ''
+                    : Formatters.toTitleCase(selection.trim());
             widget.controller.text = formatted;
             widget.onSelected?.call(formatted);
             _focusNode.unfocus();
@@ -136,8 +138,10 @@ class _DiseaseAutocompleteFieldState
                 borderRadius: Radii.mdAll,
                 color: scheme.surfaceContainerHigh,
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(maxHeight: 220, maxWidth: 320),
+                  constraints: const BoxConstraints(
+                    maxHeight: 220,
+                    maxWidth: 320,
+                  ),
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
                     shrinkWrap: true,
@@ -146,10 +150,7 @@ class _DiseaseAutocompleteFieldState
                       final String option = options.elementAt(index);
                       return ListTile(
                         dense: true,
-                        title: Text(
-                          option,
-                          style: theme.textTheme.bodyMedium,
-                        ),
+                        title: Text(option, style: theme.textTheme.bodyMedium),
                         onTap: () {
                           onSelected(option);
                         },

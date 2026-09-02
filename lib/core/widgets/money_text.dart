@@ -24,7 +24,8 @@ class MoneyText extends StatelessWidget {
       Formatters.formatCurrency(amount),
       style: AppTheme.tabularFigures(
         base?.copyWith(
-          color: colorBySign ? AppTheme.moneyColor(context, amount) : base.color,
+          color:
+              colorBySign ? AppTheme.moneyColor(context, amount) : base.color,
           fontWeight: base.fontWeight ?? FontWeight.w600,
         ),
       ),

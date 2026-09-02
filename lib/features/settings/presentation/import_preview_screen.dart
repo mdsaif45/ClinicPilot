@@ -37,35 +37,38 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
   @override
   void initState() {
     super.initState();
-    _previewFuture =
-        ImportService.validate(widget.bytes, widget.clinicIdsByName);
+    _previewFuture = ImportService.validate(
+      widget.bytes,
+      widget.clinicIdsByName,
+    );
   }
 
   Future<void> _confirmImport(ImportPreview preview) async {
     final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Import this data?'),
-        content: Text(
-          'This writes ${preview.patientCount} '
-          '${preview.patientCount == 1 ? 'patient' : 'patients'}'
-          '${preview.visitCount > 0 ? ', ${preview.visitCount} visits' : ''}'
-          '${preview.memoCount > 0 ? ', ${preview.memoCount} cash memos' : ''}'
-          '${preview.expenseCount > 0 ? ', ${preview.expenseCount} expenses' : ''} '
-          'into the app. This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Import this data?'),
+            content: Text(
+              'This writes ${preview.patientCount} '
+              '${preview.patientCount == 1 ? 'patient' : 'patients'}'
+              '${preview.visitCount > 0 ? ', ${preview.visitCount} visits' : ''}'
+              '${preview.memoCount > 0 ? ', ${preview.memoCount} cash memos' : ''}'
+              '${preview.expenseCount > 0 ? ', ${preview.expenseCount} expenses' : ''} '
+              'into the app. This cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Import'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Import'),
-          ),
-        ],
-      ),
     );
     if (confirmed != true || !mounted) return;
 
@@ -80,18 +83,18 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
       context.go('/dashboard');
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Imported ${result.patientCount} patients'
-              '${result.visitCount > 0 ? ', ${result.visitCount} visits' : ''}'
-              '${result.memoCount > 0 ? ', ${result.memoCount} memos' : ''}'
-              '${result.expenseCount > 0 ? ', ${result.expenseCount} expenses' : ''}'),
+          content: Text(
+            'Imported ${result.patientCount} patients'
+            '${result.visitCount > 0 ? ', ${result.visitCount} visits' : ''}'
+            '${result.memoCount > 0 ? ', ${result.memoCount} memos' : ''}'
+            '${result.expenseCount > 0 ? ', ${result.expenseCount} expenses' : ''}',
+          ),
         ),
       );
     } catch (e) {
       if (mounted) {
         setState(() => _importing = false);
-        messenger.showSnackBar(
-          SnackBar(content: Text('Import failed: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
       }
     }
   }
@@ -114,9 +117,10 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
             return EmptyState(
               icon: Icons.error_outline,
               title: 'Nothing to import',
-              message: preview.errors.isEmpty
-                  ? 'The Patients sheet has no rows to import.'
-                  : preview.errors.first.reason,
+              message:
+                  preview.errors.isEmpty
+                      ? 'The Patients sheet has no rows to import.'
+                      : preview.errors.first.reason,
             );
           }
 
@@ -127,8 +131,7 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Ready to import',
-                        style: theme.textTheme.titleMedium),
+                    Text('Ready to import', style: theme.textTheme.titleMedium),
                     const SizedBox(height: Spacing.md),
                     _CountRow(label: 'Patients', count: preview.patientCount),
                     _CountRow(label: 'Visits', count: preview.visitCount),
@@ -140,8 +143,9 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
                         '${preview.errors.length} '
                         '${preview.errors.length == 1 ? 'row' : 'rows'} '
                         'skipped',
-                        style: theme.textTheme.labelLarge
-                            ?.copyWith(color: theme.colorScheme.error),
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
                       ),
                     ],
                   ],
@@ -151,8 +155,10 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
                 const SizedBox(height: Spacing.lg),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                  child:
-                      Text('Skipped rows', style: theme.textTheme.titleSmall),
+                  child: Text(
+                    'Skipped rows',
+                    style: theme.textTheme.titleSmall,
+                  ),
                 ),
                 const SizedBox(height: Spacing.sm),
                 AppCard(
@@ -173,16 +179,18 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
                 child: FilledButton(
-                  onPressed:
-                      _importing ? null : () => _confirmImport(preview),
-                  child: _importing
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text('Import ${preview.patientCount} '
-                          '${preview.patientCount == 1 ? 'patient' : 'patients'}'),
+                  onPressed: _importing ? null : () => _confirmImport(preview),
+                  child:
+                      _importing
+                          ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : Text(
+                            'Import ${preview.patientCount} '
+                            '${preview.patientCount == 1 ? 'patient' : 'patients'}',
+                          ),
                 ),
               ),
             ],
@@ -209,8 +217,12 @@ class _CountRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: theme.textTheme.bodyMedium),
-          Text('$count', style: theme.textTheme.bodyMedium
-              ?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            '$count',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );

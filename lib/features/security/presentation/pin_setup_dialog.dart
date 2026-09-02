@@ -67,7 +67,11 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.isChangingPin ? '4-digit PIN updated successfully' : 'App Lock enabled'),
+            content: Text(
+              widget.isChangingPin
+                  ? '4-digit PIN updated successfully'
+                  : 'App Lock enabled',
+            ),
           ),
         );
       }
@@ -75,9 +79,9 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
       AppHaptics.error();
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -111,8 +115,11 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
                   labelText: 'Current 4-Digit PIN *',
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
-                validator: (v) =>
-                    v == null || v.trim().length != 4 ? 'Enter exactly 4 digits' : null,
+                validator:
+                    (v) =>
+                        v == null || v.trim().length != 4
+                            ? 'Enter exactly 4 digits'
+                            : null,
               ),
               const SizedBox(height: Spacing.sm),
             ],
@@ -161,7 +168,10 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
                 options: const [
                   PickerOption(value: 0, label: 'Immediately on background'),
                   PickerOption(value: 1, label: 'After 1 minute'),
-                  PickerOption(value: 5, label: 'After 5 minutes (Recommended)'),
+                  PickerOption(
+                    value: 5,
+                    label: 'After 5 minutes (Recommended)',
+                  ),
                   PickerOption(value: 15, label: 'After 15 minutes'),
                   PickerOption(value: 30, label: 'After 30 minutes'),
                 ],

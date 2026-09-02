@@ -102,11 +102,7 @@ class EmptyIllustration extends StatelessWidget {
               ],
             ),
             child: Center(
-              child: Icon(
-                primaryIcon,
-                size: size * 0.34,
-                color: primaryAccent,
-              ),
+              child: Icon(primaryIcon, size: size * 0.34, color: primaryAccent),
             ),
           ),
           // Floating secondary badge if present
@@ -146,58 +142,58 @@ class EmptyIllustration extends StatelessWidget {
 
 class _PatientsEmptyIllustration extends EmptyIllustration {
   const _PatientsEmptyIllustration({super.size = 110})
-      : super(
-          primaryIcon: Icons.person_search_outlined,
-          secondaryIcon: Icons.health_and_safety_outlined,
-        );
+    : super(
+        primaryIcon: Icons.person_search_outlined,
+        secondaryIcon: Icons.health_and_safety_outlined,
+      );
 }
 
 class _CashMemosEmptyIllustration extends EmptyIllustration {
   const _CashMemosEmptyIllustration({super.size = 110})
-      : super(
-          primaryIcon: Icons.receipt_long_outlined,
-          secondaryIcon: Icons.currency_rupee,
-        );
+    : super(
+        primaryIcon: Icons.receipt_long_outlined,
+        secondaryIcon: Icons.currency_rupee,
+      );
 }
 
 class _ExpensesEmptyIllustration extends EmptyIllustration {
   const _ExpensesEmptyIllustration({super.size = 110})
-      : super(
-          primaryIcon: Icons.account_balance_wallet_outlined,
-          secondaryIcon: Icons.trending_down_outlined,
-        );
+    : super(
+        primaryIcon: Icons.account_balance_wallet_outlined,
+        secondaryIcon: Icons.trending_down_outlined,
+      );
 }
 
 class _GrowthEmptyIllustration extends EmptyIllustration {
   const _GrowthEmptyIllustration({super.size = 110})
-      : super(
-          primaryIcon: Icons.insights_outlined,
-          secondaryIcon: Icons.auto_graph_outlined,
-        );
+    : super(
+        primaryIcon: Icons.insights_outlined,
+        secondaryIcon: Icons.auto_graph_outlined,
+      );
 }
 
 class _RecallEmptyIllustration extends EmptyIllustration {
   const _RecallEmptyIllustration({super.size = 110})
-      : super(
-          primaryIcon: Icons.event_repeat_outlined,
-          secondaryIcon: Icons.notifications_active_outlined,
-        );
+    : super(
+        primaryIcon: Icons.event_repeat_outlined,
+        secondaryIcon: Icons.notifications_active_outlined,
+      );
 }
 
 class _ClinicsEmptyIllustration extends EmptyIllustration {
   const _ClinicsEmptyIllustration({super.size = 110})
-      : super(
-          primaryIcon: Icons.local_hospital_outlined,
-          secondaryIcon: Icons.location_city_outlined,
-        );
+    : super(
+        primaryIcon: Icons.local_hospital_outlined,
+        secondaryIcon: Icons.location_city_outlined,
+      );
 }
 
 class _SearchEmptyIllustration extends EmptyIllustration {
   const _SearchEmptyIllustration({super.size = 110})
-      : super(
-          primaryIcon: Icons.search_off_outlined,
-          secondaryIcon: Icons.manage_search_outlined,
-        );
+    : super(
+        primaryIcon: Icons.search_off_outlined,
+        secondaryIcon: Icons.manage_search_outlined,
+      );
 }
 
 class _GenericEmptyIllustration extends EmptyIllustration {
@@ -206,8 +202,5 @@ class _GenericEmptyIllustration extends EmptyIllustration {
     IconData? badgeIcon,
     super.accentColor,
     super.size = 110,
-  }) : super(
-          primaryIcon: icon,
-          secondaryIcon: badgeIcon,
-        );
+  }) : super(primaryIcon: icon, secondaryIcon: badgeIcon);
 }

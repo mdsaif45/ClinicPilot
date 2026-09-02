@@ -45,30 +45,34 @@ void main() {
 
   group('AppTheme.build', () {
     testWidgets('brightness is honoured', (tester) async {
-      expect(AppTheme.build(Brightness.light).colorScheme.brightness,
-          Brightness.light);
-      expect(AppTheme.build(Brightness.dark).colorScheme.brightness,
-          Brightness.dark);
+      expect(
+        AppTheme.build(Brightness.light).colorScheme.brightness,
+        Brightness.light,
+      );
+      expect(
+        AppTheme.build(Brightness.dark).colorScheme.brightness,
+        Brightness.dark,
+      );
     });
 
-    testWidgets('every palette yields a visually distinct primary',
-        (tester) async {
+    testWidgets('every palette yields a visually distinct primary', (
+      tester,
+    ) async {
       // Not just "two differ" - all of them must, otherwise the picker offers
       // choices the user cannot tell apart.
       final primaries = <Color>{};
       for (final p in AppPalette.values) {
-        primaries.add(AppTheme.build(Brightness.light, palette: p)
-            .colorScheme
-            .primary);
+        primaries.add(
+          AppTheme.build(Brightness.light, palette: p).colorScheme.primary,
+        );
       }
       expect(primaries.length, AppPalette.values.length);
     });
 
-    testWidgets('black variant forces pure black surfaces in dark mode', (tester) async {
-      final black = AppTheme.build(
-        Brightness.dark,
-        blackVariant: true,
-      );
+    testWidgets('black variant forces pure black surfaces in dark mode', (
+      tester,
+    ) async {
+      final black = AppTheme.build(Brightness.dark, blackVariant: true);
       expect(black.colorScheme.surface, const Color(0xFF000000));
       expect(black.scaffoldBackgroundColor, const Color(0xFF000000));
     });
@@ -78,7 +82,9 @@ void main() {
       expect(light.colorScheme.surface, isNot(const Color(0xFF000000)));
     });
 
-    testWidgets('app bar background and foreground always match', (tester) async {
+    testWidgets('app bar background and foreground always match', (
+      tester,
+    ) async {
       // The pair must stay consistent, whichever surface the bar sits on -
       // a mismatch is what made the bar render light-on-light.
       for (final b in Brightness.values) {

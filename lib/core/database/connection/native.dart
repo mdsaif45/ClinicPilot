@@ -25,7 +25,10 @@ Future<void> _applyAndroidCipherWorkaroundOnce() async {
 // inside that second isolate.
 void _overrideAndroidSqlite3Open() {
   if (!Platform.isAndroid) return;
-  sqlite3_open.open.overrideFor(sqlite3_open.OperatingSystem.android, openCipherOnAndroid);
+  sqlite3_open.open.overrideFor(
+    sqlite3_open.OperatingSystem.android,
+    openCipherOnAndroid,
+  );
 }
 
 QueryExecutor openConnection({DatabaseEncryptionService? encryptionService}) {

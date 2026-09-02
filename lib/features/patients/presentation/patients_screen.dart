@@ -27,10 +27,11 @@ class PatientsScreen extends ConsumerWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showDialog(
-          context: context,
-          builder: (_) => const AddPatientDialog(),
-        ),
+        onPressed:
+            () => showDialog(
+              context: context,
+              builder: (_) => const AddPatientDialog(),
+            ),
         icon: const Icon(Icons.person_add),
         label: const Text('New Patient'),
       ),
@@ -48,42 +49,45 @@ class PatientsScreen extends ConsumerWidget {
                 hintText: 'Search name, code, serial or phone',
                 prefixIcon: Icon(Icons.search),
               ),
-              onChanged: (val) =>
-                  ref.read(patientSearchQueryProvider.notifier).state = val,
+              onChanged:
+                  (val) =>
+                      ref.read(patientSearchQueryProvider.notifier).state = val,
             ),
           ),
           Expanded(
             child: patientsAsync.when(
-              loading: () => ListView.separated(
-                padding: const EdgeInsets.only(bottom: 96),
-                itemCount: 6,
-                separatorBuilder: (_, __) =>
-                    const Divider(height: 1, indent: Spacing.lg),
-                itemBuilder: (_, __) => const ListTileShimmer(),
-              ),
+              loading:
+                  () => ListView.separated(
+                    padding: const EdgeInsets.only(bottom: 96),
+                    itemCount: 6,
+                    separatorBuilder:
+                        (_, __) => const Divider(height: 1, indent: Spacing.lg),
+                    itemBuilder: (_, __) => const ListTileShimmer(),
+                  ),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (patients) {
                 if (patients.isEmpty) {
                   return query.isEmpty
                       ? EmptyState.patients(
-                          onAction: () => showDialog(
-                            context: context,
-                            builder: (_) => const AddPatientDialog(),
-                          ),
-                        )
+                        onAction:
+                            () => showDialog(
+                              context: context,
+                              builder: (_) => const AddPatientDialog(),
+                            ),
+                      )
                       : EmptyState.search(
-                          title: 'No match for "$query"',
-                          message: 'Try a name, patient code or phone number.',
-                        );
+                        title: 'No match for "$query"',
+                        message: 'Try a name, patient code or phone number.',
+                      );
                 }
 
                 return ListView.separated(
                   padding: const EdgeInsets.only(bottom: 96),
                   itemCount: patients.length,
-                  separatorBuilder: (_, __) =>
-                      const Divider(height: 1, indent: Spacing.lg),
-                  itemBuilder: (context, index) =>
-                      _PatientRow(patient: patients[index]),
+                  separatorBuilder:
+                      (_, __) => const Divider(height: 1, indent: Spacing.lg),
+                  itemBuilder:
+                      (context, index) => _PatientRow(patient: patients[index]),
                 );
               },
             ),
@@ -144,8 +148,9 @@ class _PatientRow extends ConsumerWidget {
             child: Text(
               patient.name,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(width: Spacing.sm),
@@ -161,7 +166,11 @@ class _PatientRow extends ConsumerWidget {
               const SizedBox(width: Spacing.xs),
               Text(patient.phone, style: theme.textTheme.labelMedium),
             ] else if (patient.email?.trim().isNotEmpty == true) ...[
-              Icon(Icons.email_outlined, size: 13, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.email_outlined,
+                size: 13,
+                color: scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: Spacing.xs),
               Expanded(
                 child: Text(
@@ -171,10 +180,16 @@ class _PatientRow extends ConsumerWidget {
                 ),
               ),
             ] else ...[
-              Icon(Icons.badge_outlined, size: 13, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.badge_outlined,
+                size: 13,
+                color: scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: Spacing.xs),
               Text(
-                patient.patientCode.isNotEmpty ? patient.patientCode : 'No contact on file',
+                patient.patientCode.isNotEmpty
+                    ? patient.patientCode
+                    : 'No contact on file',
                 style: theme.textTheme.labelMedium,
               ),
             ],
@@ -197,24 +212,25 @@ class _PatientRow extends ConsumerWidget {
               _confirmArchive(context, ref);
           }
         },
-        itemBuilder: (_) => const [
-          PopupMenuItem(
-            value: 'edit',
-            child: ListTile(
-              leading: Icon(Icons.edit_outlined),
-              title: Text('Edit'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: 'archive',
-            child: ListTile(
-              leading: Icon(Icons.delete_outline),
-              title: Text('Remove'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
+        itemBuilder:
+            (_) => const [
+              PopupMenuItem(
+                value: 'edit',
+                child: ListTile(
+                  leading: Icon(Icons.edit_outlined),
+                  title: Text('Edit'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'archive',
+                child: ListTile(
+                  leading: Icon(Icons.delete_outline),
+                  title: Text('Remove'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
       ),
     );
   }
@@ -222,49 +238,50 @@ class _PatientRow extends ConsumerWidget {
   void _confirmArchive(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Remove patient'),
-        content: Text(
-          'Remove ${patient.name}? They will stop appearing in lists and '
-          'totals.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Remove patient'),
+            content: Text(
+              'Remove ${patient.name}? They will stop appearing in lists and '
+              'totals.',
             ),
-            onPressed: () async {
-              AppHaptics.error();
-              await ref
-                  .read(patientNotifierProvider.notifier)
-                  .archivePatient(patient.id);
-              if (ctx.mounted) Navigator.of(ctx).pop();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${patient.name} removed'),
-                    behavior: SnackBarBehavior.floating,
-                    action: SnackBarAction(
-                      label: 'Undo',
-                      onPressed: () {
-                        AppHaptics.medium();
-                        ref
-                            .read(patientNotifierProvider.notifier)
-                            .restorePatient(patient.id);
-                      },
-                    ),
-                  ),
-                );
-              }
-            },
-            child: const Text('Remove'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                ),
+                onPressed: () async {
+                  AppHaptics.error();
+                  await ref
+                      .read(patientNotifierProvider.notifier)
+                      .archivePatient(patient.id);
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${patient.name} removed'),
+                        behavior: SnackBarBehavior.floating,
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () {
+                            AppHaptics.medium();
+                            ref
+                                .read(patientNotifierProvider.notifier)
+                                .restorePatient(patient.id);
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Remove'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

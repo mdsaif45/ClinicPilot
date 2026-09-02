@@ -9,12 +9,14 @@ enum ActivityTimeRange { day, week, month }
 enum ActivityMetric { revenue, patients }
 
 /// Active time range tab (Day, Week, Month).
-final activityRangeProvider =
-    StateProvider<ActivityTimeRange>((ref) => ActivityTimeRange.day);
+final activityRangeProvider = StateProvider<ActivityTimeRange>(
+  (ref) => ActivityTimeRange.day,
+);
 
 /// Active metric toggle (Revenue vs Patients).
-final activityMetricProvider =
-    StateProvider<ActivityMetric>((ref) => ActivityMetric.revenue);
+final activityMetricProvider = StateProvider<ActivityMetric>(
+  (ref) => ActivityMetric.revenue,
+);
 
 /// Active selected date for activity screen (midnight normalized).
 final selectedActivityDateProvider = StateProvider<DateTime>((ref) {
@@ -198,15 +200,31 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
   final patientMap = {for (final p in rawData.patients) p.id: p};
 
   // 1. DAY VIEW CALCULATIONS (Hourly 9 AM - 9 PM)
-  final dayStart = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+  final dayStart = DateTime(
+    selectedDate.year,
+    selectedDate.month,
+    selectedDate.day,
+  );
   final dayEnd = dayStart.add(const Duration(days: 1));
 
-  final dayMemos = rawData.memos
-      .where((m) => inClinic(m.clinicId) && !m.memoDate.isBefore(dayStart) && m.memoDate.isBefore(dayEnd))
-      .toList();
-  final dayVisits = rawData.visits
-      .where((v) => inClinic(v.clinicId) && !v.visitDate.isBefore(dayStart) && v.visitDate.isBefore(dayEnd))
-      .toList();
+  final dayMemos =
+      rawData.memos
+          .where(
+            (m) =>
+                inClinic(m.clinicId) &&
+                !m.memoDate.isBefore(dayStart) &&
+                m.memoDate.isBefore(dayEnd),
+          )
+          .toList();
+  final dayVisits =
+      rawData.visits
+          .where(
+            (v) =>
+                inClinic(v.clinicId) &&
+                !v.visitDate.isBefore(dayStart) &&
+                v.visitDate.isBefore(dayEnd),
+          )
+          .toList();
 
   final hourlyBins = <HourlyActivityBin>[];
   int peakHour = 10;
@@ -236,9 +254,10 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
       peakHour = slotStart.hour;
     }
 
-    final formattedLabel = slotStart.minute == 0
-        ? DateFormat('h a').format(slotStart)
-        : DateFormat('h:mm a').format(slotStart);
+    final formattedLabel =
+        slotStart.minute == 0
+            ? DateFormat('h a').format(slotStart)
+            : DateFormat('h:mm a').format(slotStart);
 
     hourlyBins.add(
       HourlyActivityBin(
@@ -253,8 +272,12 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
 
   String? peakRushDesc;
   if (maxPeakVal > 0) {
-    final startH = DateFormat('h:mm a').format(DateTime(dayStart.year, dayStart.month, dayStart.day, peakHour));
-    final endH = DateFormat('h:mm a').format(DateTime(dayStart.year, dayStart.month, dayStart.day, peakHour + 2));
+    final startH = DateFormat(
+      'h:mm a',
+    ).format(DateTime(dayStart.year, dayStart.month, dayStart.day, peakHour));
+    final endH = DateFormat('h:mm a').format(
+      DateTime(dayStart.year, dayStart.month, dayStart.day, peakHour + 2),
+    );
     peakRushDesc = 'Peak clinic activity observed between $startH – $endH';
   }
 
@@ -272,14 +295,18 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
 
     var dRev = 0.0;
     for (final m in rawData.memos) {
-      if (inClinic(m.clinicId) && !m.memoDate.isBefore(curDate) && m.memoDate.isBefore(curEnd)) {
+      if (inClinic(m.clinicId) &&
+          !m.memoDate.isBefore(curDate) &&
+          m.memoDate.isBefore(curEnd)) {
         dRev += m.total;
       }
     }
 
     var dPts = 0;
     for (final v in rawData.visits) {
-      if (inClinic(v.clinicId) && !v.visitDate.isBefore(curDate) && v.visitDate.isBefore(curEnd)) {
+      if (inClinic(v.clinicId) &&
+          !v.visitDate.isBefore(curDate) &&
+          v.visitDate.isBefore(curEnd)) {
         dPts++;
       }
     }
@@ -300,13 +327,18 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
   }
 
   final weeklyTargetVal = dailyTarget * 6; // 6 working days
-  final actualWeeklyVal = metric == ActivityMetric.revenue ? weekTotalRev : weekTotalPts.toDouble();
-  final weeklyAchievementPct = weeklyTargetVal > 0 ? (actualWeeklyVal / weeklyTargetVal).clamp(0.0, 2.0) : 0.0;
+  final actualWeeklyVal =
+      metric == ActivityMetric.revenue ? weekTotalRev : weekTotalPts.toDouble();
+  final weeklyAchievementPct =
+      weeklyTargetVal > 0
+          ? (actualWeeklyVal / weeklyTargetVal).clamp(0.0, 2.0)
+          : 0.0;
 
   // 3. MONTH VIEW CALCULATIONS (Bubble Matrix)
   final monthStart = DateTime(selectedDate.year, selectedDate.month, 1);
   final nextMonthStart = DateTime(selectedDate.year, selectedDate.month + 1, 1);
-  final daysInMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
+  final daysInMonth =
+      DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
 
   // Find max day value for bubble scaling
   var maxMonthlyDayVal = 1.0;
@@ -318,14 +350,18 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
 
     var dRev = 0.0;
     for (final m in rawData.memos) {
-      if (inClinic(m.clinicId) && !m.memoDate.isBefore(curDayStart) && m.memoDate.isBefore(curDayEnd)) {
+      if (inClinic(m.clinicId) &&
+          !m.memoDate.isBefore(curDayStart) &&
+          m.memoDate.isBefore(curDayEnd)) {
         dRev += m.total;
       }
     }
 
     var dPts = 0;
     for (final v in rawData.visits) {
-      if (inClinic(v.clinicId) && !v.visitDate.isBefore(curDayStart) && v.visitDate.isBefore(curDayEnd)) {
+      if (inClinic(v.clinicId) &&
+          !v.visitDate.isBefore(curDayStart) &&
+          v.visitDate.isBefore(curDayEnd)) {
         dPts++;
       }
     }
@@ -372,7 +408,10 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
         patients: dPts,
         intensity: intensity,
         isInSelectedMonth: true,
-        isToday: date.year == todayMidnight.year && date.month == todayMidnight.month && date.day == todayMidnight.day,
+        isToday:
+            date.year == todayMidnight.year &&
+            date.month == todayMidnight.month &&
+            date.day == todayMidnight.day,
       ),
     );
   }
@@ -446,7 +485,10 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
           timestamp: v.visitDate,
           type: ActivityEventType.consultation,
           title: '$pName • $vType',
-          subtitle: v.disease.isNotEmpty ? 'Condition: ${v.disease}' : 'General Consultation',
+          subtitle:
+              v.disease.isNotEmpty
+                  ? 'Condition: ${v.disease}'
+                  : 'General Consultation',
           diseaseTag: v.disease,
           patientId: v.patientId,
           patientCode: patient?.patientCode,
@@ -511,21 +553,27 @@ final practiceActivityProvider = Provider<PracticeActivityState>((ref) {
   // Compute active totals for range
   var totalRev = 0.0;
   for (final m in rawData.memos) {
-    if (inClinic(m.clinicId) && !m.memoDate.isBefore(rangeStart) && m.memoDate.isBefore(rangeEnd)) {
+    if (inClinic(m.clinicId) &&
+        !m.memoDate.isBefore(rangeStart) &&
+        m.memoDate.isBefore(rangeEnd)) {
       totalRev += m.total;
     }
   }
 
   var totalPts = 0;
   for (final v in rawData.visits) {
-    if (inClinic(v.clinicId) && !v.visitDate.isBefore(rangeStart) && v.visitDate.isBefore(rangeEnd)) {
+    if (inClinic(v.clinicId) &&
+        !v.visitDate.isBefore(rangeStart) &&
+        v.visitDate.isBefore(rangeEnd)) {
       totalPts++;
     }
   }
 
   var totalExp = 0.0;
   for (final e in rawData.expenses) {
-    if (inClinic(e.clinicId) && !e.date.isBefore(rangeStart) && e.date.isBefore(rangeEnd)) {
+    if (inClinic(e.clinicId) &&
+        !e.date.isBefore(rangeStart) &&
+        e.date.isBefore(rangeEnd)) {
       totalExp += e.amount;
     }
   }

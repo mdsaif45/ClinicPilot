@@ -16,7 +16,8 @@ class PeriodicBackupsScreen extends ConsumerStatefulWidget {
   const PeriodicBackupsScreen({super.key});
 
   @override
-  ConsumerState<PeriodicBackupsScreen> createState() => _PeriodicBackupsScreenState();
+  ConsumerState<PeriodicBackupsScreen> createState() =>
+      _PeriodicBackupsScreenState();
 }
 
 class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
@@ -44,11 +45,24 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
   void initState() {
     super.initState();
     _settingsBox = Hive.box('settings');
-    _enabled = _settingsBox.get('periodic_backup_enabled', defaultValue: false) == true;
-    _directory = _settingsBox.get('periodic_backup_directory', defaultValue: '') as String;
-    _frequency = _settingsBox.get('periodic_backup_frequency', defaultValue: 'Once per week') as String;
-    _deleteOld = _settingsBox.get('periodic_backup_delete_old', defaultValue: true) == true;
-    _maxBackups = (_settingsBox.get('periodic_backup_max_count', defaultValue: 10) as num).toDouble();
+    _enabled =
+        _settingsBox.get('periodic_backup_enabled', defaultValue: false) ==
+        true;
+    _directory =
+        _settingsBox.get('periodic_backup_directory', defaultValue: '')
+            as String;
+    _frequency =
+        _settingsBox.get(
+              'periodic_backup_frequency',
+              defaultValue: 'Once per week',
+            )
+            as String;
+    _deleteOld =
+        _settingsBox.get('periodic_backup_delete_old', defaultValue: true) ==
+        true;
+    _maxBackups =
+        (_settingsBox.get('periodic_backup_max_count', defaultValue: 10) as num)
+            .toDouble();
     _lastRunStr = _settingsBox.get('periodic_backup_last_run') as String?;
 
     _loadExistingBackups();
@@ -56,7 +70,9 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
 
   Future<void> _loadExistingBackups() async {
     if (kIsWeb) return;
-    final resolvedDir = await PeriodicBackupRunner.resolveBackupDirectory(customPath: _directory);
+    final resolvedDir = await PeriodicBackupRunner.resolveBackupDirectory(
+      customPath: _directory,
+    );
     if (resolvedDir != null) {
       if (_directory.isEmpty) {
         _directory = resolvedDir.path;
@@ -98,24 +114,31 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
     final db = ref.read(databaseProvider);
 
     try {
-      final file = await PeriodicBackupRunner.executeBackup(db, isManualTrigger: true);
+      final file = await PeriodicBackupRunner.executeBackup(
+        db,
+        isManualTrigger: true,
+      );
       if (!mounted) return;
 
       if (file != null) {
         _lastRunStr = DateTime.now().toIso8601String();
         await _loadExistingBackups();
         messenger.showSnackBar(
-          SnackBar(content: Text('Automated backup created: ${file.path.split(Platform.pathSeparator).last}')),
+          SnackBar(
+            content: Text(
+              'Automated backup created: ${file.path.split(Platform.pathSeparator).last}',
+            ),
+          ),
         );
       } else {
         messenger.showSnackBar(
-          const SnackBar(content: Text('Backup skipped: storage directory unavailable.')),
+          const SnackBar(
+            content: Text('Backup skipped: storage directory unavailable.'),
+          ),
         );
       }
     } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Backup failed: $e')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text('Backup failed: $e')));
     } finally {
       if (mounted) setState(() => _isRunningManualBackup = false);
     }
@@ -134,19 +157,20 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
               contentPadding: const EdgeInsets.symmetric(vertical: Spacing.sm),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: _frequencies.map((freq) {
-                  return RadioListTile<String>(
-                    title: Text(freq, style: theme.textTheme.bodyMedium),
-                    value: freq,
-                    groupValue: current,
-                    onChanged: (val) {
-                      if (val != null) {
-                        setDialogState(() => current = val);
-                        Navigator.of(ctx).pop(val);
-                      }
-                    },
-                  );
-                }).toList(),
+                children:
+                    _frequencies.map((freq) {
+                      return RadioListTile<String>(
+                        title: Text(freq, style: theme.textTheme.bodyMedium),
+                        value: freq,
+                        groupValue: current,
+                        onChanged: (val) {
+                          if (val != null) {
+                            setDialogState(() => current = val);
+                            Navigator.of(ctx).pop(val);
+                          }
+                        },
+                      );
+                    }).toList(),
               ),
               actions: [
                 TextButton(
@@ -182,9 +206,7 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Periodic backups'),
-      ),
+      appBar: AppBar(title: const Text('Periodic backups')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
         children: [
@@ -194,9 +216,10 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
               AppSwitchTile(
                 icon: Icons.autorenew_outlined,
                 title: 'Enable periodic backups',
-                subtitle: _enabled
-                    ? 'Automated backups active'
-                    : 'Turn on to run backups automatically',
+                subtitle:
+                    _enabled
+                        ? 'Automated backups active'
+                        : 'Turn on to run backups automatically',
                 value: _enabled,
                 onChanged: (val) {
                   setState(() {
@@ -219,20 +242,22 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
                 AppListTile(
                   icon: Icons.folder_zip_outlined,
                   title: 'Backups in storage',
-                  subtitle: '$_existingBackupsCount .cpbak backup archive${_existingBackupsCount == 1 ? '' : 's'}',
+                  subtitle:
+                      '$_existingBackupsCount .cpbak backup archive${_existingBackupsCount == 1 ? '' : 's'}',
                 ),
                 AppListTile(
                   icon: Icons.play_arrow_outlined,
                   iconColor: scheme.primary,
                   title: 'Run backup now',
                   subtitle: 'Manually trigger scheduled backup immediately',
-                  trailing: _isRunningManualBackup
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : null,
+                  trailing:
+                      _isRunningManualBackup
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : null,
                   onTap: _isRunningManualBackup ? null : _runManualBackup,
                 ),
               ],
@@ -243,7 +268,10 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
                 AppListTile(
                   icon: Icons.folder_outlined,
                   title: 'Backups output directory',
-                  subtitle: _directory.isNotEmpty ? _directory : 'Default App Storage',
+                  subtitle:
+                      _directory.isNotEmpty
+                          ? _directory
+                          : 'Default App Storage',
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _pickDirectory,
                 ),
@@ -257,7 +285,8 @@ class _PeriodicBackupsScreenState extends ConsumerState<PeriodicBackupsScreen> {
                 AppSwitchTile(
                   icon: Icons.auto_delete_outlined,
                   title: 'Delete old backups',
-                  subtitle: 'Automatically delete old backup files to save storage space',
+                  subtitle:
+                      'Automatically delete old backup files to save storage space',
                   value: _deleteOld,
                   onChanged: (val) {
                     setState(() {

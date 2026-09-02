@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 import '../design/tokens.dart';
 import 'animated_counter.dart';
 
-enum MetricTone {
-  neutral,
-  positive,
-  negative,
-}
+enum MetricTone { neutral, positive, negative }
 
 /// Standardized card for dashboard & analytics metrics.
 /// Provides consistent typography, container tints, iconography, and animations.
@@ -38,23 +34,23 @@ class MetricCard extends StatelessWidget {
 
     final (bg, border, text, iconColor) = switch (tone) {
       MetricTone.positive => (
-          scheme.primaryContainer.withValues(alpha: 0.35),
-          scheme.primary.withValues(alpha: 0.25),
-          scheme.primary,
-          scheme.primary,
-        ),
+        scheme.primaryContainer.withValues(alpha: 0.35),
+        scheme.primary.withValues(alpha: 0.25),
+        scheme.primary,
+        scheme.primary,
+      ),
       MetricTone.negative => (
-          scheme.errorContainer.withValues(alpha: 0.35),
-          scheme.error.withValues(alpha: 0.25),
-          scheme.error,
-          scheme.error,
-        ),
+        scheme.errorContainer.withValues(alpha: 0.35),
+        scheme.error.withValues(alpha: 0.25),
+        scheme.error,
+        scheme.error,
+      ),
       MetricTone.neutral => (
-          scheme.surfaceContainerLowest,
-          scheme.outlineVariant.withValues(alpha: 0.5),
-          scheme.onSurface,
-          scheme.onSurfaceVariant,
-        ),
+        scheme.surfaceContainerLowest,
+        scheme.outlineVariant.withValues(alpha: 0.5),
+        scheme.onSurface,
+        scheme.onSurfaceVariant,
+      ),
     };
 
     return Material(

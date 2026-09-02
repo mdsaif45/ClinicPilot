@@ -41,7 +41,8 @@ void main() {
     expect(
       offenders,
       isEmpty,
-      reason: 'Resolve colours from Theme.of(context).colorScheme instead:\n'
+      reason:
+          'Resolve colours from Theme.of(context).colorScheme instead:\n'
           '${offenders.join('\n')}',
     );
   });

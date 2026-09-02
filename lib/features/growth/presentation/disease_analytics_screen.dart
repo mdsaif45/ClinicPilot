@@ -16,10 +16,12 @@ class DiseaseAnalyticsScreen extends ConsumerStatefulWidget {
   const DiseaseAnalyticsScreen({super.key});
 
   @override
-  ConsumerState<DiseaseAnalyticsScreen> createState() => _DiseaseAnalyticsScreenState();
+  ConsumerState<DiseaseAnalyticsScreen> createState() =>
+      _DiseaseAnalyticsScreenState();
 }
 
-class _DiseaseAnalyticsScreenState extends ConsumerState<DiseaseAnalyticsScreen> {
+class _DiseaseAnalyticsScreenState
+    extends ConsumerState<DiseaseAnalyticsScreen> {
   _DiseaseSort _sort = _DiseaseSort.revenue;
 
   @override
@@ -29,9 +31,7 @@ class _DiseaseAnalyticsScreenState extends ConsumerState<DiseaseAnalyticsScreen>
     final scheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Disease & Condition Analytics'),
-      ),
+      appBar: AppBar(title: const Text('Disease & Condition Analytics')),
       body: analyticsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Could not load analytics: $e')),
@@ -43,7 +43,8 @@ class _DiseaseAnalyticsScreenState extends ConsumerState<DiseaseAnalyticsScreen>
                 Expanded(
                   child: EmptyState.growth(
                     title: 'No condition records in period',
-                    message: 'Record visits and cash memos to analyze disease value and repeat retention.',
+                    message:
+                        'Record visits and cash memos to analyze disease value and repeat retention.',
                   ),
                 ),
               ],
@@ -53,17 +54,24 @@ class _DiseaseAnalyticsScreenState extends ConsumerState<DiseaseAnalyticsScreen>
           final sortedList = [...summary.stats];
           switch (_sort) {
             case _DiseaseSort.revenue:
-              sortedList.sort((a, b) => b.totalRevenue.compareTo(a.totalRevenue));
+              sortedList.sort(
+                (a, b) => b.totalRevenue.compareTo(a.totalRevenue),
+              );
               break;
             case _DiseaseSort.patients:
-              sortedList.sort((a, b) => b.patientCount.compareTo(a.patientCount));
+              sortedList.sort(
+                (a, b) => b.patientCount.compareTo(a.patientCount),
+              );
               break;
             case _DiseaseSort.repeatRate:
               sortedList.sort((a, b) => b.repeatRate.compareTo(a.repeatRate));
               break;
           }
 
-          final maxRevenue = summary.stats.fold<double>(0.0, (max, s) => s.totalRevenue > max ? s.totalRevenue : max);
+          final maxRevenue = summary.stats.fold<double>(
+            0.0,
+            (max, s) => s.totalRevenue > max ? s.totalRevenue : max,
+          );
 
           return ListView(
             padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
@@ -195,7 +203,13 @@ class _DiseaseAnalyticsScreenState extends ConsumerState<DiseaseAnalyticsScreen>
                             child: ClipRRect(
                               borderRadius: Radii.pillAll,
                               child: LinearProgressIndicator(
-                                value: maxRevenue > 0 ? (s.totalRevenue / maxRevenue).clamp(0.0, 1.0) : 0.0,
+                                value:
+                                    maxRevenue > 0
+                                        ? (s.totalRevenue / maxRevenue).clamp(
+                                          0.0,
+                                          1.0,
+                                        )
+                                        : 0.0,
                                 minHeight: 6,
                                 backgroundColor: scheme.surfaceContainerHighest,
                                 color: scheme.primary,
@@ -207,7 +221,10 @@ class _DiseaseAnalyticsScreenState extends ConsumerState<DiseaseAnalyticsScreen>
                             '${s.repeatRate.toStringAsFixed(0)}% repeat',
                             style: theme.textTheme.labelSmall?.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: s.repeatRate >= 50 ? scheme.primary : scheme.onSurfaceVariant,
+                              color:
+                                  s.repeatRate >= 50
+                                      ? scheme.primary
+                                      : scheme.onSurfaceVariant,
                             ),
                           ),
                         ],

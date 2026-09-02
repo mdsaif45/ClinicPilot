@@ -41,22 +41,28 @@ class _RecordReviewDialogState extends ConsumerState<RecordReviewDialog> {
 
     try {
       if (widget.existingRequestId != null) {
-        await ref.read(reviewNotifierProvider.notifier).recordReviewSubmitted(
+        await ref
+            .read(reviewNotifierProvider.notifier)
+            .recordReviewSubmitted(
               requestId: widget.existingRequestId!,
               patientId: widget.patient.id,
               rating: _rating,
-              notes: _notesController.text.trim().isEmpty
-                  ? null
-                  : _notesController.text.trim(),
+              notes:
+                  _notesController.text.trim().isEmpty
+                      ? null
+                      : _notesController.text.trim(),
             );
       } else {
         // Record both request and immediate submission
-        await ref.read(reviewNotifierProvider.notifier).requestReview(
+        await ref
+            .read(reviewNotifierProvider.notifier)
+            .requestReview(
               patientId: widget.patient.id,
               clinicId: widget.clinicId,
-              notes: _notesController.text.trim().isEmpty
-                  ? null
-                  : _notesController.text.trim(),
+              notes:
+                  _notesController.text.trim().isEmpty
+                      ? null
+                      : _notesController.text.trim(),
             );
       }
       AppHaptics.success();
@@ -65,9 +71,9 @@ class _RecordReviewDialogState extends ConsumerState<RecordReviewDialog> {
       AppHaptics.error();
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not record review: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not record review: $e')));
       }
     }
   }
@@ -97,10 +103,7 @@ class _RecordReviewDialogState extends ConsumerState<RecordReviewDialog> {
             style: theme.textTheme.titleSmall,
           ),
           const SizedBox(height: Spacing.md),
-          Text(
-            'Rating given:',
-            style: theme.textTheme.labelMedium,
-          ),
+          Text('Rating given:', style: theme.textTheme.labelMedium),
           const SizedBox(height: Spacing.xs),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

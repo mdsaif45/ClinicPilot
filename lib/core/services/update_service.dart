@@ -23,9 +23,9 @@ class ApkAsset {
 }
 
 class AppRelease {
-  final String version;      // normalised, no leading 'v'  e.g. "0.3.0"
-  final String tagName;      // raw tag                     e.g. "v0.3.0"
-  final String notes;        // release body markdown
+  final String version; // normalised, no leading 'v'  e.g. "0.3.0"
+  final String tagName; // raw tag                     e.g. "v0.3.0"
+  final String notes; // release body markdown
   final DateTime publishedAt;
 
   /// Every .apk asset on the release, unfiltered. Picking the one that
@@ -57,12 +57,14 @@ class AppRelease {
 
   factory AppRelease.fromGitHubJson(Map<String, dynamic> json) {
     final rawTag = json['tag_name'] as String? ?? '';
-    final version = rawTag.startsWith(RegExp(r'[vV]')) ? rawTag.substring(1) : rawTag;
+    final version =
+        rawTag.startsWith(RegExp(r'[vV]')) ? rawTag.substring(1) : rawTag;
     final notes = json['body'] as String? ?? '';
     final publishedAtStr = json['published_at'] as String?;
-    final publishedAt = publishedAtStr != null
-        ? (DateTime.tryParse(publishedAtStr) ?? DateTime.now())
-        : DateTime.now();
+    final publishedAt =
+        publishedAtStr != null
+            ? (DateTime.tryParse(publishedAtStr) ?? DateTime.now())
+            : DateTime.now();
 
     final apkAssets = <ApkAsset>[];
     final assets = json['assets'] as List<dynamic>? ?? [];
@@ -72,11 +74,13 @@ class AppRelease {
         if (name.toLowerCase().endsWith('.apk')) {
           final url = asset['browser_download_url'] as String?;
           if (url != null) {
-            apkAssets.add(ApkAsset(
-              name: name,
-              downloadUrl: url,
-              sizeBytes: (asset['size'] as num?)?.toInt() ?? 0,
-            ));
+            apkAssets.add(
+              ApkAsset(
+                name: name,
+                downloadUrl: url,
+                sizeBytes: (asset['size'] as num?)?.toInt() ?? 0,
+              ),
+            );
           }
         }
       }
@@ -105,9 +109,9 @@ class UpdateService {
     http.Client? client,
     PackageInfo? overridePackageInfo,
     List<String>? overrideSupportedAbis,
-  })  : _client = client ?? http.Client(),
-        _overridePackageInfo = overridePackageInfo,
-        _overrideSupportedAbis = overrideSupportedAbis;
+  }) : _client = client ?? http.Client(),
+       _overridePackageInfo = overridePackageInfo,
+       _overrideSupportedAbis = overrideSupportedAbis;
 
   /// The running device's ABIs, most-preferred first (e.g.
   /// ['arm64-v8a', 'armeabi-v7a', 'armeabi']) - what a split-per-abi release
@@ -168,7 +172,8 @@ class UpdateService {
     final partsA = normA.split('.').map((e) => int.tryParse(e) ?? 0).toList();
     final partsB = normB.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
-    final maxLen = partsA.length > partsB.length ? partsA.length : partsB.length;
+    final maxLen =
+        partsA.length > partsB.length ? partsA.length : partsB.length;
 
     for (int i = 0; i < maxLen; i++) {
       final valA = i < partsA.length ? partsA[i] : 0;
@@ -200,10 +205,12 @@ class UpdateService {
   /// that needs the notes for the version already installed.
   Future<AppRelease?> fetchLatestRelease() async {
     try {
-      final response = await _client.get(
-        Uri.parse(_latestReleaseUrl),
-        headers: {'Accept': 'application/vnd.github+json'},
-      ).timeout(const Duration(seconds: 10));
+      final response = await _client
+          .get(
+            Uri.parse(_latestReleaseUrl),
+            headers: {'Accept': 'application/vnd.github+json'},
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) return null;
       return AppRelease.fromGitHubJson(jsonDecode(response.body));
@@ -216,10 +223,12 @@ class UpdateService {
   /// newer than the running installed version.
   Future<AppRelease?> checkForUpdate() async {
     try {
-      final response = await _client.get(
-        Uri.parse(_latestReleaseUrl),
-        headers: {'Accept': 'application/vnd.github+json'},
-      ).timeout(const Duration(seconds: 10));
+      final response = await _client
+          .get(
+            Uri.parse(_latestReleaseUrl),
+            headers: {'Accept': 'application/vnd.github+json'},
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
         return null;
@@ -232,7 +241,8 @@ class UpdateService {
         return null;
       }
 
-      final currentVersion = _overridePackageInfo?.version ??
+      final currentVersion =
+          _overridePackageInfo?.version ??
           (await PackageInfo.fromPlatform()).version;
 
       if (compareVersions(release.version, currentVersion) > 0) {
@@ -261,7 +271,9 @@ class UpdateService {
 
     try {
       final request = http.Request('GET', Uri.parse(asset.downloadUrl));
-      final response = await _client.send(request).timeout(const Duration(seconds: 60));
+      final response = await _client
+          .send(request)
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode != 200) {
         onError('Download failed with status code ${response.statusCode}');
@@ -270,7 +282,9 @@ class UpdateService {
 
       final contentLength = response.contentLength ?? asset.sizeBytes;
       final tempDir = await getTemporaryDirectory();
-      final saveFile = File('${tempDir.path}/clinicpilot-update-${release.version}.apk');
+      final saveFile = File(
+        '${tempDir.path}/clinicpilot-update-${release.version}.apk',
+      );
 
       int downloaded = 0;
       final sink = saveFile.openWrite();
@@ -302,13 +316,17 @@ class UpdateService {
 
     try {
       final request = http.Request('GET', Uri.parse(asset.downloadUrl));
-      final response = await _client.send(request).timeout(const Duration(seconds: 60));
+      final response = await _client
+          .send(request)
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode != 200) return null;
 
       final contentLength = response.contentLength ?? asset.sizeBytes;
       final tempDir = await getTemporaryDirectory();
-      final saveFile = File('${tempDir.path}/clinicpilot-update-${release.version}.apk');
+      final saveFile = File(
+        '${tempDir.path}/clinicpilot-update-${release.version}.apk',
+      );
 
       int downloaded = 0;
       final sink = saveFile.openWrite();

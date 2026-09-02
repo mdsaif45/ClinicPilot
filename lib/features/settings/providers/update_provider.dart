@@ -17,8 +17,10 @@ final availableUpdateProvider = FutureProvider<AppRelease?>((ref) async {
 /// size or "download available" before the download starts must read this
 /// rather than [AppRelease.apkUrl]/[AppRelease.apkSizeBytes], which just
 /// reflect whichever asset GitHub listed first.
-final matchedApkProvider =
-    FutureProvider.family<ApkAsset?, AppRelease>((ref, release) async {
+final matchedApkProvider = FutureProvider.family<ApkAsset?, AppRelease>((
+  ref,
+  release,
+) async {
   final service = ref.watch(updateServiceProvider);
   return await service.pickApk(release);
 });
@@ -69,7 +71,8 @@ class UpdateDownloadNotifier extends StateNotifier<UpdateDownloadState> {
   final UpdateService _updateService;
   StreamSubscription<double>? _downloadSub;
 
-  UpdateDownloadNotifier(this._updateService) : super(const UpdateDownloadState());
+  UpdateDownloadNotifier(this._updateService)
+    : super(const UpdateDownloadState());
 
   void startDownload(AppRelease release) {
     if (state.status == DownloadStatus.downloading) return;
@@ -82,41 +85,47 @@ class UpdateDownloadNotifier extends StateNotifier<UpdateDownloadState> {
     // Resolved once up front so the progress-bytes math below matches
     // whichever asset downloadApkStream actually ends up fetching for this
     // device, not just whatever GitHub listed first.
-    unawaited(_updateService.pickApk(release).then((asset) {
-      state = state.copyWith(totalBytes: asset?.sizeBytes ?? release.apkSizeBytes);
-    }));
+    unawaited(
+      _updateService.pickApk(release).then((asset) {
+        state = state.copyWith(
+          totalBytes: asset?.sizeBytes ?? release.apkSizeBytes,
+        );
+      }),
+    );
 
     _downloadSub?.cancel();
-    _downloadSub = _updateService.downloadApkStream(
-      release,
-      onComplete: (filePath) {
-        state = state.copyWith(
-          status: DownloadStatus.ready,
-          progress: 1.0,
-          downloadedFilePath: filePath,
+    _downloadSub = _updateService
+        .downloadApkStream(
+          release,
+          onComplete: (filePath) {
+            state = state.copyWith(
+              status: DownloadStatus.ready,
+              progress: 1.0,
+              downloadedFilePath: filePath,
+            );
+          },
+          onError: (error) {
+            state = state.copyWith(
+              status: DownloadStatus.error,
+              errorMessage: error.toString(),
+            );
+          },
+        )
+        .listen(
+          (progress) {
+            final downloadedBytes = (progress * state.totalBytes).round();
+            state = state.copyWith(
+              progress: progress,
+              downloadedBytes: downloadedBytes,
+            );
+          },
+          onError: (error) {
+            state = state.copyWith(
+              status: DownloadStatus.error,
+              errorMessage: error.toString(),
+            );
+          },
         );
-      },
-      onError: (error) {
-        state = state.copyWith(
-          status: DownloadStatus.error,
-          errorMessage: error.toString(),
-        );
-      },
-    ).listen(
-      (progress) {
-        final downloadedBytes = (progress * state.totalBytes).round();
-        state = state.copyWith(
-          progress: progress,
-          downloadedBytes: downloadedBytes,
-        );
-      },
-      onError: (error) {
-        state = state.copyWith(
-          status: DownloadStatus.error,
-          errorMessage: error.toString(),
-        );
-      },
-    );
   }
 
   void cancelDownload() {
@@ -140,8 +149,8 @@ class UpdateDownloadNotifier extends StateNotifier<UpdateDownloadState> {
 
 final updateDownloadProvider =
     StateNotifierProvider<UpdateDownloadNotifier, UpdateDownloadState>((ref) {
-  final service = ref.watch(updateServiceProvider);
-  return UpdateDownloadNotifier(service);
-});
+      final service = ref.watch(updateServiceProvider);
+      return UpdateDownloadNotifier(service);
+    });
 
 final updateBadgeDismissedProvider = StateProvider<bool>((ref) => false);

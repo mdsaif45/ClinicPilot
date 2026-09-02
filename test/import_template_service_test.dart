@@ -15,49 +15,60 @@ void main() {
   });
 
   test('has all five expected sheets', () {
-    expect(
-      book.tables.keys.toSet(),
-      {
-        ImportTemplateSchema.patientsSheet,
-        ImportTemplateSchema.visitsSheet,
-        ImportTemplateSchema.cashMemosSheet,
-        ImportTemplateSchema.expensesSheet,
-        ImportTemplateSchema.readMeSheet,
-      },
-    );
+    expect(book.tables.keys.toSet(), {
+      ImportTemplateSchema.patientsSheet,
+      ImportTemplateSchema.visitsSheet,
+      ImportTemplateSchema.cashMemosSheet,
+      ImportTemplateSchema.expensesSheet,
+      ImportTemplateSchema.readMeSheet,
+    });
   });
 
   void expectHeaderRow(String sheetName, List<String> expected) {
     final rows = book.tables[sheetName]!.rows;
-    final actual = rows[0]
-        .map((cell) => (cell?.value as xlsx.TextCellValue?)?.value.text)
-        .toList();
+    final actual =
+        rows[0]
+            .map((cell) => (cell?.value as xlsx.TextCellValue?)?.value.text)
+            .toList();
     expect(actual, expected);
   }
 
-  test('Patients sheet header matches ImportTemplateSchema.patientsHeaders',
-      () {
-    expectHeaderRow(
-        ImportTemplateSchema.patientsSheet, ImportTemplateSchema.patientsHeaders);
-  });
+  test(
+    'Patients sheet header matches ImportTemplateSchema.patientsHeaders',
+    () {
+      expectHeaderRow(
+        ImportTemplateSchema.patientsSheet,
+        ImportTemplateSchema.patientsHeaders,
+      );
+    },
+  );
 
   test('Visits sheet header matches ImportTemplateSchema.visitsHeaders', () {
     expectHeaderRow(
-        ImportTemplateSchema.visitsSheet, ImportTemplateSchema.visitsHeaders);
+      ImportTemplateSchema.visitsSheet,
+      ImportTemplateSchema.visitsHeaders,
+    );
   });
 
   test(
-      'Cash Memos sheet header matches ImportTemplateSchema.cashMemosHeaders',
-      () {
-    expectHeaderRow(ImportTemplateSchema.cashMemosSheet,
-        ImportTemplateSchema.cashMemosHeaders);
-  });
+    'Cash Memos sheet header matches ImportTemplateSchema.cashMemosHeaders',
+    () {
+      expectHeaderRow(
+        ImportTemplateSchema.cashMemosSheet,
+        ImportTemplateSchema.cashMemosHeaders,
+      );
+    },
+  );
 
-  test('Expenses sheet header matches ImportTemplateSchema.expensesHeaders',
-      () {
-    expectHeaderRow(
-        ImportTemplateSchema.expensesSheet, ImportTemplateSchema.expensesHeaders);
-  });
+  test(
+    'Expenses sheet header matches ImportTemplateSchema.expensesHeaders',
+    () {
+      expectHeaderRow(
+        ImportTemplateSchema.expensesSheet,
+        ImportTemplateSchema.expensesHeaders,
+      );
+    },
+  );
 
   test('every data sheet carries an example row marked for deletion', () {
     for (final sheetName in [
@@ -66,24 +77,34 @@ void main() {
       ImportTemplateSchema.cashMemosSheet,
     ]) {
       final rows = book.tables[sheetName]!.rows;
-      expect(rows.length, greaterThanOrEqualTo(2),
-          reason: '$sheetName should have a header plus an example row');
+      expect(
+        rows.length,
+        greaterThanOrEqualTo(2),
+        reason: '$sheetName should have a header plus an example row',
+      );
       final firstCell =
           (rows[1][0]?.value as xlsx.TextCellValue?)?.value.text ?? '';
       expect(firstCell, contains('DELETE-THIS-EXAMPLE'));
     }
   });
 
-  test('the Read Me sheet is non-empty and mentions every accepted value set',
-      () {
-    final rows = book.tables[ImportTemplateSchema.readMeSheet]!.rows;
-    final text = rows
-        .map((r) => (r.isEmpty ? '' : (r[0]?.value as xlsx.TextCellValue?)?.value.text ?? ''))
-        .join('\n');
+  test(
+    'the Read Me sheet is non-empty and mentions every accepted value set',
+    () {
+      final rows = book.tables[ImportTemplateSchema.readMeSheet]!.rows;
+      final text = rows
+          .map(
+            (r) =>
+                (r.isEmpty
+                    ? ''
+                    : (r[0]?.value as xlsx.TextCellValue?)?.value.text ?? ''),
+          )
+          .join('\n');
 
-    expect(text, contains('Male'));
-    expect(text, contains('Cash'));
-    expect(text, contains('Rent'));
-    expect(text, contains('does not create clinics'));
-  });
+      expect(text, contains('Male'));
+      expect(text, contains('Cash'));
+      expect(text, contains('Rent'));
+      expect(text, contains('does not create clinics'));
+    },
+  );
 }

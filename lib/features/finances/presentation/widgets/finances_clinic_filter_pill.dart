@@ -21,12 +21,13 @@ class FinancesClinicFilterPill extends ConsumerWidget {
     // If only 0 or 1 clinic exists in database, no need to show switcher
     if (clinics.length < 2) return const SizedBox.shrink();
 
-    final selectedClinic = selectedClinicId == null
-        ? null
-        : clinics.firstWhere(
-            (c) => c.id == selectedClinicId,
-            orElse: () => clinics.first,
-          );
+    final selectedClinic =
+        selectedClinicId == null
+            ? null
+            : clinics.firstWhere(
+              (c) => c.id == selectedClinicId,
+              orElse: () => clinics.first,
+            );
 
     final isFiltered = selectedClinicId != null;
     final label = isFiltered ? selectedClinic!.name : 'All Clinics';
@@ -35,21 +36,25 @@ class FinancesClinicFilterPill extends ConsumerWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: Radii.pillAll,
-        onTap: () => _openClinicPickerSheet(context, ref, clinics, selectedClinicId),
+        onTap:
+            () =>
+                _openClinicPickerSheet(context, ref, clinics, selectedClinicId),
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: Spacing.sm,
             vertical: Spacing.xs,
           ),
           decoration: BoxDecoration(
-            color: isFiltered
-                ? scheme.primary.withAlpha(25)
-                : scheme.surfaceContainerHighest.withAlpha(140),
+            color:
+                isFiltered
+                    ? scheme.primary.withAlpha(25)
+                    : scheme.surfaceContainerHighest.withAlpha(140),
             borderRadius: Radii.pillAll,
             border: Border.all(
-              color: isFiltered
-                  ? scheme.primary.withAlpha(120)
-                  : theme.dividerColor.withAlpha(80),
+              color:
+                  isFiltered
+                      ? scheme.primary.withAlpha(120)
+                      : theme.dividerColor.withAlpha(80),
               width: 1,
             ),
           ),
@@ -139,37 +144,47 @@ class FinancesClinicFilterPill extends ConsumerWidget {
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: Radii.mdAll,
-                    side: currentSelectedId == null
-                        ? BorderSide(color: scheme.primary.withAlpha(120), width: 1.5)
-                        : BorderSide.none,
+                    side:
+                        currentSelectedId == null
+                            ? BorderSide(
+                              color: scheme.primary.withAlpha(120),
+                              width: 1.5,
+                            )
+                            : BorderSide.none,
                   ),
-                  tileColor: currentSelectedId == null
-                      ? scheme.primary.withAlpha(20)
-                      : scheme.surfaceContainerHighest.withAlpha(70),
+                  tileColor:
+                      currentSelectedId == null
+                          ? scheme.primary.withAlpha(20)
+                          : scheme.surfaceContainerHighest.withAlpha(70),
                   leading: Container(
                     padding: const EdgeInsets.all(Spacing.xs),
                     decoration: BoxDecoration(
-                      color: currentSelectedId == null
-                          ? scheme.primary
-                          : scheme.surfaceContainerHighest,
+                      color:
+                          currentSelectedId == null
+                              ? scheme.primary
+                              : scheme.surfaceContainerHighest,
                       borderRadius: Radii.smAll,
                     ),
                     child: Icon(
                       Icons.public_rounded,
                       size: 20,
-                      color: currentSelectedId == null
-                          ? scheme.onPrimary
-                          : scheme.onSurfaceVariant,
+                      color:
+                          currentSelectedId == null
+                              ? scheme.onPrimary
+                              : scheme.onSurfaceVariant,
                     ),
                   ),
                   title: Text(
                     'All Clinics (Consolidated)',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight:
-                          currentSelectedId == null ? FontWeight.w700 : FontWeight.w500,
-                      color: currentSelectedId == null
-                          ? scheme.primary
-                          : scheme.onSurface,
+                          currentSelectedId == null
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                      color:
+                          currentSelectedId == null
+                              ? scheme.primary
+                              : scheme.onSurface,
                     ),
                   ),
                   subtitle: Text(
@@ -178,11 +193,17 @@ class FinancesClinicFilterPill extends ConsumerWidget {
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
-                  trailing: currentSelectedId == null
-                      ? Icon(Icons.check_circle, color: scheme.primary, size: 20)
-                      : null,
+                  trailing:
+                      currentSelectedId == null
+                          ? Icon(
+                            Icons.check_circle,
+                            color: scheme.primary,
+                            size: 20,
+                          )
+                          : null,
                   onTap: () {
-                    ref.read(financesClinicFilterProvider.notifier).state = null;
+                    ref.read(financesClinicFilterProvider.notifier).state =
+                        null;
                     Navigator.of(ctx).pop();
                   },
                 ),
@@ -197,55 +218,71 @@ class FinancesClinicFilterPill extends ConsumerWidget {
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: Radii.mdAll,
-                      side: currentSelectedId == clinic.id
-                          ? BorderSide(color: scheme.primary.withAlpha(120), width: 1.5)
-                          : BorderSide.none,
+                      side:
+                          currentSelectedId == clinic.id
+                              ? BorderSide(
+                                color: scheme.primary.withAlpha(120),
+                                width: 1.5,
+                              )
+                              : BorderSide.none,
                     ),
-                    tileColor: currentSelectedId == clinic.id
-                        ? scheme.primary.withAlpha(20)
-                        : scheme.surfaceContainerHighest.withAlpha(70),
+                    tileColor:
+                        currentSelectedId == clinic.id
+                            ? scheme.primary.withAlpha(20)
+                            : scheme.surfaceContainerHighest.withAlpha(70),
                     leading: Container(
                       padding: const EdgeInsets.all(Spacing.xs),
                       decoration: BoxDecoration(
-                        color: currentSelectedId == clinic.id
-                            ? scheme.primary
-                            : scheme.surfaceContainerHighest,
+                        color:
+                            currentSelectedId == clinic.id
+                                ? scheme.primary
+                                : scheme.surfaceContainerHighest,
                         borderRadius: Radii.smAll,
                       ),
                       child: Icon(
                         Icons.domain_rounded,
                         size: 20,
-                        color: currentSelectedId == clinic.id
-                            ? scheme.onPrimary
-                            : scheme.onSurfaceVariant,
+                        color:
+                            currentSelectedId == clinic.id
+                                ? scheme.onPrimary
+                                : scheme.onSurfaceVariant,
                       ),
                     ),
                     title: Text(
                       clinic.name,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: currentSelectedId == clinic.id
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: currentSelectedId == clinic.id
-                            ? scheme.primary
-                            : scheme.onSurface,
+                        fontWeight:
+                            currentSelectedId == clinic.id
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                        color:
+                            currentSelectedId == clinic.id
+                                ? scheme.primary
+                                : scheme.onSurface,
                       ),
                     ),
-                    subtitle: clinic.address != null && clinic.address!.isNotEmpty
-                        ? Text(
-                            clinic.address!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          )
-                        : null,
-                    trailing: currentSelectedId == clinic.id
-                        ? Icon(Icons.check_circle, color: scheme.primary, size: 20)
-                        : null,
+                    subtitle:
+                        clinic.address != null && clinic.address!.isNotEmpty
+                            ? Text(
+                              clinic.address!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            )
+                            : null,
+                    trailing:
+                        currentSelectedId == clinic.id
+                            ? Icon(
+                              Icons.check_circle,
+                              color: scheme.primary,
+                              size: 20,
+                            )
+                            : null,
                     onTap: () {
-                      ref.read(financesClinicFilterProvider.notifier).state = clinic.id;
+                      ref.read(financesClinicFilterProvider.notifier).state =
+                          clinic.id;
                       Navigator.of(ctx).pop();
                     },
                   ),

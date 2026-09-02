@@ -43,7 +43,7 @@ const List<String> kDefaultHomeopathicDiseases = [
 
 class MasterDiseaseService {
   final AppDatabase _db;
-  static   bool _initialized = false;
+  static bool _initialized = false;
 
   MasterDiseaseService(this._db);
 
@@ -60,21 +60,27 @@ class MasterDiseaseService {
     ''');
 
     // Seed defaults if empty
-    final countRes = await _db.customSelect('SELECT COUNT(*) as c FROM master_diseases').getSingle();
+    final countRes =
+        await _db
+            .customSelect('SELECT COUNT(*) as c FROM master_diseases')
+            .getSingle();
     final count = countRes.data['c'] as int? ?? 0;
     if (count == 0) {
       for (final disease in kDefaultHomeopathicDiseases) {
         final norm = disease.trim();
         if (norm.isEmpty) continue;
-        await _db.customStatement('''
+        await _db.customStatement(
+          '''
           INSERT OR IGNORE INTO master_diseases (id, name, normalized_name, usage_count, created_at)
           VALUES (?, ?, ?, 1, ?)
-        ''', [
-          IdGenerator.generate(),
-          norm,
-          norm.toLowerCase(),
-          DateTime.now().toIso8601String(),
-        ]);
+        ''',
+          [
+            IdGenerator.generate(),
+            norm,
+            norm.toLowerCase(),
+            DateTime.now().toIso8601String(),
+          ],
+        );
       }
     }
     _initialized = true;
@@ -82,7 +88,8 @@ class MasterDiseaseService {
 
   Future<List<String>> getAllDiseases() async {
     await initTable();
-    final rows = await _db.customSelect('''
+    final rows =
+        await _db.customSelect('''
       SELECT name FROM master_diseases
       ORDER BY usage_count DESC, name ASC
     ''').get();
@@ -96,7 +103,8 @@ class MasterDiseaseService {
     await initTable();
     final trimmed = query.trim().toLowerCase();
     if (trimmed.isEmpty) {
-      final rows = await _db.customSelect('''
+      final rows =
+          await _db.customSelect('''
         SELECT name FROM master_diseases
         ORDER BY usage_count DESC, name ASC
         LIMIT 10
@@ -104,15 +112,21 @@ class MasterDiseaseService {
       return rows.map((r) => r.data['name'] as String).toList();
     }
 
-    final rows = await _db.customSelect('''
+    final rows =
+        await _db
+            .customSelect(
+              '''
       SELECT name FROM master_diseases
       WHERE normalized_name LIKE ? OR name LIKE ?
       ORDER BY usage_count DESC, name ASC
       LIMIT 15
-    ''', variables: [
-      Variable.withString('%$trimmed%'),
-      Variable.withString('%$trimmed%'),
-    ]).get();
+    ''',
+              variables: [
+                Variable.withString('%$trimmed%'),
+                Variable.withString('%$trimmed%'),
+              ],
+            )
+            .get();
 
     return rows.map((r) => r.data['name'] as String).toList();
   }
@@ -125,16 +139,19 @@ class MasterDiseaseService {
     await initTable();
     final normalized = Formatters.toTitleCase(trimmed);
 
-    await _db.customStatement('''
+    await _db.customStatement(
+      '''
       INSERT INTO master_diseases (id, name, normalized_name, usage_count, created_at)
       VALUES (?, ?, ?, 1, ?)
       ON CONFLICT(name) DO UPDATE SET usage_count = usage_count + 1
-    ''', [
-      IdGenerator.generate(),
-      normalized,
-      normalized.toLowerCase(),
-      DateTime.now().toIso8601String(),
-    ]);
+    ''',
+      [
+        IdGenerator.generate(),
+        normalized,
+        normalized.toLowerCase(),
+        DateTime.now().toIso8601String(),
+      ],
+    );
   }
 }
 

@@ -13,23 +13,31 @@ class MemorySecurityService extends SecurityService {
   bool biometricsResult = true;
 
   @override
-  Future<bool> isAppLockEnabled() async => _mem['clinicpilot_lock_enabled'] == 'true';
+  Future<bool> isAppLockEnabled() async =>
+      _mem['clinicpilot_lock_enabled'] == 'true';
 
   @override
-  Future<bool> isBiometricsEnabled() async => _mem['clinicpilot_biometrics_enabled'] == 'true';
+  Future<bool> isBiometricsEnabled() async =>
+      _mem['clinicpilot_biometrics_enabled'] == 'true';
 
   @override
-  Future<int> getAutoLockMinutes() async => int.tryParse(_mem['clinicpilot_auto_lock_minutes'] ?? '5') ?? 5;
+  Future<int> getAutoLockMinutes() async =>
+      int.tryParse(_mem['clinicpilot_auto_lock_minutes'] ?? '5') ?? 5;
 
   @override
   Future<bool> hasPinSet() async => _mem.containsKey('clinicpilot_pin_hash');
 
   @override
-  Future<void> setPin(String pin, {bool enableBiometrics = false, int autoLockMinutes = 5}) async {
+  Future<void> setPin(
+    String pin, {
+    bool enableBiometrics = false,
+    int autoLockMinutes = 5,
+  }) async {
     _mem['clinicpilot_pin_hash'] = 'hash_$pin';
     _mem['clinicpilot_pin_salt'] = 'salt_123';
     _mem['clinicpilot_lock_enabled'] = 'true';
-    _mem['clinicpilot_biometrics_enabled'] = enableBiometrics ? 'true' : 'false';
+    _mem['clinicpilot_biometrics_enabled'] =
+        enableBiometrics ? 'true' : 'false';
     _mem['clinicpilot_auto_lock_minutes'] = autoLockMinutes.toString();
   }
 
@@ -57,7 +65,9 @@ class MemorySecurityService extends SecurityService {
   Future<bool> isBiometricsSupported() async => biometricsSupported;
 
   @override
-  Future<bool> authenticateWithBiometrics({String reason = 'Unlock ClinicPilot'}) async => biometricsResult;
+  Future<bool> authenticateWithBiometrics({
+    String reason = 'Unlock ClinicPilot',
+  }) async => biometricsResult;
 }
 
 void main() {
@@ -68,7 +78,11 @@ void main() {
 
       expect(notifier.state.isEnabled, isFalse);
 
-      await notifier.setupPin('1234', enableBiometrics: true, autoLockMinutes: 5);
+      await notifier.setupPin(
+        '1234',
+        enableBiometrics: true,
+        autoLockMinutes: 5,
+      );
       expect(notifier.state.isEnabled, isTrue);
       expect(notifier.state.isBiometricsEnabled, isTrue);
       expect(notifier.state.isLocked, isFalse);
@@ -96,7 +110,11 @@ void main() {
       final service = MemorySecurityService();
       final notifier = AppLockNotifier(service);
 
-      await notifier.setupPin('5678', enableBiometrics: false, autoLockMinutes: 5);
+      await notifier.setupPin(
+        '5678',
+        enableBiometrics: false,
+        autoLockMinutes: 5,
+      );
       expect(notifier.state.isLocked, isFalse);
 
       // Paused now
@@ -127,9 +145,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            securityServiceProvider.overrideWithValue(service),
-          ],
+          overrides: [securityServiceProvider.overrideWithValue(service)],
           child: MaterialApp(
             theme: AppTheme.lightTheme,
             home: const LockScreen(),
@@ -140,7 +156,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('ClinicPilot Locked'), findsOneWidget);
-      expect(find.text('Enter 4-digit PIN to access clinical records'), findsOneWidget);
+      expect(
+        find.text('Enter 4-digit PIN to access clinical records'),
+        findsOneWidget,
+      );
       expect(find.text('1'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
       expect(find.text('3'), findsOneWidget);
@@ -153,48 +172,50 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('renders SecuritySettingsCard and navigates to SecurityPrivacyScreen', (tester) async {
-      tester.view.physicalSize = const Size(1200, 2000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+    testWidgets(
+      'renders SecuritySettingsCard and navigates to SecurityPrivacyScreen',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 2000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      final service = MemorySecurityService();
+        final service = MemorySecurityService();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            securityServiceProvider.overrideWithValue(service),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.lightTheme,
-            home: const Scaffold(
-              body: SecuritySettingsCard(),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [securityServiceProvider.overrideWithValue(service)],
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: const Scaffold(body: SecuritySettingsCard()),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      expect(find.text('SECURITY & PRIVACY'), findsOneWidget);
-      expect(find.text('Security & Privacy'), findsOneWidget);
-      expect(find.text('Off (protect patient records)'), findsOneWidget);
+        expect(find.text('SECURITY & PRIVACY'), findsOneWidget);
+        expect(find.text('Security & Privacy'), findsOneWidget);
+        expect(find.text('Off (protect patient records)'), findsOneWidget);
 
-      // Tap tile to open SecurityPrivacyScreen
-      await tester.tap(find.text('Security & Privacy'));
-      await tester.pumpAndSettle();
+        // Tap tile to open SecurityPrivacyScreen
+        await tester.tap(find.text('Security & Privacy'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Enable App Lock'), findsOneWidget);
-      expect(find.text('Protect patient records with a 4-digit PIN'), findsOneWidget);
+        expect(find.text('Enable App Lock'), findsOneWidget);
+        expect(
+          find.text('Protect patient records with a 4-digit PIN'),
+          findsOneWidget,
+        );
 
-      // Tap Enable App Lock switch to open PinSetupDialog
-      await tester.tap(find.text('Enable App Lock'));
-      await tester.pumpAndSettle();
+        // Tap Enable App Lock switch to open PinSetupDialog
+        await tester.tap(find.text('Enable App Lock'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Set Up 4-Digit PIN'), findsOneWidget);
-      expect(find.text('New 4-Digit PIN *'), findsOneWidget);
-      expect(find.text('Confirm 4-Digit PIN *'), findsOneWidget);
-    });
+        expect(find.text('Set Up 4-Digit PIN'), findsOneWidget);
+        expect(find.text('New 4-Digit PIN *'), findsOneWidget);
+        expect(find.text('Confirm 4-Digit PIN *'), findsOneWidget);
+      },
+    );
   });
 }

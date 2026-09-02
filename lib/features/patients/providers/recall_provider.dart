@@ -40,7 +40,8 @@ class RecallLists {
     required this.lapsed,
   });
 
-  int get total => overdue.length + dueSoon.length + upcoming.length + lapsed.length;
+  int get total =>
+      overdue.length + dueSoon.length + upcoming.length + lapsed.length;
 }
 
 /// How long without a visit before a patient counts as lapsed.
@@ -61,9 +62,9 @@ final recallListProvider = StreamProvider<RecallLists>((ref) {
   final query = db.select(db.visits).join([
     innerJoin(db.patients, db.patients.id.equalsExp(db.visits.patientId)),
     innerJoin(db.clinics, db.clinics.id.equalsExp(db.visits.clinicId)),
-  ])
-    ..where(db.visits.isDeleted.equals(false) &
-        db.patients.isDeleted.equals(false));
+  ])..where(
+    db.visits.isDeleted.equals(false) & db.patients.isDeleted.equals(false),
+  );
 
   return query.watch().map((rows) {
     final now = DateTime.now();
@@ -90,8 +91,7 @@ final recallListProvider = StreamProvider<RecallLists>((ref) {
 
       if (v.nextFollowUpDate != null) {
         final f = followUp[v.patientId];
-        if (f == null ||
-            v.nextFollowUpDate!.isAfter(f.nextFollowUpDate!)) {
+        if (f == null || v.nextFollowUpDate!.isAfter(f.nextFollowUpDate!)) {
           followUp[v.patientId] = v;
         }
       }
@@ -136,17 +136,25 @@ final recallListProvider = StreamProvider<RecallLists>((ref) {
       // No follow-up scheduled: lapsed if the last visit is old enough.
       final last = lastVisit[patientId];
       if (last == null) continue;
-      final sinceLast = today
-          .difference(DateTime(
-              last.visitDate.year, last.visitDate.month, last.visitDate.day))
-          .inDays;
+      final sinceLast =
+          today
+              .difference(
+                DateTime(
+                  last.visitDate.year,
+                  last.visitDate.month,
+                  last.visitDate.day,
+                ),
+              )
+              .inDays;
       if (sinceLast >= _lapsedAfterDays) {
-        lapsed.add(RecallEntry(
-          patient: p,
-          visit: last,
-          clinic: c,
-          daysOverdue: sinceLast,
-        ));
+        lapsed.add(
+          RecallEntry(
+            patient: p,
+            visit: last,
+            clinic: c,
+            daysOverdue: sinceLast,
+          ),
+        );
       }
     }
 
@@ -156,6 +164,11 @@ final recallListProvider = StreamProvider<RecallLists>((ref) {
     upcoming.sort((a, b) => a.daysOverdue.compareTo(b.daysOverdue));
     lapsed.sort((a, b) => b.daysOverdue.compareTo(a.daysOverdue));
 
-    return RecallLists(overdue: overdue, dueSoon: dueSoon, upcoming: upcoming, lapsed: lapsed);
+    return RecallLists(
+      overdue: overdue,
+      dueSoon: dueSoon,
+      upcoming: upcoming,
+      lapsed: lapsed,
+    );
   });
 });

@@ -46,7 +46,9 @@ final routerProvider = Provider<GoRouter>((ref) {
   bool isDone = false;
   try {
     if (Hive.isBoxOpen('settings')) {
-      isDone = Hive.box('settings').get(kOnboardingDoneKey, defaultValue: false) == true;
+      isDone =
+          Hive.box('settings').get(kOnboardingDoneKey, defaultValue: false) ==
+          true;
     }
   } catch (_) {}
 
@@ -202,32 +204,33 @@ Future<void> _showUpdatePrompt(
   final proceed = await showDialog<bool>(
     context: context,
     barrierDismissible: true,
-    builder: (ctx) => AlertDialog(
-      icon: const Icon(Icons.system_update),
-      title: Text('Version ${release.version} available'),
-      content: Text(
-        'A newer version of ClinicPilot (${release.version}) is available. '
-        'Updating does not affect your clinic data.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('Later'),
+    builder:
+        (ctx) => AlertDialog(
+          icon: const Icon(Icons.system_update),
+          title: Text('Version ${release.version} available'),
+          content: Text(
+            'A newer version of ClinicPilot (${release.version}) is available. '
+            'Updating does not affect your clinic data.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Later'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Continue'),
+            ),
+          ],
         ),
-        FilledButton(
-          onPressed: () => Navigator.of(ctx).pop(true),
-          child: const Text('Continue'),
-        ),
-      ],
-    ),
   );
 
   notifier.dismiss();
   if (proceed == true) {
     if (context.mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const AppVersionScreen()),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const AppVersionScreen()));
     }
   }
 }
@@ -242,21 +245,42 @@ class _NavDestination {
 }
 
 const _destinations = [
-  _NavDestination(0, Icons.grid_view_outlined, Icons.grid_view_outlined, 'Dashboard'),
-  _NavDestination(1, Icons.people_alt_outlined, Icons.people_alt_outlined, 'Patients'),
-  _NavDestination(2, Icons.account_balance_wallet_outlined,
-      Icons.account_balance_wallet_outlined, 'Finances'),
-  _NavDestination(3, Icons.insights_outlined, Icons.insights_outlined, 'Growth'),
-  _NavDestination(4, Icons.settings_outlined, Icons.settings_outlined, 'Settings'),
+  _NavDestination(
+    0,
+    Icons.grid_view_outlined,
+    Icons.grid_view_outlined,
+    'Dashboard',
+  ),
+  _NavDestination(
+    1,
+    Icons.people_alt_outlined,
+    Icons.people_alt_outlined,
+    'Patients',
+  ),
+  _NavDestination(
+    2,
+    Icons.account_balance_wallet_outlined,
+    Icons.account_balance_wallet_outlined,
+    'Finances',
+  ),
+  _NavDestination(
+    3,
+    Icons.insights_outlined,
+    Icons.insights_outlined,
+    'Growth',
+  ),
+  _NavDestination(
+    4,
+    Icons.settings_outlined,
+    Icons.settings_outlined,
+    'Settings',
+  ),
 ];
 
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
-  const ScaffoldWithNavBar({
-    required this.navigationShell,
-    super.key,
-  });
+  const ScaffoldWithNavBar({required this.navigationShell, super.key});
 
   @override
   ConsumerState<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
@@ -312,7 +336,9 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
 
     // Settings is a tab now, so the update badge rides on it rather than on an
     // app bar icon that only existed on one screen.
-    final updateWaiting = ref.watch(availableUpdateProvider).maybeWhen(
+    final updateWaiting = ref
+        .watch(availableUpdateProvider)
+        .maybeWhen(
           data: (u) => u != null && !ref.watch(updateBadgeDismissedProvider),
           orElse: () => false,
         );
@@ -320,9 +346,10 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
     final isTablet = context.isTablet;
 
     final recallLists = ref.watch(recallListProvider).value;
-    final overdueCount = recallLists == null
-        ? 0
-        : recallLists.overdue.length + recallLists.lapsed.length;
+    final overdueCount =
+        recallLists == null
+            ? 0
+            : recallLists.overdue.length + recallLists.lapsed.length;
     final hasUnreadAlerts = overdueCount > 0 || updateWaiting;
 
     Widget buildNotificationIcon() {
@@ -374,23 +401,24 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                 destinations: [
                   for (final d in _destinations)
                     NavigationRailDestination(
-                      icon: d.index == 4 && updateWaiting
-                          ? Badge(
-                              smallSize: 8,
-                              backgroundColor: scheme.tertiary,
-                              child: AnimatedNavIcon(
+                      icon:
+                          d.index == 4 && updateWaiting
+                              ? Badge(
+                                smallSize: 8,
+                                backgroundColor: scheme.tertiary,
+                                child: AnimatedNavIcon(
+                                  icon: d.icon,
+                                  selectedIcon: d.selectedIcon,
+                                  selected:
+                                      navigationShell.currentIndex == d.index,
+                                ),
+                              )
+                              : AnimatedNavIcon(
                                 icon: d.icon,
                                 selectedIcon: d.selectedIcon,
                                 selected:
                                     navigationShell.currentIndex == d.index,
                               ),
-                            )
-                          : AnimatedNavIcon(
-                              icon: d.icon,
-                              selectedIcon: d.selectedIcon,
-                              selected:
-                                    navigationShell.currentIndex == d.index,
-                            ),
                       label: Text(d.label),
                     ),
                 ],
@@ -416,11 +444,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                           ],
                         ),
                       ),
-                    Expanded(
-                      child: ResponsiveContent(
-                        child: navigationShell,
-                      ),
-                    ),
+                    Expanded(child: ResponsiveContent(child: navigationShell)),
                   ],
                 ),
               ),
@@ -431,22 +455,23 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
     }
 
     return Scaffold(
-      appBar: isDashboard
-          ? AppBar(
-              elevation: 0,
-              scrolledUnderElevation: 1,
-              backgroundColor: scheme.surface,
-              foregroundColor: scheme.onSurface,
-              titleSpacing: Spacing.sm,
-              title: const ClinicSwitcher(),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: Spacing.sm),
-                  child: buildNotificationIcon(),
-                ),
-              ],
-            )
-          : null,
+      appBar:
+          isDashboard
+              ? AppBar(
+                elevation: 0,
+                scrolledUnderElevation: 1,
+                backgroundColor: scheme.surface,
+                foregroundColor: scheme.onSurface,
+                titleSpacing: Spacing.sm,
+                title: const ClinicSwitcher(),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: Spacing.sm),
+                    child: buildNotificationIcon(),
+                  ),
+                ],
+              )
+              : null,
       body: SafeArea(top: !isDashboard, bottom: false, child: navigationShell),
       bottomNavigationBar: FloatingBottomNavBar(
         selectedIndex: navigationShell.currentIndex.clamp(0, 4),
@@ -467,16 +492,17 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
               icon: d.icon,
               selectedIcon: d.selectedIcon,
               label: d.label,
-              badge: d.index == 4 && updateWaiting
-                  ? Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: scheme.tertiary,
-                        shape: BoxShape.circle,
-                      ),
-                    )
-                  : null,
+              badge:
+                  d.index == 4 && updateWaiting
+                      ? Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: scheme.tertiary,
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                      : null,
             ),
         ],
       ),

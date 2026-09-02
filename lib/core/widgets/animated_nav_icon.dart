@@ -43,10 +43,11 @@ class AnimatedNavIcon extends StatelessWidget {
         scale: selected ? 1.1 : 1.0,
         child: AnimatedSwitcher(
           duration: duration,
-          transitionBuilder: (child, animation) => ScaleTransition(
-            scale: animation,
-            child: FadeTransition(opacity: animation, child: child),
-          ),
+          transitionBuilder:
+              (child, animation) => ScaleTransition(
+                scale: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              ),
           child: Icon(
             selected ? selectedIcon : icon,
             // Inverted: on the filled pill the glyph takes the onPrimary

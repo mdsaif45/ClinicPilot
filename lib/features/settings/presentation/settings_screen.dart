@@ -29,15 +29,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final uri = Uri.parse(url);
     if (!await launchUrl(
       uri,
-      mode: kIsWeb
-          ? LaunchMode.platformDefault
-          : LaunchMode.externalApplication,
+      mode:
+          kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
       webOnlyWindowName: '_blank',
     )) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open $url')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not open $url')));
       }
     }
   }
@@ -69,13 +68,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               AppListTile(
                 icon: Icons.local_hospital_outlined,
                 title: 'Manage clinics',
-                subtitle: clinics.isEmpty
-                    ? 'No clinics yet'
-                    : '${clinics.length} ${clinics.length == 1 ? 'clinic' : 'clinics'}',
+                subtitle:
+                    clinics.isEmpty
+                        ? 'No clinics yet'
+                        : '${clinics.length} ${clinics.length == 1 ? 'clinic' : 'clinics'}',
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ClinicsScreen()),
-                ),
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ClinicsScreen()),
+                    ),
               ),
             ],
           ),
@@ -87,11 +88,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: 'Backup and restore',
                 subtitle: 'Create or restore a backup, Periodic backups',
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const BackupRestoreScreen(),
-                  ),
-                ),
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const BackupRestoreScreen(),
+                      ),
+                    ),
               ),
             ],
           ),
@@ -102,34 +104,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               AppListTile(
                 icon: Icons.code,
                 title: 'GitHub repository',
-                onTap: () => _openUrl(
-                  'https://github.com/mdsaif45/ClinicPilot',
-                ),
+                onTap:
+                    () => _openUrl('https://github.com/mdsaif45/ClinicPilot'),
               ),
               const AppListTile(
                 icon: Icons.favorite_outline,
                 title: 'Developed by mdsaif45',
               ),
-              Consumer(builder: (context, ref, _) {
-                final running =
-                    ref.watch(runningVersionProvider).value ?? '…';
-                final updateWaiting =
-                    ref.watch(availableUpdateProvider).value != null;
-                return AppListTile(
-                  icon: Icons.smartphone,
-                  title: 'App Version',
-                  subtitle: 'v$running',
-                  trailing: updateWaiting
-                      ? Icon(Icons.circle,
-                          size: 10, color: Theme.of(context).colorScheme.tertiary)
-                      : const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AppVersionScreen(),
-                    ),
-                  ),
-                );
-              }),
+              Consumer(
+                builder: (context, ref, _) {
+                  final running =
+                      ref.watch(runningVersionProvider).value ?? '…';
+                  final updateWaiting =
+                      ref.watch(availableUpdateProvider).value != null;
+                  return AppListTile(
+                    icon: Icons.smartphone,
+                    title: 'App Version',
+                    subtitle: 'v$running',
+                    trailing:
+                        updateWaiting
+                            ? Icon(
+                              Icons.circle,
+                              size: 10,
+                              color: Theme.of(context).colorScheme.tertiary,
+                            )
+                            : const Icon(Icons.chevron_right),
+                    onTap:
+                        () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AppVersionScreen(),
+                          ),
+                        ),
+                  );
+                },
+              ),
             ],
           ),
         ],
@@ -143,16 +151,15 @@ class _DoctorProfileHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
+    final profile =
+        ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final displayName = profile.displayName.isNotEmpty
-        ? profile.displayName
-        : 'Doctor Profile';
-    final avatarLetter = displayName.isNotEmpty
-        ? displayName[0].toUpperCase()
-        : 'D';
+    final displayName =
+        profile.displayName.isNotEmpty ? profile.displayName : 'Doctor Profile';
+    final avatarLetter =
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'D';
 
     return AppCard(
       margin: const EdgeInsets.symmetric(
@@ -188,8 +195,8 @@ class _DoctorProfileHeader extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Text(
                   profile.qualification.isNotEmpty
-                    ? profile.qualification
-                    : 'Tap to view credentials & contact info',
+                      ? profile.qualification
+                      : 'Tap to view credentials & contact info',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -197,11 +204,7 @@ class _DoctorProfileHeader extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right,
-            color: scheme.onSurfaceVariant,
-            size: 20,
-          ),
+          Icon(Icons.chevron_right, color: scheme.onSurfaceVariant, size: 20),
         ],
       ),
     );

@@ -26,9 +26,10 @@ class NotificationCenterSheet extends ConsumerWidget {
     final scheme = theme.colorScheme;
 
     final recallLists = ref.watch(recallListProvider).value;
-    final overdueCount = recallLists == null
-        ? 0
-        : recallLists.overdue.length + recallLists.lapsed.length;
+    final overdueCount =
+        recallLists == null
+            ? 0
+            : recallLists.overdue.length + recallLists.lapsed.length;
 
     final updateRelease = ref.watch(availableUpdateProvider).value;
     final hasUpdate = updateRelease != null;
@@ -40,7 +41,12 @@ class NotificationCenterSheet extends ConsumerWidget {
         color: scheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.md, Spacing.lg, Spacing.xxl),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.lg,
+        Spacing.md,
+        Spacing.lg,
+        Spacing.xxl,
+      ),
       child: SafeArea(
         top: false,
         child: Column(
@@ -75,7 +81,10 @@ class NotificationCenterSheet extends ConsumerWidget {
                     if (totalAlerts > 0) ...[
                       const SizedBox(width: Spacing.sm),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: scheme.errorContainer,
                           borderRadius: BorderRadius.circular(12),

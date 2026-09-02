@@ -11,10 +11,7 @@ import 'journal_item_detail_sheet.dart';
 class ActivityJournalFeed extends StatelessWidget {
   final List<TimelineActivityItem> items;
 
-  const ActivityJournalFeed({
-    super.key,
-    required this.items,
-  });
+  const ActivityJournalFeed({super.key, required this.items});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +24,11 @@ class ActivityJournalFeed extends StatelessWidget {
         alignment: Alignment.center,
         child: Column(
           children: [
-            Icon(Icons.event_note, size: 36, color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
+            Icon(
+              Icons.event_note,
+              size: 36,
+              color: scheme.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
             const SizedBox(height: Spacing.sm),
             Text(
               'No practice activity logged for this date',
@@ -44,12 +45,13 @@ class ActivityJournalFeed extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: items.length,
-      separatorBuilder: (_, __) => Divider(
-        height: 1,
-        indent: Spacing.sm,
-        endIndent: Spacing.sm,
-        color: scheme.outlineVariant.withValues(alpha: 0.25),
-      ),
+      separatorBuilder:
+          (_, __) => Divider(
+            height: 1,
+            indent: Spacing.sm,
+            endIndent: Spacing.sm,
+            color: scheme.outlineVariant.withValues(alpha: 0.25),
+          ),
       itemBuilder: (context, index) {
         final item = items[index];
 
@@ -79,9 +81,10 @@ class ActivityJournalFeed extends StatelessWidget {
             final entry = PracticeJournalEntry(
               id: item.id,
               timestamp: item.timestamp,
-              type: item.type == ActivityEventType.consultation
-                  ? JournalEventType.consultation
-                  : item.type == ActivityEventType.dispense
+              type:
+                  item.type == ActivityEventType.consultation
+                      ? JournalEventType.consultation
+                      : item.type == ActivityEventType.dispense
                       ? JournalEventType.dispense
                       : JournalEventType.expense,
               title: item.title,
@@ -101,18 +104,17 @@ class ActivityJournalFeed extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.xs, vertical: Spacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.xs,
+              vertical: Spacing.md,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Icon on left
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
-                  child: Icon(
-                    icon,
-                    size: 20,
-                    color: iconColor,
-                  ),
+                  child: Icon(icon, size: 20, color: iconColor),
                 ),
                 const SizedBox(width: Spacing.md),
 
@@ -145,7 +147,8 @@ class ActivityJournalFeed extends StatelessWidget {
                       // Subtitle with condition / amount
                       Row(
                         children: [
-                          if (item.diseaseTag != null && item.diseaseTag!.isNotEmpty) ...[
+                          if (item.diseaseTag != null &&
+                              item.diseaseTag!.isNotEmpty) ...[
                             Flexible(
                               child: Text(
                                 item.diseaseTag!,
@@ -191,9 +194,10 @@ class ActivityJournalFeed extends StatelessWidget {
                                   : Formatters.formatCurrency(item.amount!),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: item.type == ActivityEventType.expense
-                                    ? scheme.error
-                                    : scheme.primary,
+                                color:
+                                    item.type == ActivityEventType.expense
+                                        ? scheme.error
+                                        : scheme.primary,
                               ),
                             ),
                           ],

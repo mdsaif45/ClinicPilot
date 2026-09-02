@@ -44,7 +44,8 @@ class ClinicComparisonScreen extends ConsumerWidget {
             );
           }
 
-          final isMonthFilter = periodState.filter == PeriodFilter.thisMonth ||
+          final isMonthFilter =
+              periodState.filter == PeriodFilter.thisMonth ||
               periodState.filter == PeriodFilter.lastMonth;
 
           final metricLabels = [
@@ -117,7 +118,9 @@ class ClinicComparisonScreen extends ConsumerWidget {
                           color: scheme.surfaceContainer,
                           border: Border(
                             right: BorderSide(
-                              color: scheme.outlineVariant.withValues(alpha: 0.6),
+                              color: scheme.outlineVariant.withValues(
+                                alpha: 0.6,
+                              ),
                               width: 1.5,
                             ),
                           ),
@@ -128,13 +131,18 @@ class ClinicComparisonScreen extends ConsumerWidget {
                             // Header Cell
                             Container(
                               height: _headerHeight,
-                              padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: Spacing.sm,
+                              ),
                               alignment: Alignment.centerLeft,
                               decoration: BoxDecoration(
-                                color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                                color: scheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.6),
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: scheme.outlineVariant.withValues(alpha: 0.5),
+                                    color: scheme.outlineVariant.withValues(
+                                      alpha: 0.5,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -151,26 +159,40 @@ class ClinicComparisonScreen extends ConsumerWidget {
                             for (var i = 0; i < metricLabels.length; i++)
                               Container(
                                 height: _rowHeight,
-                                padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: Spacing.sm,
+                                ),
                                 alignment: Alignment.centerLeft,
                                 decoration: BoxDecoration(
-                                  color: i == 0
-                                      ? scheme.primaryContainer.withValues(alpha: 0.2)
-                                      : (i % 2 == 1
-                                          ? scheme.surfaceContainerLow.withValues(alpha: 0.5)
-                                          : null),
+                                  color:
+                                      i == 0
+                                          ? scheme.primaryContainer.withValues(
+                                            alpha: 0.2,
+                                          )
+                                          : (i % 2 == 1
+                                              ? scheme.surfaceContainerLow
+                                                  .withValues(alpha: 0.5)
+                                              : null),
                                   border: Border(
                                     bottom: BorderSide(
-                                      color: scheme.outlineVariant.withValues(alpha: 0.25),
+                                      color: scheme.outlineVariant.withValues(
+                                        alpha: 0.25,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 child: Text(
                                   metricLabels[i],
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    fontWeight: i == 0 ? FontWeight.bold : FontWeight.w600,
+                                    fontWeight:
+                                        i == 0
+                                            ? FontWeight.bold
+                                            : FontWeight.w600,
                                     fontSize: 11.5,
-                                    color: i == 0 ? scheme.primary : scheme.onSurface,
+                                    color:
+                                        i == 0
+                                            ? scheme.primary
+                                            : scheme.onSurface,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -194,33 +216,41 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     border: Border(
                                       right: BorderSide(
-                                        color: scheme.outlineVariant.withValues(alpha: 0.25),
+                                        color: scheme.outlineVariant.withValues(
+                                          alpha: 0.25,
+                                        ),
                                       ),
                                     ),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Header Cell (Clinic Name)
                                       Container(
                                         height: _headerHeight,
-                                        padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: Spacing.sm,
+                                        ),
                                         alignment: Alignment.centerLeft,
                                         decoration: BoxDecoration(
-                                          color: scheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                          color: scheme.surfaceContainerHighest
+                                              .withValues(alpha: 0.3),
                                           border: Border(
                                             bottom: BorderSide(
-                                              color: scheme.outlineVariant.withValues(alpha: 0.5),
+                                              color: scheme.outlineVariant
+                                                  .withValues(alpha: 0.5),
                                             ),
                                           ),
                                         ),
                                         child: Text(
                                           m.clinic.name,
-                                          style: theme.textTheme.labelSmall?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                            color: scheme.primary,
-                                          ),
+                                          style: theme.textTheme.labelSmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                                color: scheme.primary,
+                                              ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -231,12 +261,18 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         height: _rowHeight,
                                         isHeadline: true,
                                         child: Text(
-                                          Formatters.formatCurrency(m.netProfit),
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                            color: m.netProfit >= 0 ? scheme.primary : scheme.error,
+                                          Formatters.formatCurrency(
+                                            m.netProfit,
                                           ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                                color:
+                                                    m.netProfit >= 0
+                                                        ? scheme.primary
+                                                        : scheme.error,
+                                              ),
                                         ),
                                       ),
                                       // Row 1: Total Revenue
@@ -246,11 +282,12 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         isAlternate: true,
                                         child: Text(
                                           Formatters.formatCurrency(m.revenue),
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 11.5,
-                                            color: scheme.primary,
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 11.5,
+                                                color: scheme.primary,
+                                              ),
                                         ),
                                       ),
                                       // Row 2: Variable Expenses
@@ -258,11 +295,14 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         context,
                                         height: _rowHeight,
                                         child: Text(
-                                          Formatters.formatCurrency(m.variableExpenses),
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontSize: 11.5,
-                                            color: scheme.error,
+                                          Formatters.formatCurrency(
+                                            m.variableExpenses,
                                           ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                fontSize: 11.5,
+                                                color: scheme.error,
+                                              ),
                                         ),
                                       ),
                                       // Row 3: Rent
@@ -272,9 +312,8 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         isAlternate: true,
                                         child: Text(
                                           Formatters.formatCurrency(m.rent),
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontSize: 11.5,
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(fontSize: 11.5),
                                         ),
                                       ),
                                       // Row 4: New Patients
@@ -283,10 +322,11 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         height: _rowHeight,
                                         child: Text(
                                           '${m.newPatients}',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 11.5,
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 11.5,
+                                              ),
                                         ),
                                       ),
                                       // Row 5: Repeat Patients
@@ -296,10 +336,11 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         isAlternate: true,
                                         child: Text(
                                           '${m.repeatPatients}',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 11.5,
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 11.5,
+                                              ),
                                         ),
                                       ),
                                       // Row 6: Total Visits
@@ -308,10 +349,11 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         height: _rowHeight,
                                         child: Text(
                                           '${m.totalVisits}',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 11.5,
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 11.5,
+                                              ),
                                         ),
                                       ),
                                       // Row 7: Avg Revenue / Visit
@@ -320,10 +362,11 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         height: _rowHeight,
                                         isAlternate: true,
                                         child: Text(
-                                          Formatters.formatCurrency(m.avgRevenuePerVisit),
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontSize: 11.5,
+                                          Formatters.formatCurrency(
+                                            m.avgRevenuePerVisit,
                                           ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(fontSize: 11.5),
                                         ),
                                       ),
                                       // Row 8: Avg Patients / Day
@@ -331,10 +374,10 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         context,
                                         height: _rowHeight,
                                         child: Text(
-                                          m.avgPatientsPerClinicDay.toStringAsFixed(1),
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontSize: 11.5,
-                                          ),
+                                          m.avgPatientsPerClinicDay
+                                              .toStringAsFixed(1),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(fontSize: 11.5),
                                         ),
                                       ),
                                       // Row 9: Growth vs Prev
@@ -344,13 +387,16 @@ class ClinicComparisonScreen extends ConsumerWidget {
                                         isAlternate: true,
                                         child: Text(
                                           '${m.growthPercentageVsPrev >= 0 ? "+" : ""}${m.growthPercentageVsPrev.toStringAsFixed(1)}%',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 11.5,
-                                            color: m.growthPercentageVsPrev >= 0
-                                                ? scheme.primary
-                                                : scheme.error,
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 11.5,
+                                                color:
+                                                    m.growthPercentageVsPrev >=
+                                                            0
+                                                        ? scheme.primary
+                                                        : scheme.error,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -387,9 +433,12 @@ class ClinicComparisonScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
-        color: isHeadline
-            ? scheme.primaryContainer.withValues(alpha: 0.2)
-            : (isAlternate ? scheme.surfaceContainerLow.withValues(alpha: 0.5) : null),
+        color:
+            isHeadline
+                ? scheme.primaryContainer.withValues(alpha: 0.2)
+                : (isAlternate
+                    ? scheme.surfaceContainerLow.withValues(alpha: 0.5)
+                    : null),
         border: Border(
           bottom: BorderSide(
             color: scheme.outlineVariant.withValues(alpha: 0.25),

@@ -11,7 +11,8 @@ class DateInputFormatter extends TextInputFormatter {
   ) {
     final text = newValue.text;
     final digitsOnly = text.replaceAll(RegExp(r'[^\d]'), '');
-    final truncated = digitsOnly.length > 8 ? digitsOnly.substring(0, 8) : digitsOnly;
+    final truncated =
+        digitsOnly.length > 8 ? digitsOnly.substring(0, 8) : digitsOnly;
 
     final buffer = StringBuffer();
     for (int i = 0; i < truncated.length; i++) {

@@ -20,14 +20,14 @@ class _ClinicFormControllers {
   String openDays;
 
   _ClinicFormControllers()
-      : nameController = TextEditingController(),
-        addressController = TextEditingController(),
-        phoneController = TextEditingController(),
-        rentController = TextEditingController(text: '5000'),
-        feeController = TextEditingController(text: '300'),
-        revGoalController = TextEditingController(text: '30000'),
-        patGoalController = TextEditingController(text: '10'),
-        openDays = '1,2,3,4,5,6';
+    : nameController = TextEditingController(),
+      addressController = TextEditingController(),
+      phoneController = TextEditingController(),
+      rentController = TextEditingController(text: '5000'),
+      feeController = TextEditingController(text: '300'),
+      revGoalController = TextEditingController(text: '30000'),
+      patGoalController = TextEditingController(text: '10'),
+      openDays = '1,2,3,4,5,6';
 
   void dispose() {
     nameController.dispose();
@@ -76,9 +76,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _qualificationFocus = FocusNode();
   final _regNumberFocus = FocusNode();
 
-  final _clinics = <_ClinicFormControllers>[
-    _ClinicFormControllers(),
-  ];
+  final _clinics = <_ClinicFormControllers>[_ClinicFormControllers()];
 
   final _clinicNameFocus = FocusNode();
   final _areaFocus = FocusNode();
@@ -116,7 +114,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_page == 0) {
       final fn = _firstNameController.text.trim();
       final ln = _lastNameController.text.trim();
-      final hasFn = fn.isNotEmpty &&
+      final hasFn =
+          fn.isNotEmpty &&
           fn.toLowerCase() != 'dr.' &&
           fn.toLowerCase() != 'dr' &&
           fn.toLowerCase() != 'dr. ';
@@ -143,7 +142,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     final draftClinics = _clinics.map((c) => c.toDraft()).toList();
 
-    await ref.read(onboardingControllerProvider).complete(
+    await ref
+        .read(onboardingControllerProvider)
+        .complete(
           doctorFirstName: _firstNameController.text.trim(),
           doctorLastName: _lastNameController.text.trim(),
           doctorEmail: _emailController.text.trim(),
@@ -182,14 +183,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   for (var i = 0; i < 2; i++)
                     Expanded(
                       child: Padding(
-                        padding: EdgeInsets.only(right: i == 0 ? Spacing.sm : 0),
+                        padding: EdgeInsets.only(
+                          right: i == 0 ? Spacing.sm : 0,
+                        ),
                         child: AnimatedContainer(
                           duration: Motion.base,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: i <= _page
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.surfaceContainerHighest,
+                            color:
+                                i <= _page
+                                    ? theme.colorScheme.primary
+                                    : theme.colorScheme.surfaceContainerHighest,
                             borderRadius: Radii.pillAll,
                           ),
                         ),
@@ -256,9 +260,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   if (_page > 0)
                     AppButton.text(
                       label: 'Back',
-                      onPressed: _saving
-                          ? null
-                          : () => _pageController.previousPage(
+                      onPressed:
+                          _saving
+                              ? null
+                              : () => _pageController.previousPage(
                                 duration: Motion.base,
                                 curve: Motion.curve,
                               ),
@@ -267,18 +272,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   AppButton.primary(
                     label: _page == 0 ? 'Continue' : 'Get started',
                     loading: _saving,
-                    onPressed: !_canContinue || _saving
-                        ? null
-                        : () {
-                            if (_page == 0) {
-                              _pageController.nextPage(
-                                duration: Motion.base,
-                                curve: Motion.curve,
-                              );
-                            } else {
-                              _finish();
-                            }
-                          },
+                    onPressed:
+                        !_canContinue || _saving
+                            ? null
+                            : () {
+                              if (_page == 0) {
+                                _pageController.nextPage(
+                                  duration: Motion.base,
+                                  curve: Motion.curve,
+                                );
+                              } else {
+                                _finish();
+                              }
+                            },
                   ),
                 ],
               ),
@@ -340,13 +346,13 @@ class _DoctorProfilePage extends StatelessWidget {
       ),
       children: [
         const SizedBox(height: Spacing.sm),
-        Text('Welcome to ClinicPilot',
-            style: theme.textTheme.headlineMedium),
+        Text('Welcome to ClinicPilot', style: theme.textTheme.headlineMedium),
         const SizedBox(height: Spacing.xs),
         Text(
           'Know. Grow. Repeat.',
-          style: theme.textTheme.titleMedium
-              ?.copyWith(color: theme.colorScheme.primary),
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: theme.colorScheme.primary,
+          ),
         ),
         const SizedBox(height: Spacing.lg),
         Text(
@@ -488,8 +494,7 @@ class _ClinicsPage extends StatelessWidget {
       ),
       children: [
         const SizedBox(height: Spacing.sm),
-        Text('Where do you practice?',
-            style: theme.textTheme.headlineMedium),
+        Text('Where do you practice?', style: theme.textTheme.headlineMedium),
         const SizedBox(height: Spacing.xs),
         Text(
           'Set up your clinics with rent, consultation fees & targets.',
@@ -560,14 +565,18 @@ class _ClinicCard extends StatelessWidget {
             children: [
               Text(
                 'Clinic ${index + 1}',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Spacer(),
               if (canRemove)
                 IconButton(
-                  icon: Icon(Icons.close,
-                      size: 20, color: theme.colorScheme.error),
+                  icon: Icon(
+                    Icons.close,
+                    size: 20,
+                    color: theme.colorScheme.error,
+                  ),
                   onPressed: onRemove,
                   tooltip: 'Remove clinic',
                 ),

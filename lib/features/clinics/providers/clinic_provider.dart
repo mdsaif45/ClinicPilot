@@ -6,8 +6,8 @@ import '../../../core/database/database_provider.dart';
 // Stream of all active clinics (not soft-deleted)
 final clinicsStreamProvider = StreamProvider<List<Clinic>>((ref) {
   final db = ref.watch(databaseProvider);
-  return (db.select(db.clinics)..where((tbl) => tbl.isDeleted.equals(false)))
-      .watch();
+  return (db.select(db.clinics)
+    ..where((tbl) => tbl.isDeleted.equals(false))).watch();
 });
 
 // Active Clinic ID notifier persisting selection to database settings
@@ -32,10 +32,11 @@ class ActiveClinicIdNotifier extends StateNotifier<String?> {
     if (setting != null && setting.value.isNotEmpty) {
       state = setting.value;
     } else {
-      final firstClinic = await (_db.select(_db.clinics)
-            ..where((tbl) => tbl.isDeleted.equals(false))
-            ..limit(1))
-          .getSingleOrNull();
+      final firstClinic =
+          await (_db.select(_db.clinics)
+                ..where((tbl) => tbl.isDeleted.equals(false))
+                ..limit(1))
+              .getSingleOrNull();
       if (!mounted) return;
       if (firstClinic != null) {
         state = firstClinic.id;
@@ -46,7 +47,9 @@ class ActiveClinicIdNotifier extends StateNotifier<String?> {
 
   Future<void> setClinicId(String newId) async {
     state = newId;
-    await _db.into(_db.settings).insertOnConflictUpdate(
+    await _db
+        .into(_db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'active_clinic_id',
             value: newId,
@@ -58,9 +61,9 @@ class ActiveClinicIdNotifier extends StateNotifier<String?> {
 
 final activeClinicIdProvider =
     StateNotifierProvider<ActiveClinicIdNotifier, String?>((ref) {
-  final db = ref.watch(databaseProvider);
-  return ActiveClinicIdNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return ActiveClinicIdNotifier(db);
+    });
 
 // Active Clinic entity provider
 final activeClinicProvider = Provider<Clinic?>((ref) {
@@ -98,7 +101,9 @@ class ClinicNotifier extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await _db.into(_db.clinics).insert(
+      await _db
+          .into(_db.clinics)
+          .insert(
             ClinicsCompanion.insert(
               id: id,
               name: name,
@@ -143,10 +148,7 @@ class ClinicNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       await (_db.update(_db.clinics)..where((tbl) => tbl.id.equals(id))).write(
-        const ClinicsCompanion(
-          isDeleted: Value(true),
-          isActive: Value(false),
-        ),
+        const ClinicsCompanion(isDeleted: Value(true), isActive: Value(false)),
       );
     });
   }
@@ -154,6 +156,6 @@ class ClinicNotifier extends StateNotifier<AsyncValue<void>> {
 
 final clinicNotifierProvider =
     StateNotifierProvider<ClinicNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return ClinicNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return ClinicNotifier(db);
+    });

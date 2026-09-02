@@ -22,10 +22,11 @@ class ComplaintListView extends ConsumerWidget {
     AppHaptics.selection();
     showDialog(
       context: context,
-      builder: (_) => AddEditComplaintDialog(
-        patientId: patient.id,
-        defaultIndex: defaultIndex,
-      ),
+      builder:
+          (_) => AddEditComplaintDialog(
+            patientId: patient.id,
+            defaultIndex: defaultIndex,
+          ),
     );
   }
 
@@ -33,28 +34,37 @@ class ComplaintListView extends ConsumerWidget {
     AppHaptics.selection();
     showDialog(
       context: context,
-      builder: (_) => AddEditComplaintDialog(
-        patientId: patient.id,
-        existingComplaint: complaint,
-      ),
+      builder:
+          (_) => AddEditComplaintDialog(
+            patientId: patient.id,
+            existingComplaint: complaint,
+          ),
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, Complaint complaint) {
+  void _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    Complaint complaint,
+  ) {
     AppHaptics.error();
     showDialog(
       context: context,
-      builder: (ctx) => AppConfirmDialog(
-        title: 'Delete Complaint',
-        message: 'Are you sure you want to remove "${complaint.complaintName}"?',
-        confirmLabel: 'Delete',
-        isDestructive: true,
-        onConfirm: () async {
-          Navigator.of(ctx).pop();
-          await ref.read(complaintNotifierProvider.notifier).deleteComplaint(complaint.id);
-          AppHaptics.medium();
-        },
-      ),
+      builder:
+          (ctx) => AppConfirmDialog(
+            title: 'Delete Complaint',
+            message:
+                'Are you sure you want to remove "${complaint.complaintName}"?',
+            confirmLabel: 'Delete',
+            isDestructive: true,
+            onConfirm: () async {
+              Navigator.of(ctx).pop();
+              await ref
+                  .read(complaintNotifierProvider.notifier)
+                  .deleteComplaint(complaint.id);
+              AppHaptics.medium();
+            },
+          ),
     );
   }
 
@@ -75,7 +85,8 @@ class ComplaintListView extends ConsumerWidget {
           child: EmptyState(
             icon: Icons.healing_outlined,
             title: 'No complaints logged',
-            message: 'Record specific patient complaints with location, sensation, and modalities.',
+            message:
+                'Record specific patient complaints with location, sensation, and modalities.',
             actionLabel: 'Add Complaint',
             onAction: () => _openAddComplaint(context, 1),
           ),
@@ -109,7 +120,9 @@ class ComplaintListView extends ConsumerWidget {
               onDelete: () => _confirmDelete(context, ref, complaints[i]),
               onStatusChanged: (newStatus) {
                 AppHaptics.selection();
-                ref.read(complaintNotifierProvider.notifier).updateStatus(complaints[i].id, newStatus);
+                ref
+                    .read(complaintNotifierProvider.notifier)
+                    .updateStatus(complaints[i].id, newStatus);
               },
             ),
           ],
@@ -137,9 +150,10 @@ class _ComplaintCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final sevColor = complaint.severity >= 8
-        ? scheme.error
-        : complaint.severity >= 5
+    final sevColor =
+        complaint.severity >= 8
+            ? scheme.error
+            : complaint.severity >= 5
             ? scheme.tertiary
             : scheme.primary;
 
@@ -168,10 +182,16 @@ class _ComplaintCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(Icons.calendar_today_outlined, size: 13, color: scheme.primary),
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 13,
+                color: scheme.primary,
+              ),
               const SizedBox(width: 5),
               Text(
-                Formatters.formatDate(complaint.complaintDate ?? complaint.createdAt),
+                Formatters.formatDate(
+                  complaint.complaintDate ?? complaint.createdAt,
+                ),
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: scheme.primary,
                   fontWeight: FontWeight.w700,
@@ -198,13 +218,20 @@ class _ComplaintCard extends StatelessWidget {
                     if (val == 'edit') onEdit();
                     if (val == 'delete') onDelete();
                   },
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(value: 'edit', child: Text('Edit Complaint')),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text('Delete', style: TextStyle(color: scheme.error)),
-                    ),
-                  ],
+                  itemBuilder:
+                      (_) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Text('Edit Complaint'),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text(
+                            'Delete',
+                            style: TextStyle(color: scheme.error),
+                          ),
+                        ),
+                      ],
                 ),
               ),
             ],
@@ -253,12 +280,19 @@ class _ComplaintCard extends StatelessWidget {
               PopupMenuButton<String>(
                 tooltip: 'Change Status',
                 onSelected: onStatusChanged,
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'Active', child: Text('Active')),
-                  PopupMenuItem(value: 'Improving', child: Text('Improving')),
-                  PopupMenuItem(value: 'Resolved', child: Text('Resolved')),
-                  PopupMenuItem(value: 'Recurrent', child: Text('Recurrent')),
-                ],
+                itemBuilder:
+                    (_) => const [
+                      PopupMenuItem(value: 'Active', child: Text('Active')),
+                      PopupMenuItem(
+                        value: 'Improving',
+                        child: Text('Improving'),
+                      ),
+                      PopupMenuItem(value: 'Resolved', child: Text('Resolved')),
+                      PopupMenuItem(
+                        value: 'Recurrent',
+                        child: Text('Recurrent'),
+                      ),
+                    ],
                 child: CustomBadge(
                   label: '${complaint.status} ▾',
                   color: statusColor,
@@ -266,7 +300,8 @@ class _ComplaintCard extends StatelessWidget {
               ),
               if (totalPhotos > 0)
                 CustomBadge(
-                  label: '📷 $totalPhotos ${totalPhotos == 1 ? 'Photo' : 'Photos'}',
+                  label:
+                      '📷 $totalPhotos ${totalPhotos == 1 ? 'Photo' : 'Photos'}',
                   color: scheme.tertiary,
                 ),
             ],

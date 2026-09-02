@@ -8,16 +8,16 @@ import 'package:flutter_test/flutter_test.dart';
 /// label. Both paths have to land in the same place.
 void main() {
   Widget harness() => MaterialApp(
-        home: Scaffold(
-          body: SwipeableSections(
-            labels: const ['One', 'Two'],
-            children: [
-              Container(key: const Key('page-one'), color: Colors.red),
-              Container(key: const Key('page-two'), color: Colors.blue),
-            ],
-          ),
-        ),
-      );
+    home: Scaffold(
+      body: SwipeableSections(
+        labels: const ['One', 'Two'],
+        children: [
+          Container(key: const Key('page-one'), color: Colors.red),
+          Container(key: const Key('page-two'), color: Colors.blue),
+        ],
+      ),
+    ),
+  );
 
   testWidgets('opens on the first page', (tester) async {
     await tester.pumpWidget(harness());
@@ -25,8 +25,9 @@ void main() {
     expect(find.byKey(const Key('page-one')), findsOneWidget);
   });
 
-  testWidgets('tapping the second label animates to the second page',
-      (tester) async {
+  testWidgets('tapping the second label animates to the second page', (
+    tester,
+  ) async {
     await tester.pumpWidget(harness());
 
     await tester.tap(find.text('Two'));
@@ -36,8 +37,9 @@ void main() {
     expect(pageView.controller!.page, 1.0);
   });
 
-  testWidgets('swiping does not change page (swipe disabled by design)',
-      (tester) async {
+  testWidgets('swiping does not change page (swipe disabled by design)', (
+    tester,
+  ) async {
     await tester.pumpWidget(harness());
 
     await tester.fling(find.byType(PageView), const Offset(-400, 0), 800);

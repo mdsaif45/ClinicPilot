@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-
 import '../../finances/providers/finances_clinic_filter_provider.dart';
 
 final expenseCategoryFilterProvider = StateProvider<String?>((ref) => null);
@@ -13,33 +12,34 @@ class ExpenseWithClinic {
   final Expense expense;
   final Clinic clinic;
 
-  const ExpenseWithClinic({
-    required this.expense,
-    required this.clinic,
-  });
+  const ExpenseWithClinic({required this.expense, required this.clinic});
 }
 
 /// Streams all active expenses joined with clinic.
-final allExpensesStreamProvider = StreamProvider<List<ExpenseWithClinic>>((ref) {
+final allExpensesStreamProvider = StreamProvider<List<ExpenseWithClinic>>((
+  ref,
+) {
   final db = ref.watch(databaseProvider);
   return (db.select(db.expenses).join([
-    innerJoin(db.clinics, db.clinics.id.equalsExp(db.expenses.clinicId)),
-  ])
+          innerJoin(db.clinics, db.clinics.id.equalsExp(db.expenses.clinicId)),
+        ])
         ..where(db.expenses.isDeleted.equals(false))
         ..orderBy([OrderingTerm.desc(db.expenses.date)]))
       .watch()
       .map((rows) {
-    return rows.map((row) {
-      return ExpenseWithClinic(
-        expense: row.readTable(db.expenses),
-        clinic: row.readTable(db.clinics),
-      );
-    }).toList();
-  });
+        return rows.map((row) {
+          return ExpenseWithClinic(
+            expense: row.readTable(db.expenses),
+            clinic: row.readTable(db.clinics),
+          );
+        }).toList();
+      });
 });
 
 /// Instantly filtered expenses provider (zero latency, zero database re-queries on chip tap).
-final expensesStreamProvider = Provider<AsyncValue<List<ExpenseWithClinic>>>((ref) {
+final expensesStreamProvider = Provider<AsyncValue<List<ExpenseWithClinic>>>((
+  ref,
+) {
   final allAsync = ref.watch(allExpensesStreamProvider);
   final categoryFilter = ref.watch(expenseCategoryFilterProvider);
   final clinicFilter = ref.watch(financesClinicFilterProvider);
@@ -49,20 +49,25 @@ final expensesStreamProvider = Provider<AsyncValue<List<ExpenseWithClinic>>>((re
     if (clinicFilter != null) {
       result = result.where((e) => e.expense.clinicId == clinicFilter).toList();
     }
-    if (categoryFilter == null || categoryFilter.isEmpty || categoryFilter == 'All') {
+    if (categoryFilter == null ||
+        categoryFilter.isEmpty ||
+        categoryFilter == 'All') {
       return result;
     }
 
     final List<String> matchingCategories;
     if (categoryFilter == 'Medicine Purchase' || categoryFilter == 'Medicine') {
       matchingCategories = const ['Medicine Purchase', 'Medicine'];
-    } else if (categoryFilter == 'Packaging & Dispensing' || categoryFilter == 'Packaging') {
+    } else if (categoryFilter == 'Packaging & Dispensing' ||
+        categoryFilter == 'Packaging') {
       matchingCategories = const ['Packaging & Dispensing', 'Packaging'];
-    } else if (categoryFilter == 'Electricity' || categoryFilter == 'Utilities') {
+    } else if (categoryFilter == 'Electricity' ||
+        categoryFilter == 'Utilities') {
       matchingCategories = const ['Electricity', 'Utilities'];
     } else if (categoryFilter == 'Camp' || categoryFilter == 'Camp Expense') {
       matchingCategories = const ['Camp', 'Camp Expense'];
-    } else if (categoryFilter == 'Staff Salary' || categoryFilter == 'Assistant Salary') {
+    } else if (categoryFilter == 'Staff Salary' ||
+        categoryFilter == 'Assistant Salary') {
       matchingCategories = const ['Staff Salary', 'Assistant Salary'];
     } else {
       matchingCategories = [categoryFilter];
@@ -91,7 +96,9 @@ class ExpenseNotifier extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await _db.into(_db.expenses).insert(
+      await _db
+          .into(_db.expenses)
+          .insert(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinicId,
@@ -136,14 +143,15 @@ class ExpenseNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> archiveExpense(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.expenses)..where((tbl) => tbl.id.equals(id)))
-          .write(const ExpensesCompanion(isDeleted: Value(true)));
+      await (_db.update(_db.expenses)..where(
+        (tbl) => tbl.id.equals(id),
+      )).write(const ExpensesCompanion(isDeleted: Value(true)));
     });
   }
 }
 
 final expenseNotifierProvider =
     StateNotifierProvider<ExpenseNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return ExpenseNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return ExpenseNotifier(db);
+    });

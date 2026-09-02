@@ -76,13 +76,15 @@ class DashboardStats {
     return d.year == y.year && d.month == y.month && d.day == y.day;
   }
 
-  double get revenueGoalProgress => monthlyRevenueGoal <= 0
-      ? 0
-      : (monthlyRevenue / monthlyRevenueGoal).clamp(0.0, 1.0);
+  double get revenueGoalProgress =>
+      monthlyRevenueGoal <= 0
+          ? 0
+          : (monthlyRevenue / monthlyRevenueGoal).clamp(0.0, 1.0);
 
-  double get newPatientGoalProgress => monthlyNewPatientGoal <= 0
-      ? 0
-      : (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0);
+  double get newPatientGoalProgress =>
+      monthlyNewPatientGoal <= 0
+          ? 0
+          : (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0);
 }
 
 class DailyStats {
@@ -153,13 +155,15 @@ class MonthlyStats {
     return selectedMonth.year == last.year && selectedMonth.month == last.month;
   }
 
-  double get revenueGoalProgress => monthlyRevenueGoal <= 0
-      ? 0
-      : (monthlyRevenue / monthlyRevenueGoal).clamp(0.0, 1.0);
+  double get revenueGoalProgress =>
+      monthlyRevenueGoal <= 0
+          ? 0
+          : (monthlyRevenue / monthlyRevenueGoal).clamp(0.0, 1.0);
 
-  double get newPatientGoalProgress => monthlyNewPatientGoal <= 0
-      ? 0
-      : (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0);
+  double get newPatientGoalProgress =>
+      monthlyNewPatientGoal <= 0
+          ? 0
+          : (monthlyNewPatients / monthlyNewPatientGoal).clamp(0.0, 1.0);
 }
 
 /// Active selected date for daily dashboard breakdown (date only, midnight normalized).
@@ -195,7 +199,8 @@ final dashboardRawStreamsProvider = StreamProvider<_DashboardRawData>((ref) {
   final db = ref.watch(databaseProvider);
 
   final memos =
-      (db.select(db.cashMemos)..where((t) => t.isDeleted.equals(false))).watch();
+      (db.select(db.cashMemos)
+        ..where((t) => t.isDeleted.equals(false))).watch();
   final expenses =
       (db.select(db.expenses)..where((t) => t.isDeleted.equals(false))).watch();
   final visits =
@@ -204,8 +209,13 @@ final dashboardRawStreamsProvider = StreamProvider<_DashboardRawData>((ref) {
       (db.select(db.patients)..where((t) => t.isDeleted.equals(false))).watch();
   final settings = db.select(db.settings).watch();
 
-  return _combine5(memos, expenses, visits, patients, settings,
-      (memoRows, expenseRows, visitRows, patientRows, settingRows) {
+  return _combine5(memos, expenses, visits, patients, settings, (
+    memoRows,
+    expenseRows,
+    visitRows,
+    patientRows,
+    settingRows,
+  ) {
     return _DashboardRawData(
       memos: memoRows,
       expenses: expenseRows,
@@ -239,8 +249,11 @@ final dailyStatsProvider = Provider<DailyStats>((ref) {
     );
   }
 
-  final selectedDayStart =
-      DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+  final selectedDayStart = DateTime(
+    selectedDate.year,
+    selectedDate.month,
+    selectedDate.day,
+  );
   final selectedDayEnd = selectedDayStart.add(const Duration(days: 1));
 
   bool inClinic(String? rowClinicId) =>
@@ -307,8 +320,16 @@ final monthlyStatsProvider = Provider<MonthlyStats>((ref) {
   }
 
   final monthStart = DateTime(selectedMonth.year, selectedMonth.month, 1);
-  final nextMonthStart = DateTime(selectedMonth.year, selectedMonth.month + 1, 1);
-  final prevMonthStart = DateTime(selectedMonth.year, selectedMonth.month - 1, 1);
+  final nextMonthStart = DateTime(
+    selectedMonth.year,
+    selectedMonth.month + 1,
+    1,
+  );
+  final prevMonthStart = DateTime(
+    selectedMonth.year,
+    selectedMonth.month - 1,
+    1,
+  );
 
   String? settingValue(String key) {
     for (final s in rawData.settings) {
@@ -317,11 +338,23 @@ final monthlyStatsProvider = Provider<MonthlyStats>((ref) {
     return null;
   }
 
-  String? clinicRevenueGoal = clinicId != null ? settingValue('monthly_revenue_goal_$clinicId') : null;
-  String? clinicPatientGoal = clinicId != null ? settingValue('monthly_new_patient_goal_$clinicId') : null;
+  String? clinicRevenueGoal =
+      clinicId != null ? settingValue('monthly_revenue_goal_$clinicId') : null;
+  String? clinicPatientGoal =
+      clinicId != null
+          ? settingValue('monthly_new_patient_goal_$clinicId')
+          : null;
 
-  final goal = double.tryParse(clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '') ?? 50000.0;
-  final patientGoal = int.tryParse(clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '') ?? 10;
+  final goal =
+      double.tryParse(
+        clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '',
+      ) ??
+      50000.0;
+  final patientGoal =
+      int.tryParse(
+        clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '',
+      ) ??
+      10;
 
   bool inClinic(String? rowClinicId) =>
       clinicId == null || rowClinicId == clinicId;
@@ -360,9 +393,10 @@ final monthlyStatsProvider = Provider<MonthlyStats>((ref) {
     }
   }
 
-  final totalPatients = clinicId == null
-      ? rawData.patients.length
-      : rawData.patients.where((p) => p.primaryClinicId == clinicId).length;
+  final totalPatients =
+      clinicId == null
+          ? rawData.patients.length
+          : rawData.patients.where((p) => p.primaryClinicId == clinicId).length;
 
   double? growth(num current, num previous) =>
       previous <= 0 ? null : ((current - previous) / previous) * 100;
@@ -391,7 +425,8 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
   final clinicId = activeClinic?.id;
 
   final memos =
-      (db.select(db.cashMemos)..where((t) => t.isDeleted.equals(false))).watch();
+      (db.select(db.cashMemos)
+        ..where((t) => t.isDeleted.equals(false))).watch();
   final expenses =
       (db.select(db.expenses)..where((t) => t.isDeleted.equals(false))).watch();
   final visits =
@@ -401,8 +436,13 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
   final settings = db.select(db.settings).watch();
 
   // A write to any of these tables re-runs the whole calculation.
-  return _combine5(memos, expenses, visits, patients, settings,
-      (memoRows, expenseRows, visitRows, patientRows, settingRows) {
+  return _combine5(memos, expenses, visits, patients, settings, (
+    memoRows,
+    expenseRows,
+    visitRows,
+    patientRows,
+    settingRows,
+  ) {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
     final todayEnd = todayStart.add(const Duration(days: 1));
@@ -418,11 +458,25 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
       return null;
     }
 
-    String? clinicRevenueGoal = clinicId != null ? settingValue('monthly_revenue_goal_$clinicId') : null;
-    String? clinicPatientGoal = clinicId != null ? settingValue('monthly_new_patient_goal_$clinicId') : null;
+    String? clinicRevenueGoal =
+        clinicId != null
+            ? settingValue('monthly_revenue_goal_$clinicId')
+            : null;
+    String? clinicPatientGoal =
+        clinicId != null
+            ? settingValue('monthly_new_patient_goal_$clinicId')
+            : null;
 
-    final goal = double.tryParse(clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '') ?? 50000.0;
-    final patientGoal = int.tryParse(clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '') ?? 10;
+    final goal =
+        double.tryParse(
+          clinicRevenueGoal ?? settingValue('monthly_revenue_goal') ?? '',
+        ) ??
+        50000.0;
+    final patientGoal =
+        int.tryParse(
+          clinicPatientGoal ?? settingValue('monthly_new_patient_goal') ?? '',
+        ) ??
+        10;
 
     bool inClinic(String? rowClinicId) =>
         clinicId == null || rowClinicId == clinicId;
@@ -464,15 +518,17 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
       }
     }
 
-    final totalPatients = clinicId == null
-        ? patientRows.length
-        : patientRows.where((p) => p.primaryClinicId == clinicId).length;
+    final totalPatients =
+        clinicId == null
+            ? patientRows.length
+            : patientRows.where((p) => p.primaryClinicId == clinicId).length;
 
-    final totalRepeatPatients = visitRows
-        .where((v) => inClinic(v.clinicId) && v.visitType != 'new')
-        .map((v) => v.patientId)
-        .toSet()
-        .length;
+    final totalRepeatPatients =
+        visitRows
+            .where((v) => inClinic(v.clinicId) && v.visitType != 'new')
+            .map((v) => v.patientId)
+            .toSet()
+            .length;
 
     double? growth(num current, num previous) =>
         previous <= 0 ? null : ((current - previous) / previous) * 100;
@@ -502,8 +558,6 @@ final dashboardStatsProvider = StreamProvider<DashboardStats>((ref) {
   });
 });
 
-
-
 /// Combines five streams, re-emitting whenever any of them produces a value.
 Stream<R> _combine5<A, B, C, D, E, R>(
   Stream<A> sa,
@@ -530,26 +584,36 @@ Stream<R> _combine5<A, B, C, D, E, R>(
   controller = StreamController<R>(
     onListen: () {
       subs
-        ..add(sa.listen((v) {
-          a = v;
-          emit();
-        }, onError: controller.addError))
-        ..add(sb.listen((v) {
-          b = v;
-          emit();
-        }, onError: controller.addError))
-        ..add(sc.listen((v) {
-          c = v;
-          emit();
-        }, onError: controller.addError))
-        ..add(sd.listen((v) {
-          d = v;
-          emit();
-        }, onError: controller.addError))
-        ..add(se.listen((v) {
-          e = v;
-          emit();
-        }, onError: controller.addError));
+        ..add(
+          sa.listen((v) {
+            a = v;
+            emit();
+          }, onError: controller.addError),
+        )
+        ..add(
+          sb.listen((v) {
+            b = v;
+            emit();
+          }, onError: controller.addError),
+        )
+        ..add(
+          sc.listen((v) {
+            c = v;
+            emit();
+          }, onError: controller.addError),
+        )
+        ..add(
+          sd.listen((v) {
+            d = v;
+            emit();
+          }, onError: controller.addError),
+        )
+        ..add(
+          se.listen((v) {
+            e = v;
+            emit();
+          }, onError: controller.addError),
+        );
     },
     onCancel: () async {
       for (final s in subs) {

@@ -44,16 +44,25 @@ class DoctorProfile {
   }
 
   String get greetingName {
-    final ln = lastName.replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '').trim();
+    final ln =
+        lastName
+            .replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '')
+            .trim();
     if (ln.isNotEmpty) {
       return 'Dr. $ln';
     }
-    final n = name.replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '').trim();
+    final n =
+        name
+            .replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '')
+            .trim();
     if (n.isNotEmpty) {
       final parts = n.split(RegExp(r'\s+'));
       return 'Dr. ${parts.last}';
     }
-    final fn = firstName.replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '').trim();
+    final fn =
+        firstName
+            .replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '')
+            .trim();
     if (fn.isNotEmpty) {
       return 'Dr. $fn';
     }
@@ -83,18 +92,17 @@ class DoctorProfile {
 
 final doctorProfileStreamProvider = StreamProvider<DoctorProfile>((ref) {
   final db = ref.watch(databaseProvider);
-  return (db.select(db.settings)
-        ..where((t) => t.key.isIn([
-              kDoctorFirstNameKey,
-              kDoctorLastNameKey,
-              kDoctorNameKey,
-              kDoctorEmailKey,
-              kDoctorPhoneKey,
-              kDoctorQualificationKey,
-              kDoctorRegNumberKey,
-            ])))
-      .watch()
-      .map((rows) {
+  return (db.select(db.settings)..where(
+    (t) => t.key.isIn([
+      kDoctorFirstNameKey,
+      kDoctorLastNameKey,
+      kDoctorNameKey,
+      kDoctorEmailKey,
+      kDoctorPhoneKey,
+      kDoctorQualificationKey,
+      kDoctorRegNumberKey,
+    ]),
+  )).watch().map((rows) {
     String firstName = '';
     String lastName = '';
     String name = '';
@@ -115,7 +123,10 @@ final doctorProfileStreamProvider = StreamProvider<DoctorProfile>((ref) {
 
     // Smart fallback if firstName / lastName were not set individually
     if (firstName.isEmpty && lastName.isEmpty && name.isNotEmpty) {
-      final clean = name.replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '').trim();
+      final clean =
+          name
+              .replaceFirst(RegExp(r'^Dr\.?\s*', caseSensitive: false), '')
+              .trim();
       final parts = clean.split(RegExp(r'\s+'));
       if (parts.length > 1) {
         firstName = 'Dr. ${parts.sublist(0, parts.length - 1).join(' ')}';
@@ -153,7 +164,7 @@ class DoctorProfileNotifier extends StateNotifier<AsyncValue<void>> {
   final Ref _ref;
 
   DoctorProfileNotifier(this._db, this._ref)
-      : super(const AsyncValue.data(null));
+    : super(const AsyncValue.data(null));
 
   Future<void> updateProfile({
     String? firstName,
@@ -199,7 +210,9 @@ class DoctorProfileNotifier extends StateNotifier<AsyncValue<void>> {
   }
 
   Future<void> _saveSetting(String key, String value) async {
-    await _db.into(_db.settings).insertOnConflictUpdate(
+    await _db
+        .into(_db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: key,
             value: value,
@@ -211,5 +224,5 @@ class DoctorProfileNotifier extends StateNotifier<AsyncValue<void>> {
 
 final doctorProfileNotifierProvider =
     StateNotifierProvider<DoctorProfileNotifier, AsyncValue<void>>((ref) {
-  return DoctorProfileNotifier(ref.watch(databaseProvider), ref);
-});
+      return DoctorProfileNotifier(ref.watch(databaseProvider), ref);
+    });

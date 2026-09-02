@@ -10,18 +10,21 @@ import '../models/case_record_models.dart';
 
 final patientComplaintsProvider =
     StreamProvider.family<List<Complaint>, String>((ref, patientId) {
-  final db = ref.watch(databaseProvider);
+      final db = ref.watch(databaseProvider);
 
-  final query = db.select(db.complaints)
-    ..where((t) => t.patientId.equals(patientId) & t.isDeleted.equals(false))
-    ..orderBy([
-      (t) => OrderingTerm.desc(t.complaintDate),
-      (t) => OrderingTerm.desc(t.createdAt),
-      (t) => OrderingTerm.desc(t.complaintIndex),
-    ]);
+      final query =
+          db.select(db.complaints)
+            ..where(
+              (t) => t.patientId.equals(patientId) & t.isDeleted.equals(false),
+            )
+            ..orderBy([
+              (t) => OrderingTerm.desc(t.complaintDate),
+              (t) => OrderingTerm.desc(t.createdAt),
+              (t) => OrderingTerm.desc(t.complaintIndex),
+            ]);
 
-  return query.watch();
-});
+      return query.watch();
+    });
 
 class ComplaintNotifier extends StateNotifier<AsyncValue<void>> {
   final AppDatabase _db;
@@ -53,46 +56,57 @@ class ComplaintNotifier extends StateNotifier<AsyncValue<void>> {
 
   Future<void> _syncWithCaseRecord(String patientId) async {
     // Only baseline complaints sync into the initial Master Case Taking record
-    final activeBaselineComplaints = await (_db.select(_db.complaints)
-          ..where((t) =>
-              t.patientId.equals(patientId) &
-              t.isDeleted.equals(false) &
-              t.isBaseline.equals(true))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.complaintIndex),
-            (t) => OrderingTerm.asc(t.complaintDate),
-            (t) => OrderingTerm.asc(t.createdAt),
-          ]))
-        .get();
+    final activeBaselineComplaints =
+        await (_db.select(_db.complaints)
+              ..where(
+                (t) =>
+                    t.patientId.equals(patientId) &
+                    t.isDeleted.equals(false) &
+                    t.isBaseline.equals(true),
+              )
+              ..orderBy([
+                (t) => OrderingTerm.asc(t.complaintIndex),
+                (t) => OrderingTerm.asc(t.complaintDate),
+                (t) => OrderingTerm.asc(t.createdAt),
+              ]))
+            .get();
 
-    final chiefList = activeBaselineComplaints.map((c) => ChiefComplaintDetail(
-          complaint: c.complaintName,
-          location: c.location ?? '',
-          onset: c.onset ?? '',
-          duration: c.duration ?? '',
-          sensation: c.sensation ?? '',
-          extensionRadiation: c.extension ?? '',
-          modalitiesAgg: c.aggravatingFactors ?? '',
-          modalitiesAmel: c.amelioratingFactors ?? '',
-          concomitants: c.concomitants ?? '',
-          causation: c.causation ?? '',
-          periodicity: c.periodicity ?? '',
-          severity: _formatSeverityToString(c.severity),
-          associatedSymptoms: c.notes ?? '',
-        )).toList();
+    final chiefList =
+        activeBaselineComplaints
+            .map(
+              (c) => ChiefComplaintDetail(
+                complaint: c.complaintName,
+                location: c.location ?? '',
+                onset: c.onset ?? '',
+                duration: c.duration ?? '',
+                sensation: c.sensation ?? '',
+                extensionRadiation: c.extension ?? '',
+                modalitiesAgg: c.aggravatingFactors ?? '',
+                modalitiesAmel: c.amelioratingFactors ?? '',
+                concomitants: c.concomitants ?? '',
+                causation: c.causation ?? '',
+                periodicity: c.periodicity ?? '',
+                severity: _formatSeverityToString(c.severity),
+                associatedSymptoms: c.notes ?? '',
+              ),
+            )
+            .toList();
 
     final jsonStr = jsonEncode(chiefList.map((e) => e.toJson()).toList());
 
-    final existingCase = await (_db.select(_db.patientCaseRecords)
-          ..where((t) => t.patientId.equals(patientId) & t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.recordDate)])
-          ..limit(1))
-        .getSingleOrNull();
+    final existingCase =
+        await (_db.select(_db.patientCaseRecords)
+              ..where(
+                (t) =>
+                    t.patientId.equals(patientId) & t.isDeleted.equals(false),
+              )
+              ..orderBy([(t) => OrderingTerm.desc(t.recordDate)])
+              ..limit(1))
+            .getSingleOrNull();
 
     if (existingCase != null) {
       await (_db.update(_db.patientCaseRecords)
-            ..where((t) => t.id.equals(existingCase.id)))
-          .write(
+        ..where((t) => t.id.equals(existingCase.id))).write(
         PatientCaseRecordsCompanion(
           chiefComplaintsJson: Value(jsonStr),
           updatedAt: Value(DateTime.now()),
@@ -194,12 +208,18 @@ class ComplaintNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      final existing = await (_db.select(_db.complaints)..where((t) => t.id.equals(id))).getSingleOrNull();
+      final existing =
+          await (_db.select(_db.complaints)
+            ..where((t) => t.id.equals(id))).getSingleOrNull();
       await (_db.update(_db.complaints)..where((t) => t.id.equals(id))).write(
         ComplaintsCompanion(
           complaintName: Value(complaintName.trim()),
-          complaintDate: complaintDate != null ? Value(complaintDate) : const Value.absent(),
-          isBaseline: isBaseline != null ? Value(isBaseline) : const Value.absent(),
+          complaintDate:
+              complaintDate != null
+                  ? Value(complaintDate)
+                  : const Value.absent(),
+          isBaseline:
+              isBaseline != null ? Value(isBaseline) : const Value.absent(),
           complaintIndex: Value(complaintIndex),
           location: Value(location?.trim()),
           side: Value(side),
@@ -214,13 +234,20 @@ class ComplaintNotifier extends StateNotifier<AsyncValue<void>> {
           periodicity: Value(periodicity?.trim()),
           severity: Value(severity),
           status: Value(status),
-          beforeImages: beforeImages != null ? Value(serializeImages(beforeImages)) : const Value.absent(),
-          afterImages: afterImages != null ? Value(serializeImages(afterImages)) : const Value.absent(),
+          beforeImages:
+              beforeImages != null
+                  ? Value(serializeImages(beforeImages))
+                  : const Value.absent(),
+          afterImages:
+              afterImages != null
+                  ? Value(serializeImages(afterImages))
+                  : const Value.absent(),
           notes: Value(notes?.trim()),
           updatedAt: Value(now),
         ),
       );
-      if (existing != null && ((existing.isBaseline ?? true) || (isBaseline ?? false))) {
+      if (existing != null &&
+          ((existing.isBaseline ?? true) || (isBaseline ?? false))) {
         await _syncWithCaseRecord(existing.patientId);
       }
     });
@@ -231,12 +258,11 @@ class ComplaintNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      final existing = await (_db.select(_db.complaints)..where((t) => t.id.equals(id))).getSingleOrNull();
+      final existing =
+          await (_db.select(_db.complaints)
+            ..where((t) => t.id.equals(id))).getSingleOrNull();
       await (_db.update(_db.complaints)..where((t) => t.id.equals(id))).write(
-        ComplaintsCompanion(
-          status: Value(status),
-          updatedAt: Value(now),
-        ),
+        ComplaintsCompanion(status: Value(status), updatedAt: Value(now)),
       );
       if (existing != null) {
         await _syncWithCaseRecord(existing.patientId);
@@ -249,7 +275,9 @@ class ComplaintNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      final existing = await (_db.select(_db.complaints)..where((t) => t.id.equals(id))).getSingleOrNull();
+      final existing =
+          await (_db.select(_db.complaints)
+            ..where((t) => t.id.equals(id))).getSingleOrNull();
       await (_db.update(_db.complaints)..where((t) => t.id.equals(id))).write(
         ComplaintsCompanion(
           isDeleted: const Value(true),
@@ -265,6 +293,6 @@ class ComplaintNotifier extends StateNotifier<AsyncValue<void>> {
 
 final complaintNotifierProvider =
     StateNotifierProvider<ComplaintNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return ComplaintNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return ComplaintNotifier(db);
+    });

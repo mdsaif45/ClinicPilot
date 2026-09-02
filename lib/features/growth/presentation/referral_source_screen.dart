@@ -32,7 +32,8 @@ class ReferralSourceScreen extends ConsumerWidget {
                 Expanded(
                   child: EmptyState.growth(
                     title: 'No referral data yet',
-                    message: 'Ask each new patient how they heard about the '
+                    message:
+                        'Ask each new patient how they heard about the '
                         'clinic and record it when registering them.',
                   ),
                 ),
@@ -72,8 +73,9 @@ class ReferralSourceScreen extends ConsumerWidget {
                         Text('Total', style: theme.textTheme.labelMedium),
                         Text(
                           '${a.totalPatients}',
-                          style: theme.textTheme.headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ],
                     ),
@@ -98,8 +100,10 @@ class ReferralSourceScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(a.topBySource!.source,
-                                style: theme.textTheme.titleSmall),
+                            Text(
+                              a.topBySource!.source,
+                              style: theme.textTheme.titleSmall,
+                            ),
                             const SizedBox(height: Spacing.xs),
                             Text(
                               '${a.topBySource!.patients} '
@@ -168,12 +172,7 @@ class _SourceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Spacing.lg,
-        0,
-        Spacing.lg,
-        Spacing.md,
-      ),
+      padding: const EdgeInsets.fromLTRB(Spacing.lg, 0, Spacing.lg, Spacing.md),
       child: Row(
         children: [
           Container(

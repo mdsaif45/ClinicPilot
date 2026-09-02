@@ -1,0 +1,22 @@
+# Dependabot configuration for monthly grouped updates
+version: 2
+updates:
+  # Maintain GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Maintain pub dependencies (Flutter/Dart)
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      dart-dependencies:
+        patterns:
+          - "*"

@@ -45,7 +45,11 @@ class CustomTextField extends StatelessWidget {
   Widget? _buildPrefixIcon(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     if (prefixIcon is IconData) {
-      return Icon(prefixIcon as IconData, size: 20, color: scheme.onSurfaceVariant);
+      return Icon(
+        prefixIcon as IconData,
+        size: 20,
+        color: scheme.onSurfaceVariant,
+      );
     } else if (prefixIcon is Widget) {
       return prefixIcon as Widget;
     }
@@ -82,9 +86,7 @@ class CustomTextField extends StatelessWidget {
           textInputAction: textInputAction,
           onFieldSubmitted: onFieldSubmitted,
           maxLines: maxLines,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: scheme.onSurface,
-          ),
+          style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
             isDense: true,
             hintText: hint,

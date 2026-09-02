@@ -31,7 +31,10 @@ class ExportService {
   static String _cell(Object? value) {
     if (value == null) return '';
     final s = value.toString();
-    if (s.contains(',') || s.contains('"') || s.contains('\n') || s.contains('\r')) {
+    if (s.contains(',') ||
+        s.contains('"') ||
+        s.contains('\n') ||
+        s.contains('\r')) {
       return '"${s.replaceAll('"', '""')}"';
     }
     return s;
@@ -54,7 +57,9 @@ class ExportService {
 
   static void _styleHeaderRow(xlsx.Sheet sheet, int colCount) {
     for (var col = 0; col < colCount; col++) {
-      final cell = sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0));
+      final cell = sheet.cell(
+        xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0),
+      );
       cell.cellStyle = ListExportService.headerStyle;
     }
   }
@@ -65,21 +70,30 @@ class ExportService {
     excel.rename('Sheet1', 'Clinics');
 
     // Preload clinics and patients maps for human-readable cross-referencing
-    final allClinics = await (_db.select(_db.clinics)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final allClinics =
+        await (_db.select(_db.clinics)
+          ..where((t) => t.isDeleted.equals(false))).get();
     final clinicNameById = {for (final c in allClinics) c.id: c.name};
 
-    final allPatients = await (_db.select(_db.patients)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final allPatients =
+        await (_db.select(_db.patients)
+          ..where((t) => t.isDeleted.equals(false))).get();
     final patientNameById = {for (final p in allPatients) p.id: p.name};
     final patientCodeById = {for (final p in allPatients) p.id: p.patientCode};
 
     // 1. Clinics Sheet
     final clinicsSheet = excel['Clinics'];
-    final clinicHeaders = ['Clinic ID', 'Clinic Name', 'Address', 'Phone', 'Monthly Rent', 'Open Days'];
-    clinicsSheet.appendRow(clinicHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    final clinicHeaders = [
+      'Clinic ID',
+      'Clinic Name',
+      'Address',
+      'Phone',
+      'Monthly Rent',
+      'Open Days',
+    ];
+    clinicsSheet.appendRow(
+      clinicHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(clinicsSheet, clinicHeaders.length);
 
     for (final c in allClinics) {
@@ -96,11 +110,26 @@ class ExportService {
     // 2. Patients Sheet
     final patientsSheet = excel['Patients'];
     final patientHeaders = [
-      'Patient ID', 'Patient Code', 'Serial No.', 'Name', 'Phone', 'WhatsApp', 'Age', 'Gender',
-      'Area', 'Address', 'Occupation', 'Clinic Name',
-      'Primary Disease', 'Referral Source', 'Notes', 'Created At',
+      'Patient ID',
+      'Patient Code',
+      'Serial No.',
+      'Name',
+      'Phone',
+      'WhatsApp',
+      'Age',
+      'Gender',
+      'Area',
+      'Address',
+      'Occupation',
+      'Clinic Name',
+      'Primary Disease',
+      'Referral Source',
+      'Notes',
+      'Created At',
     ];
-    patientsSheet.appendRow(patientHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    patientsSheet.appendRow(
+      patientHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(patientsSheet, patientHeaders.length);
 
     for (final p in allPatients) {
@@ -128,16 +157,28 @@ class ExportService {
     // 3. Visits Sheet
     final visitsSheet = excel['Visits'];
     final visitHeaders = [
-      'Visit ID', 'Patient Code', 'Patient Name', 'Clinic', 'Visit Type', 'Consultation Type',
-      'Disease', 'Chief Complaint', 'Referral Source', 'Outcome',
-      'Visit Date', 'Next Follow-up', 'Notes',
+      'Visit ID',
+      'Patient Code',
+      'Patient Name',
+      'Clinic',
+      'Visit Type',
+      'Consultation Type',
+      'Disease',
+      'Chief Complaint',
+      'Referral Source',
+      'Outcome',
+      'Visit Date',
+      'Next Follow-up',
+      'Notes',
     ];
-    visitsSheet.appendRow(visitHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    visitsSheet.appendRow(
+      visitHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(visitsSheet, visitHeaders.length);
 
-    final visits = await (_db.select(_db.visits)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final visits =
+        await (_db.select(_db.visits)
+          ..where((t) => t.isDeleted.equals(false))).get();
     for (final v in visits) {
       final pCode = patientCodeById[v.patientId] ?? v.patientId;
       final pName = patientNameById[v.patientId] ?? '';
@@ -162,16 +203,28 @@ class ExportService {
     // 4. Cash Memos Sheet
     final memosSheet = excel['Cash Memos'];
     final memoHeaders = [
-      'Memo Number', 'Patient Code', 'Patient Name', 'Clinic',
-      'Consultation Fee', 'Medicine Fee', 'Other Fee', 'Discount',
-      'Total', 'Paid Amount', 'Payment Method', 'Notes', 'Date',
+      'Memo Number',
+      'Patient Code',
+      'Patient Name',
+      'Clinic',
+      'Consultation Fee',
+      'Medicine Fee',
+      'Other Fee',
+      'Discount',
+      'Total',
+      'Paid Amount',
+      'Payment Method',
+      'Notes',
+      'Date',
     ];
-    memosSheet.appendRow(memoHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    memosSheet.appendRow(
+      memoHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(memosSheet, memoHeaders.length);
 
-    final memos = await (_db.select(_db.cashMemos)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final memos =
+        await (_db.select(_db.cashMemos)
+          ..where((t) => t.isDeleted.equals(false))).get();
     for (final m in memos) {
       final pCode = patientCodeById[m.patientId] ?? m.patientId;
       final pName = patientNameById[m.patientId] ?? '';
@@ -196,15 +249,24 @@ class ExportService {
     // 5. Expenses Sheet
     final expensesSheet = excel['Expenses'];
     final expenseHeaders = [
-      'Expense ID', 'Clinic', 'Category', 'Subcategory', 'Amount',
-      'Payment Method', 'Recurring', 'Notes', 'Date',
+      'Expense ID',
+      'Clinic',
+      'Category',
+      'Subcategory',
+      'Amount',
+      'Payment Method',
+      'Recurring',
+      'Notes',
+      'Date',
     ];
-    expensesSheet.appendRow(expenseHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    expensesSheet.appendRow(
+      expenseHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(expensesSheet, expenseHeaders.length);
 
-    final expenses = await (_db.select(_db.expenses)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final expenses =
+        await (_db.select(_db.expenses)
+          ..where((t) => t.isDeleted.equals(false))).get();
     for (final e in expenses) {
       final cName = clinicNameById[e.clinicId] ?? e.clinicId;
       expensesSheet.appendRow([
@@ -223,15 +285,26 @@ class ExportService {
     // 6. Prescriptions Sheet
     final prescriptionsSheet = excel['Prescriptions'];
     final rxHeaders = [
-      'Prescription ID', 'Patient Code', 'Patient Name', 'Remedy Name',
-      'Potency', 'Vehicle', 'Dose', 'Frequency', 'Duration (Days)', 'Diet / Regimen Advice', 'Date',
+      'Prescription ID',
+      'Patient Code',
+      'Patient Name',
+      'Remedy Name',
+      'Potency',
+      'Vehicle',
+      'Dose',
+      'Frequency',
+      'Duration (Days)',
+      'Diet / Regimen Advice',
+      'Date',
     ];
-    prescriptionsSheet.appendRow(rxHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    prescriptionsSheet.appendRow(
+      rxHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(prescriptionsSheet, rxHeaders.length);
 
-    final prescriptions = await (_db.select(_db.prescriptions)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final prescriptions =
+        await (_db.select(_db.prescriptions)
+          ..where((t) => t.isDeleted.equals(false))).get();
     for (final r in prescriptions) {
       final pCode = patientCodeById[r.patientId] ?? r.patientId;
       final pName = patientNameById[r.patientId] ?? '';
@@ -253,15 +326,26 @@ class ExportService {
     // 7. Complaints Sheet
     final complaintsSheet = excel['Complaints'];
     final complaintHeaders = [
-      'Complaint ID', 'Patient Code', 'Patient Name', 'Complaint', 'Location',
-      'Side', 'Sensation', 'Severity (1-10)', 'Aggravation', 'Amelioration', 'Date',
+      'Complaint ID',
+      'Patient Code',
+      'Patient Name',
+      'Complaint',
+      'Location',
+      'Side',
+      'Sensation',
+      'Severity (1-10)',
+      'Aggravation',
+      'Amelioration',
+      'Date',
     ];
-    complaintsSheet.appendRow(complaintHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    complaintsSheet.appendRow(
+      complaintHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(complaintsSheet, complaintHeaders.length);
 
-    final complaints = await (_db.select(_db.complaints)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final complaints =
+        await (_db.select(_db.complaints)
+          ..where((t) => t.isDeleted.equals(false))).get();
     for (final comp in complaints) {
       final pCode = patientCodeById[comp.patientId] ?? comp.patientId;
       final pName = patientNameById[comp.patientId] ?? '';
@@ -283,15 +367,24 @@ class ExportService {
     // 8. Investigations Sheet
     final investigationsSheet = excel['Investigations'];
     final investigationHeaders = [
-      'Test ID', 'Patient Code', 'Patient Name', 'Test Name',
-      'Category', 'Observed Value', 'Unit', 'Status', 'Date',
+      'Test ID',
+      'Patient Code',
+      'Patient Name',
+      'Test Name',
+      'Category',
+      'Observed Value',
+      'Unit',
+      'Status',
+      'Date',
     ];
-    investigationsSheet.appendRow(investigationHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    investigationsSheet.appendRow(
+      investigationHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(investigationsSheet, investigationHeaders.length);
 
-    final investigations = await (_db.select(_db.investigations)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final investigations =
+        await (_db.select(_db.investigations)
+          ..where((t) => t.isDeleted.equals(false))).get();
     for (final inv in investigations) {
       final pCode = patientCodeById[inv.patientId] ?? inv.patientId;
       final pName = patientNameById[inv.patientId] ?? '';
@@ -312,15 +405,23 @@ class ExportService {
     // 9. Camps Sheet
     final campsSheet = excel['Camps'];
     final campHeaders = [
-      'Camp ID', 'Clinic', 'Camp Name', 'Location / Venue',
-      'Date', 'Cost / Budget', 'Attendance', 'Notes',
+      'Camp ID',
+      'Clinic',
+      'Camp Name',
+      'Location / Venue',
+      'Date',
+      'Cost / Budget',
+      'Attendance',
+      'Notes',
     ];
-    campsSheet.appendRow(campHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    campsSheet.appendRow(
+      campHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(campsSheet, campHeaders.length);
 
-    final camps = await (_db.select(_db.camps)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final camps =
+        await (_db.select(_db.camps)
+          ..where((t) => t.isDeleted.equals(false))).get();
     for (final cmp in camps) {
       final cName = clinicNameById[cmp.clinicId] ?? (cmp.clinicId ?? '');
       campsSheet.appendRow([
@@ -338,15 +439,24 @@ class ExportService {
     // 10. Referral Partners Sheet
     final referralSheet = excel['Referral Partners'];
     final referralHeaders = [
-      'Partner ID', 'Partner Name', 'Category', 'Contact Person',
-      'Phone', 'Address', 'Total Referrals', 'Visits Count', 'Notes',
+      'Partner ID',
+      'Partner Name',
+      'Category',
+      'Contact Person',
+      'Phone',
+      'Address',
+      'Total Referrals',
+      'Visits Count',
+      'Notes',
     ];
-    referralSheet.appendRow(referralHeaders.map((h) => xlsx.TextCellValue(h)).toList());
+    referralSheet.appendRow(
+      referralHeaders.map((h) => xlsx.TextCellValue(h)).toList(),
+    );
     _styleHeaderRow(referralSheet, referralHeaders.length);
 
-    final referralContacts = await (_db.select(_db.referralContacts)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final referralContacts =
+        await (_db.select(_db.referralContacts)
+          ..where((t) => t.isDeleted.equals(false))).get();
     for (final refContact in referralContacts) {
       referralSheet.appendRow([
         _cellValue(refContact.id),
@@ -370,89 +480,185 @@ class ExportService {
   Future<String> buildCsv() async {
     final buffer = StringBuffer();
 
-    final clinics = await (_db.select(_db.clinics)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final clinics =
+        await (_db.select(_db.clinics)
+          ..where((t) => t.isDeleted.equals(false))).get();
     buffer.writeln('# CLINICS');
-    buffer.writeln(_row(
-        ['id', 'name', 'address', 'phone', 'monthly_rent', 'open_days']));
+    buffer.writeln(
+      _row(['id', 'name', 'address', 'phone', 'monthly_rent', 'open_days']),
+    );
     for (final c in clinics) {
-      buffer.writeln(_row(
-          [c.id, c.name, c.address, c.phone, c.monthlyRent, c.openDays]));
+      buffer.writeln(
+        _row([c.id, c.name, c.address, c.phone, c.monthlyRent, c.openDays]),
+      );
     }
 
-    final patients = await (_db.select(_db.patients)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final patients =
+        await (_db.select(_db.patients)
+          ..where((t) => t.isDeleted.equals(false))).get();
     buffer
       ..writeln()
       ..writeln('# PATIENTS')
-      ..writeln(_row([
-        'id', 'patient_code', 'serial_no', 'name', 'phone', 'whatsapp', 'age', 'gender',
-        'area', 'address', 'occupation', 'primary_clinic_id',
-        'primary_disease', 'referral_source', 'notes', 'created_at',
-      ]));
+      ..writeln(
+        _row([
+          'id',
+          'patient_code',
+          'serial_no',
+          'name',
+          'phone',
+          'whatsapp',
+          'age',
+          'gender',
+          'area',
+          'address',
+          'occupation',
+          'primary_clinic_id',
+          'primary_disease',
+          'referral_source',
+          'notes',
+          'created_at',
+        ]),
+      );
     for (final p in patients) {
-      buffer.writeln(_row([
-        p.id, p.patientCode, p.serialNo, p.name, p.phone, p.whatsapp, p.age, p.gender,
-        p.area, p.address, p.occupation, p.primaryClinicId,
-        p.primaryDisease, p.referralSource, p.notes, _date(p.createdAt),
-      ]));
+      buffer.writeln(
+        _row([
+          p.id,
+          p.patientCode,
+          p.serialNo,
+          p.name,
+          p.phone,
+          p.whatsapp,
+          p.age,
+          p.gender,
+          p.area,
+          p.address,
+          p.occupation,
+          p.primaryClinicId,
+          p.primaryDisease,
+          p.referralSource,
+          p.notes,
+          _date(p.createdAt),
+        ]),
+      );
     }
 
-    final visits = await (_db.select(_db.visits)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final visits =
+        await (_db.select(_db.visits)
+          ..where((t) => t.isDeleted.equals(false))).get();
     buffer
       ..writeln()
       ..writeln('# VISITS')
-      ..writeln(_row([
-        'id', 'patient_id', 'clinic_id', 'visit_type', 'consultation_type',
-        'disease', 'chief_complaint', 'referral_source', 'outcome',
-        'visit_date', 'next_follow_up', 'notes',
-      ]));
+      ..writeln(
+        _row([
+          'id',
+          'patient_id',
+          'clinic_id',
+          'visit_type',
+          'consultation_type',
+          'disease',
+          'chief_complaint',
+          'referral_source',
+          'outcome',
+          'visit_date',
+          'next_follow_up',
+          'notes',
+        ]),
+      );
     for (final v in visits) {
-      buffer.writeln(_row([
-        v.id, v.patientId, v.clinicId, v.visitType, v.consultationType,
-        v.disease, v.chiefComplaint, v.referralSource, v.outcome,
-        _date(v.visitDate), _date(v.nextFollowUpDate), v.notes,
-      ]));
+      buffer.writeln(
+        _row([
+          v.id,
+          v.patientId,
+          v.clinicId,
+          v.visitType,
+          v.consultationType,
+          v.disease,
+          v.chiefComplaint,
+          v.referralSource,
+          v.outcome,
+          _date(v.visitDate),
+          _date(v.nextFollowUpDate),
+          v.notes,
+        ]),
+      );
     }
 
-    final memos = await (_db.select(_db.cashMemos)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final memos =
+        await (_db.select(_db.cashMemos)
+          ..where((t) => t.isDeleted.equals(false))).get();
     buffer
       ..writeln()
       ..writeln('# CASH MEMOS')
-      ..writeln(_row([
-        'memo_number', 'patient_id', 'clinic_id', 'visit_id',
-        'consultation_fee', 'medicine_fee', 'other_fee', 'discount',
-        'total', 'paid_amount', 'payment_method', 'notes', 'created_at',
-      ]));
+      ..writeln(
+        _row([
+          'memo_number',
+          'patient_id',
+          'clinic_id',
+          'visit_id',
+          'consultation_fee',
+          'medicine_fee',
+          'other_fee',
+          'discount',
+          'total',
+          'paid_amount',
+          'payment_method',
+          'notes',
+          'created_at',
+        ]),
+      );
     for (final m in memos) {
-      buffer.writeln(_row([
-        m.memoNumber, m.patientId, m.clinicId, m.visitId,
-        m.consultationFee, m.medicineFee, m.otherFee, m.discount,
-        m.total, m.paidAmount, m.paymentMethod, m.notes, _date(m.memoDate),
-      ]));
+      buffer.writeln(
+        _row([
+          m.memoNumber,
+          m.patientId,
+          m.clinicId,
+          m.visitId,
+          m.consultationFee,
+          m.medicineFee,
+          m.otherFee,
+          m.discount,
+          m.total,
+          m.paidAmount,
+          m.paymentMethod,
+          m.notes,
+          _date(m.memoDate),
+        ]),
+      );
     }
 
-    final expenses = await (_db.select(_db.expenses)
-          ..where((t) => t.isDeleted.equals(false)))
-        .get();
+    final expenses =
+        await (_db.select(_db.expenses)
+          ..where((t) => t.isDeleted.equals(false))).get();
     buffer
       ..writeln()
       ..writeln('# EXPENSES')
-      ..writeln(_row([
-        'id', 'clinic_id', 'category', 'subcategory', 'amount',
-        'payment_method', 'is_recurring', 'notes', 'date',
-      ]));
+      ..writeln(
+        _row([
+          'id',
+          'clinic_id',
+          'category',
+          'subcategory',
+          'amount',
+          'payment_method',
+          'is_recurring',
+          'notes',
+          'date',
+        ]),
+      );
     for (final e in expenses) {
-      buffer.writeln(_row([
-        e.id, e.clinicId, e.category, e.subcategory, e.amount,
-        e.paymentMethod, e.isRecurring ? 'Yes' : 'No', e.notes, _date(e.date),
-      ]));
+      buffer.writeln(
+        _row([
+          e.id,
+          e.clinicId,
+          e.category,
+          e.subcategory,
+          e.amount,
+          e.paymentMethod,
+          e.isRecurring ? 'Yes' : 'No',
+          e.notes,
+          _date(e.date),
+        ]),
+      );
     }
 
     return buffer.toString();

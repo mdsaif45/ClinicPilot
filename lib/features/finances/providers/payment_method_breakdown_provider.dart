@@ -36,7 +36,9 @@ class PaymentBreakdownData {
   });
 }
 
-final paymentBreakdownProvider = Provider<AsyncValue<PaymentBreakdownData>>((ref) {
+final paymentBreakdownProvider = Provider<AsyncValue<PaymentBreakdownData>>((
+  ref,
+) {
   final memosAsync = ref.watch(cashMemosStreamProvider);
   final period = ref.watch(periodProvider);
   final selectedClinicId = ref.watch(financesClinicFilterProvider);
@@ -45,13 +47,15 @@ final paymentBreakdownProvider = Provider<AsyncValue<PaymentBreakdownData>>((ref
     final range = period.dateRange;
 
     // Filter by date range and selected clinic
-    final memoList = allMemos.where((m) {
-      final d = m.memo.memoDate;
-      final inRange = !d.isBefore(range.start) && !d.isAfter(range.end);
-      if (!inRange) return false;
-      if (selectedClinicId != null && m.memo.clinicId != selectedClinicId) return false;
-      return true;
-    }).toList();
+    final memoList =
+        allMemos.where((m) {
+          final d = m.memo.memoDate;
+          final inRange = !d.isBefore(range.start) && !d.isAfter(range.end);
+          if (!inRange) return false;
+          if (selectedClinicId != null && m.memo.clinicId != selectedClinicId)
+            return false;
+          return true;
+        }).toList();
 
     double totalBilled = 0;
     double totalCollected = 0;
@@ -60,15 +64,17 @@ final paymentBreakdownProvider = Provider<AsyncValue<PaymentBreakdownData>>((ref
     final grouped = <String, ({double billed, double collected, int count})>{};
 
     for (final m in memoList) {
-      final method = m.memo.paymentMethod.trim().isEmpty
-          ? 'Cash'
-          : m.memo.paymentMethod.trim();
+      final method =
+          m.memo.paymentMethod.trim().isEmpty
+              ? 'Cash'
+              : m.memo.paymentMethod.trim();
 
       totalBilled += m.memo.total;
       totalCollected += m.memo.paidAmount;
       totalPending += m.pendingAmount;
 
-      final current = grouped[method] ?? (billed: 0.0, collected: 0.0, count: 0);
+      final current =
+          grouped[method] ?? (billed: 0.0, collected: 0.0, count: 0);
       grouped[method] = (
         billed: current.billed + m.memo.total,
         collected: current.collected + m.memo.paidAmount,
@@ -76,17 +82,21 @@ final paymentBreakdownProvider = Provider<AsyncValue<PaymentBreakdownData>>((ref
       );
     }
 
-    final stats = grouped.entries.map((e) {
-      final pct = totalCollected > 0 ? (e.value.collected / totalCollected) * 100 : 0.0;
-      return PaymentMethodStat(
-        method: e.key,
-        totalCollected: e.value.collected,
-        totalBilled: e.value.billed,
-        count: e.value.count,
-        percentage: pct,
-      );
-    }).toList()
-      ..sort((a, b) => b.totalCollected.compareTo(a.totalCollected));
+    final stats =
+        grouped.entries.map((e) {
+            final pct =
+                totalCollected > 0
+                    ? (e.value.collected / totalCollected) * 100
+                    : 0.0;
+            return PaymentMethodStat(
+              method: e.key,
+              totalCollected: e.value.collected,
+              totalBilled: e.value.billed,
+              count: e.value.count,
+              percentage: pct,
+            );
+          }).toList()
+          ..sort((a, b) => b.totalCollected.compareTo(a.totalCollected));
 
     return PaymentBreakdownData(
       totalBilled: totalBilled,

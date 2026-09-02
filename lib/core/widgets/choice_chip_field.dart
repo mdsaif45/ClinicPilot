@@ -46,12 +46,12 @@ class ChoiceChipField<T> extends StatelessWidget {
               () {
                 final isSelected = o == value;
                 final icon = iconOf?.call(o);
-                final iconColor = isSelected
-                    ? scheme.onPrimaryContainer
-                    : scheme.onSurfaceVariant;
-                final textColor = isSelected
-                    ? scheme.onPrimaryContainer
-                    : scheme.onSurface;
+                final iconColor =
+                    isSelected
+                        ? scheme.onPrimaryContainer
+                        : scheme.onSurfaceVariant;
+                final textColor =
+                    isSelected ? scheme.onPrimaryContainer : scheme.onSurface;
 
                 return ChoiceChip(
                   showCheckmark: false,
@@ -61,11 +61,7 @@ class ChoiceChipField<T> extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (icon != null) ...[
-                        Icon(
-                          icon,
-                          size: 16,
-                          color: iconColor,
-                        ),
+                        Icon(icon, size: 16, color: iconColor),
                         const SizedBox(width: Spacing.xs),
                       ],
                       Text(

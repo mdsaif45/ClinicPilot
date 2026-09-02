@@ -12,10 +12,7 @@ class ClinicsScreen extends ConsumerWidget {
 
   void _openAddClinic(BuildContext context) {
     AppHaptics.selection();
-    showDialog(
-      context: context,
-      builder: (_) => const AddEditClinicDialog(),
-    );
+    showDialog(context: context, builder: (_) => const AddEditClinicDialog());
   }
 
   void _openEditClinic(BuildContext context, Clinic clinic) {
@@ -34,9 +31,7 @@ class ClinicsScreen extends ConsumerWidget {
     final scheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage Clinics'),
-      ),
+      appBar: AppBar(title: const Text('Manage Clinics')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddClinic(context),
         icon: const Icon(Icons.add),
@@ -52,7 +47,10 @@ class ClinicsScreen extends ConsumerWidget {
               activeId ?? (clinics.isNotEmpty ? clinics.first.id : null);
 
           return ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.lg,
+              vertical: Spacing.md,
+            ),
             itemCount: clinics.length,
             separatorBuilder: (_, __) => const SizedBox(height: Spacing.sm),
             itemBuilder: (context, index) {
@@ -61,15 +59,24 @@ class ClinicsScreen extends ConsumerWidget {
 
               return Container(
                 decoration: BoxDecoration(
-                  color: isActive ? scheme.primaryContainer.withValues(alpha: 0.3) : scheme.surfaceContainerLow,
+                  color:
+                      isActive
+                          ? scheme.primaryContainer.withValues(alpha: 0.3)
+                          : scheme.surfaceContainerLow,
                   borderRadius: Radii.mdAll,
                   border: Border.all(
-                    color: isActive ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.5),
+                    color:
+                        isActive
+                            ? scheme.primary
+                            : scheme.outlineVariant.withValues(alpha: 0.5),
                     width: isActive ? 1.5 : 1,
                   ),
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: Spacing.md,
+                    vertical: Spacing.xs,
+                  ),
                   leading: Radio<String>(
                     value: clinic.id,
                     groupValue: effectiveActiveId,
@@ -77,7 +84,9 @@ class ClinicsScreen extends ConsumerWidget {
                     onChanged: (val) {
                       if (val != null) {
                         AppHaptics.selection();
-                        ref.read(activeClinicIdProvider.notifier).setClinicId(val);
+                        ref
+                            .read(activeClinicIdProvider.notifier)
+                            .setClinicId(val);
                       }
                     },
                   ),
@@ -94,7 +103,9 @@ class ClinicsScreen extends ConsumerWidget {
                   ),
                   onTap: () {
                     AppHaptics.selection();
-                    ref.read(activeClinicIdProvider.notifier).setClinicId(clinic.id);
+                    ref
+                        .read(activeClinicIdProvider.notifier)
+                        .setClinicId(clinic.id);
                   },
                 ),
               );

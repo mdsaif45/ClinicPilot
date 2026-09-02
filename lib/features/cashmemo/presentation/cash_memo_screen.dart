@@ -35,13 +35,20 @@ class CashMemoScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error loading memos: $err')),
         data: (allMemos) {
-          final memos = selectedClinicId == null
-              ? allMemos
-              : allMemos.where((m) => m.memo.clinicId == selectedClinicId).toList();
-          final totalRevenue =
-              memos.fold<double>(0, (sum, m) => sum + m.memo.paidAmount);
-          final totalPending =
-              memos.fold<double>(0, (sum, m) => sum + m.pendingAmount);
+          final memos =
+              selectedClinicId == null
+                  ? allMemos
+                  : allMemos
+                      .where((m) => m.memo.clinicId == selectedClinicId)
+                      .toList();
+          final totalRevenue = memos.fold<double>(
+            0,
+            (sum, m) => sum + m.memo.paidAmount,
+          );
+          final totalPending = memos.fold<double>(
+            0,
+            (sum, m) => sum + m.pendingAmount,
+          );
 
           return Column(
             children: [
@@ -58,7 +65,8 @@ class CashMemoScreen extends ConsumerWidget {
                       child: _SummaryTile(
                         label: 'Revenue Recorded',
                         value: Formatters.formatCurrency(totalRevenue),
-                        caption: '${memos.length} '
+                        caption:
+                            '${memos.length} '
                             '${memos.length == 1 ? 'memo' : 'memos'}',
                         fg: theme.colorScheme.primary,
                         bg: theme.colorScheme.primaryContainer,
@@ -70,38 +78,45 @@ class CashMemoScreen extends ConsumerWidget {
                         label: 'Pending',
                         value: Formatters.formatCurrency(totalPending),
                         caption: 'Uncollected',
-                        fg: totalPending > 0
-                            ? theme.colorScheme.error
-                            : theme.colorScheme.primary,
-                        bg: totalPending > 0
-                            ? theme.colorScheme.errorContainer
-                            : theme.colorScheme.primaryContainer,
+                        fg:
+                            totalPending > 0
+                                ? theme.colorScheme.error
+                                : theme.colorScheme.primary,
+                        bg:
+                            totalPending > 0
+                                ? theme.colorScheme.errorContainer
+                                : theme.colorScheme.primaryContainer,
                       ),
                     ),
                   ],
                 ),
               ),
               Expanded(
-                child: memos.isEmpty
-                    ? EmptyState.cashMemos(
-                        onAction: () => showDialog(
-                          context: context,
-                          builder: (_) => const NewCashMemoDialog(),
-                        ),
-                      )
-                    : CustomScrollView(
-                        slivers: [
-                          for (final group in _groupMemosByMonth(memos))
-                            SliverMainAxisGroup(
-                              slivers: [
-                                SliverPersistentHeader(
-                                  pinned: true,
-                                  delegate: _StickyMemoMonthHeaderDelegate(
-                                      group: group),
-                                ),
-                                SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
+                child:
+                    memos.isEmpty
+                        ? EmptyState.cashMemos(
+                          onAction:
+                              () => showDialog(
+                                context: context,
+                                builder: (_) => const NewCashMemoDialog(),
+                              ),
+                        )
+                        : CustomScrollView(
+                          slivers: [
+                            for (final group in _groupMemosByMonth(memos))
+                              SliverMainAxisGroup(
+                                slivers: [
+                                  SliverPersistentHeader(
+                                    pinned: true,
+                                    delegate: _StickyMemoMonthHeaderDelegate(
+                                      group: group,
+                                    ),
+                                  ),
+                                  SliverList(
+                                    delegate: SliverChildBuilderDelegate((
+                                      context,
+                                      index,
+                                    ) {
                                       final item = group.items[index];
                                       return Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -114,17 +129,15 @@ class CashMemoScreen extends ConsumerWidget {
                                             ),
                                         ],
                                       );
-                                    },
-                                    childCount: group.items.length,
+                                    }, childCount: group.items.length),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                            const SliverPadding(
+                              padding: EdgeInsets.only(bottom: 96),
                             ),
-                          const SliverPadding(
-                            padding: EdgeInsets.only(bottom: 96),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
               ),
             ],
           );
@@ -173,7 +186,10 @@ class _StickyMemoMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final monthTitle = Formatters.formatMonthYear(group.month);
@@ -185,9 +201,7 @@ class _StickyMemoMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => MonthlyStatementScreen(
-                initialMonth: group.month,
-              ),
+              builder: (_) => MonthlyStatementScreen(initialMonth: group.month),
             ),
           );
         },
@@ -195,8 +209,9 @@ class _StickyMemoMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
           height: 42,
           padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
           decoration: BoxDecoration(
-            color: scheme.surfaceContainerHighest
-                .withAlpha(overlapsContent ? 250 : 180),
+            color: scheme.surfaceContainerHighest.withAlpha(
+              overlapsContent ? 250 : 180,
+            ),
             border: Border(
               top: BorderSide(color: theme.dividerColor.withAlpha(80)),
               bottom: BorderSide(color: theme.dividerColor.withAlpha(80)),
@@ -207,11 +222,7 @@ class _StickyMemoMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.calendar_month,
-                    size: 16,
-                    color: scheme.primary,
-                  ),
+                  Icon(Icons.calendar_month, size: 16, color: scheme.primary),
                   const SizedBox(width: Spacing.xs),
                   Text(
                     monthTitle,
@@ -299,8 +310,9 @@ class _MemoRow extends ConsumerWidget {
             child: Text(
               item.patient.name,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(width: Spacing.sm),
@@ -332,9 +344,10 @@ class _MemoRow extends ConsumerWidget {
                   ? '${Formatters.formatCurrency(item.pendingAmount)} due'
                   : 'Paid',
               style: theme.textTheme.labelSmall?.copyWith(
-                color: item.pendingAmount > 0
-                    ? scheme.error
-                    : scheme.onSurfaceVariant,
+                color:
+                    item.pendingAmount > 0
+                        ? scheme.error
+                        : scheme.onSurfaceVariant,
                 fontWeight:
                     item.pendingAmount > 0 ? FontWeight.w700 : FontWeight.w400,
               ),
@@ -349,11 +362,12 @@ class _MemoRow extends ConsumerWidget {
             case 'receipt':
               showDialog(
                 context: context,
-                builder: (_) => ReceiptPreviewDialog(
-                  cashMemo: memo,
-                  patient: item.patient,
-                  clinicName: item.clinic.name,
-                ),
+                builder:
+                    (_) => ReceiptPreviewDialog(
+                      cashMemo: memo,
+                      patient: item.patient,
+                      clinicName: item.clinic.name,
+                    ),
               );
             case 'edit':
               showDialog(
@@ -364,32 +378,33 @@ class _MemoRow extends ConsumerWidget {
               _confirmDelete(context, ref, memo.id);
           }
         },
-        itemBuilder: (_) => const [
-          PopupMenuItem(
-            value: 'receipt',
-            child: ListTile(
-              leading: Icon(Icons.print_outlined),
-              title: Text('Receipt'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: 'edit',
-            child: ListTile(
-              leading: Icon(Icons.edit_outlined),
-              title: Text('Edit'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: 'delete',
-            child: ListTile(
-              leading: Icon(Icons.delete_outline),
-              title: Text('Delete'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
+        itemBuilder:
+            (_) => const [
+              PopupMenuItem(
+                value: 'receipt',
+                child: ListTile(
+                  leading: Icon(Icons.print_outlined),
+                  title: Text('Receipt'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'edit',
+                child: ListTile(
+                  leading: Icon(Icons.edit_outlined),
+                  title: Text('Edit'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: ListTile(
+                  leading: Icon(Icons.delete_outline),
+                  title: Text('Delete'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
       ),
     );
   }
@@ -397,31 +412,32 @@ class _MemoRow extends ConsumerWidget {
   void _confirmDelete(BuildContext context, WidgetRef ref, String id) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete cash memo'),
-        content: const Text(
-          'This memo stops counting toward revenue and totals. The record is '
-          'kept in the database.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete cash memo'),
+            content: const Text(
+              'This memo stops counting toward revenue and totals. The record is '
+              'kept in the database.',
             ),
-            onPressed: () async {
-              await ref
-                  .read(cashMemoNotifierProvider.notifier)
-                  .archiveCashMemo(id);
-              if (ctx.mounted) Navigator.of(ctx).pop();
-            },
-            child: const Text('Delete'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                ),
+                onPressed: () async {
+                  await ref
+                      .read(cashMemoNotifierProvider.notifier)
+                      .archiveCashMemo(id);
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -462,8 +478,10 @@ class _SummaryTile extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               value,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(color: fg, fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: fg,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           Text(caption, style: theme.textTheme.labelSmall),

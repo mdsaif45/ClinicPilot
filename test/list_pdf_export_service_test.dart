@@ -71,8 +71,7 @@ void main() {
       expect(looksLikePdf(bytes), isTrue);
     });
 
-    test('does not throw across many rows spanning multiple pages',
-        () async {
+    test('does not throw across many rows spanning multiple pages', () async {
       final many = List.generate(300, (i) => _Row('Patient $i', i * 10.0));
       final bytes = await ListPdfExportService.buildRowsPdf(
         title: 'Patient Directory',

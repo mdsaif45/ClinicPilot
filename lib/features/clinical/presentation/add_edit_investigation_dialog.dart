@@ -27,10 +27,12 @@ class AddEditInvestigationDialog extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AddEditInvestigationDialog> createState() => _AddEditInvestigationDialogState();
+  ConsumerState<AddEditInvestigationDialog> createState() =>
+      _AddEditInvestigationDialogState();
 }
 
-class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigationDialog> {
+class _AddEditInvestigationDialogState
+    extends ConsumerState<AddEditInvestigationDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _valueController;
@@ -53,7 +55,10 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
     final inv = widget.existingInvestigation;
     _nameController = TextEditingController(text: inv?.testName ?? '');
     _valueController = TextEditingController(
-      text: inv?.numericValue != null ? inv!.numericValue.toString() : (inv?.stringValue ?? ''),
+      text:
+          inv?.numericValue != null
+              ? inv!.numericValue.toString()
+              : (inv?.stringValue ?? ''),
     );
     _unitController = TextEditingController(text: inv?.unit ?? 'mg/dL');
     _minController = TextEditingController(
@@ -68,7 +73,9 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
     _isBaseline = inv?.isBaseline ?? widget.defaultIsBaseline;
     _category = inv?.testCategory ?? 'Blood / Biochemistry';
     _computedFlag = inv?.flag ?? 'Normal';
-    _reportAttachments = InvestigationNotifier.parseAttachments(inv?.reportAttachments);
+    _reportAttachments = InvestigationNotifier.parseAttachments(
+      inv?.reportAttachments,
+    );
 
     _valueController.addListener(_recomputeFlag);
     _minController.addListener(_recomputeFlag);
@@ -179,9 +186,10 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final flagColor = _computedFlag == 'High'
-        ? scheme.error
-        : _computedFlag == 'Low'
+    final flagColor =
+        _computedFlag == 'High'
+            ? scheme.error
+            : _computedFlag == 'Low'
             ? scheme.tertiary
             : scheme.primary;
 
@@ -202,172 +210,215 @@ class _AddEditInvestigationDialogState extends ConsumerState<AddEditInvestigatio
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              // Template Selector Quick Menu
-              if (!isEditing) ...[
-                Text(
-                  'Quick Presets (Common Diagnostic Panels):',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+            // Template Selector Quick Menu
+            if (!isEditing) ...[
+              Text(
+                'Quick Presets (Common Diagnostic Panels):',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: Spacing.xs),
+              SizedBox(
+                height: 36,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: kCuratedLabTests.length,
+                  separatorBuilder:
+                      (_, __) => const SizedBox(width: Spacing.xs),
+                  itemBuilder: (_, index) {
+                    final t = kCuratedLabTests[index];
+                    return ActionChip(
+                      label: Text(t.name, style: const TextStyle(fontSize: 12)),
+                      onPressed: () => _onTemplateSelected(t),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: Spacing.md),
+            ],
+
+            // Test Name
+            CustomTextField(
+              controller: _nameController,
+              label: 'Test Parameter Name *',
+              prefixIcon: Icons.biotech_outlined,
+              validator:
+                  (v) =>
+                      v == null || v.trim().isEmpty
+                          ? 'Enter test parameter name'
+                          : null,
+            ),
+            const SizedBox(height: Spacing.md),
+
+            // Date & Category (2 clean fields)
+            Row(
+              children: [
+                Expanded(
+                  child: DateField(
+                    label: 'Test Date',
+                    value: _testDate,
+                    onChanged: (date) => setState(() => _testDate = date),
                   ),
                 ),
-                const SizedBox(height: Spacing.xs),
-                SizedBox(
-                  height: 36,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: kCuratedLabTests.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: Spacing.xs),
-                    itemBuilder: (_, index) {
-                      final t = kCuratedLabTests[index];
-                      return ActionChip(
-                        label: Text(t.name, style: const TextStyle(fontSize: 12)),
-                        onPressed: () => _onTemplateSelected(t),
-                      );
-                    },
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: PickerField<String>(
+                    label: 'Category',
+                    value: _category,
+                    options: const [
+                      PickerOption(
+                        value: 'Blood / Biochemistry',
+                        label: 'Blood / Biochemistry',
+                      ),
+                      PickerOption(
+                        value: 'Diabetes / Glycemia',
+                        label: 'Diabetes / Glycemia',
+                      ),
+                      PickerOption(
+                        value: 'Renal / Kidney Function',
+                        label: 'Renal / Kidney',
+                      ),
+                      PickerOption(
+                        value: 'Liver Function Test (LFT)',
+                        label: 'Liver (LFT)',
+                      ),
+                      PickerOption(
+                        value: 'Lipid Profile',
+                        label: 'Lipid Profile',
+                      ),
+                      PickerOption(
+                        value: 'Thyroid Panel',
+                        label: 'Thyroid Panel',
+                      ),
+                      PickerOption(
+                        value: 'Complete Blood Count (CBC)',
+                        label: 'CBC / Hemogram',
+                      ),
+                      PickerOption(
+                        value: 'Urine / Stool Routine',
+                        label: 'Urine / Stool',
+                      ),
+                      PickerOption(
+                        value: 'Radiology / Imaging',
+                        label: 'Radiology (X-Ray/USG)',
+                      ),
+                      PickerOption(
+                        value: 'Vitamins & Minerals',
+                        label: 'Vitamins / Minerals',
+                      ),
+                    ],
+                    onChanged: (val) => setState(() => _category = val),
                   ),
                 ),
-                const SizedBox(height: Spacing.md),
               ],
+            ),
+            const SizedBox(height: Spacing.md),
 
-              // Test Name
-              CustomTextField(
-                controller: _nameController,
-                label: 'Test Parameter Name *',
-                prefixIcon: Icons.biotech_outlined,
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Enter test parameter name' : null,
-              ),
-              const SizedBox(height: Spacing.md),
+            // Diagnostic Lab Name
+            CustomTextField(
+              controller: _labController,
+              label: 'Diagnostic Lab Name',
+              prefixIcon: Icons.local_hospital_outlined,
+            ),
+            const SizedBox(height: Spacing.md),
 
-              // Date & Category (2 clean fields)
-              Row(
-                children: [
-                  Expanded(
-                    child: DateField(
-                      label: 'Test Date',
-                      value: _testDate,
-                      onChanged: (date) => setState(() => _testDate = date),
-                    ),
-                  ),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: PickerField<String>(
-                      label: 'Category',
-                      value: _category,
-                      options: const [
-                        PickerOption(value: 'Blood / Biochemistry', label: 'Blood / Biochemistry'),
-                        PickerOption(value: 'Diabetes / Glycemia', label: 'Diabetes / Glycemia'),
-                        PickerOption(value: 'Renal / Kidney Function', label: 'Renal / Kidney'),
-                        PickerOption(value: 'Liver Function Test (LFT)', label: 'Liver (LFT)'),
-                        PickerOption(value: 'Lipid Profile', label: 'Lipid Profile'),
-                        PickerOption(value: 'Thyroid Panel', label: 'Thyroid Panel'),
-                        PickerOption(value: 'Complete Blood Count (CBC)', label: 'CBC / Hemogram'),
-                        PickerOption(value: 'Urine / Stool Routine', label: 'Urine / Stool'),
-                        PickerOption(value: 'Radiology / Imaging', label: 'Radiology (X-Ray/USG)'),
-                        PickerOption(value: 'Vitamins & Minerals', label: 'Vitamins / Minerals'),
-                      ],
-                      onChanged: (val) => setState(() => _category = val),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Spacing.md),
-
-              // Diagnostic Lab Name
-              CustomTextField(
-                controller: _labController,
-                label: 'Diagnostic Lab Name',
-                prefixIcon: Icons.local_hospital_outlined,
-              ),
-              const SizedBox(height: Spacing.md),
-
-              // Measured Value & Unit (2 clean fields with integrated live Flag badge)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: CustomTextField(
-                      controller: _valueController,
-                      label: 'Measured Value *',
-                      prefixIcon: Icons.analytics_outlined,
-                      suffixIcon: Padding(
-                        padding: const EdgeInsets.only(right: Spacing.sm),
-                        child: UnconstrainedBox(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: flagColor.withValues(alpha: 0.12),
-                              borderRadius: Radii.smAll,
-                              border: Border.all(color: flagColor.withValues(alpha: 0.4)),
+            // Measured Value & Unit (2 clean fields with integrated live Flag badge)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: CustomTextField(
+                    controller: _valueController,
+                    label: 'Measured Value *',
+                    prefixIcon: Icons.analytics_outlined,
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: Spacing.sm),
+                      child: UnconstrainedBox(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Spacing.sm,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: flagColor.withValues(alpha: 0.12),
+                            borderRadius: Radii.smAll,
+                            border: Border.all(
+                              color: flagColor.withValues(alpha: 0.4),
                             ),
-                            child: Text(
-                              _computedFlag.toUpperCase(),
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: flagColor,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 10,
-                              ),
+                          ),
+                          child: Text(
+                            _computedFlag.toUpperCase(),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: flagColor,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 10,
                             ),
                           ),
                         ),
                       ),
-                      validator: (v) =>
-                          v == null || v.trim().isEmpty ? 'Enter value' : null,
                     ),
+                    validator:
+                        (v) =>
+                            v == null || v.trim().isEmpty
+                                ? 'Enter value'
+                                : null,
                   ),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    flex: 2,
-                    child: CustomTextField(
-                      controller: _unitController,
-                      label: 'Unit',
-                      prefixIcon: Icons.straighten_outlined,
-                    ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  flex: 2,
+                  child: CustomTextField(
+                    controller: _unitController,
+                    label: 'Unit',
+                    prefixIcon: Icons.straighten_outlined,
                   ),
-                ],
-              ),
-              const SizedBox(height: Spacing.md),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
 
-              // Reference Range (Min - Max)
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _minController,
-                      label: 'Ref Range Min',
-                      prefixIcon: Icons.arrow_downward_outlined,
-                    ),
+            // Reference Range (Min - Max)
+            Row(
+              children: [
+                Expanded(
+                  child: CustomTextField(
+                    controller: _minController,
+                    label: 'Ref Range Min',
+                    prefixIcon: Icons.arrow_downward_outlined,
                   ),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _maxController,
-                      label: 'Ref Range Max',
-                      prefixIcon: Icons.arrow_upward_outlined,
-                    ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: CustomTextField(
+                    controller: _maxController,
+                    label: 'Ref Range Max',
+                    prefixIcon: Icons.arrow_upward_outlined,
                   ),
-                ],
-              ),
-              const SizedBox(height: Spacing.md),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
 
-              // Document / Report Attachment Gallery (PDF, Images)
-              DocumentAttachmentGallery(
-                patientId: widget.patientId,
-                attachments: _reportAttachments,
-                onAttachmentsChanged: (list) => setState(() => _reportAttachments = list),
-              ),
-              const SizedBox(height: Spacing.md),
+            // Document / Report Attachment Gallery (PDF, Images)
+            DocumentAttachmentGallery(
+              patientId: widget.patientId,
+              attachments: _reportAttachments,
+              onAttachmentsChanged:
+                  (list) => setState(() => _reportAttachments = list),
+            ),
+            const SizedBox(height: Spacing.md),
 
-              CustomTextField(
-                controller: _notesController,
-                label: 'Clinical Interpretation / Remarks',
-                prefixIcon: Icons.notes_outlined,
-                maxLines: 2,
-              ),
-            ],
-          ),
+            CustomTextField(
+              controller: _notesController,
+              label: 'Clinical Interpretation / Remarks',
+              prefixIcon: Icons.notes_outlined,
+              maxLines: 2,
+            ),
+          ],
         ),
+      ),
     );
   }
 }

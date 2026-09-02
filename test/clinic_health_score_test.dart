@@ -40,14 +40,16 @@ void main() {
       );
 
       final pillars = [p1, p2, p3, p4, p5];
-      final total = pillars.fold<double>(0.0, (sum, p) => sum + p.score).round();
+      final total =
+          pillars.fold<double>(0.0, (sum, p) => sum + p.score).round();
 
       expect(total, equals(82));
 
       final score = ClinicHealthScore(
         totalScore: total,
         grade: 'Excellent',
-        summaryReason: '82 / 100 (Excellent) • 8 new pts, 36% repeat, ₹15000 net',
+        summaryReason:
+            '82 / 100 (Excellent) • 8 new pts, 36% repeat, ₹15000 net',
         pillars: pillars,
       );
 
@@ -59,7 +61,9 @@ void main() {
   });
 
   group('ClinicHealthScoreCard Widget Tests', () {
-    testWidgets('renders score badge and opens breakdown sheet on tap', (tester) async {
+    testWidgets('renders score badge and opens breakdown sheet on tap', (
+      tester,
+    ) async {
       const score = ClinicHealthScore(
         totalScore: 85,
         grade: 'Excellent',
@@ -101,15 +105,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            clinicHealthScoreProvider.overrideWithValue(
-              const AsyncData(score),
-            ),
+            clinicHealthScoreProvider.overrideWithValue(const AsyncData(score)),
           ],
           child: MaterialApp(
             theme: AppTheme.lightTheme,
-            home: const Scaffold(
-              body: ClinicHealthScoreCard(),
-            ),
+            home: const Scaffold(body: ClinicHealthScoreCard()),
           ),
         ),
       );

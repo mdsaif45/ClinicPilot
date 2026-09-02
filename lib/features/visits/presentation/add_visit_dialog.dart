@@ -44,8 +44,9 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
   @override
   void initState() {
     super.initState();
-    _diseaseController =
-        TextEditingController(text: widget.patient.primaryDisease ?? '');
+    _diseaseController = TextEditingController(
+      text: widget.patient.primaryDisease ?? '',
+    );
     _selectedClinicId = ref.read(activeClinicIdProvider);
   }
 
@@ -93,13 +94,14 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
         ),
         FilledButton(
           onPressed: _submitting ? null : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Save Visit'),
+          child:
+              _submitting
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Save Visit'),
         ),
       ],
       child: Form(
@@ -113,17 +115,21 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
               prefixIcon: Icons.local_hospital,
               value: _selectedClinicId,
               errorText: _clinicError,
-              options: clinics
-                  .map((c) => PickerOption(
-                        value: c.id,
-                        label: c.name,
-                        subtitle: c.address,
-                      ))
-                  .toList(),
-              onChanged: (val) => setState(() {
-                _selectedClinicId = val;
-                _clinicError = null;
-              }),
+              options:
+                  clinics
+                      .map(
+                        (c) => PickerOption(
+                          value: c.id,
+                          label: c.name,
+                          subtitle: c.address,
+                        ),
+                      )
+                      .toList(),
+              onChanged:
+                  (val) => setState(() {
+                    _selectedClinicId = val;
+                    _clinicError = null;
+                  }),
             ),
             const SizedBox(height: Spacing.md),
             DateField(
@@ -135,7 +141,8 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
             DiseaseAutocompleteField(
               controller: _diseaseController,
               label: 'Disease / Condition',
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator:
+                  (v) => v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -184,8 +191,8 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
                 PickerOption(value: 'recovered', label: 'Recovered'),
                 PickerOption(value: 'lost_followup', label: 'Lost follow-up'),
               ],
-              onChanged: (val) =>
-                  setState(() => _outcome = val.isEmpty ? null : val),
+              onChanged:
+                  (val) => setState(() => _outcome = val.isEmpty ? null : val),
             ),
           ],
         ),
@@ -207,15 +214,20 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
 
     try {
       final dName = Formatters.toTitleCase(_diseaseController.text);
-      if (dName.isNotEmpty) { ref.read(masterDiseaseServiceProvider).recordDisease(dName); }
-      await ref.read(visitNotifierProvider.notifier).addVisit(
+      if (dName.isNotEmpty) {
+        ref.read(masterDiseaseServiceProvider).recordDisease(dName);
+      }
+      await ref
+          .read(visitNotifierProvider.notifier)
+          .addVisit(
             patientId: widget.patient.id,
             clinicId: _selectedClinicId!,
             disease: Formatters.toTitleCase(_diseaseController.text),
 
-            chiefComplaint: _chiefComplaintController.text.trim().isEmpty
-                ? null
-                : _chiefComplaintController.text.trim(),
+            chiefComplaint:
+                _chiefComplaintController.text.trim().isEmpty
+                    ? null
+                    : _chiefComplaintController.text.trim(),
             consultationType: _consultationType,
             outcome: _outcome,
             visitDate: _visitDate,
@@ -224,9 +236,9 @@ class _AddVisitDialogState extends ConsumerState<AddVisitDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save visit: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not save visit: $e')));
       }
       return;
     }

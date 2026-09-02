@@ -24,9 +24,7 @@ void main() {
   group('DoctorProfileNotifier Unit Tests', () {
     test('saves and updates doctor profile in SQLite settings table', () async {
       final container = ProviderContainer(
-        overrides: [
-          databaseProvider.overrideWithValue(db),
-        ],
+        overrides: [databaseProvider.overrideWithValue(db)],
       );
 
       final notifier = container.read(doctorProfileNotifierProvider.notifier);
@@ -61,33 +59,34 @@ void main() {
       expect(updated.qualification, 'BHMS, MD (Hom.), PhD');
     });
 
-    test('supports first and last name separation and greetingName getter', () async {
-      final container = ProviderContainer(
-        overrides: [
-          databaseProvider.overrideWithValue(db),
-        ],
-      );
+    test(
+      'supports first and last name separation and greetingName getter',
+      () async {
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
 
-      final notifier = container.read(doctorProfileNotifierProvider.notifier);
+        final notifier = container.read(doctorProfileNotifierProvider.notifier);
 
-      await notifier.updateProfile(
-        firstName: 'Dr. Md.',
-        lastName: 'Saifuddin',
-        email: 'saif@example.com',
-      );
+        await notifier.updateProfile(
+          firstName: 'Dr. Md.',
+          lastName: 'Saifuddin',
+          email: 'saif@example.com',
+        );
 
-      final profile = await container.read(doctorProfileStreamProvider.future);
-      expect(profile.firstName, 'Dr. Md.');
-      expect(profile.lastName, 'Saifuddin');
-      expect(profile.displayName, 'Dr. Md. Saifuddin');
-      expect(profile.greetingName, 'Dr. Saifuddin');
-    });
+        final profile = await container.read(
+          doctorProfileStreamProvider.future,
+        );
+        expect(profile.firstName, 'Dr. Md.');
+        expect(profile.lastName, 'Saifuddin');
+        expect(profile.displayName, 'Dr. Md. Saifuddin');
+        expect(profile.greetingName, 'Dr. Saifuddin');
+      },
+    );
 
     test('onboarding completes with full doctor profile', () async {
       final container = ProviderContainer(
-        overrides: [
-          databaseProvider.overrideWithValue(db),
-        ],
+        overrides: [databaseProvider.overrideWithValue(db)],
       );
 
       final controller = container.read(onboardingControllerProvider);
@@ -98,9 +97,7 @@ void main() {
         doctorPhone: '9876543210',
         doctorQualification: 'MD, BHMS',
         doctorRegNumber: 'REG-12345',
-        clinics: [
-          const DraftClinic(name: 'Healing Centre'),
-        ],
+        clinics: [const DraftClinic(name: 'Healing Centre')],
       );
 
       final profile = await container.read(doctorProfileStreamProvider.future);
@@ -113,20 +110,22 @@ void main() {
   });
 
   group('DoctorProfileScreen Widget Tests', () {
-    testWidgets('renders doctor profile details and opens edit dialog', (t) async {
+    testWidgets('renders doctor profile details and opens edit dialog', (
+      t,
+    ) async {
       final container = ProviderContainer(
-        overrides: [
-          databaseProvider.overrideWithValue(db),
-        ],
+        overrides: [databaseProvider.overrideWithValue(db)],
       );
 
-      await container.read(doctorProfileNotifierProvider.notifier).updateProfile(
-        name: 'Dr. John Doe',
-        email: 'john@example.com',
-        phone: '9876500000',
-        qualification: 'BHMS, MD',
-        regNumber: 'MC-1010',
-      );
+      await container
+          .read(doctorProfileNotifierProvider.notifier)
+          .updateProfile(
+            name: 'Dr. John Doe',
+            email: 'john@example.com',
+            phone: '9876500000',
+            qualification: 'BHMS, MD',
+            regNumber: 'MC-1010',
+          );
 
       await t.pumpWidget(
         UncontrolledProviderScope(
@@ -157,16 +156,16 @@ void main() {
 
     testWidgets('SettingsScreen renders doctor profile card header', (t) async {
       final container = ProviderContainer(
-        overrides: [
-          databaseProvider.overrideWithValue(db),
-        ],
+        overrides: [databaseProvider.overrideWithValue(db)],
       );
 
-      await container.read(doctorProfileNotifierProvider.notifier).updateProfile(
-        name: 'Dr. Alice Smith',
-        email: 'alice@practice.com',
-        qualification: 'BHMS, MD',
-      );
+      await container
+          .read(doctorProfileNotifierProvider.notifier)
+          .updateProfile(
+            name: 'Dr. Alice Smith',
+            email: 'alice@practice.com',
+            qualification: 'BHMS, MD',
+          );
 
       await t.pumpWidget(
         UncontrolledProviderScope(

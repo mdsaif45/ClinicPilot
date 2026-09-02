@@ -37,11 +37,21 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
   @override
   void initState() {
     super.initState();
-    _consultationFeeController = TextEditingController(text: widget.memo.consultationFee.toString());
-    _medicineFeeController = TextEditingController(text: widget.memo.medicineFee.toString());
-    _otherFeeController = TextEditingController(text: widget.memo.otherFee.toString());
-    _discountController = TextEditingController(text: widget.memo.discount.toString());
-    _paidAmountController = TextEditingController(text: widget.memo.paidAmount.toString());
+    _consultationFeeController = TextEditingController(
+      text: widget.memo.consultationFee.toString(),
+    );
+    _medicineFeeController = TextEditingController(
+      text: widget.memo.medicineFee.toString(),
+    );
+    _otherFeeController = TextEditingController(
+      text: widget.memo.otherFee.toString(),
+    );
+    _discountController = TextEditingController(
+      text: widget.memo.discount.toString(),
+    );
+    _paidAmountController = TextEditingController(
+      text: widget.memo.paidAmount.toString(),
+    );
     _notesController = TextEditingController(text: widget.memo.notes ?? '');
     _paymentMethod = widget.memo.paymentMethod;
     _memoDate = widget.memo.memoDate;
@@ -69,13 +79,14 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
         ),
         FilledButton(
           onPressed: _submitting ? null : _saveChanges,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Save Changes'),
+          child:
+              _submitting
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Save Changes'),
         ),
       ],
       child: Form(
@@ -92,7 +103,9 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
             const SizedBox(height: Spacing.md),
             TextFormField(
               controller: _consultationFeeController,
-              decoration: const InputDecoration(labelText: 'Consultation Fee (Rs)'),
+              decoration: const InputDecoration(
+                labelText: 'Consultation Fee (Rs)',
+              ),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: Spacing.md),
@@ -124,10 +137,15 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
               label: 'Payment Method',
               options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
               // Fall back to Cash if a memo carries a method no longer offered.
-              value: const ['Cash', 'UPI', 'Card', 'Bank Transfer']
-                      .contains(_paymentMethod)
-                  ? _paymentMethod
-                  : 'Cash',
+              value:
+                  const [
+                        'Cash',
+                        'UPI',
+                        'Card',
+                        'Bank Transfer',
+                      ].contains(_paymentMethod)
+                      ? _paymentMethod
+                      : 'Cash',
               labelOf: (m) => m,
               iconOf: PaymentIcons.forMethod,
               onChanged: (m) => setState(() => _paymentMethod = m),
@@ -150,14 +168,17 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
 
     setState(() => _submitting = true);
 
-    final consult = double.tryParse(_consultationFeeController.text.trim()) ?? 0.0;
+    final consult =
+        double.tryParse(_consultationFeeController.text.trim()) ?? 0.0;
     final med = double.tryParse(_medicineFeeController.text.trim()) ?? 0.0;
     final other = double.tryParse(_otherFeeController.text.trim()) ?? 0.0;
     final disc = double.tryParse(_discountController.text.trim()) ?? 0.0;
     final paid = double.tryParse(_paidAmountController.text.trim()) ?? 0.0;
 
     try {
-      await ref.read(cashMemoNotifierProvider.notifier).updateCashMemo(
+      await ref
+          .read(cashMemoNotifierProvider.notifier)
+          .updateCashMemo(
             id: widget.memo.id,
             consultationFee: consult,
             medicineFee: med,
@@ -166,14 +187,17 @@ class _EditCashMemoDialogState extends ConsumerState<EditCashMemoDialog> {
             paidAmount: paid,
             paymentMethod: _paymentMethod,
             memoDate: _memoDate,
-            notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+            notes:
+                _notesController.text.trim().isEmpty
+                    ? null
+                    : _notesController.text.trim(),
           );
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not update memo: \$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not update memo: \$e')));
       }
       return;
     }

@@ -29,7 +29,9 @@ void main() {
       final todayMidnight = DateTime(now.year, now.month, now.day);
 
       // Seed clinic & patient
-      await db.into(db.clinics).insert(
+      await db
+          .into(db.clinics)
+          .insert(
             ClinicsCompanion.insert(
               id: 'c1',
               name: 'Main Clinic',
@@ -37,7 +39,9 @@ void main() {
             ),
           );
 
-      await db.into(db.patients).insert(
+      await db
+          .into(db.patients)
+          .insert(
             PatientsCompanion.insert(
               id: 'p1',
               patientCode: const drift.Value('P-001'),
@@ -50,59 +54,79 @@ void main() {
           );
 
       // Insert 2 visits at 10 AM and 1 visit at 5 PM (17:00)
-      await db.into(db.visits).insert(
+      await db
+          .into(db.visits)
+          .insert(
             VisitsCompanion.insert(
               id: 'v1',
               patientId: 'p1',
               clinicId: 'c1',
-              visitDate: todayMidnight.add(const Duration(hours: 10, minutes: 15)),
+              visitDate: todayMidnight.add(
+                const Duration(hours: 10, minutes: 15),
+              ),
               disease: 'Allergy',
               visitType: 'new',
             ),
           );
 
-      await db.into(db.visits).insert(
+      await db
+          .into(db.visits)
+          .insert(
             VisitsCompanion.insert(
               id: 'v2',
               patientId: 'p1',
               clinicId: 'c1',
-              visitDate: todayMidnight.add(const Duration(hours: 10, minutes: 45)),
+              visitDate: todayMidnight.add(
+                const Duration(hours: 10, minutes: 45),
+              ),
               disease: 'Cough',
               visitType: 'repeat',
             ),
           );
 
-      await db.into(db.visits).insert(
+      await db
+          .into(db.visits)
+          .insert(
             VisitsCompanion.insert(
               id: 'v3',
               patientId: 'p1',
               clinicId: 'c1',
-              visitDate: todayMidnight.add(const Duration(hours: 17, minutes: 30)),
+              visitDate: todayMidnight.add(
+                const Duration(hours: 17, minutes: 30),
+              ),
               disease: 'Fever',
               visitType: 'new',
             ),
           );
 
       // Insert Cash Memos at 10 AM (₹1,200) and 5 PM (₹800)
-      await db.into(db.cashMemos).insert(
+      await db
+          .into(db.cashMemos)
+          .insert(
             CashMemosCompanion.insert(
               id: 'cm1',
               memoNumber: 'CM-001',
               patientId: 'p1',
               clinicId: const drift.Value('c1'),
-              memoDate: drift.Value(todayMidnight.add(const Duration(hours: 10, minutes: 20))),
+              memoDate: drift.Value(
+                todayMidnight.add(const Duration(hours: 10, minutes: 20)),
+              ),
               total: 1200,
               paymentMethod: 'cash',
             ),
           );
 
-      await db.into(db.cashMemos).insert(
+      await db
+          .into(db.cashMemos)
+          .insert(
             CashMemosCompanion.insert(
               id: 'cm2',
               memoNumber: 'CM-002',
               patientId: 'p1',
               clinicId: const drift.Value('c1'),
-              memoDate: drift.Value(todayMidnight.add(const Duration(hours: 17, minutes: 35))),
+              memoDate: drift.Value(
+                todayMidnight.add(const Duration(hours: 17, minutes: 35)),
+              ),
               total: 800,
               paymentMethod: 'upi',
             ),
@@ -110,9 +134,12 @@ void main() {
 
       await container.read(dashboardRawStreamsProvider.future);
 
-      container.read(selectedActivityDateProvider.notifier).state = todayMidnight;
-      container.read(activityRangeProvider.notifier).state = ActivityTimeRange.day;
-      container.read(activityMetricProvider.notifier).state = ActivityMetric.revenue;
+      container.read(selectedActivityDateProvider.notifier).state =
+          todayMidnight;
+      container.read(activityRangeProvider.notifier).state =
+          ActivityTimeRange.day;
+      container.read(activityMetricProvider.notifier).state =
+          ActivityMetric.revenue;
 
       final state = container.read(practiceActivityProvider);
 
@@ -121,12 +148,16 @@ void main() {
       expect(state.hourlyBins.length, equals(96)); // 96 fifteen-minute slots
 
       // Bin at 10:15 AM
-      final bin1015 = state.hourlyBins.firstWhere((b) => b.hour == 10 && b.minute == 15);
+      final bin1015 = state.hourlyBins.firstWhere(
+        (b) => b.hour == 10 && b.minute == 15,
+      );
       expect(bin1015.patients, equals(1));
       expect(bin1015.revenue, equals(1200.0));
 
       // Bin at 5:30 PM (hour 17, min 30)
-      final bin1730 = state.hourlyBins.firstWhere((b) => b.hour == 17 && b.minute == 30);
+      final bin1730 = state.hourlyBins.firstWhere(
+        (b) => b.hour == 17 && b.minute == 30,
+      );
       expect(bin1730.patients, equals(1));
       expect(bin1730.revenue, equals(800.0));
 
@@ -145,9 +176,12 @@ void main() {
 
       await container.read(dashboardRawStreamsProvider.future);
 
-      container.read(selectedActivityDateProvider.notifier).state = todayMidnight;
-      container.read(activityRangeProvider.notifier).state = ActivityTimeRange.month;
-      container.read(activityMetricProvider.notifier).state = ActivityMetric.patients;
+      container.read(selectedActivityDateProvider.notifier).state =
+          todayMidnight;
+      container.read(activityRangeProvider.notifier).state =
+          ActivityTimeRange.month;
+      container.read(activityMetricProvider.notifier).state =
+          ActivityMetric.patients;
 
       final state = container.read(practiceActivityProvider);
 

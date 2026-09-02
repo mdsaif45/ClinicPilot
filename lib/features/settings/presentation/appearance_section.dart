@@ -25,8 +25,8 @@ class AppearanceSection extends ConsumerWidget {
     // rebuild.
     final showThemeControls = _showThemeControls;
     final showPalette = _showThemeControls;
-    final isDark = showThemeControls &&
-        Theme.of(context).brightness == Brightness.dark;
+    final isDark =
+        showThemeControls && Theme.of(context).brightness == Brightness.dark;
 
     return SettingsGroup(
       title: 'Display',
@@ -36,14 +36,15 @@ class AppearanceSection extends ConsumerWidget {
             icon: Icons.palette_outlined,
             title: 'Theme',
             subtitle: prefs.mode.label,
-            onTap: () => _pick<AppThemeMode>(
-              context: context,
-              title: 'Theme',
-              values: AppThemeMode.values,
-              current: prefs.mode,
-              labelOf: (m) => m.label,
-              onSelected: notifier.setMode,
-            ),
+            onTap:
+                () => _pick<AppThemeMode>(
+                  context: context,
+                  title: 'Theme',
+                  values: AppThemeMode.values,
+                  current: prefs.mode,
+                  labelOf: (m) => m.label,
+                  onSelected: notifier.setMode,
+                ),
           ),
         // Only meaningful while a dark scheme is actually showing, so it is
         // hidden in light mode rather than shown as a dead toggle.
@@ -83,28 +84,29 @@ class AppearanceSection extends ConsumerWidget {
   }) async {
     final chosen = await showDialog<T>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text(title),
-        children: [
-          for (final v in values)
-            RadioListTile<T>(
-              value: v,
-              groupValue: current,
-              title: Text(labelOf(v)),
-              onChanged: (val) => Navigator.of(ctx).pop(val),
-            ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: Spacing.lg),
-              child: TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Close'),
+      builder:
+          (ctx) => SimpleDialog(
+            title: Text(title),
+            children: [
+              for (final v in values)
+                RadioListTile<T>(
+                  value: v,
+                  groupValue: current,
+                  title: Text(labelOf(v)),
+                  onChanged: (val) => Navigator.of(ctx).pop(val),
+                ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: Spacing.lg),
+                  child: TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('Close'),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
     );
     if (chosen != null) onSelected(chosen);
   }
@@ -116,30 +118,31 @@ class AppearanceSection extends ConsumerWidget {
   ) async {
     final chosen = await showDialog<AppPalette>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: const Text('Color palette'),
-        children: [
-          for (final p in AppPalette.values)
-            RadioListTile<AppPalette>(
-              value: p,
-              groupValue: current,
-              title: Text(p.label),
-              subtitle: Text(p.description),
-              secondary: _Swatch(color: p.swatch),
-              onChanged: (val) => Navigator.of(ctx).pop(val),
-            ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: Spacing.lg),
-              child: TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Close'),
+      builder:
+          (ctx) => SimpleDialog(
+            title: const Text('Color palette'),
+            children: [
+              for (final p in AppPalette.values)
+                RadioListTile<AppPalette>(
+                  value: p,
+                  groupValue: current,
+                  title: Text(p.label),
+                  subtitle: Text(p.description),
+                  secondary: _Swatch(color: p.swatch),
+                  onChanged: (val) => Navigator.of(ctx).pop(val),
+                ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: Spacing.lg),
+                  child: TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('Close'),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
     );
     if (chosen != null) notifier.setPalette(chosen);
   }
@@ -147,39 +150,40 @@ class AppearanceSection extends ConsumerWidget {
   Future<void> _showLanguageDialog(BuildContext context) {
     return showDialog<void>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: const Text('Language'),
-        children: [
-          RadioListTile<String>(
-            value: 'en',
-            groupValue: 'en',
-            title: const Text('English'),
-            onChanged: (_) => Navigator.of(ctx).pop(),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              Spacing.xl,
-              Spacing.sm,
-              Spacing.xl,
-              0,
-            ),
-            child: Text(
-              'More languages will appear here once translations exist.',
-              style: Theme.of(ctx).textTheme.bodySmall,
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: Spacing.lg),
-              child: TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Close'),
+      builder:
+          (ctx) => SimpleDialog(
+            title: const Text('Language'),
+            children: [
+              RadioListTile<String>(
+                value: 'en',
+                groupValue: 'en',
+                title: const Text('English'),
+                onChanged: (_) => Navigator.of(ctx).pop(),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Spacing.xl,
+                  Spacing.sm,
+                  Spacing.xl,
+                  0,
+                ),
+                child: Text(
+                  'More languages will appear here once translations exist.',
+                  style: Theme.of(ctx).textTheme.bodySmall,
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: Spacing.lg),
+                  child: TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('Close'),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

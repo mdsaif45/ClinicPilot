@@ -31,14 +31,15 @@ class AppConfirmDialog extends StatelessWidget {
   }) {
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => AppConfirmDialog(
-        title: title,
-        message: message,
-        confirmLabel: confirmLabel,
-        cancelLabel: cancelLabel,
-        isDestructive: isDestructive,
-        onConfirm: () => Navigator.of(ctx).pop(true),
-      ),
+      builder:
+          (ctx) => AppConfirmDialog(
+            title: title,
+            message: message,
+            confirmLabel: confirmLabel,
+            cancelLabel: cancelLabel,
+            isDestructive: isDestructive,
+            onConfirm: () => Navigator.of(ctx).pop(true),
+          ),
     );
   }
 
@@ -80,12 +81,13 @@ class AppConfirmDialog extends StatelessWidget {
           child: Text(cancelLabel),
         ),
         FilledButton(
-          style: isDestructive
-              ? FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  foregroundColor: Theme.of(context).colorScheme.onError,
-                )
-              : null,
+          style:
+              isDestructive
+                  ? FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    foregroundColor: Theme.of(context).colorScheme.onError,
+                  )
+                  : null,
           onPressed: () {
             onConfirm();
           },

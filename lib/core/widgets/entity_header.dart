@@ -54,10 +54,7 @@ class EntityHeader extends StatelessWidget {
     if (heroTag != null) {
       avatarWidget = Hero(
         tag: heroTag!,
-        child: Material(
-          type: MaterialType.transparency,
-          child: avatarWidget,
-        ),
+        child: Material(type: MaterialType.transparency, child: avatarWidget),
       );
     }
 
@@ -73,10 +70,7 @@ class EntityHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            tint.withValues(alpha: 0.16),
-            tint.withValues(alpha: 0.04),
-          ],
+          colors: [tint.withValues(alpha: 0.16), tint.withValues(alpha: 0.04)],
         ),
       ),
       child: Column(

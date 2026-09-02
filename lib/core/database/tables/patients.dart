@@ -23,15 +23,16 @@ class Patients extends Table {
   TextColumn get phone => text()();
   TextColumn get whatsapp => text().nullable()();
   TextColumn get email => text().nullable()();
-  IntColumn  get age => integer()();
-  TextColumn get gender => text()();               // Male | Female | Other
-  TextColumn get area => text().nullable()();      // locality — hyperlocal marketing
+  IntColumn get age => integer()();
+  TextColumn get gender => text()(); // Male | Female | Other
+  TextColumn get area => text().nullable()(); // locality — hyperlocal marketing
   TextColumn get address => text().nullable()();
   TextColumn get occupation => text().nullable()();
 
   // Where this patient FIRST came. Analytics only.
   // NEVER use for revenue attribution — that always comes from visits.clinicId.
-  TextColumn get primaryClinicId => text().withDefault(const Constant('clinic_old'))();
+  TextColumn get primaryClinicId =>
+      text().withDefault(const Constant('clinic_old'))();
 
   // Denormalised copies of the FIRST visit, for list display without a join.
   // Source of truth is always the visits table.
