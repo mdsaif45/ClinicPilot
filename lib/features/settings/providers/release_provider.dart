@@ -59,42 +59,36 @@ final latestReleaseProvider = FutureProvider<AppRelease?>((ref) async {
   return readCache();
 });
 
-/// Update prompt state, persisted so "Later" survives a restart.
+/// Update prompt state for notifying the user when a new release is available.
 class UpdatePromptNotifier extends StateNotifier<AppRelease?> {
   final AppDatabase _db;
   final Ref _ref;
 
   UpdatePromptNotifier(this._db, this._ref) : super(null);
 
-  /// Returns the release worth prompting about, or null.
-  ///
-  /// A version the user dismissed with "Later" never prompts again; they can
-  /// still reach it from the App Version screen whenever they choose.
+  /// Checks if an update is available and sets state to prompt the user.
   Future<void> evaluate() async {
+    // Clear any legacy permanent skipped version from database so users who
+    // dismissed previously are not permanently locked out of update notifications.
+    try {
+      await (_db.delete(_db.settings)
+            ..where((t) => t.key.equals(_kSkippedVersion)))
+          .go();
+    } catch (_) {}
+
     final release = await _ref.read(availableUpdateProvider.future);
     if (release == null) return;
 
-    final skipped = await (_db.select(_db.settings)
-          ..where((t) => t.key.equals(_kSkippedVersion)))
-        .getSingleOrNull();
-
-    if (skipped?.value == release.version) return;
     state = release;
   }
 
-  /// Never prompt for this version again.
-  Future<void> skip(AppRelease release) async {
-    await _db.into(_db.settings).insertOnConflictUpdate(
-          SettingsCompanion.insert(
-            key: _kSkippedVersion,
-            value: release.version,
-            updatedAt: drift.Value(DateTime.now()),
-          ),
-        );
-    state = null;
-  }
-
+  /// Dismisses the prompt for the current session.
   void dismiss() => state = null;
+
+  /// Legacy alias: dismiss prompt without permanently suppressing across app restarts.
+  Future<void> skip(AppRelease release) async {
+    dismiss();
+  }
 }
 
 final updatePromptProvider =
