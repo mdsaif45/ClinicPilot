@@ -24,14 +24,13 @@ class AnimatedCounter extends StatefulWidget {
     required double value,
     TextStyle? style,
     Duration duration = const Duration(milliseconds: 600),
-  }) =>
-      AnimatedCounter(
-        key: key,
-        value: value,
-        style: style,
-        duration: duration,
-        formatter: (v) => Formatters.formatCurrency(v),
-      );
+  }) => AnimatedCounter(
+    key: key,
+    value: value,
+    style: style,
+    duration: duration,
+    formatter: (v) => Formatters.formatCurrency(v),
+  );
 
   /// Formats value as whole integer (e.g. 42).
   factory AnimatedCounter.count({
@@ -39,14 +38,13 @@ class AnimatedCounter extends StatefulWidget {
     required int value,
     TextStyle? style,
     Duration duration = const Duration(milliseconds: 600),
-  }) =>
-      AnimatedCounter(
-        key: key,
-        value: value.toDouble(),
-        style: style,
-        duration: duration,
-        formatter: (v) => '${v.round()}',
-      );
+  }) => AnimatedCounter(
+    key: key,
+    value: value.toDouble(),
+    style: style,
+    duration: duration,
+    formatter: (v) => '${v.round()}',
+  );
 
   @override
   State<AnimatedCounter> createState() => _AnimatedCounterState();
@@ -61,14 +59,12 @@ class _AnimatedCounterState extends State<AnimatedCounter>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration);
 
-    _animation = Tween<double>(begin: 0, end: widget.value).animate(
-      CurvedAnimation(parent: _controller, curve: Motion.curve),
-    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: widget.value,
+    ).animate(CurvedAnimation(parent: _controller, curve: Motion.curve));
 
     _controller.forward();
   }
@@ -78,9 +74,10 @@ class _AnimatedCounterState extends State<AnimatedCounter>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
       _oldValue = oldWidget.value;
-      _animation = Tween<double>(begin: _oldValue, end: widget.value).animate(
-        CurvedAnimation(parent: _controller, curve: Motion.curve),
-      );
+      _animation = Tween<double>(
+        begin: _oldValue,
+        end: widget.value,
+      ).animate(CurvedAnimation(parent: _controller, curve: Motion.curve));
       _controller
         ..reset()
         ..forward();
@@ -100,9 +97,10 @@ class _AnimatedCounterState extends State<AnimatedCounter>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, _) {
-        final text = widget.formatter != null
-            ? widget.formatter!(_animation.value)
-            : _animation.value.toStringAsFixed(0);
+        final text =
+            widget.formatter != null
+                ? widget.formatter!(_animation.value)
+                : _animation.value.toStringAsFixed(0);
         return Text(text, style: style);
       },
     );

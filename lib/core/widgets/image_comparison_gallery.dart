@@ -28,7 +28,9 @@ class ImageComparisonGallery extends StatelessWidget {
 
   Future<void> _pickImageSection(BuildContext context, bool isBefore) async {
     AppHaptics.selection();
-    final picked = await MediaAttachmentService.pickImages(patientId: patientId);
+    final picked = await MediaAttachmentService.pickImages(
+      patientId: patientId,
+    );
     if (picked.isEmpty) return;
 
     if (isBefore) {
@@ -49,9 +51,14 @@ class ImageComparisonGallery extends StatelessWidget {
     }
   }
 
-  void _openFullScreenPreview(BuildContext context, {required bool isBefore, required int initialIndex}) {
+  void _openFullScreenPreview(
+    BuildContext context, {
+    required bool isBefore,
+    required int initialIndex,
+  }) {
     final images = isBefore ? beforeImages : afterImages;
-    final title = isBefore ? 'Before Treatment Photo' : 'Follow-Up / After Photo';
+    final title =
+        isBefore ? 'Before Treatment Photo' : 'Follow-Up / After Photo';
     FullScreenImageViewer.open(
       context,
       imagePaths: images,
@@ -89,7 +96,12 @@ class ImageComparisonGallery extends StatelessWidget {
                 readOnly: readOnly,
                 onAdd: () => _pickImageSection(context, true),
                 onRemove: (idx) => _removeImage(true, idx),
-                onPreview: (idx) => _openFullScreenPreview(context, isBefore: true, initialIndex: idx),
+                onPreview:
+                    (idx) => _openFullScreenPreview(
+                      context,
+                      isBefore: true,
+                      initialIndex: idx,
+                    ),
               ),
             ),
             const SizedBox(width: Spacing.md),
@@ -103,7 +115,12 @@ class ImageComparisonGallery extends StatelessWidget {
                 readOnly: readOnly,
                 onAdd: () => _pickImageSection(context, false),
                 onRemove: (idx) => _removeImage(false, idx),
-                onPreview: (idx) => _openFullScreenPreview(context, isBefore: false, initialIndex: idx),
+                onPreview:
+                    (idx) => _openFullScreenPreview(
+                      context,
+                      isBefore: false,
+                      initialIndex: idx,
+                    ),
               ),
             ),
           ],
@@ -154,7 +171,10 @@ class _PhotoSection extends StatelessWidget {
             children: [
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Spacing.sm,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeColor,
                     borderRadius: Radii.pillAll,
@@ -212,19 +232,21 @@ class _PhotoSection extends StatelessWidget {
                             width: 72,
                             height: 72,
                             color: scheme.surfaceContainerHighest,
-                            child: kIsWeb
-                                ? Image.network(path, fit: BoxFit.cover)
-                                : Image.file(
-                                    File(path),
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Center(
-                                      child: Icon(
-                                        Icons.broken_image_outlined,
-                                        size: 24,
-                                        color: scheme.onSurfaceVariant,
-                                      ),
+                            child:
+                                kIsWeb
+                                    ? Image.network(path, fit: BoxFit.cover)
+                                    : Image.file(
+                                      File(path),
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (_, __, ___) => Center(
+                                            child: Icon(
+                                              Icons.broken_image_outlined,
+                                              size: 24,
+                                              color: scheme.onSurfaceVariant,
+                                            ),
+                                          ),
                                     ),
-                                  ),
                           ),
                         ),
                       ),

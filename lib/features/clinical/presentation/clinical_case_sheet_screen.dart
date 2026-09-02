@@ -27,10 +27,12 @@ class ClinicalCaseSheetScreen extends ConsumerStatefulWidget {
   const ClinicalCaseSheetScreen({super.key, required this.patient});
 
   @override
-  ConsumerState<ClinicalCaseSheetScreen> createState() => _ClinicalCaseSheetScreenState();
+  ConsumerState<ClinicalCaseSheetScreen> createState() =>
+      _ClinicalCaseSheetScreenState();
 }
 
-class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScreen> {
+class _ClinicalCaseSheetScreenState
+    extends ConsumerState<ClinicalCaseSheetScreen> {
   int _selectedTab = 0; // 0: Baseline Case Record, 1: Follow-Up Visits History
   String _selectedSection = 'All';
 
@@ -84,28 +86,32 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
             ),
         ],
       ),
-      floatingActionButton: _selectedTab == 1
-          ? FloatingActionButton.extended(
-              onPressed: () => _showFollowUpActionsSheet(context),
-              icon: const Icon(Icons.add),
-              label: const Text('Add Entry'),
-            )
-          : FloatingActionButton.extended(
-              onPressed: () => _openEditor(context),
-              icon: const Icon(Icons.edit_note),
-              label: const Text('Edit Case Taking'),
-            ),
+      floatingActionButton:
+          _selectedTab == 1
+              ? FloatingActionButton.extended(
+                onPressed: () => _showFollowUpActionsSheet(context),
+                icon: const Icon(Icons.add),
+                label: const Text('Add Entry'),
+              )
+              : FloatingActionButton.extended(
+                onPressed: () => _openEditor(context),
+                icon: const Icon(Icons.edit_note),
+                label: const Text('Edit Case Taking'),
+              ),
       body: recordAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(Spacing.xl),
-            child: Text(
-              'Error loading case record: $err',
-              style: theme.textTheme.bodyMedium?.copyWith(color: scheme.error),
+        error:
+            (err, _) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(Spacing.xl),
+                child: Text(
+                  'Error loading case record: $err',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.error,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
         data: (record) {
           if (record == null) {
             return Center(
@@ -150,13 +156,18 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
             children: [
               // Top Sub-segmented Navigation Bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Spacing.md,
+                  vertical: Spacing.xs,
+                ),
                 color: scheme.surface,
                 child: Container(
                   height: 40,
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                    color: scheme.surfaceContainerHighest.withValues(
+                      alpha: 0.5,
+                    ),
                     borderRadius: Radii.lgAll,
                     border: Border.all(
                       color: scheme.outlineVariant.withValues(alpha: 0.4),
@@ -192,94 +203,110 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                 ),
               ),
               Expanded(
-                child: _selectedTab == 0
-                    ? Column(
-                        children: [
-                          // Search & Section Jump Filter Bar
-                          _buildSearchAndFilterHeader(context),
+                child:
+                    _selectedTab == 0
+                        ? Column(
+                          children: [
+                            // Search & Section Jump Filter Bar
+                            _buildSearchAndFilterHeader(context),
 
-                          // Main Clinical Content Area
-                          Expanded(
-                            child: ListView(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: Spacing.lg,
-                                vertical: Spacing.md,
-                              ),
-                              children: [
-                                // 1. Patient & Executive Clinical Summary Card
-                                if (_selectedSection == 'All') ...[
-                                  _buildPatientHeader(context, record),
-                                  const SizedBox(height: Spacing.md),
+                            // Main Clinical Content Area
+                            Expanded(
+                              child: ListView(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: Spacing.lg,
+                                  vertical: Spacing.md,
+                                ),
+                                children: [
+                                  // 1. Patient & Executive Clinical Summary Card
+                                  if (_selectedSection == 'All') ...[
+                                    _buildPatientHeader(context, record),
+                                    const SizedBox(height: Spacing.md),
+                                  ],
+
+                                  // 2. Chief Complaints
+                                  if (_isSectionVisible('Complaints'))
+                                    _buildChiefComplaintsSection(
+                                      context,
+                                      record,
+                                    ),
+
+                                  // 3. History of Present Illness (HPI)
+                                  if (_isSectionVisible('HPI'))
+                                    _buildHpiSection(context, record),
+
+                                  // 4. Past Medical History & Allergies
+                                  if (_isSectionVisible('Past History'))
+                                    _buildPastHistorySection(context, record),
+
+                                  // 5. Family History
+                                  if (_isSectionVisible('Family'))
+                                    _buildFamilyHistorySection(context, record),
+
+                                  // 6. Physical Generals
+                                  if (_isSectionVisible('Physical Generals'))
+                                    _buildPhysicalGeneralsSection(
+                                      context,
+                                      record,
+                                    ),
+
+                                  // 7. Mental Generals
+                                  if (_isSectionVisible('Mental Generals'))
+                                    _buildMentalGeneralsSection(
+                                      context,
+                                      record,
+                                    ),
+
+                                  // 8. Lifestyle & Habits
+                                  if (_isSectionVisible('Lifestyle'))
+                                    _buildLifestyleSection(context, record),
+
+                                  // 9. Clinical Examination & Vitals
+                                  if (_isSectionVisible('Vitals & Exam'))
+                                    _buildClinicalExamSection(context, record),
+
+                                  // 10. Miasmatic Analysis & Totality of Symptoms
+                                  if (_isSectionVisible('Miasm & Totality'))
+                                    _buildMiasmAndTotalitySection(
+                                      context,
+                                      record,
+                                    ),
+
+                                  // 11. Diagnosis & Working Assessment
+                                  if (_isSectionVisible('Diagnosis'))
+                                    _buildDiagnosisSection(context, record),
+
+                                  // 12. Baseline Prescription Plan
+                                  if (_isSectionVisible('Prescription'))
+                                    _buildPrescriptionSection(context, record),
+
+                                  // 13. Investigations & Diagnostic Reports
+                                  if (_isSectionVisible('Investigations'))
+                                    _buildInvestigationsSection(
+                                      context,
+                                      record,
+                                    ),
+
+                                  // 14. Follow-Up & Outcome Notes
+                                  if (_isSectionVisible('Outcome'))
+                                    _buildFollowUpSection(context, record),
+
+                                  const SizedBox(height: Spacing.sm),
+
+                                  // Bottom Edit Button
+                                  AppButton.primary(
+                                    label: 'Edit Master Case Record',
+                                    icon: Icons.edit_note_outlined,
+                                    fullWidth: true,
+                                    onPressed: () => _openEditor(context),
+                                  ),
+                                  const SizedBox(height: Spacing.xxl),
                                 ],
-
-                      // 2. Chief Complaints
-                      if (_isSectionVisible('Complaints'))
-                        _buildChiefComplaintsSection(context, record),
-
-                    // 3. History of Present Illness (HPI)
-                    if (_isSectionVisible('HPI'))
-                      _buildHpiSection(context, record),
-
-                    // 4. Past Medical History & Allergies
-                    if (_isSectionVisible('Past History'))
-                      _buildPastHistorySection(context, record),
-
-                    // 5. Family History
-                    if (_isSectionVisible('Family'))
-                      _buildFamilyHistorySection(context, record),
-
-                    // 6. Physical Generals
-                    if (_isSectionVisible('Physical Generals'))
-                      _buildPhysicalGeneralsSection(context, record),
-
-                    // 7. Mental Generals
-                    if (_isSectionVisible('Mental Generals'))
-                      _buildMentalGeneralsSection(context, record),
-
-                    // 8. Lifestyle & Habits
-                    if (_isSectionVisible('Lifestyle'))
-                      _buildLifestyleSection(context, record),
-
-                    // 9. Clinical Examination & Vitals
-                    if (_isSectionVisible('Vitals & Exam'))
-                      _buildClinicalExamSection(context, record),
-
-                    // 10. Miasmatic Analysis & Totality of Symptoms
-                    if (_isSectionVisible('Miasm & Totality'))
-                      _buildMiasmAndTotalitySection(context, record),
-
-                    // 11. Diagnosis & Working Assessment
-                    if (_isSectionVisible('Diagnosis'))
-                      _buildDiagnosisSection(context, record),
-
-                    // 12. Baseline Prescription Plan
-                    if (_isSectionVisible('Prescription'))
-                      _buildPrescriptionSection(context, record),
-
-                    // 13. Investigations & Diagnostic Reports
-                    if (_isSectionVisible('Investigations'))
-                      _buildInvestigationsSection(context, record),
-
-                    // 14. Follow-Up & Outcome Notes
-                    if (_isSectionVisible('Outcome'))
-                      _buildFollowUpSection(context, record),
-
-                    const SizedBox(height: Spacing.sm),
-
-                    // Bottom Edit Button
-                    AppButton.primary(
-                      label: 'Edit Master Case Record',
-                      icon: Icons.edit_note_outlined,
-                      fullWidth: true,
-                      onPressed: () => _openEditor(context),
-                    ),
-                                const SizedBox(height: Spacing.xxl),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
-                      )
-                    : _buildFollowUpHistoryView(context),
+                          ],
+                        )
+                        : _buildFollowUpHistoryView(context),
               ),
             ],
           );
@@ -292,27 +319,42 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final visitsAsync = ref.watch(patientVisitsStreamProvider(widget.patient.id));
-    final complaintsAsync = ref.watch(patientComplaintsProvider(widget.patient.id));
-    final prescriptionsAsync = ref.watch(patientPrescriptionsProvider(widget.patient.id));
-    final investigationsAsync = ref.watch(patientInvestigationsProvider(widget.patient.id));
+    final visitsAsync = ref.watch(
+      patientVisitsStreamProvider(widget.patient.id),
+    );
+    final complaintsAsync = ref.watch(
+      patientComplaintsProvider(widget.patient.id),
+    );
+    final prescriptionsAsync = ref.watch(
+      patientPrescriptionsProvider(widget.patient.id),
+    );
+    final investigationsAsync = ref.watch(
+      patientInvestigationsProvider(widget.patient.id),
+    );
 
     final allVisits = visitsAsync.value ?? [];
     final allComplaints = complaintsAsync.value ?? [];
     final allPrescriptions = prescriptionsAsync.value ?? [];
     final allInvestigations = investigationsAsync.value ?? [];
 
-    final followUpComplaints = allComplaints.where((c) => !(c.isBaseline ?? true)).toList();
-    final followUpPrescriptions = allPrescriptions.where((p) => !(p.isBaseline ?? true)).toList();
-    final followUpInvestigations = allInvestigations.where((i) => !(i.isBaseline ?? true)).toList();
+    final followUpComplaints =
+        allComplaints.where((c) => !(c.isBaseline ?? true)).toList();
+    final followUpPrescriptions =
+        allPrescriptions.where((p) => !(p.isBaseline ?? true)).toList();
+    final followUpInvestigations =
+        allInvestigations.where((i) => !(i.isBaseline ?? true)).toList();
 
-    final hasFollowUps = allVisits.length > 1 ||
+    final hasFollowUps =
+        allVisits.length > 1 ||
         followUpComplaints.isNotEmpty ||
         followUpPrescriptions.isNotEmpty ||
         followUpInvestigations.isNotEmpty;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.lg,
+        vertical: Spacing.md,
+      ),
       children: [
         // Summary Metric Badges (Visits, Complaints, Prescriptions, Lab Reports)
         Row(
@@ -369,11 +411,12 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                 AppHaptics.selection();
                 showDialog(
                   context: context,
-                  builder: (_) => AddEditComplaintDialog(
-                    patientId: widget.patient.id,
-                    defaultIndex: allComplaints.length + 1,
-                    defaultIsBaseline: false,
-                  ),
+                  builder:
+                      (_) => AddEditComplaintDialog(
+                        patientId: widget.patient.id,
+                        defaultIndex: allComplaints.length + 1,
+                        defaultIsBaseline: false,
+                      ),
                 );
               },
             ),
@@ -392,13 +435,17 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
           // Follow-up Complaints Section
           if (followUpComplaints.isNotEmpty) ...[
             _SectionHeaderCard(
-              title: 'Follow-Up Complaints & Condition Changes (${followUpComplaints.length})',
+              title:
+                  'Follow-Up Complaints & Condition Changes (${followUpComplaints.length})',
               icon: Icons.healing,
               color: scheme.tertiary,
             ),
             const SizedBox(height: Spacing.xs),
             for (final c in followUpComplaints) ...[
-              _FollowUpComplaintCard(complaint: c, patientId: widget.patient.id),
+              _FollowUpComplaintCard(
+                complaint: c,
+                patientId: widget.patient.id,
+              ),
               const SizedBox(height: Spacing.xs),
             ],
             const SizedBox(height: Spacing.md),
@@ -407,7 +454,8 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
           // Follow-up Prescriptions Section
           if (followUpPrescriptions.isNotEmpty) ...[
             _SectionHeaderCard(
-              title: 'Follow-Up Remedies Prescribed (${followUpPrescriptions.length})',
+              title:
+                  'Follow-Up Remedies Prescribed (${followUpPrescriptions.length})',
               icon: Icons.medication,
               color: scheme.secondary,
             ),
@@ -422,7 +470,8 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
           // Follow-up Lab Tests Section
           if (followUpInvestigations.isNotEmpty) ...[
             _SectionHeaderCard(
-              title: 'Follow-Up Diagnostic Tests & Reports (${followUpInvestigations.length})',
+              title:
+                  'Follow-Up Diagnostic Tests & Reports (${followUpInvestigations.length})',
               icon: Icons.biotech,
               color: scheme.error,
             ),
@@ -456,10 +505,11 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
   void _openEditor(BuildContext context, {int? sectionIndex}) {
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
-        builder: (_) => MasterCaseTakingScreen(
-          patient: widget.patient,
-          initialSectionIndex: sectionIndex,
-        ),
+        builder:
+            (_) => MasterCaseTakingScreen(
+              patient: widget.patient,
+              initialSectionIndex: sectionIndex,
+            ),
       ),
     );
   }
@@ -469,8 +519,10 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final allComplaints = ref.read(patientComplaintsProvider(widget.patient.id)).value ?? [];
-    final allPrescriptions = ref.read(patientPrescriptionsProvider(widget.patient.id)).value ?? [];
+    final allComplaints =
+        ref.read(patientComplaintsProvider(widget.patient.id)).value ?? [];
+    final allPrescriptions =
+        ref.read(patientPrescriptionsProvider(widget.patient.id)).value ?? [];
 
     showModalBottomSheet(
       context: context,
@@ -479,103 +531,113 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            Spacing.lg,
-            0,
-            Spacing.lg,
-            Spacing.xl,
+      builder:
+          (ctx) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Spacing.lg,
+                0,
+                Spacing.lg,
+                Spacing.xl,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Add Follow-Up Entry',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: Spacing.xs),
+                  Text(
+                    'Record clinical progression for ${widget.patient.name}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: scheme.tertiaryContainer,
+                      foregroundColor: scheme.tertiary,
+                      child: const Icon(Icons.healing_outlined, size: 20),
+                    ),
+                    title: const Text('Add Follow-Up Complaint'),
+                    subtitle: const Text(
+                      'Progress, new modalities, symptom severity',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      showDialog(
+                        context: context,
+                        builder:
+                            (_) => AddEditComplaintDialog(
+                              patientId: widget.patient.id,
+                              defaultIndex: allComplaints.length + 1,
+                              defaultIsBaseline: false,
+                            ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.xs),
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: scheme.secondaryContainer,
+                      foregroundColor: scheme.secondary,
+                      child: const Icon(Icons.medication_outlined, size: 20),
+                    ),
+                    title: const Text('Prescribe Follow-Up Remedy'),
+                    subtitle: const Text(
+                      'New potency, dose change, or repeat Rx',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      showDialog(
+                        context: context,
+                        builder:
+                            (_) => AddEditPrescriptionDialog(
+                              patientId: widget.patient.id,
+                              defaultIndex: allPrescriptions.length + 1,
+                              defaultIsBaseline: false,
+                            ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.xs),
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: scheme.errorContainer,
+                      foregroundColor: scheme.error,
+                      child: const Icon(Icons.biotech_outlined, size: 20),
+                    ),
+                    title: const Text('Upload Lab / Scan Report'),
+                    subtitle: const Text(
+                      'Test values, reference ranges, report scans',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      showDialog(
+                        context: context,
+                        builder:
+                            (_) => AddEditInvestigationDialog(
+                              patientId: widget.patient.id,
+                              defaultIsBaseline: false,
+                            ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Add Follow-Up Entry',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: Spacing.xs),
-              Text(
-                'Record clinical progression for ${widget.patient.name}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: Spacing.md),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: scheme.tertiaryContainer,
-                  foregroundColor: scheme.tertiary,
-                  child: const Icon(Icons.healing_outlined, size: 20),
-                ),
-                title: const Text('Add Follow-Up Complaint'),
-                subtitle: const Text('Progress, new modalities, symptom severity'),
-                trailing: const Icon(Icons.chevron_right),
-                shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  showDialog(
-                    context: context,
-                    builder: (_) => AddEditComplaintDialog(
-                      patientId: widget.patient.id,
-                      defaultIndex: allComplaints.length + 1,
-                      defaultIsBaseline: false,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: Spacing.xs),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: scheme.secondaryContainer,
-                  foregroundColor: scheme.secondary,
-                  child: const Icon(Icons.medication_outlined, size: 20),
-                ),
-                title: const Text('Prescribe Follow-Up Remedy'),
-                subtitle: const Text('New potency, dose change, or repeat Rx'),
-                trailing: const Icon(Icons.chevron_right),
-                shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  showDialog(
-                    context: context,
-                    builder: (_) => AddEditPrescriptionDialog(
-                      patientId: widget.patient.id,
-                      defaultIndex: allPrescriptions.length + 1,
-                      defaultIsBaseline: false,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: Spacing.xs),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: scheme.errorContainer,
-                  foregroundColor: scheme.error,
-                  child: const Icon(Icons.biotech_outlined, size: 20),
-                ),
-                title: const Text('Upload Lab / Scan Report'),
-                subtitle: const Text('Test values, reference ranges, report scans'),
-                trailing: const Icon(Icons.chevron_right),
-                shape: RoundedRectangleBorder(borderRadius: Radii.mdAll),
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  showDialog(
-                    context: context,
-                    builder: (_) => AddEditInvestigationDialog(
-                      patientId: widget.patient.id,
-                      defaultIsBaseline: false,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -615,11 +677,16 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                 color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
               ),
               selectedColor: scheme.primary,
-              backgroundColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              backgroundColor: scheme.surfaceContainerHighest.withValues(
+                alpha: 0.5,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: Radii.pillAll,
                 side: BorderSide(
-                  color: isSelected ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.4),
+                  color:
+                      isSelected
+                          ? scheme.primary
+                          : scheme.outlineVariant.withValues(alpha: 0.4),
                 ),
               ),
               padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
@@ -632,14 +699,18 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
   }
 
   // --- Header Banner with Patient Identity & Key Highlights ---
-  Widget _buildPatientHeader(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildPatientHeader(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
     final miasm = record.miasmaticAnalysis.dominantMiasm;
     final thermal = record.physicalGenerals.thermal;
     final rawRemedy = record.caseTotality.selectedRemedy.trim();
-    final cleanRemedy = rawRemedy.split(' selected')[0].split(' based')[0].trim();
+    final cleanRemedy =
+        rawRemedy.split(' selected')[0].split(' based')[0].trim();
     final remedy = cleanRemedy.isNotEmpty ? cleanRemedy : rawRemedy;
     final potency = record.caseTotality.potency;
     final outcome = record.displayOutcome;
@@ -656,7 +727,9 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                 radius: 24,
                 backgroundColor: scheme.primaryContainer,
                 child: Text(
-                  widget.patient.name.isNotEmpty ? widget.patient.name[0].toUpperCase() : 'P',
+                  widget.patient.name.isNotEmpty
+                      ? widget.patient.name[0].toUpperCase()
+                      : 'P',
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: scheme.primary,
                     fontWeight: FontWeight.bold,
@@ -695,7 +768,8 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
-                        if (widget.patient.area != null && widget.patient.area!.isNotEmpty) ...[
+                        if (widget.patient.area != null &&
+                            widget.patient.area!.isNotEmpty) ...[
                           Text('•', style: TextStyle(color: scheme.outline)),
                           Text(
                             widget.patient.area!,
@@ -723,7 +797,10 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
               ),
             ],
           ),
-          if (miasm.isNotEmpty || thermal.isNotEmpty || remedy.isNotEmpty || outcome.isNotEmpty) ...[
+          if (miasm.isNotEmpty ||
+              thermal.isNotEmpty ||
+              remedy.isNotEmpty ||
+              outcome.isNotEmpty) ...[
             const SizedBox(height: Spacing.sm),
             const Divider(height: 1),
             const SizedBox(height: Spacing.sm),
@@ -764,7 +841,10 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
   }
 
   // --- 1. Chief Complaints ---
-  Widget _buildChiefComplaintsSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildChiefComplaintsSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     if (record.chiefComplaints.isEmpty && record.additionalComplaints.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -796,11 +876,12 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                   if (c.severity.isNotEmpty)
                     CustomBadge(
                       label: c.severity,
-                      color: c.severity.toLowerCase().contains('severe')
-                          ? scheme.error
-                          : (c.severity.toLowerCase().contains('mild')
-                              ? scheme.primary
-                              : scheme.tertiary),
+                      color:
+                          c.severity.toLowerCase().contains('severe')
+                              ? scheme.error
+                              : (c.severity.toLowerCase().contains('mild')
+                                  ? scheme.primary
+                                  : scheme.tertiary),
                     ),
                 ],
               ),
@@ -825,7 +906,10 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
           ],
         ],
         if (record.additionalComplaints.isNotEmpty)
-          _ClinicalRow(label: 'Additional Complaints', value: record.additionalComplaints),
+          _ClinicalRow(
+            label: 'Additional Complaints',
+            value: record.additionalComplaints,
+          ),
       ],
     );
   }
@@ -833,7 +917,8 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
   // --- 2. HPI ---
   Widget _buildHpiSection(BuildContext context, MasterCaseRecordData record) {
     final hpi = record.hpi;
-    final hasData = hpi.chronologicalDevelopment.isNotEmpty ||
+    final hasData =
+        hpi.chronologicalDevelopment.isNotEmpty ||
         hpi.firstOccurrence.isNotEmpty ||
         hpi.progression.isNotEmpty ||
         hpi.previousEpisodes.isNotEmpty ||
@@ -848,21 +933,43 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       icon: Icons.history_edu_outlined,
       onEdit: () => _openEditor(context, sectionIndex: 3),
       children: [
-        _ClinicalRow(label: 'Chronological Development', value: hpi.chronologicalDevelopment),
-        _ClinicalRow(label: 'First Occurrence & Trigger', value: hpi.firstOccurrence),
+        _ClinicalRow(
+          label: 'Chronological Development',
+          value: hpi.chronologicalDevelopment,
+        ),
+        _ClinicalRow(
+          label: 'First Occurrence & Trigger',
+          value: hpi.firstOccurrence,
+        ),
         _ClinicalRow(label: 'Disease Pace & Course', value: hpi.progression),
-        _ClinicalRow(label: 'Previous Episodes / Remissions', value: hpi.previousEpisodes),
-        _ClinicalRow(label: 'Past Treatments Taken', value: hpi.previousTreatment),
-        _ClinicalRow(label: 'Response to Past Therapies', value: hpi.responseToTreatment),
-        _ClinicalRow(label: 'Precipitating Factors', value: hpi.relevantPrecipitatingFactors),
+        _ClinicalRow(
+          label: 'Previous Episodes / Remissions',
+          value: hpi.previousEpisodes,
+        ),
+        _ClinicalRow(
+          label: 'Past Treatments Taken',
+          value: hpi.previousTreatment,
+        ),
+        _ClinicalRow(
+          label: 'Response to Past Therapies',
+          value: hpi.responseToTreatment,
+        ),
+        _ClinicalRow(
+          label: 'Precipitating Factors',
+          value: hpi.relevantPrecipitatingFactors,
+        ),
       ],
     );
   }
 
   // --- 3. Past History ---
-  Widget _buildPastHistorySection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildPastHistorySection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final p = record.pastHistory;
-    final hasData = p.allergies.isNotEmpty ||
+    final hasData =
+        p.allergies.isNotEmpty ||
         p.childhoodIllnesses.isNotEmpty ||
         p.majorIllnesses.isNotEmpty ||
         p.chronicDiseases.isNotEmpty ||
@@ -890,7 +997,11 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.warning_amber_rounded, size: 18, color: scheme.error),
+                Icon(
+                  Icons.warning_amber_rounded,
+                  size: 18,
+                  color: scheme.error,
+                ),
                 const SizedBox(width: Spacing.xs + 2),
                 Expanded(
                   child: Column(
@@ -920,18 +1031,28 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
             ),
           ),
         _ClinicalRow(label: 'Childhood Illnesses', value: p.childhoodIllnesses),
-        _ClinicalRow(label: 'Major Illnesses / Admissions', value: p.majorIllnesses),
+        _ClinicalRow(
+          label: 'Major Illnesses / Admissions',
+          value: p.majorIllnesses,
+        ),
         _ClinicalRow(label: 'Chronic Diseases', value: p.chronicDiseases),
         _ClinicalRow(label: 'Surgeries / Trauma', value: p.surgeries),
-        _ClinicalRow(label: 'Prior Homeopathy Experience', value: p.previousHomeopathicTreatment),
+        _ClinicalRow(
+          label: 'Prior Homeopathy Experience',
+          value: p.previousHomeopathicTreatment,
+        ),
       ],
     );
   }
 
   // --- 4. Family History ---
-  Widget _buildFamilyHistorySection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildFamilyHistorySection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final f = record.familyHistory;
-    final hasData = f.father.isNotEmpty ||
+    final hasData =
+        f.father.isNotEmpty ||
         f.mother.isNotEmpty ||
         f.siblings.isNotEmpty ||
         f.majorFamilialDiseases.isNotEmpty ||
@@ -947,16 +1068,26 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
         _ClinicalRow(label: 'Father Health & Diseases', value: f.father),
         _ClinicalRow(label: 'Mother Health & Diseases', value: f.mother),
         _ClinicalRow(label: 'Siblings / Children', value: f.siblings),
-        _ClinicalRow(label: 'Familial Chronic Diseases', value: f.majorFamilialDiseases),
-        _ClinicalRow(label: 'Hereditary Tendencies / Miasm', value: f.hereditaryDiseases),
+        _ClinicalRow(
+          label: 'Familial Chronic Diseases',
+          value: f.majorFamilialDiseases,
+        ),
+        _ClinicalRow(
+          label: 'Hereditary Tendencies / Miasm',
+          value: f.hereditaryDiseases,
+        ),
       ],
     );
   }
 
   // --- 5. Physical Generals ---
-  Widget _buildPhysicalGeneralsSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildPhysicalGeneralsSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final pg = record.physicalGenerals;
-    final hasData = pg.thermal.isNotEmpty ||
+    final hasData =
+        pg.thermal.isNotEmpty ||
         pg.appetite.isNotEmpty ||
         pg.thirst.isNotEmpty ||
         pg.cravings.isNotEmpty ||
@@ -978,10 +1109,16 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
         _ClinicalRow(label: 'Appetite & Hunger Timing', value: pg.appetite),
         _ClinicalRow(label: 'Thirst (Quantity & Frequency)', value: pg.thirst),
         _ClinicalRow(label: 'Food Cravings', value: pg.cravings),
-        _ClinicalRow(label: 'Food Aversions & Intolerances', value: pg.aversions),
+        _ClinicalRow(
+          label: 'Food Aversions & Intolerances',
+          value: pg.aversions,
+        ),
         _ClinicalRow(label: 'Sleep Quality & Pattern', value: pg.sleep),
         _ClinicalRow(label: 'Dreams & Subconscious', value: pg.dreams),
-        _ClinicalRow(label: 'Perspiration & Distribution', value: pg.perspiration),
+        _ClinicalRow(
+          label: 'Perspiration & Distribution',
+          value: pg.perspiration,
+        ),
         _ClinicalRow(label: 'Bowel / Stool Habits', value: pg.stool),
         _ClinicalRow(label: 'Urine & Urinary Tract', value: pg.urine),
       ],
@@ -989,9 +1126,13 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
   }
 
   // --- 6. Mental Generals ---
-  Widget _buildMentalGeneralsSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildMentalGeneralsSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final mg = record.mentalGenerals;
-    final hasData = mg.generalMentalState.isNotEmpty ||
+    final hasData =
+        mg.generalMentalState.isNotEmpty ||
         mg.disposition.isNotEmpty ||
         mg.anxiety.isNotEmpty ||
         mg.fears.isNotEmpty ||
@@ -1006,20 +1147,36 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       icon: Icons.psychology_outlined,
       onEdit: () => _openEditor(context, sectionIndex: 8),
       children: [
-        _ClinicalRow(label: 'General Mental State', value: mg.generalMentalState),
+        _ClinicalRow(
+          label: 'General Mental State',
+          value: mg.generalMentalState,
+        ),
         _ClinicalRow(label: 'Disposition & Temperament', value: mg.disposition),
-        _ClinicalRow(label: 'Anxiety & Phobias / Fears', value: mg.fears.isNotEmpty ? mg.fears : mg.anxiety),
-        _ClinicalRow(label: 'Sadness, Grief & Depression', value: mg.sadnessGrief),
+        _ClinicalRow(
+          label: 'Anxiety & Phobias / Fears',
+          value: mg.fears.isNotEmpty ? mg.fears : mg.anxiety,
+        ),
+        _ClinicalRow(
+          label: 'Sadness, Grief & Depression',
+          value: mg.sadnessGrief,
+        ),
         _ClinicalRow(label: 'Anger & Irritability', value: mg.anger),
-        _ClinicalRow(label: 'Reaction to Stress & Friction', value: mg.responseToStress),
+        _ClinicalRow(
+          label: 'Reaction to Stress & Friction',
+          value: mg.responseToStress,
+        ),
       ],
     );
   }
 
   // --- 7. Lifestyle ---
-  Widget _buildLifestyleSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildLifestyleSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final l = record.lifestyleHabits;
-    final hasData = l.diet.isNotEmpty ||
+    final hasData =
+        l.diet.isNotEmpty ||
         l.physicalActivity.isNotEmpty ||
         l.occupationWorkPattern.isNotEmpty ||
         l.financialOccupationalStressors.isNotEmpty ||
@@ -1033,18 +1190,31 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       onEdit: () => _openEditor(context, sectionIndex: 9),
       children: [
         _ClinicalRow(label: 'Dietary Habits', value: l.diet),
-        _ClinicalRow(label: 'Physical Activity & Exercise', value: l.physicalActivity),
-        _ClinicalRow(label: 'Occupational Routine', value: l.occupationWorkPattern),
-        _ClinicalRow(label: 'Key Life Stress Factors', value: l.financialOccupationalStressors),
+        _ClinicalRow(
+          label: 'Physical Activity & Exercise',
+          value: l.physicalActivity,
+        ),
+        _ClinicalRow(
+          label: 'Occupational Routine',
+          value: l.occupationWorkPattern,
+        ),
+        _ClinicalRow(
+          label: 'Key Life Stress Factors',
+          value: l.financialOccupationalStressors,
+        ),
         _ClinicalRow(label: 'Habits & Substances', value: l.otherHabits),
       ],
     );
   }
 
   // --- 8. Clinical Exam & Vitals ---
-  Widget _buildClinicalExamSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildClinicalExamSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final ce = record.clinicalExam;
-    final hasData = ce.bloodPressure.isNotEmpty ||
+    final hasData =
+        ce.bloodPressure.isNotEmpty ||
         ce.pulse.isNotEmpty ||
         ce.temperature.isNotEmpty ||
         ce.respiratoryRate.isNotEmpty ||
@@ -1062,7 +1232,10 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       icon: Icons.monitor_heart_outlined,
       onEdit: () => _openEditor(context, sectionIndex: 10),
       children: [
-        if (ce.bloodPressure.isNotEmpty || ce.pulse.isNotEmpty || ce.temperature.isNotEmpty || ce.weightKg.isNotEmpty)
+        if (ce.bloodPressure.isNotEmpty ||
+            ce.pulse.isNotEmpty ||
+            ce.temperature.isNotEmpty ||
+            ce.weightKg.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: Spacing.sm),
             child: Wrap(
@@ -1085,10 +1258,7 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                     color: scheme.tertiary,
                   ),
                 if (ce.spo2.isNotEmpty)
-                  CustomBadge(
-                    label: 'SpO2: ${ce.spo2}',
-                    color: scheme.primary,
-                  ),
+                  CustomBadge(label: 'SpO2: ${ce.spo2}', color: scheme.primary),
                 if (ce.weightKg.isNotEmpty)
                   CustomBadge(
                     label: 'Wt: ${ce.weightKg}',
@@ -1102,20 +1272,36 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
               ],
             ),
           ),
-        _ClinicalRow(label: 'General Appearance & Build', value: ce.generalAppearance),
-        _ClinicalRow(label: 'Respiratory Examination', value: ce.respiratoryExamination),
+        _ClinicalRow(
+          label: 'General Appearance & Build',
+          value: ce.generalAppearance,
+        ),
+        _ClinicalRow(
+          label: 'Respiratory Examination',
+          value: ce.respiratoryExamination,
+        ),
         _ClinicalRow(label: 'Cardiovascular System', value: ce.cvsExamination),
-        _ClinicalRow(label: 'Abdominal Examination', value: ce.abdominalExamination),
-        _ClinicalRow(label: 'Skin & Mucosa Findings', value: ce.skinExamination),
+        _ClinicalRow(
+          label: 'Abdominal Examination',
+          value: ce.abdominalExamination,
+        ),
+        _ClinicalRow(
+          label: 'Skin & Mucosa Findings',
+          value: ce.skinExamination,
+        ),
       ],
     );
   }
 
   // --- 9. Miasm & Totality ---
-  Widget _buildMiasmAndTotalitySection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildMiasmAndTotalitySection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final m = record.miasmaticAnalysis;
     final t = record.caseTotality;
-    final hasData = m.dominantMiasm.isNotEmpty ||
+    final hasData =
+        m.dominantMiasm.isNotEmpty ||
         t.totalityOfSymptoms.isNotEmpty ||
         t.characteristicSymptoms.isNotEmpty ||
         t.finalRemedySelection.isNotEmpty;
@@ -1128,15 +1314,25 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       onEdit: () => _openEditor(context, sectionIndex: 11),
       children: [
         _ClinicalRow(label: 'Dominant Miasm', value: m.dominantMiasm),
-        _ClinicalRow(label: 'Secondary / Mixed Miasm', value: m.secondaryMixedMiasm),
-        _ClinicalRow(label: 'Totality of Symptoms', value: t.totalityOfSymptoms),
-        _ClinicalRow(label: 'Characteristic Particulars', value: t.characteristicSymptoms),
+        _ClinicalRow(
+          label: 'Secondary / Mixed Miasm',
+          value: m.secondaryMixedMiasm,
+        ),
+        _ClinicalRow(
+          label: 'Totality of Symptoms',
+          value: t.totalityOfSymptoms,
+        ),
+        _ClinicalRow(
+          label: 'Characteristic Particulars',
+          value: t.characteristicSymptoms,
+        ),
         _ClinicalRow(label: 'Generals (Mental & Physical)', value: t.generals),
         _ClinicalRow(
           label: 'Selected Simillimum Remedy',
-          value: t.finalRemedySelection.isNotEmpty
-              ? '${t.finalRemedySelection} ${t.potency}'.trim()
-              : '',
+          value:
+              t.finalRemedySelection.isNotEmpty
+                  ? '${t.finalRemedySelection} ${t.potency}'.trim()
+                  : '',
           valueColor: Theme.of(context).colorScheme.primary,
         ),
       ],
@@ -1144,9 +1340,13 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
   }
 
   // --- 10. Diagnosis & Assessment ---
-  Widget _buildDiagnosisSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildDiagnosisSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final a = record.clinicalAssessment;
-    final hasData = a.finalWorkingDiagnosis.isNotEmpty ||
+    final hasData =
+        a.finalWorkingDiagnosis.isNotEmpty ||
         a.provisionalDiagnosis.isNotEmpty ||
         a.differentialDiagnosis.isNotEmpty ||
         a.clinicalRemarks.isNotEmpty;
@@ -1160,20 +1360,36 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       children: [
         _ClinicalRow(
           label: 'Final Working Diagnosis',
-          value: a.finalWorkingDiagnosis.isNotEmpty ? a.finalWorkingDiagnosis : a.provisionalDiagnosis,
+          value:
+              a.finalWorkingDiagnosis.isNotEmpty
+                  ? a.finalWorkingDiagnosis
+                  : a.provisionalDiagnosis,
           valueColor: Theme.of(context).colorScheme.primary,
         ),
-        _ClinicalRow(label: 'Provisional Diagnosis', value: a.provisionalDiagnosis),
-        _ClinicalRow(label: 'Differential Diagnosis', value: a.differentialDiagnosis),
-        _ClinicalRow(label: 'Clinical Remarks & Notes', value: a.clinicalRemarks),
+        _ClinicalRow(
+          label: 'Provisional Diagnosis',
+          value: a.provisionalDiagnosis,
+        ),
+        _ClinicalRow(
+          label: 'Differential Diagnosis',
+          value: a.differentialDiagnosis,
+        ),
+        _ClinicalRow(
+          label: 'Clinical Remarks & Notes',
+          value: a.clinicalRemarks,
+        ),
       ],
     );
   }
 
   // --- 11. Baseline Prescription ---
-  Widget _buildPrescriptionSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildPrescriptionSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final p = record.baselinePrescription;
-    final hasData = p.remedyName.isNotEmpty ||
+    final hasData =
+        p.remedyName.isNotEmpty ||
         p.dose.isNotEmpty ||
         p.repetitionFrequency.isNotEmpty ||
         p.dietRegimenAdvice.isNotEmpty;
@@ -1220,10 +1436,12 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
                         color: scheme.primary,
                       ),
                     ),
-                    if (p.dose.isNotEmpty || p.pharmaceuticalForm.isNotEmpty) ...[
+                    if (p.dose.isNotEmpty ||
+                        p.pharmaceuticalForm.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
-                        '${p.dose} (${p.pharmaceuticalForm}) • ${p.repetitionFrequency}'.trim(),
+                        '${p.dose} (${p.pharmaceuticalForm}) • ${p.repetitionFrequency}'
+                            .trim(),
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -1236,16 +1454,26 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
           ),
         ),
         _ClinicalRow(label: 'Route of Administration', value: p.route),
-        _ClinicalRow(label: 'Dietary Regimen & Restrictions', value: p.dietRegimenAdvice),
-        _ClinicalRow(label: 'Lifestyle & Adjunctive Advice', value: p.lifestyleAdvice),
+        _ClinicalRow(
+          label: 'Dietary Regimen & Restrictions',
+          value: p.dietRegimenAdvice,
+        ),
+        _ClinicalRow(
+          label: 'Lifestyle & Adjunctive Advice',
+          value: p.lifestyleAdvice,
+        ),
       ],
     );
   }
 
   // --- 12. Investigations ---
-  Widget _buildInvestigationsSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildInvestigationsSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final inv = record.investigations;
-    final hasData = inv.investigationName.isNotEmpty || inv.reportSummary.isNotEmpty;
+    final hasData =
+        inv.investigationName.isNotEmpty || inv.reportSummary.isNotEmpty;
 
     if (!hasData) return const SizedBox.shrink();
 
@@ -1254,23 +1482,38 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       icon: Icons.biotech_outlined,
       onEdit: () => _openEditor(context, sectionIndex: 15),
       children: [
-        _ClinicalRow(label: 'Test Advised / Performed', value: inv.investigationName),
-        _ClinicalRow(label: 'Report Findings Summary', value: inv.reportSummary),
-        _ClinicalRow(label: 'Status / Clinical Normalcy', value: inv.normalAbnormal),
+        _ClinicalRow(
+          label: 'Test Advised / Performed',
+          value: inv.investigationName,
+        ),
+        _ClinicalRow(
+          label: 'Report Findings Summary',
+          value: inv.reportSummary,
+        ),
+        _ClinicalRow(
+          label: 'Status / Clinical Normalcy',
+          value: inv.normalAbnormal,
+        ),
       ],
     );
   }
 
   // --- 13. Follow-Up & Outcome ---
-  Widget _buildFollowUpSection(BuildContext context, MasterCaseRecordData record) {
+  Widget _buildFollowUpSection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
     final fu = record.followUpDetails;
     final out = record.outcomeDetails;
-    final remarks = fu.followUpRemarks.isNotEmpty
-        ? fu.followUpRemarks
-        : (record.followUpNotes.isNotEmpty && !record.followUpNotes.startsWith('{')
-            ? record.followUpNotes
-            : '');
-    final hasData = record.displayOutcome.isNotEmpty ||
+    final remarks =
+        fu.followUpRemarks.isNotEmpty
+            ? fu.followUpRemarks
+            : (record.followUpNotes.isNotEmpty &&
+                    !record.followUpNotes.startsWith('{')
+                ? record.followUpNotes
+                : '');
+    final hasData =
+        record.displayOutcome.isNotEmpty ||
         fu.overallResponse.isNotEmpty ||
         out.degreeOfImprovement.isNotEmpty ||
         out.treatmentDuration.isNotEmpty ||
@@ -1285,11 +1528,23 @@ class _ClinicalCaseSheetScreenState extends ConsumerState<ClinicalCaseSheetScree
       icon: Icons.insights_outlined,
       onEdit: () => _openEditor(context, sectionIndex: 16),
       children: [
-        _ClinicalRow(label: 'Current Clinical Status', value: record.displayOutcome),
-        _ClinicalRow(label: 'Degree of Improvement', value: out.degreeOfImprovement),
+        _ClinicalRow(
+          label: 'Current Clinical Status',
+          value: record.displayOutcome,
+        ),
+        _ClinicalRow(
+          label: 'Degree of Improvement',
+          value: out.degreeOfImprovement,
+        ),
         _ClinicalRow(label: 'Treatment Duration', value: out.treatmentDuration),
-        _ClinicalRow(label: 'Overall Patient Response', value: fu.overallResponse),
-        _ClinicalRow(label: 'Chief Complaint Changes', value: fu.chiefComplaintChanges),
+        _ClinicalRow(
+          label: 'Overall Patient Response',
+          value: fu.overallResponse,
+        ),
+        _ClinicalRow(
+          label: 'Chief Complaint Changes',
+          value: fu.chiefComplaintChanges,
+        ),
         _ClinicalRow(label: 'Next Follow-Up Target', value: fu.nextFollowUp),
         _ClinicalRow(label: 'Case Notes & Observations', value: remarks),
       ],
@@ -1376,15 +1631,14 @@ class _ClinicalRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty || v.startsWith('{') || v.startsWith('[')) return const SizedBox.shrink();
+    if (v.isEmpty || v.startsWith('{') || v.startsWith('['))
+      return const SizedBox.shrink();
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: Spacing.xs + 1,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: Spacing.xs + 1),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1431,7 +1685,8 @@ class _ModalityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = value.trim();
-    if (v.isEmpty || v.startsWith('{') || v.startsWith('[')) return const SizedBox.shrink();
+    if (v.isEmpty || v.startsWith('{') || v.startsWith('['))
+      return const SizedBox.shrink();
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -1449,7 +1704,10 @@ class _ModalityRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 1,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeColor.withValues(alpha: 0.15),
                     borderRadius: Radii.smAll,
@@ -1512,7 +1770,10 @@ class _MetricPill extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs + 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.sm,
+        vertical: Spacing.xs + 2,
+      ),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
         borderRadius: Radii.mdAll,
@@ -1629,13 +1890,12 @@ class _FollowUpComplaintCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   complaint.complaintName,
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-              CustomBadge(
-                label: complaint.status,
-                color: scheme.tertiary,
-              ),
+              CustomBadge(label: complaint.status, color: scheme.tertiary),
             ],
           ),
           const SizedBox(height: 2),
@@ -1650,7 +1910,11 @@ class _FollowUpComplaintCard extends StatelessWidget {
             const SizedBox(height: Spacing.xs),
             Row(
               children: [
-                Icon(Icons.photo_library_outlined, size: 14, color: scheme.primary),
+                Icon(
+                  Icons.photo_library_outlined,
+                  size: 14,
+                  color: scheme.primary,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   '$totalPhotos progress photos (${beforeImgs.length} Before / ${afterImgs.length} After)',
@@ -1664,10 +1928,7 @@ class _FollowUpComplaintCard extends StatelessWidget {
           ],
           if ((complaint.notes ?? '').isNotEmpty) ...[
             const SizedBox(height: 2),
-            Text(
-              complaint.notes!,
-              style: theme.textTheme.bodySmall,
-            ),
+            Text(complaint.notes!, style: theme.textTheme.bodySmall),
           ],
         ],
       ),
@@ -1697,7 +1958,11 @@ class _FollowUpPrescriptionCard extends StatelessWidget {
               color: scheme.secondaryContainer,
               borderRadius: Radii.smAll,
             ),
-            child: Icon(Icons.medication, size: 16, color: scheme.onSecondaryContainer),
+            child: Icon(
+              Icons.medication,
+              size: 16,
+              color: scheme.onSecondaryContainer,
+            ),
           ),
           const SizedBox(width: Spacing.sm),
           Expanded(
@@ -1706,10 +1971,13 @@ class _FollowUpPrescriptionCard extends StatelessWidget {
               children: [
                 Text(
                   '${p.remedyName} ${p.potency}',
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
-                  '${Formatters.formatDate(p.prescriptionDate ?? p.createdAt)} • ${p.doseCount ?? ''} ${p.frequency ?? ''} • ${p.vehicle ?? ''}'.trim(),
+                  '${Formatters.formatDate(p.prescriptionDate ?? p.createdAt)} • ${p.doseCount ?? ''} ${p.frequency ?? ''} • ${p.vehicle ?? ''}'
+                      .trim(),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                     fontSize: 11,
@@ -1734,7 +2002,9 @@ class _FollowUpInvestigationCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final inv = investigation;
-    final attachments = InvestigationNotifier.parseAttachments(inv.reportAttachments);
+    final attachments = InvestigationNotifier.parseAttachments(
+      inv.reportAttachments,
+    );
 
     final (flagColor, flagBg) = switch (inv.flag) {
       'High' => (scheme.error, scheme.errorContainer),
@@ -1754,12 +2024,17 @@ class _FollowUpInvestigationCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   inv.testName,
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: flagBg, borderRadius: Radii.smAll),
+                decoration: BoxDecoration(
+                  color: flagBg,
+                  borderRadius: Radii.smAll,
+                ),
                 child: Text(
                   inv.flag.toUpperCase(),
                   style: theme.textTheme.labelSmall?.copyWith(
@@ -1783,14 +2058,18 @@ class _FollowUpInvestigationCard extends StatelessWidget {
             const SizedBox(height: Spacing.xs),
             Wrap(
               spacing: Spacing.xs,
-              children: attachments.map((a) {
-                return ActionChip(
-                  avatar: const Icon(Icons.attach_file, size: 12),
-                  label: Text('Report (${a.split(RegExp(r'[\\/]')).last})', style: const TextStyle(fontSize: 10)),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () => MediaAttachmentService.openAttachment(a),
-                );
-              }).toList(),
+              children:
+                  attachments.map((a) {
+                    return ActionChip(
+                      avatar: const Icon(Icons.attach_file, size: 12),
+                      label: Text(
+                        'Report (${a.split(RegExp(r'[\\/]')).last})',
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => MediaAttachmentService.openAttachment(a),
+                    );
+                  }).toList(),
             ),
           ],
         ],
@@ -1822,13 +2101,12 @@ class _VisitSummaryCard extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 Formatters.formatDate(v.visitDate),
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const Spacer(),
-              CustomBadge(
-                label: v.visitType,
-                color: scheme.primary,
-              ),
+              CustomBadge(label: v.visitType, color: scheme.primary),
             ],
           ),
           if ((v.disease).isNotEmpty) ...[
@@ -1845,7 +2123,9 @@ class _VisitSummaryCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               v.notes!,
-              style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ],
           if (v.nextFollowUpDate != null) ...[
@@ -1891,22 +2171,30 @@ class _SubTabButton extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
           alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.sm,
+            vertical: Spacing.xs,
+          ),
           decoration: BoxDecoration(
-            color: isSelected ? scheme.surface : scheme.surface.withValues(alpha: 0),
+            color:
+                isSelected
+                    ? scheme.surface
+                    : scheme.surface.withValues(alpha: 0),
             borderRadius: Radii.mdAll,
-            border: isSelected
-                ? Border.all(color: scheme.primary.withValues(alpha: 0.25))
-                : null,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: scheme.shadow.withValues(alpha: 0.06),
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
+            border:
+                isSelected
+                    ? Border.all(color: scheme.primary.withValues(alpha: 0.25))
+                    : null,
+            boxShadow:
+                isSelected
+                    ? [
+                      BoxShadow(
+                        color: scheme.shadow.withValues(alpha: 0.06),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                    : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1925,7 +2213,8 @@ class _SubTabButton extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+                    color:
+                        isSelected ? scheme.primary : scheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -1936,4 +2225,3 @@ class _SubTabButton extends StatelessWidget {
     );
   }
 }
-

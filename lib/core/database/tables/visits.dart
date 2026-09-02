@@ -16,9 +16,10 @@ class Visits extends Table {
   TextColumn get visitType => text()();
 
   // 'clinic' | 'online' | 'camp'  — powers camp conversion tracking
-  TextColumn get consultationType => text().withDefault(const Constant('clinic'))();
+  TextColumn get consultationType =>
+      text().withDefault(const Constant('clinic'))();
 
-  TextColumn get disease => text()();                  // primary condition this visit
+  TextColumn get disease => text()(); // primary condition this visit
   TextColumn get chiefComplaint => text().nullable()();
 
   // Asked only on a NEW visit ("How did you hear about us?"). Null on repeats.
@@ -28,7 +29,8 @@ class Visits extends Table {
   TextColumn get outcome => text().nullable()();
 
   DateTimeColumn get visitDate => dateTime()();
-  DateTimeColumn get nextFollowUpDate => dateTime().nullable()(); // powers overdue list
+  DateTimeColumn get nextFollowUpDate =>
+      dateTime().nullable()(); // powers overdue list
 
   TextColumn get notes => text().nullable()();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();

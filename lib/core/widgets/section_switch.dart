@@ -47,7 +47,8 @@ class SectionSwitch extends StatelessWidget {
         child: Row(
           children: [
             for (var i = 0; i < labels.length; i++) ...[
-              if (i > 0) SizedBox(width: labels.length > 2 ? Spacing.md : Spacing.xl),
+              if (i > 0)
+                SizedBox(width: labels.length > 2 ? Spacing.md : Spacing.xl),
               InkWell(
                 borderRadius: Radii.smAll,
                 onTap: () => onChanged(i),
@@ -65,12 +66,15 @@ class SectionSwitch extends StatelessWidget {
                         style: (theme.textTheme.titleMedium ??
                                 const TextStyle())
                             .copyWith(
-                          color: i == index
-                              ? scheme.onSurface
-                              : scheme.onSurfaceVariant,
-                          fontWeight:
-                              i == index ? FontWeight.w700 : FontWeight.w400,
-                        ),
+                              color:
+                                  i == index
+                                      ? scheme.onSurface
+                                      : scheme.onSurfaceVariant,
+                              fontWeight:
+                                  i == index
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                            ),
                         child: Text(labels[i]),
                       ),
                       const SizedBox(height: Spacing.xs),
@@ -91,10 +95,7 @@ class SectionSwitch extends StatelessWidget {
                 ),
               ),
             ],
-            if (trailing != null) ...[
-              const Spacer(),
-              trailing!,
-            ],
+            if (trailing != null) ...[const Spacer(), trailing!],
           ],
         ),
       ),

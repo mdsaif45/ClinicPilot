@@ -8,7 +8,8 @@ class DemoCrmData {
       'address': 'Shop 4, Market Complex, Central Ave',
       'visitCount': 12,
       'referralCount': 28,
-      'notes': 'High-volume chemist. Frequently refers chronic acid reflux and arthritis patients.',
+      'notes':
+          'High-volume chemist. Frequently refers chronic acid reflux and arthritis patients.',
     },
     {
       'name': 'Suraksha Diagnostics & Lab',
@@ -18,7 +19,8 @@ class DemoCrmData {
       'address': '22 Park Circus, Near Metro Stn',
       'visitCount': 8,
       'referralCount': 19,
-      'notes': 'Partners for lipid profiles, thyroid panels, and routine urine/blood tests.',
+      'notes':
+          'Partners for lipid profiles, thyroid panels, and routine urine/blood tests.',
     },
     {
       'name': 'ActiveLife Physio & Rehab',
@@ -28,7 +30,8 @@ class DemoCrmData {
       'address': '45 Rowland Road, Ballygunge',
       'visitCount': 6,
       'referralCount': 14,
-      'notes': 'Refers lumbar spondylosis and chronic sciatica patients for constitutional homeopathy.',
+      'notes':
+          'Refers lumbar spondylosis and chronic sciatica patients for constitutional homeopathy.',
     },
     {
       'name': 'DentCare Oral Health',
@@ -38,7 +41,8 @@ class DemoCrmData {
       'address': '18 Sun Yat Sen Street',
       'visitCount': 4,
       'referralCount': 9,
-      'notes': 'Refers trigeminal neuralgia, recurrent aphthous ulcers, and dental anxiety cases.',
+      'notes':
+          'Refers trigeminal neuralgia, recurrent aphthous ulcers, and dental anxiety cases.',
     },
     {
       'name': 'FitZone Gym & Wellness Hub',
@@ -48,7 +52,8 @@ class DemoCrmData {
       'address': '82 Park Street, 3rd Floor',
       'visitCount': 5,
       'referralCount': 12,
-      'notes': 'Refers members with stubborn weight gain, PCOD, and sports tendonitis.',
+      'notes':
+          'Refers members with stubborn weight gain, PCOD, and sports tendonitis.',
     },
     {
       'name': 'Dr. K. N. Sen Memorial Polyclinic',
@@ -58,7 +63,8 @@ class DemoCrmData {
       'address': '108 Rashbehari Avenue',
       'visitCount': 7,
       'referralCount': 16,
-      'notes': 'Consultant physician. Refers chronic migraine and allergic eczema patients.',
+      'notes':
+          'Consultant physician. Refers chronic migraine and allergic eczema patients.',
     },
   ];
 
@@ -70,7 +76,8 @@ class DemoCrmData {
       'attendance': 48,
       'month': 1, // Jan 2026
       'day': 18,
-      'notes': 'Free screening, uric acid tests, and complimentary 7-day joint pain remedies.',
+      'notes':
+          'Free screening, uric acid tests, and complimentary 7-day joint pain remedies.',
     },
     {
       'name': 'Women & Child Spring Health Camp',
@@ -79,7 +86,8 @@ class DemoCrmData {
       'attendance': 62,
       'month': 4, // Apr 2026
       'day': 12,
-      'notes': 'Focused on PCOD, anemia screening, pediatric immunity, and allergic rhinitis.',
+      'notes':
+          'Focused on PCOD, anemia screening, pediatric immunity, and allergic rhinitis.',
     },
     {
       'name': 'Senior Citizens Lifestyle & Wellness Camp',
@@ -88,7 +96,8 @@ class DemoCrmData {
       'attendance': 55,
       'month': 7, // Jul 2026
       'day': 19,
-      'notes': 'Free blood pressure, random blood sugar screening, and geriatric mobility care.',
+      'notes':
+          'Free blood pressure, random blood sugar screening, and geriatric mobility care.',
     },
   ];
 }

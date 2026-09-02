@@ -108,13 +108,14 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
         ),
         FilledButton(
           onPressed: _submitting ? null : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Save Expense'),
+          child:
+              _submitting
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Save Expense'),
         ),
       ],
       child: Form(
@@ -128,17 +129,21 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
               prefixIcon: Icons.local_hospital,
               value: _selectedClinicId,
               errorText: _clinicError,
-              options: clinics
-                  .map((c) => PickerOption(
-                        value: c.id,
-                        label: c.name,
-                        subtitle: c.address,
-                      ))
-                  .toList(),
-              onChanged: (val) => setState(() {
-                _selectedClinicId = val;
-                _clinicError = null;
-              }),
+              options:
+                  clinics
+                      .map(
+                        (c) => PickerOption(
+                          value: c.id,
+                          label: c.name,
+                          subtitle: c.address,
+                        ),
+                      )
+                      .toList(),
+              onChanged:
+                  (val) => setState(() {
+                    _selectedClinicId = val;
+                    _clinicError = null;
+                  }),
             ),
             const SizedBox(height: Spacing.md),
             DateField(
@@ -151,9 +156,10 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
               label: 'Expense Category',
               prefixIcon: Icons.category,
               value: _category,
-              options: _categories
-                  .map((c) => PickerOption(value: c, label: c))
-                  .toList(),
+              options:
+                  _categories
+                      .map((c) => PickerOption(value: c, label: c))
+                      .toList(),
               onChanged: (val) => setState(() => _category = val),
             ),
             const SizedBox(height: Spacing.md),
@@ -168,8 +174,11 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
               label: 'Amount (Rs)',
               prefixIcon: Icons.currency_rupee,
               keyboardType: TextInputType.number,
-              validator: (v) =>
-                  v == null || double.tryParse(v) == null ? 'Valid amount' : null,
+              validator:
+                  (v) =>
+                      v == null || double.tryParse(v) == null
+                          ? 'Valid amount'
+                          : null,
             ),
             const SizedBox(height: Spacing.md),
             // The field was already being saved but had no control, so every
@@ -184,7 +193,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
             ),
             const SizedBox(height: Spacing.md),
             CheckboxListTile(
-              title: const Text('Recurring Fixed Cost (Monthly Rent / Utilities)'),
+              title: const Text(
+                'Recurring Fixed Cost (Monthly Rent / Utilities)',
+              ),
               value: _isRecurring,
               onChanged: (val) => setState(() => _isRecurring = val ?? false),
               controlAffinity: ListTileControlAffinity.leading,
@@ -219,7 +230,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     final notes = _notesController.text.trim();
 
     try {
-      await ref.read(expenseNotifierProvider.notifier).addExpense(
+      await ref
+          .read(expenseNotifierProvider.notifier)
+          .addExpense(
             clinicId: _selectedClinicId!,
             category: _category,
             subcategory: subcat.isEmpty ? null : subcat,
@@ -232,9 +245,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save expense: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not save expense: $e')));
       }
       return;
     }

@@ -36,160 +36,180 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       body: statsAsync.when(
         loading: () => const DashboardShimmer(),
         error: (e, _) => Center(child: Text('Could not load dashboard: $e')),
-        data: (stats) => RefreshIndicator(
-          onRefresh: () async {
-            AppHaptics.selection();
-            ref.invalidate(dashboardStatsProvider);
-          },
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
-            children: [
-              // 1. Top Greeting Header
-              Padding(
+        data:
+            (stats) => RefreshIndicator(
+              onRefresh: () async {
+                AppHaptics.selection();
+                ref.invalidate(dashboardStatsProvider);
+              },
+              child: ListView(
                 padding: const EdgeInsets.fromLTRB(
-                  Spacing.lg,
-                  Spacing.lg,
-                  Spacing.lg,
-                  Spacing.xs,
+                  0,
+                  Spacing.sm,
+                  0,
+                  Spacing.xxl,
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            () {
-                              final profile =
-                                  ref.watch(doctorProfileStreamProvider).value;
-                              final greetingName = profile?.greetingName ?? '';
-                              final name = greetingName.isNotEmpty
-                                  ? greetingName
-                                  : (ref.watch(doctorNameProvider).value ?? '');
-                              final cleanName = () {
-                                if (name.isEmpty) return '';
-                                final stripped = name
-                                    .replaceFirst(
-                                        RegExp(r'^Dr\.?\s*',
-                                            caseSensitive: false),
-                                        '')
-                                    .trim();
-                                if (stripped.isEmpty) return name;
-                                final parts =
-                                    stripped.split(RegExp(r'\s+'));
-                                return 'Dr. ${parts.last}';
-                              }();
-                              return cleanName.isEmpty
-                                  ? '${Formatters.greeting(now)} 👋'
-                                  : '${Formatters.greeting(now)}, $cleanName 👋';
-                            }(),
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: Spacing.xs),
-                          Text(
-                            Formatters.formatFullDate(now),
-                            style: theme.textTheme.labelMedium,
-                          ),
-                        ],
-                      ),
+                children: [
+                  // 1. Top Greeting Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Spacing.lg,
+                      Spacing.lg,
+                      Spacing.lg,
+                      Spacing.xs,
                     ),
-                  ],
-                ),
-              ),
-              // 2. Date-Navigable Daily Clinic Snapshot (Isolated & Smoothly Animated)
-              const _DailySnapshotSection(),
-
-              // 4. Date-Navigable Monthly Clinic Snapshot & Goals
-              const _MonthlySnapshotSection(),
-
-              // 6. Patients Summary
-              const SectionHeader(title: 'Patients Summary'),
-              _TileRow(children: [
-                MetricCard(
-                  label: 'Total Patients',
-                  value: '${stats.totalPatients}',
-                  subtitle: '${stats.totalRepeatPatients} repeat',
-                  icon: Icons.people_alt_outlined,
-                  tone: MetricTone.neutral,
-                ),
-                MetricCard(
-                  label: 'New Patients',
-                  value: '${stats.monthlyNewPatients}',
-                  subtitle: 'this month',
-                  icon: Icons.person_add_outlined,
-                  tone: MetricTone.neutral,
-                ),
-                MetricCard(
-                  label: 'Repeat Patients',
-                  value: '${stats.monthlyRepeatPatients}',
-                  subtitle: 'this month',
-                  icon: Icons.replay,
-                  tone: MetricTone.neutral,
-                ),
-              ]),
-
-              // 7. Quick Actions at bottom
-              const SectionHeader(title: 'Quick Actions'),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                child: Column(
-                  children: [
-                    Row(
+                    child: Row(
                       children: [
                         Expanded(
-                          child: AppButton.tonal(
-                            label: 'Add Patient',
-                            icon: Icons.person_add_outlined,
-                            fullWidth: true,
-                            onPressed: () {
-                              AppHaptics.selection();
-                              showDialog(
-                                context: context,
-                                builder: (_) => const AddPatientDialog(),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: Spacing.md),
-                        Expanded(
-                          child: AppButton.tonal(
-                            label: 'Create Memo',
-                            icon: Icons.receipt_long_outlined,
-                            fullWidth: true,
-                            onPressed: () {
-                              AppHaptics.selection();
-                              showDialog(
-                                context: context,
-                                builder: (_) => const NewCashMemoDialog(),
-                              );
-                            },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                () {
+                                  final profile =
+                                      ref
+                                          .watch(doctorProfileStreamProvider)
+                                          .value;
+                                  final greetingName =
+                                      profile?.greetingName ?? '';
+                                  final name =
+                                      greetingName.isNotEmpty
+                                          ? greetingName
+                                          : (ref
+                                                  .watch(doctorNameProvider)
+                                                  .value ??
+                                              '');
+                                  final cleanName = () {
+                                    if (name.isEmpty) return '';
+                                    final stripped =
+                                        name
+                                            .replaceFirst(
+                                              RegExp(
+                                                r'^Dr\.?\s*',
+                                                caseSensitive: false,
+                                              ),
+                                              '',
+                                            )
+                                            .trim();
+                                    if (stripped.isEmpty) return name;
+                                    final parts = stripped.split(
+                                      RegExp(r'\s+'),
+                                    );
+                                    return 'Dr. ${parts.last}';
+                                  }();
+                                  return cleanName.isEmpty
+                                      ? '${Formatters.greeting(now)} 👋'
+                                      : '${Formatters.greeting(now)}, $cleanName 👋';
+                                }(),
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: Spacing.xs),
+                              Text(
+                                Formatters.formatFullDate(now),
+                                style: theme.textTheme.labelMedium,
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: Spacing.md),
-                    AppButton.outlined(
-                      label: 'Log Expense',
-                      icon: Icons.money_off_outlined,
-                      fullWidth: true,
-                      onPressed: () {
-                        AppHaptics.selection();
-                        showDialog(
-                          context: context,
-                          builder: (_) => const AddExpenseDialog(),
-                        );
-                      },
+                  ),
+                  // 2. Date-Navigable Daily Clinic Snapshot (Isolated & Smoothly Animated)
+                  const _DailySnapshotSection(),
+
+                  // 4. Date-Navigable Monthly Clinic Snapshot & Goals
+                  const _MonthlySnapshotSection(),
+
+                  // 6. Patients Summary
+                  const SectionHeader(title: 'Patients Summary'),
+                  _TileRow(
+                    children: [
+                      MetricCard(
+                        label: 'Total Patients',
+                        value: '${stats.totalPatients}',
+                        subtitle: '${stats.totalRepeatPatients} repeat',
+                        icon: Icons.people_alt_outlined,
+                        tone: MetricTone.neutral,
+                      ),
+                      MetricCard(
+                        label: 'New Patients',
+                        value: '${stats.monthlyNewPatients}',
+                        subtitle: 'this month',
+                        icon: Icons.person_add_outlined,
+                        tone: MetricTone.neutral,
+                      ),
+                      MetricCard(
+                        label: 'Repeat Patients',
+                        value: '${stats.monthlyRepeatPatients}',
+                        subtitle: 'this month',
+                        icon: Icons.replay,
+                        tone: MetricTone.neutral,
+                      ),
+                    ],
+                  ),
+
+                  // 7. Quick Actions at bottom
+                  const SectionHeader(title: 'Quick Actions'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppButton.tonal(
+                                label: 'Add Patient',
+                                icon: Icons.person_add_outlined,
+                                fullWidth: true,
+                                onPressed: () {
+                                  AppHaptics.selection();
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => const AddPatientDialog(),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: Spacing.md),
+                            Expanded(
+                              child: AppButton.tonal(
+                                label: 'Create Memo',
+                                icon: Icons.receipt_long_outlined,
+                                fullWidth: true,
+                                onPressed: () {
+                                  AppHaptics.selection();
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => const NewCashMemoDialog(),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: Spacing.md),
+                        AppButton.outlined(
+                          label: 'Log Expense',
+                          icon: Icons.money_off_outlined,
+                          fullWidth: true,
+                          onPressed: () {
+                            AppHaptics.selection();
+                            showDialog(
+                              context: context,
+                              builder: (_) => const AddExpenseDialog(),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: Spacing.lg),
+                  const DailyInsightCard(),
+                ],
               ),
-              const SizedBox(height: Spacing.lg),
-              const DailyInsightCard(),
-            ],
-          ),
-        ),
+            ),
       ),
     );
   }
@@ -228,7 +248,8 @@ class _DailySnapshotSection extends ConsumerWidget {
     final daily = ref.watch(dailyStatsProvider);
 
     final now = DateTime.now();
-    final isToday = selectedDate.year == now.year &&
+    final isToday =
+        selectedDate.year == now.year &&
         selectedDate.month == now.month &&
         selectedDate.day == now.day;
 
@@ -257,9 +278,10 @@ class _DailySnapshotSection extends ConsumerWidget {
               value: Formatters.formatCurrency(daily.dailyNetProfit),
               numericValue: daily.dailyNetProfit,
               icon: Icons.currency_rupee,
-              tone: daily.dailyNetProfit < 0
-                  ? MetricTone.negative
-                  : MetricTone.positive,
+              tone:
+                  daily.dailyNetProfit < 0
+                      ? MetricTone.negative
+                      : MetricTone.positive,
             ),
           ],
         ),
@@ -281,10 +303,12 @@ class _DailySnapshotHeader extends ConsumerWidget {
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
 
-    final isToday = selectedDate.year == today.year &&
+    final isToday =
+        selectedDate.year == today.year &&
         selectedDate.month == today.month &&
         selectedDate.day == today.day;
-    final isYesterday = selectedDate.year == yesterday.year &&
+    final isYesterday =
+        selectedDate.year == yesterday.year &&
         selectedDate.month == yesterday.month &&
         selectedDate.day == yesterday.day;
 
@@ -327,7 +351,9 @@ class _DailySnapshotHeader extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: scheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: scheme.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: scheme.primary.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -355,8 +381,11 @@ class _DailySnapshotHeader extends ConsumerWidget {
             visualDensity: VisualDensity.compact,
             onPressed: () {
               AppHaptics.selection();
-              ref.read(selectedDashboardDateProvider.notifier).state =
-                  DateTime(selectedDate.year, selectedDate.month, selectedDate.day - 1);
+              ref.read(selectedDashboardDateProvider.notifier).state = DateTime(
+                selectedDate.year,
+                selectedDate.month,
+                selectedDate.day - 1,
+              );
             },
           ),
           InkWell(
@@ -369,8 +398,9 @@ class _DailySnapshotHeader extends ConsumerWidget {
                 lastDate: today,
               );
               if (picked != null) {
-                ref.read(selectedDashboardDateProvider.notifier).state =
-                    DateTime(picked.year, picked.month, picked.day);
+                ref
+                    .read(selectedDashboardDateProvider.notifier)
+                    .state = DateTime(picked.year, picked.month, picked.day);
               }
             },
             borderRadius: Radii.smAll,
@@ -400,16 +430,21 @@ class _DailySnapshotHeader extends ConsumerWidget {
             icon: const Icon(Icons.chevron_right),
             tooltip: 'Next Day',
             visualDensity: VisualDensity.compact,
-            onPressed: isToday
-                ? null
-                : () {
-                    AppHaptics.selection();
-                    final next = DateTime(
-                        selectedDate.year, selectedDate.month, selectedDate.day + 1);
-                    if (!next.isAfter(today)) {
-                      ref.read(selectedDashboardDateProvider.notifier).state = next;
-                    }
-                  },
+            onPressed:
+                isToday
+                    ? null
+                    : () {
+                      AppHaptics.selection();
+                      final next = DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day + 1,
+                      );
+                      if (!next.isAfter(today)) {
+                        ref.read(selectedDashboardDateProvider.notifier).state =
+                            next;
+                      }
+                    },
           ),
         ],
       ),
@@ -467,9 +502,10 @@ class _MonthlySnapshotSectionState
               value: Formatters.formatCurrency(monthly.monthlyNetProfit),
               numericValue: monthly.monthlyNetProfit,
               icon: Icons.currency_rupee,
-              tone: monthly.monthlyNetProfit < 0
-                  ? MetricTone.negative
-                  : MetricTone.positive,
+              tone:
+                  monthly.monthlyNetProfit < 0
+                      ? MetricTone.negative
+                      : MetricTone.positive,
             ),
           ],
         ),
@@ -517,9 +553,11 @@ class _MonthlySnapshotHeader extends ConsumerWidget {
     final currentMonth = DateTime(now.year, now.month, 1);
     final lastMonth = DateTime(now.year, now.month - 1, 1);
 
-    final isCurrentMonth = selectedMonth.year == currentMonth.year &&
+    final isCurrentMonth =
+        selectedMonth.year == currentMonth.year &&
         selectedMonth.month == currentMonth.month;
-    final isLastMonth = selectedMonth.year == lastMonth.year &&
+    final isLastMonth =
+        selectedMonth.year == lastMonth.year &&
         selectedMonth.month == lastMonth.month;
 
     String monthTitle;
@@ -575,7 +613,8 @@ class _MonthlySnapshotHeader extends ConsumerWidget {
             InkWell(
               onTap: () {
                 AppHaptics.selection();
-                ref.read(selectedDashboardMonthProvider.notifier).state = currentMonth;
+                ref.read(selectedDashboardMonthProvider.notifier).state =
+                    currentMonth;
               },
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -583,7 +622,9 @@ class _MonthlySnapshotHeader extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: scheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: scheme.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: scheme.primary.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -623,14 +664,19 @@ class _MonthlySnapshotHeader extends ConsumerWidget {
                 Icon(
                   Icons.calendar_today_outlined,
                   size: 14,
-                  color: isCurrentMonth ? scheme.onSurfaceVariant : scheme.primary,
+                  color:
+                      isCurrentMonth ? scheme.onSurfaceVariant : scheme.primary,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   DateFormat('MMM yyyy').format(selectedMonth),
                   style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: isCurrentMonth ? FontWeight.w500 : FontWeight.w700,
-                    color: isCurrentMonth ? scheme.onSurfaceVariant : scheme.primary,
+                    fontWeight:
+                        isCurrentMonth ? FontWeight.w500 : FontWeight.w700,
+                    color:
+                        isCurrentMonth
+                            ? scheme.onSurfaceVariant
+                            : scheme.primary,
                   ),
                 ),
               ],
@@ -640,15 +686,22 @@ class _MonthlySnapshotHeader extends ConsumerWidget {
             icon: const Icon(Icons.chevron_right),
             tooltip: 'Next Month',
             visualDensity: VisualDensity.compact,
-            onPressed: isCurrentMonth
-                ? null
-                : () {
-                    AppHaptics.selection();
-                    final next = DateTime(selectedMonth.year, selectedMonth.month + 1, 1);
-                    if (!next.isAfter(currentMonth)) {
-                      ref.read(selectedDashboardMonthProvider.notifier).state = next;
-                    }
-                  },
+            onPressed:
+                isCurrentMonth
+                    ? null
+                    : () {
+                      AppHaptics.selection();
+                      final next = DateTime(
+                        selectedMonth.year,
+                        selectedMonth.month + 1,
+                        1,
+                      );
+                      if (!next.isAfter(currentMonth)) {
+                        ref
+                            .read(selectedDashboardMonthProvider.notifier)
+                            .state = next;
+                      }
+                    },
           ),
         ],
       ),

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
-
 class CashMemoWithDetails {
   final CashMemo memo;
   final Patient patient;
@@ -22,15 +21,24 @@ class CashMemoWithDetails {
   bool get isFullyPaid => pendingAmount <= 0;
 }
 
-final cashMemosStreamProvider = StreamProvider<List<CashMemoWithDetails>>((ref) {
+final cashMemosStreamProvider = StreamProvider<List<CashMemoWithDetails>>((
+  ref,
+) {
   final db = ref.watch(databaseProvider);
-  final query = db.select(db.cashMemos).join([
-    innerJoin(db.patients, db.patients.id.equalsExp(db.cashMemos.patientId)),
-    innerJoin(db.clinics, db.clinics.id.equalsExp(db.cashMemos.clinicId)),
-    leftOuterJoin(db.visits, db.visits.id.equalsExp(db.cashMemos.visitId)),
-  ])
-    ..where(db.cashMemos.isDeleted.equals(false))
-    ..orderBy([OrderingTerm.desc(db.cashMemos.memoDate)]);
+  final query =
+      db.select(db.cashMemos).join([
+          innerJoin(
+            db.patients,
+            db.patients.id.equalsExp(db.cashMemos.patientId),
+          ),
+          innerJoin(db.clinics, db.clinics.id.equalsExp(db.cashMemos.clinicId)),
+          leftOuterJoin(
+            db.visits,
+            db.visits.id.equalsExp(db.cashMemos.visitId),
+          ),
+        ])
+        ..where(db.cashMemos.isDeleted.equals(false))
+        ..orderBy([OrderingTerm.desc(db.cashMemos.memoDate)]);
 
   return query.watch().map((rows) {
     return rows.map((row) {
@@ -98,8 +106,7 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
 
     state = const AsyncData(null);
     return await (_db.select(_db.cashMemos)
-          ..where((tbl) => tbl.id.equals(memoId)))
-        .getSingle();
+      ..where((tbl) => tbl.id.equals(memoId))).getSingle();
   }
 
   Future<void> updateCashMemo({
@@ -116,7 +123,8 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncLoading();
     final total = (consultationFee + medicineFee + otherFee) - discount;
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.cashMemos)..where((tbl) => tbl.id.equals(id))).write(
+      await (_db.update(_db.cashMemos)
+        ..where((tbl) => tbl.id.equals(id))).write(
         CashMemosCompanion(
           consultationFee: Value(consultationFee),
           medicineFee: Value(medicineFee),
@@ -137,14 +145,15 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> archiveCashMemo(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.cashMemos)..where((tbl) => tbl.id.equals(id)))
-          .write(const CashMemosCompanion(isDeleted: Value(true)));
+      await (_db.update(_db.cashMemos)..where(
+        (tbl) => tbl.id.equals(id),
+      )).write(const CashMemosCompanion(isDeleted: Value(true)));
     });
   }
 }
 
 final cashMemoNotifierProvider =
     StateNotifierProvider<CashMemoNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return CashMemoNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return CashMemoNotifier(db);
+    });

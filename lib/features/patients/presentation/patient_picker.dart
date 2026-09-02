@@ -95,9 +95,12 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
                 ),
                 child: Row(
                   children: [
-                    Text('Select Patient',
-                        style: theme.textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Select Patient',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const Spacer(),
                     IconButton(
                       icon: const Icon(Icons.close),
@@ -116,15 +119,16 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
                   decoration: InputDecoration(
                     hintText: 'Search name, phone or code',
                     prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _searchController.text.isEmpty
-                        ? null
-                        : IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              _onQueryChanged('');
-                            },
-                          ),
+                    suffixIcon:
+                        _searchController.text.isEmpty
+                            ? null
+                            : IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _onQueryChanged('');
+                              },
+                            ),
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -141,16 +145,17 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Recent patients',
-                      style: theme.textTheme.labelMedium
-                          ?.copyWith(color: theme.hintColor),
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.hintColor,
+                      ),
                     ),
                   ),
                 ),
               const SizedBox(height: Spacing.sm),
               Expanded(
                 child: resultsAsync.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Center(child: Text('Search failed: $e')),
                   data: (results) {
                     if (results.isEmpty) {
@@ -160,8 +165,8 @@ class _PatientPickerState extends ConsumerState<PatientPicker> {
                       controller: scrollController,
                       itemCount: results.length,
                       separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (context, i) =>
-                          _PatientTile(result: results[i]),
+                      itemBuilder:
+                          (context, i) => _PatientTile(result: results[i]),
                     );
                   },
                 ),
@@ -210,8 +215,9 @@ class _PatientTile extends StatelessWidget {
             child: Text(
               p.name,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(width: Spacing.sm),
@@ -228,7 +234,11 @@ class _PatientTile extends StatelessWidget {
               Text(p.phone, style: theme.textTheme.labelMedium),
               const SizedBox(width: Spacing.md),
             ] else if (p.email?.trim().isNotEmpty == true) ...[
-              Icon(Icons.email_outlined, size: 13, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.email_outlined,
+                size: 13,
+                color: scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: Spacing.xs),
               Text(p.email!, style: theme.textTheme.labelMedium),
               const SizedBox(width: Spacing.md),
@@ -275,8 +285,9 @@ class _EmptyState extends StatelessWidget {
             Text(
               'Register the patient from the Patients tab first.',
               textAlign: TextAlign.center,
-              style:
-                  theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.hintColor,
+              ),
             ),
           ],
         ),
@@ -325,16 +336,17 @@ class PatientPickerField extends StatelessWidget {
               suffixIcon: const Icon(Icons.arrow_drop_down),
               errorText: errorText,
             ),
-            child: p == null
-                ? Text(
-                    'Tap to search patient',
-                    style: TextStyle(color: Theme.of(context).hintColor),
-                  )
-                : Text(
-                    '${p.name}  ·  ${p.patientCode}',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
+            child:
+                p == null
+                    ? Text(
+                      'Tap to search patient',
+                      style: TextStyle(color: Theme.of(context).hintColor),
+                    )
+                    : Text(
+                      '${p.name}  ·  ${p.patientCode}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
           ),
         ),
       ],

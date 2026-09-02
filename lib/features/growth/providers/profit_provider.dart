@@ -41,8 +41,7 @@ class ProfitSummary {
   double get avgDailyProfit =>
       daysWithActivity == 0 ? 0 : netProfit / daysWithActivity;
 
-  double get margin =>
-      totalIncome == 0 ? 0 : (netProfit / totalIncome) * 100;
+  double get margin => totalIncome == 0 ? 0 : (netProfit / totalIncome) * 100;
 }
 
 /// Income, expenses and profit for the selected period.
@@ -52,23 +51,30 @@ final profitSummaryProvider = StreamProvider<ProfitSummary>((ref) async* {
   final activeClinicId = ref.watch(activeClinicProvider)?.id;
   final range = periodState.dateRange;
 
-  var memoQuery = db.select(db.cashMemos)
-    ..where((t) => t.isDeleted.equals(false))
-    ..where((t) =>
-        t.memoDate.isBiggerOrEqual(Variable(range.start)) &
-        t.memoDate.isSmallerOrEqual(Variable(range.end)));
+  var memoQuery =
+      db.select(db.cashMemos)
+        ..where((t) => t.isDeleted.equals(false))
+        ..where(
+          (t) =>
+              t.memoDate.isBiggerOrEqual(Variable(range.start)) &
+              t.memoDate.isSmallerOrEqual(Variable(range.end)),
+        );
   if (activeClinicId != null) {
     memoQuery = memoQuery..where((t) => t.clinicId.equals(activeClinicId));
   }
   final memos = await memoQuery.get();
 
-  var expenseQuery = db.select(db.expenses)
-    ..where((t) => t.isDeleted.equals(false))
-    ..where((t) =>
-        t.date.isBiggerOrEqual(Variable(range.start)) &
-        t.date.isSmallerOrEqual(Variable(range.end)));
+  var expenseQuery =
+      db.select(db.expenses)
+        ..where((t) => t.isDeleted.equals(false))
+        ..where(
+          (t) =>
+              t.date.isBiggerOrEqual(Variable(range.start)) &
+              t.date.isSmallerOrEqual(Variable(range.end)),
+        );
   if (activeClinicId != null) {
-    expenseQuery = expenseQuery..where((t) => t.clinicId.equals(activeClinicId));
+    expenseQuery =
+        expenseQuery..where((t) => t.clinicId.equals(activeClinicId));
   }
   final expenses = await expenseQuery.get();
 
@@ -76,8 +82,7 @@ final profitSummaryProvider = StreamProvider<ProfitSummary>((ref) async* {
   final byMethod = <String, double>{};
   var totalIncome = 0.0;
   for (final m in memos) {
-    incomeByDay[m.memoDate.day] =
-        (incomeByDay[m.memoDate.day] ?? 0) + m.total;
+    incomeByDay[m.memoDate.day] = (incomeByDay[m.memoDate.day] ?? 0) + m.total;
     totalIncome += m.total;
     byMethod[m.paymentMethod] = (byMethod[m.paymentMethod] ?? 0) + m.total;
   }
@@ -110,9 +115,10 @@ final profitSummaryProvider = StreamProvider<ProfitSummary>((ref) async* {
     netProfit: totalIncome - totalExpenses,
     dailyProfit: dailyProfit,
     daysWithActivity: days.length,
-    bestDay: bestDayNumber == null
-        ? null
-        : DateTime(range.start.year, range.start.month, bestDayNumber!),
+    bestDay:
+        bestDayNumber == null
+            ? null
+            : DateTime(range.start.year, range.start.month, bestDayNumber!),
     bestDayProfit: bestProfit,
     collectionByMethod: byMethod,
   );

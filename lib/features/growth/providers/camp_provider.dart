@@ -6,7 +6,6 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
-
 class CampWithAnalytics {
   final Camp camp;
   final Clinic? clinic;
@@ -48,33 +47,45 @@ final campsStreamProvider = StreamProvider<List<CampWithAnalytics>>((ref) {
   final activeClinic = ref.watch(activeClinicProvider);
 
   // Watch camps, clinics, patients, and memos
-  final campsQuery = db.select(db.camps)
-    ..where((t) => t.isDeleted.equals(false))
-    ..orderBy([(t) => OrderingTerm.desc(t.date)]);
+  final campsQuery =
+      db.select(db.camps)
+        ..where((t) => t.isDeleted.equals(false))
+        ..orderBy([(t) => OrderingTerm.desc(t.date)]);
 
   return campsQuery.watch().asyncMap((campsList) async {
-    final clinics = await (db.select(db.clinics)..where((t) => t.isDeleted.equals(false))).get();
+    final clinics =
+        await (db.select(db.clinics)
+          ..where((t) => t.isDeleted.equals(false))).get();
     final clinicMap = {for (final c in clinics) c.id: c};
 
-    final allPatients = await (db.select(db.patients)..where((t) => t.isDeleted.equals(false))).get();
-    final allMemos = await (db.select(db.cashMemos)..where((t) => t.isDeleted.equals(false))).get();
+    final allPatients =
+        await (db.select(db.patients)
+          ..where((t) => t.isDeleted.equals(false))).get();
+    final allMemos =
+        await (db.select(db.cashMemos)
+          ..where((t) => t.isDeleted.equals(false))).get();
 
     final result = <CampWithAnalytics>[];
 
     for (final camp in campsList) {
-      if (activeClinic != null && camp.clinicId != null && camp.clinicId != activeClinic.id) {
+      if (activeClinic != null &&
+          camp.clinicId != null &&
+          camp.clinicId != activeClinic.id) {
         continue;
       }
 
       // Find patients whose referralSource or primaryDisease/notes mentions this camp
       final campNameLower = camp.name.toLowerCase().trim();
-      final matchingPatients = allPatients.where((p) {
-        final refSource = (p.referralSource ?? '').toLowerCase();
-        final notes = (p.notes ?? '').toLowerCase();
-        return refSource.contains(campNameLower) ||
-            refSource.contains('camp') && notes.contains(campNameLower) ||
-            p.primaryClinicId == camp.clinicId && p.createdAt.difference(camp.date).inDays.abs() <= 2 && refSource.contains('camp');
-      }).toList();
+      final matchingPatients =
+          allPatients.where((p) {
+            final refSource = (p.referralSource ?? '').toLowerCase();
+            final notes = (p.notes ?? '').toLowerCase();
+            return refSource.contains(campNameLower) ||
+                refSource.contains('camp') && notes.contains(campNameLower) ||
+                p.primaryClinicId == camp.clinicId &&
+                    p.createdAt.difference(camp.date).inDays.abs() <= 2 &&
+                    refSource.contains('camp');
+          }).toList();
 
       final patientIds = matchingPatients.map((p) => p.id).toSet();
 
@@ -90,17 +101,22 @@ final campsStreamProvider = StreamProvider<List<CampWithAnalytics>>((ref) {
       }
 
       final cost = camp.cost;
-      final roi = cost > 0 ? ((revenue - cost) / cost) * 100 : (revenue > 0 ? 100.0 : 0.0);
+      final roi =
+          cost > 0
+              ? ((revenue - cost) / cost) * 100
+              : (revenue > 0 ? 100.0 : 0.0);
       final netProfit = revenue - cost;
 
-      result.add(CampWithAnalytics(
-        camp: camp,
-        clinic: camp.clinicId != null ? clinicMap[camp.clinicId] : null,
-        patientsAcquiredCount: matchingPatients.length,
-        followUpRevenue: revenue,
-        roi: roi,
-        netProfit: netProfit,
-      ));
+      result.add(
+        CampWithAnalytics(
+          camp: camp,
+          clinic: camp.clinicId != null ? clinicMap[camp.clinicId] : null,
+          patientsAcquiredCount: matchingPatients.length,
+          followUpRevenue: revenue,
+          roi: roi,
+          netProfit: netProfit,
+        ),
+      );
     }
 
     return result;
@@ -123,7 +139,8 @@ final campStatsProvider = Provider<AsyncValue<CampStats>>((ref) {
     }
 
     final netProfit = totalRevenue - totalCost;
-    final aggRoi = totalCost > 0 ? ((totalRevenue - totalCost) / totalCost) * 100 : 0.0;
+    final aggRoi =
+        totalCost > 0 ? ((totalRevenue - totalCost) / totalCost) * 100 : 0.0;
 
     return CampStats(
       totalCamps: totalCamps,
@@ -158,7 +175,9 @@ class CampNotifier extends StateNotifier<AsyncValue<void>> {
       id: id,
       name: name.trim(),
       date: Value(date),
-      location: Value(location?.trim().isEmpty == true ? null : location?.trim()),
+      location: Value(
+        location?.trim().isEmpty == true ? null : location?.trim(),
+      ),
       cost: Value(cost),
       attendance: Value(attendance),
       clinicId: Value(clinicId),
@@ -185,30 +204,34 @@ class CampNotifier extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.camps)..where((t) => t.id.equals(id)))
-          .write(CampsCompanion(
-        name: Value(name.trim()),
-        date: Value(date),
-        location: Value(location?.trim().isEmpty == true ? null : location?.trim()),
-        cost: Value(cost),
-        attendance: Value(attendance),
-        clinicId: Value(clinicId),
-        notes: Value(notes?.trim().isEmpty == true ? null : notes?.trim()),
-      ));
+      await (_db.update(_db.camps)..where((t) => t.id.equals(id))).write(
+        CampsCompanion(
+          name: Value(name.trim()),
+          date: Value(date),
+          location: Value(
+            location?.trim().isEmpty == true ? null : location?.trim(),
+          ),
+          cost: Value(cost),
+          attendance: Value(attendance),
+          clinicId: Value(clinicId),
+          notes: Value(notes?.trim().isEmpty == true ? null : notes?.trim()),
+        ),
+      );
     });
   }
 
   Future<void> deleteCamp(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.camps)..where((t) => t.id.equals(id)))
-          .write(const CampsCompanion(isDeleted: Value(true)));
+      await (_db.update(_db.camps)..where(
+        (t) => t.id.equals(id),
+      )).write(const CampsCompanion(isDeleted: Value(true)));
     });
   }
 }
 
 final campNotifierProvider =
     StateNotifierProvider<CampNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return CampNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return CampNotifier(db);
+    });

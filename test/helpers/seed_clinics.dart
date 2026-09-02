@@ -11,7 +11,9 @@ import 'package:clinic_pilot/core/database/app_database.dart';
 Future<void> seedTestClinics(AppDatabase db) async {
   // Rents match what the app used to seed, since tests assert profit maths
   // against these figures.
-  await db.into(db.clinics).insertOnConflictUpdate(
+  await db
+      .into(db.clinics)
+      .insertOnConflictUpdate(
         ClinicsCompanion.insert(
           id: 'clinic_old',
           name: 'Old Clinic',
@@ -19,7 +21,9 @@ Future<void> seedTestClinics(AppDatabase db) async {
           openDays: const Value('1,3,5'),
         ),
       );
-  await db.into(db.clinics).insertOnConflictUpdate(
+  await db
+      .into(db.clinics)
+      .insertOnConflictUpdate(
         ClinicsCompanion.insert(
           id: 'clinic_new',
           name: 'New Clinic',

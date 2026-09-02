@@ -78,9 +78,12 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.initialName ?? '');
     _phoneController = TextEditingController(text: widget.initialPhone ?? '');
-    _diseaseController = TextEditingController(text: widget.initialDisease ?? '');
+    _diseaseController = TextEditingController(
+      text: widget.initialDisease ?? '',
+    );
 
-    final initialClinic = widget.initialClinicId ?? ref.read(activeClinicIdProvider);
+    final initialClinic =
+        widget.initialClinicId ?? ref.read(activeClinicIdProvider);
     if (initialClinic == 'clinic_online') {
       _isOnlineConsultation = true;
       _selectedClinicId = 'clinic_online';
@@ -110,24 +113,34 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final scheme = theme.colorScheme;
     final clinicsAsync = ref.watch(clinicsStreamProvider);
     final allClinics = clinicsAsync.value ?? [];
-    final physicalClinics = allClinics.where((c) => c.id != 'clinic_online').toList();
+    final physicalClinics =
+        allClinics.where((c) => c.id != 'clinic_online').toList();
 
-    if (_selectedClinicId == null && physicalClinics.isNotEmpty && !_isOnlineConsultation) {
+    if (_selectedClinicId == null &&
+        physicalClinics.isNotEmpty &&
+        !_isOnlineConsultation) {
       _selectedClinicId = physicalClinics.first.id;
     }
 
     final serialText = _serialController.text.trim();
-    final liveSerialInUse = _isOnlineConsultation || serialText.isEmpty || _selectedClinicId == null
-        ? false
-        : ref
-                .watch(serialNoInUseProvider(SerialLookupArgs(
-                  clinicId: _selectedClinicId!,
-                  serialNo: serialText,
-                )))
-                .value ==
-            true;
+    final liveSerialInUse =
+        _isOnlineConsultation || serialText.isEmpty || _selectedClinicId == null
+            ? false
+            : ref
+                    .watch(
+                      serialNoInUseProvider(
+                        SerialLookupArgs(
+                          clinicId: _selectedClinicId!,
+                          serialNo: serialText,
+                        ),
+                      ),
+                    )
+                    .value ==
+                true;
 
-    if (clinicsAsync.hasValue && physicalClinics.isEmpty && !_isOnlineConsultation) {
+    if (clinicsAsync.hasValue &&
+        physicalClinics.isEmpty &&
+        !_isOnlineConsultation) {
       return AppFormDialog(
         title: 'Register New Patient',
         actions: [
@@ -158,13 +171,14 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
         ),
         FilledButton(
           onPressed: _submitting ? null : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Register & Create Visit'),
+          child:
+              _submitting
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Register & Create Visit'),
         ),
       ],
       child: Form(
@@ -179,37 +193,50 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
               decoration: BoxDecoration(
                 color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: Radii.mdAll,
-                border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.5),
+                ),
               ),
               child: Row(
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: () => setState(() {
-                        _isOnlineConsultation = false;
-                        final active = widget.initialClinicId ?? ref.read(activeClinicIdProvider);
-                        _selectedClinicId = (active != null && active != 'clinic_online')
-                            ? active
-                            : physicalClinics.firstOrNull?.id;
-                        if (_referralSource == 'Social Media (Instagram / Facebook)') {
-                          _referralSource = 'Direct Walk-in';
-                        }
-                      }),
+                      onTap:
+                          () => setState(() {
+                            _isOnlineConsultation = false;
+                            final active =
+                                widget.initialClinicId ??
+                                ref.read(activeClinicIdProvider);
+                            _selectedClinicId =
+                                (active != null && active != 'clinic_online')
+                                    ? active
+                                    : physicalClinics.firstOrNull?.id;
+                            if (_referralSource ==
+                                'Social Media (Instagram / Facebook)') {
+                              _referralSource = 'Direct Walk-in';
+                            }
+                          }),
                       borderRadius: Radii.smAll,
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
-                          color: !_isOnlineConsultation ? scheme.surface : Colors.transparent,
+                          color:
+                              !_isOnlineConsultation
+                                  ? scheme.surface
+                                  : Colors.transparent,
                           borderRadius: Radii.smAll,
-                          boxShadow: !_isOnlineConsultation
-                              ? [
-                                  BoxShadow(
-                                    color: scheme.shadow.withValues(alpha: 0.06),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ]
-                              : null,
+                          boxShadow:
+                              !_isOnlineConsultation
+                                  ? [
+                                    BoxShadow(
+                                      color: scheme.shadow.withValues(
+                                        alpha: 0.06,
+                                      ),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ]
+                                  : null,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -217,14 +244,23 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                             Icon(
                               Icons.local_hospital_outlined,
                               size: 16,
-                              color: !_isOnlineConsultation ? scheme.primary : scheme.onSurfaceVariant,
+                              color:
+                                  !_isOnlineConsultation
+                                      ? scheme.primary
+                                      : scheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 6),
                             Text(
                               'In-Clinic Visit',
                               style: theme.textTheme.labelMedium?.copyWith(
-                                fontWeight: !_isOnlineConsultation ? FontWeight.bold : FontWeight.w500,
-                                color: !_isOnlineConsultation ? scheme.primary : scheme.onSurfaceVariant,
+                                fontWeight:
+                                    !_isOnlineConsultation
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                color:
+                                    !_isOnlineConsultation
+                                        ? scheme.primary
+                                        : scheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -234,26 +270,34 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                   ),
                   Expanded(
                     child: InkWell(
-                      onTap: () => setState(() {
-                        _isOnlineConsultation = true;
-                        _selectedClinicId = 'clinic_online';
-                        _referralSource = 'Social Media (Instagram / Facebook)';
-                      }),
+                      onTap:
+                          () => setState(() {
+                            _isOnlineConsultation = true;
+                            _selectedClinicId = 'clinic_online';
+                            _referralSource =
+                                'Social Media (Instagram / Facebook)';
+                          }),
                       borderRadius: Radii.smAll,
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
-                          color: _isOnlineConsultation ? scheme.surface : Colors.transparent,
+                          color:
+                              _isOnlineConsultation
+                                  ? scheme.surface
+                                  : Colors.transparent,
                           borderRadius: Radii.smAll,
-                          boxShadow: _isOnlineConsultation
-                              ? [
-                                  BoxShadow(
-                                    color: scheme.shadow.withValues(alpha: 0.06),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ]
-                              : null,
+                          boxShadow:
+                              _isOnlineConsultation
+                                  ? [
+                                    BoxShadow(
+                                      color: scheme.shadow.withValues(
+                                        alpha: 0.06,
+                                      ),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ]
+                                  : null,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -261,14 +305,23 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                             Icon(
                               Icons.language,
                               size: 16,
-                              color: _isOnlineConsultation ? scheme.primary : scheme.onSurfaceVariant,
+                              color:
+                                  _isOnlineConsultation
+                                      ? scheme.primary
+                                      : scheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 6),
                             Text(
                               'Online / Remote',
                               style: theme.textTheme.labelMedium?.copyWith(
-                                fontWeight: _isOnlineConsultation ? FontWeight.bold : FontWeight.w500,
-                                color: _isOnlineConsultation ? scheme.primary : scheme.onSurfaceVariant,
+                                fontWeight:
+                                    _isOnlineConsultation
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                color:
+                                    _isOnlineConsultation
+                                        ? scheme.primary
+                                        : scheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -365,7 +418,10 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
             const SizedBox(height: Spacing.md),
             CustomTextField(
               controller: _areaController,
-              label: _isOnlineConsultation ? 'City / State / Location' : 'Locality / Area',
+              label:
+                  _isOnlineConsultation
+                      ? 'City / State / Location'
+                      : 'Locality / Area',
               prefixIcon: Icons.location_on,
             ),
             const SizedBox(height: Spacing.md),
@@ -376,7 +432,10 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 label: 'Consultation Medium',
                 prefixIcon: Icons.video_camera_front_outlined,
                 value: _onlineMedium,
-                options: _onlineMediums.map((m) => PickerOption(value: m, label: m)).toList(),
+                options:
+                    _onlineMediums
+                        .map((m) => PickerOption(value: m, label: m))
+                        .toList(),
                 onChanged: (val) => setState(() => _onlineMedium = val),
               ),
               const SizedBox(height: Spacing.md),
@@ -386,33 +445,39 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
                 prefixIcon: Icons.local_hospital,
                 value: _selectedClinicId,
                 errorText: _clinicError,
-                options: physicalClinics
-                    .map((c) => PickerOption(
-                          value: c.id,
-                          label: c.name,
-                          subtitle: c.address,
-                        ))
-                    .toList(),
-                onChanged: (val) => setState(() {
-                  _selectedClinicId = val;
-                  _clinicError = null;
-                }),
+                options:
+                    physicalClinics
+                        .map(
+                          (c) => PickerOption(
+                            value: c.id,
+                            label: c.name,
+                            subtitle: c.address,
+                          ),
+                        )
+                        .toList(),
+                onChanged:
+                    (val) => setState(() {
+                      _selectedClinicId = val;
+                      _clinicError = null;
+                    }),
               ),
               const SizedBox(height: Spacing.md),
             ],
 
             DiseaseAutocompleteField(
               controller: _diseaseController,
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator:
+                  (v) => v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
             PickerField<String>(
               label: 'Referral Source (New Patient)',
               prefixIcon: Icons.campaign,
               value: _referralSource,
-              options: _referralSources
-                  .map((r) => PickerOption(value: r, label: r))
-                  .toList(),
+              options:
+                  _referralSources
+                      .map((r) => PickerOption(value: r, label: r))
+                      .toList(),
               onChanged: (val) => setState(() => _referralSource = val),
             ),
           ],
@@ -425,10 +490,12 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     if (_submitting) return;
     final formOk = _formKey.currentState!.validate();
 
-    final effectiveClinicId = _isOnlineConsultation ? 'clinic_online' : _selectedClinicId;
+    final effectiveClinicId =
+        _isOnlineConsultation ? 'clinic_online' : _selectedClinicId;
 
     setState(() {
-      _clinicError = effectiveClinicId == null ? 'Please select a clinic' : null;
+      _clinicError =
+          effectiveClinicId == null ? 'Please select a clinic' : null;
     });
 
     if (!formOk || effectiveClinicId == null) {
@@ -446,26 +513,28 @@ class _AddPatientDialogState extends ConsumerState<AddPatientDialog> {
     final age = int.parse(_ageController.text.trim());
     final area = _areaController.text.trim();
     final disease = Formatters.toTitleCase(_diseaseController.text);
-    final notes = _isOnlineConsultation ? 'Consultation Medium: $_onlineMedium' : null;
+    final notes =
+        _isOnlineConsultation ? 'Consultation Medium: $_onlineMedium' : null;
 
     try {
-      final patient =
-          await ref.read(patientNotifierProvider.notifier).registerPatient(
-                name: name,
-                phone: phone,
-                whatsapp: whatsapp.isEmpty ? null : whatsapp,
-                email: email.isEmpty ? null : email,
-                age: age,
-                gender: _gender,
-                area: area.isEmpty ? null : area,
-                primaryClinicId: effectiveClinicId,
-                serialNo: serialNo,
-                disease: disease,
-                referralSource: _referralSource,
-                notes: notes,
-                entryDate: _entryDate,
-                consultationType: _isOnlineConsultation ? 'online' : 'clinic',
-              );
+      final patient = await ref
+          .read(patientNotifierProvider.notifier)
+          .registerPatient(
+            name: name,
+            phone: phone,
+            whatsapp: whatsapp.isEmpty ? null : whatsapp,
+            email: email.isEmpty ? null : email,
+            age: age,
+            gender: _gender,
+            area: area.isEmpty ? null : area,
+            primaryClinicId: effectiveClinicId,
+            serialNo: serialNo,
+            disease: disease,
+            referralSource: _referralSource,
+            notes: notes,
+            entryDate: _entryDate,
+            consultationType: _isOnlineConsultation ? 'online' : 'clinic',
+          );
       if (disease.isNotEmpty) {
         ref.read(masterDiseaseServiceProvider).recordDisease(disease);
       }

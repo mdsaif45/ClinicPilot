@@ -15,12 +15,9 @@ void main() {
     setUp(() async {
       db = AppDatabase(NativeDatabase.memory());
       // Seed clinic
-      await db.into(db.clinics).insert(
-            ClinicsCompanion.insert(
-              id: 'c1',
-              name: 'Main Clinic',
-            ),
-          );
+      await db
+          .into(db.clinics)
+          .insert(ClinicsCompanion.insert(id: 'c1', name: 'Main Clinic'));
     });
 
     tearDown(() async {
@@ -62,7 +59,9 @@ void main() {
     test('calculates camp ROI properly based on follow-up revenue', () async {
       final now = DateTime.now();
       // Insert Camp (Cost: 2000)
-      await db.into(db.camps).insert(
+      await db
+          .into(db.camps)
+          .insert(
             CampsCompanion.insert(
               id: 'camp-1',
               name: 'Free Checkup Camp',
@@ -74,7 +73,9 @@ void main() {
           );
 
       // Insert Patient acquired from camp
-      await db.into(db.patients).insert(
+      await db
+          .into(db.patients)
+          .insert(
             PatientsCompanion.insert(
               id: 'p-camp-1',
               patientCode: const drift.Value('P-2026-00001'),
@@ -91,7 +92,9 @@ void main() {
           );
 
       // Insert Cash Memo for follow-up revenue (Paid: 5000)
-      await db.into(db.cashMemos).insert(
+      await db
+          .into(db.cashMemos)
+          .insert(
             CashMemosCompanion.insert(
               id: 'cm-1',
               memoNumber: 'CM-2026-00001',
@@ -114,7 +117,9 @@ void main() {
   });
 
   group('CampManagerScreen Widget Tests', () {
-    testWidgets('renders camp list and metric summary correctly', (tester) async {
+    testWidgets('renders camp list and metric summary correctly', (
+      tester,
+    ) async {
       final now = DateTime.now();
       final testCamp = CampWithAnalytics(
         camp: Camp(
@@ -151,14 +156,16 @@ void main() {
           overrides: [
             campsStreamProvider.overrideWith((ref) => Stream.value([testCamp])),
             campStatsProvider.overrideWithValue(
-              const AsyncData(CampStats(
-                totalCamps: 1,
-                totalCost: 3000,
-                totalFollowUpRevenue: 7500,
-                totalPatientsAcquired: 12,
-                aggregateRoi: 150.0,
-                totalNetProfit: 4500,
-              )),
+              const AsyncData(
+                CampStats(
+                  totalCamps: 1,
+                  totalCost: 3000,
+                  totalFollowUpRevenue: 7500,
+                  totalPatientsAcquired: 12,
+                  aggregateRoi: 150.0,
+                  totalNetProfit: 4500,
+                ),
+              ),
             ),
           ],
           child: MaterialApp(

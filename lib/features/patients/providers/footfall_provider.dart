@@ -7,7 +7,6 @@ import '../../../core/database/database_provider.dart';
 import '../../../core/utils/formatters.dart';
 import '../../clinics/providers/clinic_provider.dart';
 
-
 class FootfallWithDetails {
   final Footfall footfall;
   final Clinic clinic;
@@ -36,34 +35,36 @@ class FootfallStats {
   });
 }
 
-final footfallsStreamProvider = StreamProvider<List<FootfallWithDetails>>((ref) {
+final footfallsStreamProvider = StreamProvider<List<FootfallWithDetails>>((
+  ref,
+) {
   final db = ref.watch(databaseProvider);
   final activeClinic = ref.watch(activeClinicProvider);
 
-  final query = db.select(db.footfalls).join([
-    innerJoin(
-      db.clinics,
-      db.clinics.id.equalsExp(db.footfalls.clinicId),
-    ),
-    leftOuterJoin(
-      db.patients,
-      db.patients.id.equalsExp(db.footfalls.convertedPatientId),
-    ),
-  ])
-    ..where(db.footfalls.isDeleted.equals(false))
-    ..orderBy([OrderingTerm.desc(db.footfalls.date)]);
+  final query =
+      db.select(db.footfalls).join([
+          innerJoin(db.clinics, db.clinics.id.equalsExp(db.footfalls.clinicId)),
+          leftOuterJoin(
+            db.patients,
+            db.patients.id.equalsExp(db.footfalls.convertedPatientId),
+          ),
+        ])
+        ..where(db.footfalls.isDeleted.equals(false))
+        ..orderBy([OrderingTerm.desc(db.footfalls.date)]);
 
   return query.watch().map((rows) {
-    var items = rows.map((row) {
-      return FootfallWithDetails(
-        footfall: row.readTable(db.footfalls),
-        clinic: row.readTable(db.clinics),
-        convertedPatient: row.readTableOrNull(db.patients),
-      );
-    }).toList();
+    var items =
+        rows.map((row) {
+          return FootfallWithDetails(
+            footfall: row.readTable(db.footfalls),
+            clinic: row.readTable(db.clinics),
+            convertedPatient: row.readTableOrNull(db.patients),
+          );
+        }).toList();
 
     if (activeClinic != null) {
-      items = items.where((f) => f.footfall.clinicId == activeClinic.id).toList();
+      items =
+          items.where((f) => f.footfall.clinicId == activeClinic.id).toList();
     }
 
     return items;
@@ -109,11 +110,17 @@ class FootfallNotifier extends StateNotifier<AsyncValue<void>> {
       id: id,
       clinicId: clinicId,
       name: name.trim(),
-      phone: Value((phone == null || phone.trim().isEmpty) ? null : phone.trim()),
-      disease: Value((disease == null || disease.trim().isEmpty)
-          ? null
-          : Formatters.toTitleCase(disease.trim())),
-      notes: Value((notes == null || notes.trim().isEmpty) ? null : notes.trim()),
+      phone: Value(
+        (phone == null || phone.trim().isEmpty) ? null : phone.trim(),
+      ),
+      disease: Value(
+        (disease == null || disease.trim().isEmpty)
+            ? null
+            : Formatters.toTitleCase(disease.trim()),
+      ),
+      notes: Value(
+        (notes == null || notes.trim().isEmpty) ? null : notes.trim(),
+      ),
       date: Value(date ?? now),
       createdAt: Value(now),
     );
@@ -131,24 +138,24 @@ class FootfallNotifier extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.footfalls)..where((t) => t.id.equals(footfallId)))
-          .write(FootfallsCompanion(
-        convertedPatientId: Value(patientId),
-      ));
+      await (_db.update(_db.footfalls)..where(
+        (t) => t.id.equals(footfallId),
+      )).write(FootfallsCompanion(convertedPatientId: Value(patientId)));
     });
   }
 
   Future<void> deleteFootfall(String footfallId) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await (_db.update(_db.footfalls)..where((t) => t.id.equals(footfallId)))
-          .write(const FootfallsCompanion(isDeleted: Value(true)));
+      await (_db.update(_db.footfalls)..where(
+        (t) => t.id.equals(footfallId),
+      )).write(const FootfallsCompanion(isDeleted: Value(true)));
     });
   }
 }
 
 final footfallNotifierProvider =
     StateNotifierProvider<FootfallNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return FootfallNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return FootfallNotifier(db);
+    });

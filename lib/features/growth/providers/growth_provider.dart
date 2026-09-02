@@ -72,11 +72,14 @@ final growthAnalyticsProvider = StreamProvider<GrowthAnalytics>((ref) async* {
   final activeClinicId = activeClinic?.id;
 
   // 1. Memos in period
-  var memoQuery = db.select(db.cashMemos)
-    ..where((tbl) => tbl.isDeleted.equals(false))
-    ..where((tbl) =>
-        tbl.memoDate.isBiggerOrEqual(Variable(range.start)) &
-        tbl.memoDate.isSmallerOrEqual(Variable(range.end)));
+  var memoQuery =
+      db.select(db.cashMemos)
+        ..where((tbl) => tbl.isDeleted.equals(false))
+        ..where(
+          (tbl) =>
+              tbl.memoDate.isBiggerOrEqual(Variable(range.start)) &
+              tbl.memoDate.isSmallerOrEqual(Variable(range.end)),
+        );
   if (activeClinicId != null) {
     memoQuery = memoQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
@@ -91,11 +94,14 @@ final growthAnalyticsProvider = StreamProvider<GrowthAnalytics>((ref) async* {
   }
 
   // 2. Expenses in period
-  var expQuery = db.select(db.expenses)
-    ..where((tbl) => tbl.isDeleted.equals(false))
-    ..where((tbl) =>
-        tbl.date.isBiggerOrEqual(Variable(range.start)) &
-        tbl.date.isSmallerOrEqual(Variable(range.end)));
+  var expQuery =
+      db.select(db.expenses)
+        ..where((tbl) => tbl.isDeleted.equals(false))
+        ..where(
+          (tbl) =>
+              tbl.date.isBiggerOrEqual(Variable(range.start)) &
+              tbl.date.isSmallerOrEqual(Variable(range.end)),
+        );
   if (activeClinicId != null) {
     expQuery = expQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
@@ -110,13 +116,17 @@ final growthAnalyticsProvider = StreamProvider<GrowthAnalytics>((ref) async* {
   }
 
   // 3. Visits in period
-  var visitQuery = db.select(db.visits)
-    ..where((tbl) => tbl.isDeleted.equals(false))
-    ..where((tbl) =>
-        tbl.visitDate.isBiggerOrEqual(Variable(range.start)) &
-        tbl.visitDate.isSmallerOrEqual(Variable(range.end)));
+  var visitQuery =
+      db.select(db.visits)
+        ..where((tbl) => tbl.isDeleted.equals(false))
+        ..where(
+          (tbl) =>
+              tbl.visitDate.isBiggerOrEqual(Variable(range.start)) &
+              tbl.visitDate.isSmallerOrEqual(Variable(range.end)),
+        );
   if (activeClinicId != null) {
-    visitQuery = visitQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
+    visitQuery =
+        visitQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
   final visits = await visitQuery.get();
 
@@ -147,12 +157,14 @@ final growthAnalyticsProvider = StreamProvider<GrowthAnalytics>((ref) async* {
   }
 
   // Practice size: everyone registered by the end of the period.
-  var patientCountQuery = db.select(db.patients)
-    ..where((tbl) => tbl.isDeleted.equals(false))
-    ..where((tbl) => tbl.createdAt.isSmallerOrEqual(Variable(range.end)));
+  var patientCountQuery =
+      db.select(db.patients)
+        ..where((tbl) => tbl.isDeleted.equals(false))
+        ..where((tbl) => tbl.createdAt.isSmallerOrEqual(Variable(range.end)));
   if (activeClinicId != null) {
-    patientCountQuery = patientCountQuery
-      ..where((tbl) => tbl.primaryClinicId.equals(activeClinicId));
+    patientCountQuery =
+        patientCountQuery
+          ..where((tbl) => tbl.primaryClinicId.equals(activeClinicId));
   }
   final totalPatients = (await patientCountQuery.get()).length;
 
@@ -161,14 +173,17 @@ final growthAnalyticsProvider = StreamProvider<GrowthAnalytics>((ref) async* {
   final prevEnd = range.start.subtract(const Duration(seconds: 1));
   final prevStart = prevEnd.subtract(periodLength);
 
-  var prevVisitQuery = db.select(db.visits)
-    ..where((tbl) => tbl.isDeleted.equals(false))
-    ..where((tbl) =>
-        tbl.visitDate.isBiggerOrEqual(Variable(prevStart)) &
-        tbl.visitDate.isSmallerOrEqual(Variable(prevEnd)));
+  var prevVisitQuery =
+      db.select(db.visits)
+        ..where((tbl) => tbl.isDeleted.equals(false))
+        ..where(
+          (tbl) =>
+              tbl.visitDate.isBiggerOrEqual(Variable(prevStart)) &
+              tbl.visitDate.isSmallerOrEqual(Variable(prevEnd)),
+        );
   if (activeClinicId != null) {
-    prevVisitQuery = prevVisitQuery
-      ..where((tbl) => tbl.clinicId.equals(activeClinicId));
+    prevVisitQuery =
+        prevVisitQuery..where((tbl) => tbl.clinicId.equals(activeClinicId));
   }
   final prevVisits = await prevVisitQuery.get();
 

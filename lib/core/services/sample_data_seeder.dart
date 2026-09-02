@@ -90,11 +90,12 @@ class SampleDataSeeder {
   }
 
   static Future<void> seedRealisticData(dynamic ref) async {
-    final AppDatabase db = ref is WidgetRef
-        ? ref.read(databaseProvider)
-        : (ref is ProviderContainer
+    final AppDatabase db =
+        ref is WidgetRef
             ? ref.read(databaseProvider)
-            : (ref as dynamic).read(databaseProvider) as AppDatabase);
+            : (ref is ProviderContainer
+                ? ref.read(databaseProvider)
+                : (ref as dynamic).read(databaseProvider) as AppDatabase);
 
     // 0. Clean all existing practice data completely
     await db.clearAllPracticeData();
@@ -102,70 +103,90 @@ class SampleDataSeeder {
     final now = DateTime.now();
 
     // 1. Doctor Profile & Global Settings
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: kDoctorNameKey,
             value: 'Dr. MD Zaid',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: kDoctorFirstNameKey,
             value: 'MD',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: kDoctorLastNameKey,
             value: 'Zaid',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: kDoctorQualificationKey,
             value: 'BHMS, MD (Hom.)',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: kDoctorRegNumberKey,
             value: 'WB-2018-98421',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: kDoctorPhoneKey,
             value: '9830012345',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: kDoctorEmailKey,
             value: 'dr.zaid@clinicpilot.com',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: kOnboardingDoneKey,
             value: 'true',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'monthly_revenue_goal',
             value: '95000',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'monthly_new_patient_goal',
             value: '25',
@@ -193,7 +214,9 @@ class SampleDataSeeder {
     const clinicOnlineId = 'clinic_online';
 
     // Clinic 1: City Care Homeo Clinic (Mon, Wed, Fri 7-10 PM)
-    await db.into(db.clinics).insertOnConflictUpdate(
+    await db
+        .into(db.clinics)
+        .insertOnConflictUpdate(
           ClinicsCompanion.insert(
             id: clinic1Id,
             name: 'City Care Homeo Clinic',
@@ -207,7 +230,9 @@ class SampleDataSeeder {
         );
 
     // Clinic 2: Apex Health Center (Tue, Thu, Sat 7-10 PM)
-    await db.into(db.clinics).insertOnConflictUpdate(
+    await db
+        .into(db.clinics)
+        .insertOnConflictUpdate(
           ClinicsCompanion.insert(
             id: clinic2Id,
             name: 'Apex Health Center',
@@ -221,7 +246,9 @@ class SampleDataSeeder {
         );
 
     // Clinic 3: Online / Teleconsultation (Digital Practice)
-    await db.into(db.clinics).insertOnConflictUpdate(
+    await db
+        .into(db.clinics)
+        .insertOnConflictUpdate(
           ClinicsCompanion.insert(
             id: clinicOnlineId,
             name: 'Online / Teleconsultation',
@@ -235,28 +262,36 @@ class SampleDataSeeder {
         );
 
     // Clinic Revenue Targets
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'monthly_revenue_goal_$clinic1Id',
             value: '45000',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'monthly_revenue_goal_$clinic2Id',
             value: '35000',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'monthly_revenue_goal_$clinicOnlineId',
             value: '15000',
             updatedAt: Value(now),
           ),
         );
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'active_clinic_id',
             value: clinic1Id,
@@ -266,7 +301,9 @@ class SampleDataSeeder {
 
     // 3. Referral Partner CRM Contacts & Health Camps
     for (final r in DemoCrmData.referralContacts) {
-      await db.into(db.referralContacts).insertOnConflictUpdate(
+      await db
+          .into(db.referralContacts)
+          .insertOnConflictUpdate(
             ReferralContactsCompanion.insert(
               id: IdGenerator.generate(),
               name: r['name'] as String,
@@ -285,8 +322,16 @@ class SampleDataSeeder {
     }
 
     for (final c in DemoCrmData.healthCamps) {
-      final campDate = DateTime(2026, c['month'] as int, c['day'] as int, 9, 30);
-      await db.into(db.camps).insertOnConflictUpdate(
+      final campDate = DateTime(
+        2026,
+        c['month'] as int,
+        c['day'] as int,
+        9,
+        30,
+      );
+      await db
+          .into(db.camps)
+          .insertOnConflictUpdate(
             CampsCompanion.insert(
               id: IdGenerator.generate(),
               name: c['name'] as String,
@@ -326,7 +371,9 @@ class SampleDataSeeder {
       );
 
       // 4.1 Insert Patient Record
-      await db.into(db.patients).insertOnConflictUpdate(
+      await db
+          .into(db.patients)
+          .insertOnConflictUpdate(
             PatientsCompanion.insert(
               id: patientId,
               name: p.name,
@@ -348,20 +395,29 @@ class SampleDataSeeder {
           );
 
       // 4.2 Insert Patient Case Record (Comprehensive Totality)
-      await db.into(db.patientCaseRecords).insertOnConflictUpdate(
+      await db
+          .into(db.patientCaseRecords)
+          .insertOnConflictUpdate(
             PatientCaseRecordsCompanion.insert(
               id: IdGenerator.generate(),
               patientId: patientId,
               recordDate: Value(initialVisitDate),
               chiefComplaintsJson: Value(
-                  '{"complaint":"${archetype.chiefComplaint}","sensation":"${archetype.sensation}","location":"${archetype.location}"}'),
+                '{"complaint":"${archetype.chiefComplaint}","sensation":"${archetype.sensation}","location":"${archetype.location}"}',
+              ),
               hpi: Value(
-                  'Patient presents with ${archetype.chiefComplaint}. Onset: ${archetype.onset}. Aggravated by ${archetype.aggravatingFactors}. Ameliorated by ${archetype.amelioratingFactors}.'),
+                'Patient presents with ${archetype.chiefComplaint}. Onset: ${archetype.onset}. Aggravated by ${archetype.aggravatingFactors}. Ameliorated by ${archetype.amelioratingFactors}.',
+              ),
               pastHistoryJson: Value('{"past":"${archetype.pastHistory}"}'),
-              familyHistoryJson: Value('{"family":"${archetype.familyHistory}"}'),
+              familyHistoryJson: Value(
+                '{"family":"${archetype.familyHistory}"}',
+              ),
               physicalGeneralsJson: Value(
-                  '{"thermal":"${archetype.thermal}","thirst":"${archetype.thirst}","appetite":"${archetype.appetite}","sleep":"${archetype.sleep}"}'),
-              mentalGeneralsJson: Value('{"mental":"${archetype.mentalGenerals}"}'),
+                '{"thermal":"${archetype.thermal}","thirst":"${archetype.thirst}","appetite":"${archetype.appetite}","sleep":"${archetype.sleep}"}',
+              ),
+              mentalGeneralsJson: Value(
+                '{"mental":"${archetype.mentalGenerals}"}',
+              ),
               miasmaticAnalysisJson: Value('{"miasm":"${archetype.miasm}"}'),
               outcome: const Value('Under Active Treatment'),
               createdAt: Value(initialVisitDate),
@@ -372,11 +428,14 @@ class SampleDataSeeder {
       // 4.3 Initial Encounter (Visit 1)
       final visit1Id = IdGenerator.generate();
       final hasFollowUps = p.followUpCount > 0;
-      final nextFollowUpDate1 = hasFollowUps
-          ? initialVisitDate.add(Duration(days: 21 + (pIdx % 7)))
-          : null;
+      final nextFollowUpDate1 =
+          hasFollowUps
+              ? initialVisitDate.add(Duration(days: 21 + (pIdx % 7)))
+              : null;
 
-      await db.into(db.visits).insertOnConflictUpdate(
+      await db
+          .into(db.visits)
+          .insertOnConflictUpdate(
             VisitsCompanion.insert(
               id: visit1Id,
               patientId: patientId,
@@ -390,13 +449,16 @@ class SampleDataSeeder {
               visitDate: initialVisitDate,
               nextFollowUpDate: Value(nextFollowUpDate1),
               notes: Value(
-                  'Baseline homeopathic evaluation complete. Prescribed ${archetype.primaryRemedy} ${archetype.primaryPotency}. Advised dietary modifications.'),
+                'Baseline homeopathic evaluation complete. Prescribed ${archetype.primaryRemedy} ${archetype.primaryPotency}. Advised dietary modifications.',
+              ),
               createdAt: Value(initialVisitDate),
             ),
           );
 
       // 4.4 Initial Complaint
-      await db.into(db.complaints).insertOnConflictUpdate(
+      await db
+          .into(db.complaints)
+          .insertOnConflictUpdate(
             ComplaintsCompanion.insert(
               id: IdGenerator.generate(),
               patientId: patientId,
@@ -423,7 +485,9 @@ class SampleDataSeeder {
           );
 
       // 4.5 Initial Prescription
-      await db.into(db.prescriptions).insertOnConflictUpdate(
+      await db
+          .into(db.prescriptions)
+          .insertOnConflictUpdate(
             PrescriptionsCompanion.insert(
               id: IdGenerator.generate(),
               patientId: patientId,
@@ -445,7 +509,9 @@ class SampleDataSeeder {
           );
 
       // 4.6 Initial Lab Investigation
-      await db.into(db.investigations).insertOnConflictUpdate(
+      await db
+          .into(db.investigations)
+          .insertOnConflictUpdate(
             InvestigationsCompanion.insert(
               id: IdGenerator.generate(),
               patientId: patientId,
@@ -468,25 +534,37 @@ class SampleDataSeeder {
           );
 
       // 4.7 Cash Memo for Visit 1 (Human realistic timing: 12-25 mins after visit start)
-      final memoTime1 = initialVisitDate.add(Duration(minutes: 12 + (pIdx % 15)));
-      final consultFee1 = p.clinicIndex == 1
-          ? 500.0
-          : (p.clinicIndex == 2 ? 350.0 : 300.0);
+      final memoTime1 = initialVisitDate.add(
+        Duration(minutes: 12 + (pIdx % 15)),
+      );
+      final consultFee1 =
+          p.clinicIndex == 1 ? 500.0 : (p.clinicIndex == 2 ? 350.0 : 300.0);
       final medFee1 = archetype.medicineFee;
       final discount1 = (pIdx % 10 == 0) ? 50.0 : 0.0;
       final total1 = (consultFee1 + medFee1) - discount1;
 
       // ~90% fully paid, ~10% partial payment with pending balance
       final isPartial1 = (pIdx % 9 == 0);
-      final paidAmount1 = isPartial1 ? (total1 - 200.0).clamp(100.0, total1) : total1;
+      final paidAmount1 =
+          isPartial1 ? (total1 - 200.0).clamp(100.0, total1) : total1;
 
-      final paymentMethods = ['UPI', 'Cash', 'UPI', 'Google Pay', 'PhonePe', 'Card'];
+      final paymentMethods = [
+        'UPI',
+        'Cash',
+        'UPI',
+        'Google Pay',
+        'PhonePe',
+        'Card',
+      ];
       final payMethod1 = paymentMethods[pIdx % paymentMethods.length];
 
-      final memoNum1 = 'CM-${initialVisitDate.year}-${memoCounter.toString().padLeft(5, '0')}';
+      final memoNum1 =
+          'CM-${initialVisitDate.year}-${memoCounter.toString().padLeft(5, '0')}';
       memoCounter++;
 
-      await db.into(db.cashMemos).insertOnConflictUpdate(
+      await db
+          .into(db.cashMemos)
+          .insertOnConflictUpdate(
             CashMemosCompanion.insert(
               id: IdGenerator.generate(),
               memoNumber: memoNum1,
@@ -499,7 +577,11 @@ class SampleDataSeeder {
               total: total1,
               paidAmount: Value(paidAmount1),
               paymentMethod: payMethod1,
-              notes: Value(isPartial1 ? 'Partial payment received. Balance pending.' : 'Fully paid.'),
+              notes: Value(
+                isPartial1
+                    ? 'Partial payment received. Balance pending.'
+                    : 'Fully paid.',
+              ),
               memoDate: Value(memoTime1),
               createdAt: Value(memoTime1),
             ),
@@ -508,7 +590,9 @@ class SampleDataSeeder {
       // 4.8 Multi-Encounter Follow-ups across Months
       DateTime previousVisitDate = initialVisitDate;
       for (int k = 1; k <= p.followUpCount; k++) {
-        final targetFollowUpDate = previousVisitDate.add(Duration(days: 21 + (pIdx % 10)));
+        final targetFollowUpDate = previousVisitDate.add(
+          Duration(days: 21 + (pIdx % 10)),
+        );
         if (targetFollowUpDate.isAfter(now)) {
           break; // Stop if projected beyond current live date
         }
@@ -523,19 +607,24 @@ class SampleDataSeeder {
 
         final followUpVisitId = IdGenerator.generate();
         final isLastFollowUp = (k == p.followUpCount);
-        final nextFollowUpDateK = isLastFollowUp
-            ? followUpDate.add(Duration(days: 28 + (pIdx % 14)))
-            : null;
+        final nextFollowUpDateK =
+            isLastFollowUp
+                ? followUpDate.add(Duration(days: 28 + (pIdx % 14)))
+                : null;
 
         final followUpOutcome = k >= 2 ? 'recovered' : 'improved';
 
-        await db.into(db.visits).insertOnConflictUpdate(
+        await db
+            .into(db.visits)
+            .insertOnConflictUpdate(
               VisitsCompanion.insert(
                 id: followUpVisitId,
                 patientId: patientId,
                 clinicId: assignedClinicId,
                 visitType: 'repeat',
-                consultationType: Value(p.clinicIndex == 2 ? 'online' : 'clinic'),
+                consultationType: Value(
+                  p.clinicIndex == 2 ? 'online' : 'clinic',
+                ),
                 disease: archetype.primaryDisease,
                 chiefComplaint: Value(archetype.chiefComplaint),
                 referralSource: const Value(null), // Null on repeat visits
@@ -543,14 +632,20 @@ class SampleDataSeeder {
                 visitDate: followUpDate,
                 nextFollowUpDate: Value(nextFollowUpDateK),
                 notes: Value(
-                    'Follow-up #$k. Patient reports marked symptomatic relief. Joint stiffness and acute bouts reduced. Continued ${archetype.followUpRemedy} ${archetype.followUpPotency}.'),
+                  'Follow-up #$k. Patient reports marked symptomatic relief. Joint stiffness and acute bouts reduced. Continued ${archetype.followUpRemedy} ${archetype.followUpPotency}.',
+                ),
                 createdAt: Value(followUpDate),
               ),
             );
 
         // Follow-up complaint with reduced severity
-        final improvedSeverity = math.max(2, archetype.initialSeverity - (k * 2));
-        await db.into(db.complaints).insertOnConflictUpdate(
+        final improvedSeverity = math.max(
+          2,
+          archetype.initialSeverity - (k * 2),
+        );
+        await db
+            .into(db.complaints)
+            .insertOnConflictUpdate(
               ComplaintsCompanion.insert(
                 id: IdGenerator.generate(),
                 patientId: patientId,
@@ -563,7 +658,9 @@ class SampleDataSeeder {
                 side: Value(archetype.side),
                 onset: Value(archetype.onset),
                 duration: Value(archetype.duration),
-                sensation: Value('Slight residual tenderness on heavy exertion'),
+                sensation: Value(
+                  'Slight residual tenderness on heavy exertion',
+                ),
                 aggravatingFactors: Value(archetype.aggravatingFactors),
                 amelioratingFactors: Value(archetype.amelioratingFactors),
                 concomitants: const Value('Appetite and sleep improved'),
@@ -575,7 +672,9 @@ class SampleDataSeeder {
             );
 
         // Follow-up prescription
-        await db.into(db.prescriptions).insertOnConflictUpdate(
+        await db
+            .into(db.prescriptions)
+            .insertOnConflictUpdate(
               PrescriptionsCompanion.insert(
                 id: IdGenerator.generate(),
                 patientId: patientId,
@@ -589,7 +688,9 @@ class SampleDataSeeder {
                 frequency: const Value('OD (Once daily in morning)'),
                 vehicle: Value(archetype.vehicle),
                 durationDays: const Value('30 days'),
-                instructions: const Value('Dissolve under tongue. Report after 1 month.'),
+                instructions: const Value(
+                  'Dissolve under tongue. Report after 1 month.',
+                ),
                 dietaryAdvice: Value(archetype.dietaryAdvice),
                 createdAt: Value(followUpDate),
                 updatedAt: Value(followUpDate),
@@ -598,15 +699,19 @@ class SampleDataSeeder {
 
         // Follow-up Cash Memo (Follow-up fee + medicine refill)
         final memoTimeK = followUpDate.add(Duration(minutes: 10 + (pIdx % 12)));
-        final consultFeeK = p.clinicIndex == 1 ? 400.0 : (p.clinicIndex == 2 ? 300.0 : 250.0);
+        final consultFeeK =
+            p.clinicIndex == 1 ? 400.0 : (p.clinicIndex == 2 ? 300.0 : 250.0);
         final medFeeK = archetype.medicineFee - 30.0;
         final totalK = consultFeeK + medFeeK;
-        final memoNumK = 'CM-${followUpDate.year}-${memoCounter.toString().padLeft(5, '0')}';
+        final memoNumK =
+            'CM-${followUpDate.year}-${memoCounter.toString().padLeft(5, '0')}';
         memoCounter++;
 
         final payMethodK = paymentMethods[(pIdx + k) % paymentMethods.length];
 
-        await db.into(db.cashMemos).insertOnConflictUpdate(
+        await db
+            .into(db.cashMemos)
+            .insertOnConflictUpdate(
               CashMemosCompanion.insert(
                 id: IdGenerator.generate(),
                 memoNumber: memoNumK,
@@ -650,7 +755,9 @@ class SampleDataSeeder {
       final maintDate = DateTime(yr, mo, 15, 12, 0);
 
       // ── Clinic 1 (City Care) Monthly Fixed & Variable Expenses ──
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic1Id,
@@ -665,7 +772,9 @@ class SampleDataSeeder {
             ),
           );
 
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic1Id,
@@ -680,7 +789,9 @@ class SampleDataSeeder {
             ),
           );
 
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic1Id,
@@ -696,7 +807,9 @@ class SampleDataSeeder {
           );
 
       final elec1Amt = 1500.0 + ((mo * 110) % 700);
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic1Id,
@@ -712,7 +825,9 @@ class SampleDataSeeder {
           );
 
       final medRestock1Amt = 4800.0 + ((mo * 250) % 2200);
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic1Id,
@@ -721,13 +836,17 @@ class SampleDataSeeder {
               amount: medRestock1Amt,
               paymentMethod: const Value('Bank Transfer'),
               isRecurring: const Value(false),
-              notes: const Value('Bulk dilutions, mother tinctures, and sugar globules No. 30.'),
+              notes: const Value(
+                'Bulk dilutions, mother tinctures, and sugar globules No. 30.',
+              ),
               date: medRestockDate,
               createdAt: Value(medRestockDate),
             ),
           );
 
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic1Id,
@@ -736,14 +855,18 @@ class SampleDataSeeder {
               amount: 650.0,
               paymentMethod: const Value('Cash'),
               isRecurring: const Value(true),
-              notes: const Value('Bio-medical waste handling and deep cleaning.'),
+              notes: const Value(
+                'Bio-medical waste handling and deep cleaning.',
+              ),
               date: maintDate,
               createdAt: Value(maintDate),
             ),
           );
 
       // ── Clinic 2 (Apex Health) Monthly Fixed & Variable Expenses ──
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic2Id,
@@ -758,7 +881,9 @@ class SampleDataSeeder {
             ),
           );
 
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic2Id,
@@ -773,7 +898,9 @@ class SampleDataSeeder {
             ),
           );
 
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic2Id,
@@ -789,7 +916,9 @@ class SampleDataSeeder {
           );
 
       final elec2Amt = 1950.0 + ((mo * 140) % 850);
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic2Id,
@@ -805,7 +934,9 @@ class SampleDataSeeder {
           );
 
       final medRestock2Amt = 6200.0 + ((mo * 310) % 2800);
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic2Id,
@@ -814,13 +945,17 @@ class SampleDataSeeder {
               amount: medRestock2Amt,
               paymentMethod: const Value('Bank Transfer'),
               isRecurring: const Value(false),
-              notes: const Value('Imported German drops, R-series formulations, and triturations.'),
+              notes: const Value(
+                'Imported German drops, R-series formulations, and triturations.',
+              ),
               date: medRestockDate,
               createdAt: Value(medRestockDate),
             ),
           );
 
-      await db.into(db.expenses).insertOnConflictUpdate(
+      await db
+          .into(db.expenses)
+          .insertOnConflictUpdate(
             ExpensesCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinic2Id,
@@ -837,12 +972,16 @@ class SampleDataSeeder {
     }
 
     // Stationery & Health Camp Expenses
-    await db.into(db.expenses).insertOnConflictUpdate(
+    await db
+        .into(db.expenses)
+        .insertOnConflictUpdate(
           ExpensesCompanion.insert(
             id: IdGenerator.generate(),
             clinicId: clinic1Id,
             category: 'Marketing',
-            subcategory: const Value('Prescription Pads & Medicine Pouches Printing'),
+            subcategory: const Value(
+              'Prescription Pads & Medicine Pouches Printing',
+            ),
             amount: 1400.0,
             paymentMethod: const Value('UPI'),
             isRecurring: const Value(false),
@@ -852,22 +991,30 @@ class SampleDataSeeder {
           ),
         );
 
-    await db.into(db.expenses).insertOnConflictUpdate(
+    await db
+        .into(db.expenses)
+        .insertOnConflictUpdate(
           ExpensesCompanion.insert(
             id: IdGenerator.generate(),
             clinicId: clinic1Id,
             category: 'Camp',
-            subcategory: const Value('Free Winter Joint & Arthritis Screening Camp'),
+            subcategory: const Value(
+              'Free Winter Joint & Arthritis Screening Camp',
+            ),
             amount: 2400.0,
             paymentMethod: const Value('Cash'),
             isRecurring: const Value(false),
-            notes: const Value('Tent rental, community hall banner, and free uric acid test strips.'),
+            notes: const Value(
+              'Tent rental, community hall banner, and free uric acid test strips.',
+            ),
             date: DateTime(2026, 1, 18),
             createdAt: Value(DateTime(2026, 1, 18)),
           ),
         );
 
-    await db.into(db.expenses).insertOnConflictUpdate(
+    await db
+        .into(db.expenses)
+        .insertOnConflictUpdate(
           ExpensesCompanion.insert(
             id: IdGenerator.generate(),
             clinicId: clinic1Id,
@@ -876,22 +1023,30 @@ class SampleDataSeeder {
             amount: 3100.0,
             paymentMethod: const Value('Cash'),
             isRecurring: const Value(false),
-            notes: const Value('School ground logistics, Hb test strips, and complimentary pediatric tonics.'),
+            notes: const Value(
+              'School ground logistics, Hb test strips, and complimentary pediatric tonics.',
+            ),
             date: DateTime(2026, 4, 12),
             createdAt: Value(DateTime(2026, 4, 12)),
           ),
         );
 
-    await db.into(db.expenses).insertOnConflictUpdate(
+    await db
+        .into(db.expenses)
+        .insertOnConflictUpdate(
           ExpensesCompanion.insert(
             id: IdGenerator.generate(),
             clinicId: clinic1Id,
             category: 'Camp',
-            subcategory: const Value('Senior Citizens Lifestyle & Wellness Camp'),
+            subcategory: const Value(
+              'Senior Citizens Lifestyle & Wellness Camp',
+            ),
             amount: 2800.0,
             paymentMethod: const Value('Cash'),
             isRecurring: const Value(false),
-            notes: const Value('Senior citizen club logistics and complimentary mobility oils.'),
+            notes: const Value(
+              'Senior citizen club logistics and complimentary mobility oils.',
+            ),
             date: DateTime(2026, 7, 19),
             createdAt: Value(DateTime(2026, 7, 19)),
           ),
@@ -900,16 +1055,28 @@ class SampleDataSeeder {
     // 6. Hourly Footfalls Logged during Clinic Operating Hours
     for (int pIdx = 0; pIdx < math.min(patientEntries.length, 60); pIdx++) {
       final p = patientEntries[pIdx];
-      final footfallDate = DateTime(p.registrationYear, p.registrationMonth, p.registrationDay, 19, 15 + (pIdx % 35));
-      await db.into(db.footfalls).insertOnConflictUpdate(
+      final footfallDate = DateTime(
+        p.registrationYear,
+        p.registrationMonth,
+        p.registrationDay,
+        19,
+        15 + (pIdx % 35),
+      );
+      await db
+          .into(db.footfalls)
+          .insertOnConflictUpdate(
             FootfallsCompanion.insert(
               id: IdGenerator.generate(),
               clinicId: clinicIds[p.clinicIndex],
               date: Value(footfallDate),
               name: p.name,
               phone: Value(p.phone),
-              disease: Value(archetypes[p.archetypeIndex % archetypes.length].primaryDisease),
-              notes: const Value('Walk-in registered and converted to regular patient.'),
+              disease: Value(
+                archetypes[p.archetypeIndex % archetypes.length].primaryDisease,
+              ),
+              notes: const Value(
+                'Walk-in registered and converted to regular patient.',
+              ),
               createdAt: Value(footfallDate),
             ),
           );

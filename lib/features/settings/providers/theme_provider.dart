@@ -44,14 +44,16 @@ class ThemeNotifier extends StateNotifier<ThemePrefs> {
   }
 
   Future<String?> _read(String key) async {
-    final row = await (_db.select(_db.settings)
-          ..where((t) => t.key.equals(key)))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.settings)
+          ..where((t) => t.key.equals(key))).getSingleOrNull();
     return row?.value;
   }
 
   Future<void> _write(String key, String value) async {
-    await _db.into(_db.settings).insertOnConflictUpdate(
+    await _db
+        .into(_db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: key,
             value: value,
@@ -69,9 +71,10 @@ class ThemeNotifier extends StateNotifier<ThemePrefs> {
         // Anyone who picked dark or a palette before these controls were
         // hidden would otherwise be stuck with a look they can no longer
         // change, so both fall back to the shipped defaults.
-        mode: storedMode == null
-            ? AppThemeMode.light
-            : AppThemeMode.fromName(storedMode),
+        mode:
+            storedMode == null
+                ? AppThemeMode.light
+                : AppThemeMode.fromName(storedMode),
         palette: AppPalette.emerald,
         blackVariant: false,
       );
@@ -96,7 +99,6 @@ class ThemeNotifier extends StateNotifier<ThemePrefs> {
   }
 }
 
-final themeProvider =
-    StateNotifierProvider<ThemeNotifier, ThemePrefs>((ref) {
+final themeProvider = StateNotifierProvider<ThemeNotifier, ThemePrefs>((ref) {
   return ThemeNotifier(ref.watch(databaseProvider));
 });

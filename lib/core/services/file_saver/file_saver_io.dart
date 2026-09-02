@@ -20,10 +20,9 @@ Future<String?> saveAndDownloadFile({
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/$fileName');
     await file.writeAsBytes(uint8Bytes, flush: true);
-    await Share.shareXFiles(
-      [XFile(file.path, mimeType: mimeType)],
-      subject: shareSubject ?? fileName,
-    );
+    await Share.shareXFiles([
+      XFile(file.path, mimeType: mimeType),
+    ], subject: shareSubject ?? fileName);
     return file.path;
   } else {
     final extension = fileName.contains('.') ? fileName.split('.').last : '';

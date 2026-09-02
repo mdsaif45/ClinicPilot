@@ -12,21 +12,30 @@ void main() {
   late AppDatabase db;
   late ProviderContainer container;
 
-  Future<void> addPatient(String id, String code, String name, String phone,
-      {bool deleted = false}) async {
-    await db.into(db.patients).insert(PatientsCompanion.insert(
-          id: id,
-          patientCode: Value(code),
-          name: name,
-          phone: phone,
-          age: 30,
-          gender: 'Female',
-          primaryClinicId: const Value('clinic_old'),
-          // Distinct per patient at this clinic - the unique index on
-          // (clinic, serial_no) rejects a second patient sharing one.
-          serialNo: Value(id),
-          isDeleted: Value(deleted),
-        ));
+  Future<void> addPatient(
+    String id,
+    String code,
+    String name,
+    String phone, {
+    bool deleted = false,
+  }) async {
+    await db
+        .into(db.patients)
+        .insert(
+          PatientsCompanion.insert(
+            id: id,
+            patientCode: Value(code),
+            name: name,
+            phone: phone,
+            age: 30,
+            gender: 'Female',
+            primaryClinicId: const Value('clinic_old'),
+            // Distinct per patient at this clinic - the unique index on
+            // (clinic, serial_no) rejects a second patient sharing one.
+            serialNo: Value(id),
+            isDeleted: Value(deleted),
+          ),
+        );
   }
 
   setUp(() async {
@@ -38,8 +47,13 @@ void main() {
     await addPatient('p1', 'P-2026-00001', 'Fatima Begum', '9800000001');
     await addPatient('p2', 'P-2026-00002', 'Fatima Khatun', '9800000002');
     await addPatient('p3', 'P-2026-00003', 'Rahman Ali', '9800000003');
-    await addPatient('p4', 'P-2026-00004', 'Deleted Person', '9800000004',
-        deleted: true);
+    await addPatient(
+      'p4',
+      'P-2026-00004',
+      'Deleted Person',
+      '9800000004',
+      deleted: true,
+    );
   });
 
   tearDown(() async {
@@ -56,7 +70,9 @@ void main() {
     final r = await container.read(patientSearchProvider('').future);
     expect(r.any((e) => e.patient.id == 'p4'), isFalse);
 
-    final byName = await container.read(patientSearchProvider('Deleted').future);
+    final byName = await container.read(
+      patientSearchProvider('Deleted').future,
+    );
     expect(byName, isEmpty);
   });
 
@@ -77,7 +93,9 @@ void main() {
   });
 
   test('matches by patient code', () async {
-    final r = await container.read(patientSearchProvider('P-2026-00002').future);
+    final r = await container.read(
+      patientSearchProvider('P-2026-00002').future,
+    );
     expect(r.single.patient.id, 'p2');
   });
 

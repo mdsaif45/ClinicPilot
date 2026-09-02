@@ -43,7 +43,8 @@ void main() {
       ),
     ],
     hpi: const HpiDetails(
-      chronologicalDevelopment: 'Gradual patchy hair thinning noted 8 months ago',
+      chronologicalDevelopment:
+          'Gradual patchy hair thinning noted 8 months ago',
       progression: 'Progressively worse with seasonal transitions',
       previousTreatment: 'Allopathic minoxidil gave temporary palliation',
     ),
@@ -86,8 +87,10 @@ void main() {
       secondaryMixedMiasm: 'Sycotic',
     ),
     caseTotality: const CaseTotality(
-      totalityOfSymptoms: 'Totality of characteristic mental and physical general symptoms',
-      characteristicSymptoms: 'Thermal modality chilly, worse cold and damp, better warmth',
+      totalityOfSymptoms:
+          'Totality of characteristic mental and physical general symptoms',
+      characteristicSymptoms:
+          'Thermal modality chilly, worse cold and damp, better warmth',
       generals: 'Chilly thermal, moderate thirst, fatigue on exertion',
       finalRemedySelection: 'Phosphorus',
       potency: '200C',
@@ -119,7 +122,9 @@ void main() {
   Widget createWidgetUnderTest({MasterCaseRecordData? record}) {
     return ProviderScope(
       overrides: [
-        patientCaseRecordProvider(testPatient.id).overrideWith((ref) => Stream.value(record)),
+        patientCaseRecordProvider(
+          testPatient.id,
+        ).overrideWith((ref) => Stream.value(record)),
         clinicsStreamProvider.overrideWith(
           (ref) => Stream.value([
             Clinic(
@@ -138,14 +143,14 @@ void main() {
           ]),
         ),
       ],
-      child: MaterialApp(
-        home: ClinicalCaseSheetScreen(patient: testPatient),
-      ),
+      child: MaterialApp(home: ClinicalCaseSheetScreen(patient: testPatient)),
     );
   }
 
   group('ClinicalCaseSheetScreen Tests', () {
-    testWidgets('renders patient header and clinical highlights', (tester) async {
+    testWidgets('renders patient header and clinical highlights', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest(record: testCaseRecord));
       await tester.pumpAndSettle();
 
@@ -160,47 +165,67 @@ void main() {
       expect(find.text('Remedy: Phosphorus 200C'), findsWidgets);
     });
 
-    testWidgets('renders structured clinical sections in readable format with section chips', (tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+    testWidgets(
+      'renders structured clinical sections in readable format with section chips',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
 
-      await tester.pumpWidget(createWidgetUnderTest(record: testCaseRecord));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createWidgetUnderTest(record: testCaseRecord));
+        await tester.pumpAndSettle();
 
-      // Top section quick-jump chips are available
-      expect(find.text('All'), findsOneWidget);
-      expect(find.text('Complaints'), findsWidgets);
-      expect(find.text('HPI'), findsOneWidget);
+        // Top section quick-jump chips are available
+        expect(find.text('All'), findsOneWidget);
+        expect(find.text('Complaints'), findsWidgets);
+        expect(find.text('HPI'), findsOneWidget);
 
-      // No editable form fields in clinical body
-      expect(find.byType(TextFormField), findsNothing);
+        // No editable form fields in clinical body
+        expect(find.byType(TextFormField), findsNothing);
 
-      // Structured Sections
-      expect(find.text('Chief Complaints'), findsOneWidget);
-      expect(find.text('Alopecia Areata & Hair Thinning'), findsWidgets);
-      expect(find.text('Patchy loss of scalp hair with tingling'), findsOneWidget);
+        // Structured Sections
+        expect(find.text('Chief Complaints'), findsOneWidget);
+        expect(find.text('Alopecia Areata & Hair Thinning'), findsWidgets);
+        expect(
+          find.text('Patchy loss of scalp hair with tingling'),
+          findsOneWidget,
+        );
 
-      expect(find.text('History of Present Illness (HPI)'), findsOneWidget);
-      expect(find.text('Gradual patchy hair thinning noted 8 months ago'), findsOneWidget);
+        expect(find.text('History of Present Illness (HPI)'), findsOneWidget);
+        expect(
+          find.text('Gradual patchy hair thinning noted 8 months ago'),
+          findsOneWidget,
+        );
 
-      expect(find.text('Past Medical History & Allergies'), findsOneWidget);
-      expect(find.text('Hypersensitive to chemical hair dyes'), findsOneWidget);
+        expect(find.text('Past Medical History & Allergies'), findsOneWidget);
+        expect(
+          find.text('Hypersensitive to chemical hair dyes'),
+          findsOneWidget,
+        );
 
-      expect(find.text('Physical Generals & Modalities'), findsOneWidget);
-      expect(find.text('Disturbed past 2 AM'), findsOneWidget);
+        expect(find.text('Physical Generals & Modalities'), findsOneWidget);
+        expect(find.text('Disturbed past 2 AM'), findsOneWidget);
 
-      expect(find.text('Baseline Prescription Plan'), findsOneWidget);
-      expect(find.text('Avoid raw onions, strong coffee, and camphor'), findsOneWidget);
+        expect(find.text('Baseline Prescription Plan'), findsOneWidget);
+        expect(
+          find.text('Avoid raw onions, strong coffee, and camphor'),
+          findsOneWidget,
+        );
 
-      expect(find.text('Diagnostic Investigations & Lab Tests'), findsOneWidget);
-      expect(find.text('Serum Ferritin & Scalp Trichoscopy'), findsOneWidget);
+        expect(
+          find.text('Diagnostic Investigations & Lab Tests'),
+          findsOneWidget,
+        );
+        expect(find.text('Serum Ferritin & Scalp Trichoscopy'), findsOneWidget);
 
-      // Edit button exists
-      expect(find.text('Edit Master Case Record'), findsOneWidget);
-    });
+        // Edit button exists
+        expect(find.text('Edit Master Case Record'), findsOneWidget);
+      },
+    );
 
-    testWidgets('quick-jump chip filters matching clinical section', (tester) async {
+    testWidgets('quick-jump chip filters matching clinical section', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -220,7 +245,9 @@ void main() {
       expect(find.text('Baseline Prescription Plan'), findsNothing);
     });
 
-    testWidgets('displays empty state when no case record exists', (tester) async {
+    testWidgets('displays empty state when no case record exists', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest(record: null));
       await tester.pumpAndSettle();
 
@@ -228,31 +255,34 @@ void main() {
       expect(find.text('Start Clinical Case Taking'), findsOneWidget);
     });
 
-    test('ChiefComplaintDetail model serializes and parses correctly for sync', () {
-      const detail = ChiefComplaintDetail(
-        complaint: 'Chronic Migraine',
-        location: 'Right temporal',
-        onset: 'Sudden',
-        duration: '3 years',
-        sensation: 'Throbbing, pulsating',
-        extensionRadiation: 'Radiates to right eye',
-        modalitiesAgg: 'Sun exposure, noise',
-        modalitiesAmel: 'Dark quiet room, hard pressure',
-        concomitants: 'Nausea, photophobia',
-        causation: 'Mental strain',
-        periodicity: 'Weekly on Sundays',
-        severity: 'Severe',
-        associatedSymptoms: 'Dizziness with aura',
-      );
+    test(
+      'ChiefComplaintDetail model serializes and parses correctly for sync',
+      () {
+        const detail = ChiefComplaintDetail(
+          complaint: 'Chronic Migraine',
+          location: 'Right temporal',
+          onset: 'Sudden',
+          duration: '3 years',
+          sensation: 'Throbbing, pulsating',
+          extensionRadiation: 'Radiates to right eye',
+          modalitiesAgg: 'Sun exposure, noise',
+          modalitiesAmel: 'Dark quiet room, hard pressure',
+          concomitants: 'Nausea, photophobia',
+          causation: 'Mental strain',
+          periodicity: 'Weekly on Sundays',
+          severity: 'Severe',
+          associatedSymptoms: 'Dizziness with aura',
+        );
 
-      final json = detail.toJson();
-      expect(json['complaint'], 'Chronic Migraine');
-      expect(json['severity'], 'Severe');
+        final json = detail.toJson();
+        expect(json['complaint'], 'Chronic Migraine');
+        expect(json['severity'], 'Severe');
 
-      final parsed = ChiefComplaintDetail.fromJson(json);
-      expect(parsed.complaint, 'Chronic Migraine');
-      expect(parsed.modalitiesAgg, 'Sun exposure, noise');
-      expect(parsed.modalitiesAmel, 'Dark quiet room, hard pressure');
-    });
+        final parsed = ChiefComplaintDetail.fromJson(json);
+        expect(parsed.complaint, 'Chronic Migraine');
+        expect(parsed.modalitiesAgg, 'Sun exposure, noise');
+        expect(parsed.modalitiesAmel, 'Dark quiet room, hard pressure');
+      },
+    );
   });
 }

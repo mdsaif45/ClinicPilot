@@ -9,7 +9,8 @@ class Footfalls extends Table {
   TextColumn get name => text()();
   TextColumn get phone => text().nullable()();
   TextColumn get disease => text().nullable()();
-  TextColumn get convertedPatientId => text().nullable().references(Patients, #id)();
+  TextColumn get convertedPatientId =>
+      text().nullable().references(Patients, #id)();
   TextColumn get notes => text().nullable()();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();

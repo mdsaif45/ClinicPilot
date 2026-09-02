@@ -58,13 +58,17 @@ class PdfService {
                     ],
                   ),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const pw.EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: pw.BoxDecoration(
                       color: primaryColor,
                       borderRadius: pw.BorderRadius.circular(6),
                     ),
                     child: pw.Text(
-                      clinicName.toLowerCase().contains('online') || clinicName.toLowerCase().contains('teleconsult')
+                      clinicName.toLowerCase().contains('online') ||
+                              clinicName.toLowerCase().contains('teleconsult')
                           ? 'TELECONSULTATION RECEIPT'
                           : 'CASH MEMO',
                       style: pw.TextStyle(
@@ -95,22 +99,68 @@ class PdfService {
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text('PATIENT DETAILS', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: textMuted)),
+                        pw.Text(
+                          'PATIENT DETAILS',
+                          style: pw.TextStyle(
+                            fontSize: 10,
+                            fontWeight: pw.FontWeight.bold,
+                            color: textMuted,
+                          ),
+                        ),
                         pw.SizedBox(height: 4),
-                        pw.Text(patient.name, style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: textDark)),
-                        pw.Text('Phone: ${patient.phone}', style: const pw.TextStyle(fontSize: 12)),
-                        pw.Text('Age/Gender: ${patient.age} yrs / ${patient.gender}', style: const pw.TextStyle(fontSize: 12)),
-                        pw.Text('Disease: ${patient.primaryDisease ?? "N/A"}', style: const pw.TextStyle(fontSize: 12)),
+                        pw.Text(
+                          patient.name,
+                          style: pw.TextStyle(
+                            fontSize: 16,
+                            fontWeight: pw.FontWeight.bold,
+                            color: textDark,
+                          ),
+                        ),
+                        pw.Text(
+                          'Phone: ${patient.phone}',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                        pw.Text(
+                          'Age/Gender: ${patient.age} yrs / ${patient.gender}',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                        pw.Text(
+                          'Disease: ${patient.primaryDisease ?? "N/A"}',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
                       ],
                     ),
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
-                        pw.Text('MEMO INFO', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: textMuted)),
+                        pw.Text(
+                          'MEMO INFO',
+                          style: pw.TextStyle(
+                            fontSize: 10,
+                            fontWeight: pw.FontWeight.bold,
+                            color: textMuted,
+                          ),
+                        ),
                         pw.SizedBox(height: 4),
-                        pw.Text('Memo #: ${cashMemo.memoNumber}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                        pw.Text('Date: ${_dateFormat.format(cashMemo.memoDate)}', style: const pw.TextStyle(fontSize: 12)),
-                        pw.Text('Payment Method: ${cashMemo.paymentMethod}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                        pw.Text(
+                          'Memo #: ${cashMemo.memoNumber}',
+                          style: pw.TextStyle(
+                            fontSize: 14,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.Text(
+                          'Date: ${_dateFormat.format(cashMemo.memoDate)}',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                        pw.Text(
+                          'Payment Method: ${cashMemo.paymentMethod}',
+                          style: pw.TextStyle(
+                            fontSize: 12,
+                            fontWeight: pw.FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -120,7 +170,10 @@ class PdfService {
 
               // Itemized Charges Table
               pw.Table(
-                border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.8),
+                border: pw.TableBorder.all(
+                  color: PdfColors.grey300,
+                  width: 0.8,
+                ),
                 columnWidths: {
                   0: const pw.FlexColumnWidth(3),
                   1: const pw.FlexColumnWidth(1),
@@ -131,18 +184,45 @@ class PdfService {
                     children: [
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text('Description', style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold)),
+                        child: pw.Text(
+                          'Description',
+                          style: pw.TextStyle(
+                            color: PdfColors.white,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text('Amount (INR)', style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.right),
+                        child: pw.Text(
+                          'Amount (INR)',
+                          style: pw.TextStyle(
+                            color: PdfColors.white,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                          textAlign: pw.TextAlign.right,
+                        ),
                       ),
                     ],
                   ),
-                  _buildTableRow('Consultation Fee', 'Rs. ${cashMemo.consultationFee.toStringAsFixed(2)}'),
-                  _buildTableRow('Medicine Charges', 'Rs. ${cashMemo.medicineFee.toStringAsFixed(2)}'),
-                  if (cashMemo.otherFee > 0) _buildTableRow('Other Charges', 'Rs. ${cashMemo.otherFee.toStringAsFixed(2)}'),
-                  if (cashMemo.discount > 0) _buildTableRow('Discount (-)', 'Rs. ${cashMemo.discount.toStringAsFixed(2)}'),
+                  _buildTableRow(
+                    'Consultation Fee',
+                    'Rs. ${cashMemo.consultationFee.toStringAsFixed(2)}',
+                  ),
+                  _buildTableRow(
+                    'Medicine Charges',
+                    'Rs. ${cashMemo.medicineFee.toStringAsFixed(2)}',
+                  ),
+                  if (cashMemo.otherFee > 0)
+                    _buildTableRow(
+                      'Other Charges',
+                      'Rs. ${cashMemo.otherFee.toStringAsFixed(2)}',
+                    ),
+                  if (cashMemo.discount > 0)
+                    _buildTableRow(
+                      'Discount (-)',
+                      'Rs. ${cashMemo.discount.toStringAsFixed(2)}',
+                    ),
                 ],
               ),
               pw.SizedBox(height: 16),
@@ -162,8 +242,21 @@ class PdfService {
                     child: pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
-                        pw.Text('Total Paid:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                        pw.Text('Rs. ${cashMemo.total.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                        pw.Text(
+                          'Total Paid:',
+                          style: pw.TextStyle(
+                            fontSize: 14,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.Text(
+                          'Rs. ${cashMemo.total.toStringAsFixed(2)}',
+                          style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -175,9 +268,19 @@ class PdfService {
               pw.Center(
                 child: pw.Column(
                   children: [
-                    pw.Text('Thank you for visiting $clinicName!', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                    pw.Text(
+                      'Thank you for visiting $clinicName!',
+                      style: pw.TextStyle(
+                        fontSize: 12,
+                        fontWeight: pw.FontWeight.bold,
+                        color: primaryColor,
+                      ),
+                    ),
                     pw.SizedBox(height: 4),
-                    pw.Text('For follow-up appointments, please call ${patient.phone.isNotEmpty ? "clinic support" : ""}.', style: pw.TextStyle(fontSize: 10, color: textMuted)),
+                    pw.Text(
+                      'For follow-up appointments, please call ${patient.phone.isNotEmpty ? "clinic support" : ""}.',
+                      style: pw.TextStyle(fontSize: 10, color: textMuted),
+                    ),
                   ],
                 ),
               ),
@@ -199,7 +302,11 @@ class PdfService {
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.all(10),
-          child: pw.Text(amount, style: const pw.TextStyle(fontSize: 12), textAlign: pw.TextAlign.right),
+          child: pw.Text(
+            amount,
+            style: const pw.TextStyle(fontSize: 12),
+            textAlign: pw.TextAlign.right,
+          ),
         ),
       ],
     );

@@ -43,17 +43,19 @@ class ReferralAnalytics {
 ///
 /// The question this answers is "which channel brings patients worth having",
 /// which needs lifetime value, not first-consultation value.
-final referralAnalyticsProvider =
-    StreamProvider<ReferralAnalytics>((ref) async* {
+final referralAnalyticsProvider = StreamProvider<ReferralAnalytics>((
+  ref,
+) async* {
   final db = ref.watch(databaseProvider);
   final periodState = ref.watch(periodProvider);
   final activeClinicId = ref.watch(activeClinicProvider)?.id;
   final range = periodState.dateRange;
 
   // Each patient's originating source, taken from their earliest visit.
-  var firstVisitQuery = db.select(db.visits)
-    ..where((t) => t.isDeleted.equals(false))
-    ..orderBy([(t) => OrderingTerm.asc(t.visitDate)]);
+  var firstVisitQuery =
+      db.select(db.visits)
+        ..where((t) => t.isDeleted.equals(false))
+        ..orderBy([(t) => OrderingTerm.asc(t.visitDate)]);
   if (activeClinicId != null) {
     firstVisitQuery =
         firstVisitQuery..where((t) => t.clinicId.equals(activeClinicId));
@@ -80,11 +82,14 @@ final referralAnalyticsProvider =
   }
 
   // Revenue earned in the period, credited to each patient's original source.
-  var memoQuery = db.select(db.cashMemos)
-    ..where((t) => t.isDeleted.equals(false))
-    ..where((t) =>
-        t.memoDate.isBiggerOrEqual(Variable(range.start)) &
-        t.memoDate.isSmallerOrEqual(Variable(range.end)));
+  var memoQuery =
+      db.select(db.cashMemos)
+        ..where((t) => t.isDeleted.equals(false))
+        ..where(
+          (t) =>
+              t.memoDate.isBiggerOrEqual(Variable(range.start)) &
+              t.memoDate.isSmallerOrEqual(Variable(range.end)),
+        );
   if (activeClinicId != null) {
     memoQuery = memoQuery..where((t) => t.clinicId.equals(activeClinicId));
   }
@@ -104,17 +109,20 @@ final referralAnalyticsProvider =
   }
 
   final sources = {...patientsBySource.keys, ...revenueBySource.keys};
-  final stats = sources
-      .map((s) => ReferralStat(
-            source: s,
-            patients: patientsBySource[s] ?? 0,
-            revenue: revenueBySource[s] ?? 0,
-          ))
-      .toList()
-    ..sort((a, b) {
-      final byPatients = b.patients.compareTo(a.patients);
-      return byPatients != 0 ? byPatients : b.revenue.compareTo(a.revenue);
-    });
+  final stats =
+      sources
+          .map(
+            (s) => ReferralStat(
+              source: s,
+              patients: patientsBySource[s] ?? 0,
+              revenue: revenueBySource[s] ?? 0,
+            ),
+          )
+          .toList()
+        ..sort((a, b) {
+          final byPatients = b.patients.compareTo(a.patients);
+          return byPatients != 0 ? byPatients : b.revenue.compareTo(a.revenue);
+        });
 
   yield ReferralAnalytics(
     stats: stats,

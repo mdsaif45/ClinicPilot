@@ -32,9 +32,10 @@ class _ShimmerBoxState extends State<ShimmerBox>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    _animation = Tween<double>(begin: 0.35, end: 0.85).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0.35,
+      end: 0.85,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -78,11 +79,7 @@ class ListTileShimmer extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ShimmerBox(
-            width: 44,
-            height: 44,
-            borderRadius: Radii.pillAll,
-          ),
+          ShimmerBox(width: 44, height: 44, borderRadius: Radii.pillAll),
           const SizedBox(width: Spacing.lg),
           Expanded(
             child: Column(
@@ -94,11 +91,7 @@ class ListTileShimmer extends StatelessWidget {
                   borderRadius: Radii.smAll,
                 ),
                 const SizedBox(height: Spacing.sm),
-                ShimmerBox(
-                  width: 140,
-                  height: 11,
-                  borderRadius: Radii.smAll,
-                ),
+                ShimmerBox(width: 140, height: 11, borderRadius: Radii.smAll),
               ],
             ),
           ),

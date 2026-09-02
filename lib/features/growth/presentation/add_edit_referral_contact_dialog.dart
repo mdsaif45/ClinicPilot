@@ -11,10 +11,7 @@ import '../providers/referral_crm_provider.dart';
 class AddEditReferralContactDialog extends ConsumerStatefulWidget {
   final ReferralContact? existingContact;
 
-  const AddEditReferralContactDialog({
-    super.key,
-    this.existingContact,
-  });
+  const AddEditReferralContactDialog({super.key, this.existingContact});
 
   @override
   ConsumerState<AddEditReferralContactDialog> createState() =>
@@ -119,71 +116,87 @@ class _AddEditReferralContactDialogState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Partner / Organization Name *',
-                  prefixIcon: Icon(Icons.store_outlined),
-                ),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Enter organization name' : null,
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Partner / Organization Name *',
+                prefixIcon: Icon(Icons.store_outlined),
               ),
-              const SizedBox(height: Spacing.md),
+              validator:
+                  (v) =>
+                      v == null || v.trim().isEmpty
+                          ? 'Enter organization name'
+                          : null,
+            ),
+            const SizedBox(height: Spacing.md),
 
-              PickerField<String>(
-                label: 'Partner Category',
-                value: _category,
-                options: const [
-                  PickerOption(value: 'Pharmacy', label: 'Pharmacy / Medical Store'),
-                  PickerOption(value: 'Diagnostic Lab', label: 'Diagnostic Lab / Pathology'),
-                  PickerOption(value: 'Physiotherapy', label: 'Physiotherapy Center'),
-                  PickerOption(value: 'Dentist', label: 'Dental Clinic'),
-                  PickerOption(value: 'Gym / Fitness', label: 'Gym / Yoga / Fitness Center'),
-                  PickerOption(value: 'Specialist Doctor', label: 'Specialist / GP Doctor'),
-                  PickerOption(value: 'Other', label: 'Other Referral Source'),
-                ],
-                onChanged: (val) => setState(() => _category = val),
-              ),
-              const SizedBox(height: Spacing.md),
-
-              TextFormField(
-                controller: _personController,
-                decoration: const InputDecoration(
-                  labelText: 'Contact Person / Manager',
-                  prefixIcon: Icon(Icons.person_outline),
+            PickerField<String>(
+              label: 'Partner Category',
+              value: _category,
+              options: const [
+                PickerOption(
+                  value: 'Pharmacy',
+                  label: 'Pharmacy / Medical Store',
                 ),
-              ),
-              const SizedBox(height: Spacing.md),
-
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                PickerOption(
+                  value: 'Diagnostic Lab',
+                  label: 'Diagnostic Lab / Pathology',
                 ),
-              ),
-              const SizedBox(height: Spacing.md),
-
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Address / Locality',
-                  prefixIcon: Icon(Icons.location_on_outlined),
+                PickerOption(
+                  value: 'Physiotherapy',
+                  label: 'Physiotherapy Center',
                 ),
-              ),
-              const SizedBox(height: Spacing.md),
-
-              TextFormField(
-                controller: _notesController,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Partnership Notes',
+                PickerOption(value: 'Dentist', label: 'Dental Clinic'),
+                PickerOption(
+                  value: 'Gym / Fitness',
+                  label: 'Gym / Yoga / Fitness Center',
                 ),
+                PickerOption(
+                  value: 'Specialist Doctor',
+                  label: 'Specialist / GP Doctor',
+                ),
+                PickerOption(value: 'Other', label: 'Other Referral Source'),
+              ],
+              onChanged: (val) => setState(() => _category = val),
+            ),
+            const SizedBox(height: Spacing.md),
+
+            TextFormField(
+              controller: _personController,
+              decoration: const InputDecoration(
+                labelText: 'Contact Person / Manager',
+                prefixIcon: Icon(Icons.person_outline),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: Spacing.md),
+
+            TextFormField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: 'Phone Number',
+                prefixIcon: Icon(Icons.phone_outlined),
+              ),
+            ),
+            const SizedBox(height: Spacing.md),
+
+            TextFormField(
+              controller: _addressController,
+              decoration: const InputDecoration(
+                labelText: 'Address / Locality',
+                prefixIcon: Icon(Icons.location_on_outlined),
+              ),
+            ),
+            const SizedBox(height: Spacing.md),
+
+            TextFormField(
+              controller: _notesController,
+              maxLines: 2,
+              decoration: const InputDecoration(labelText: 'Partnership Notes'),
+            ),
+          ],
         ),
+      ),
     );
   }
 }

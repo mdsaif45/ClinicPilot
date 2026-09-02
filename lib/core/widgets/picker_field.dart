@@ -72,9 +72,14 @@ class PickerField<T> extends StatelessWidget {
           child: InputDecorator(
             decoration: InputDecoration(
               isDense: true,
-              prefixIcon: prefixIcon == null
-                  ? null
-                  : Icon(prefixIcon, size: 20, color: scheme.onSurfaceVariant),
+              prefixIcon:
+                  prefixIcon == null
+                      ? null
+                      : Icon(
+                        prefixIcon,
+                        size: 20,
+                        color: scheme.onSurfaceVariant,
+                      ),
               suffixIcon: const Icon(Icons.expand_more, size: 20),
               errorText: errorText,
               contentPadding: const EdgeInsets.symmetric(
@@ -100,9 +105,10 @@ class PickerField<T> extends StatelessWidget {
                     selected?.label ?? hint,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: selected != null
-                          ? scheme.onSurface
-                          : scheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      color:
+                          selected != null
+                              ? scheme.onSurface
+                              : scheme.onSurfaceVariant.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -143,29 +149,33 @@ class PickerField<T> extends StatelessWidget {
               ),
               for (final o in options)
                 ListTile(
-                  leading: o.icon != null
-                      ? Icon(o.icon, size: 20, color: scheme.primary)
-                      : (o.colour != null
-                          ? Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                color: o.colour,
-                                shape: BoxShape.circle,
-                              ),
-                            )
-                          : null),
+                  leading:
+                      o.icon != null
+                          ? Icon(o.icon, size: 20, color: scheme.primary)
+                          : (o.colour != null
+                              ? Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: o.colour,
+                                  shape: BoxShape.circle,
+                                ),
+                              )
+                              : null),
                   title: Text(
                     o.label,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight:
-                          o.value == value ? FontWeight.bold : FontWeight.normal,
+                          o.value == value
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                     ),
                   ),
                   subtitle: o.subtitle == null ? null : Text(o.subtitle!),
-                  trailing: o.value == value
-                      ? Icon(Icons.check, color: scheme.primary)
-                      : null,
+                  trailing:
+                      o.value == value
+                          ? Icon(Icons.check, color: scheme.primary)
+                          : null,
                   onTap: () {
                     onChanged(o.value);
                     Navigator.of(ctx).pop();

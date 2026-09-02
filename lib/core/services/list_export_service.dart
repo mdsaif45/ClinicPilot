@@ -28,16 +28,16 @@ class ListExportService {
   const ListExportService._();
 
   static xlsx.CellStyle get headerStyle => xlsx.CellStyle(
-        backgroundColorHex: xlsx.ExcelColor.fromHexString('#8CB5F9'),
-        fontColorHex: xlsx.ExcelColor.fromHexString('#000000'),
-        bold: true,
-        fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
-      );
+    backgroundColorHex: xlsx.ExcelColor.fromHexString('#8CB5F9'),
+    fontColorHex: xlsx.ExcelColor.fromHexString('#000000'),
+    bold: true,
+    fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
+  );
 
   static xlsx.CellStyle get totalsStyle => xlsx.CellStyle(
-        bold: true,
-        fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
-      );
+    bold: true,
+    fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
+  );
 
   /// Injects Excel `<autoFilter>` and `<pane state="frozen">` (sticky top header row) into each worksheet.
   static List<int> enableAutoFilter(List<int> excelBytes) {
@@ -53,7 +53,8 @@ class ListExportService {
 
           // 1. Freeze top row (Sticky Header)
           if (!content.contains('<pane')) {
-            const frozenPaneTag = '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>';
+            const frozenPaneTag =
+                '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>';
             if (content.contains('<sheetView workbookViewId="0"/>')) {
               content = content.replaceFirst(
                 '<sheetView workbookViewId="0"/>',
@@ -74,7 +75,9 @@ class ListExportService {
 
           // 2. AutoFilter Dropdowns on Row 1
           if (!content.contains('<autoFilter')) {
-            final headerColMatch = RegExp(r'<c\s+r="([A-Z]+)1"').allMatches(content);
+            final headerColMatch = RegExp(
+              r'<c\s+r="([A-Z]+)1"',
+            ).allMatches(content);
             final rowMatch = RegExp(r'<row\s+r="(\d+)"').allMatches(content);
 
             if (headerColMatch.isNotEmpty && rowMatch.isNotEmpty) {
@@ -84,9 +87,15 @@ class ListExportService {
               if (lastCol != null && lastRow != null) {
                 final autoFilterTag = '<autoFilter ref="A1:$lastCol$lastRow"/>';
                 if (content.contains('</sheetData>')) {
-                  content = content.replaceFirst('</sheetData>', '</sheetData>$autoFilterTag');
+                  content = content.replaceFirst(
+                    '</sheetData>',
+                    '</sheetData>$autoFilterTag',
+                  );
                 } else if (content.contains('</worksheet>')) {
-                  content = content.replaceFirst('</worksheet>', '$autoFilterTag</worksheet>');
+                  content = content.replaceFirst(
+                    '</worksheet>',
+                    '$autoFilterTag</worksheet>',
+                  );
                 }
               }
             }
@@ -108,7 +117,10 @@ class ListExportService {
   static String _cell(Object? value) {
     if (value == null) return '';
     final s = value.toString();
-    if (s.contains(',') || s.contains('"') || s.contains('\n') || s.contains('\r')) {
+    if (s.contains(',') ||
+        s.contains('"') ||
+        s.contains('\n') ||
+        s.contains('\r')) {
       return '"${s.replaceAll('"', '""')}"';
     }
     return s;
@@ -171,12 +183,15 @@ class ListExportService {
       row += 1;
     }
 
-    sheet.appendRow(
-      [xlsx.TextCellValue('Metric'), xlsx.TextCellValue('Value')],
-    );
+    sheet.appendRow([
+      xlsx.TextCellValue('Metric'),
+      xlsx.TextCellValue('Value'),
+    ]);
     for (var col = 0; col < 2; col++) {
       sheet
-          .cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row))
+          .cell(
+            xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row),
+          )
           .cellStyle = headerStyle;
     }
 
@@ -216,9 +231,7 @@ class ListExportService {
     final sheet = book[sheetName];
 
     // Header Row
-    sheet.appendRow(
-      columns.map((c) => xlsx.TextCellValue(c.header)).toList(),
-    );
+    sheet.appendRow(columns.map((c) => xlsx.TextCellValue(c.header)).toList());
     for (var col = 0; col < columns.length; col++) {
       sheet
           .cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0))
@@ -227,9 +240,7 @@ class ListExportService {
 
     // Data Rows
     for (final row in rows) {
-      sheet.appendRow(
-        columns.map((c) => _cellValue(c.value(row))).toList(),
-      );
+      sheet.appendRow(columns.map((c) => _cellValue(c.value(row))).toList());
     }
 
     // Totals Row
@@ -239,8 +250,12 @@ class ListExportService {
       sheet.appendRow(cells.map(_cellValue).toList());
       for (var col = 0; col < cells.length; col++) {
         sheet
-            .cell(xlsx.CellIndex.indexByColumnRow(
-                columnIndex: col, rowIndex: totalsRowIndex))
+            .cell(
+              xlsx.CellIndex.indexByColumnRow(
+                columnIndex: col,
+                rowIndex: totalsRowIndex,
+              ),
+            )
             .cellStyle = totalsStyle;
       }
     }

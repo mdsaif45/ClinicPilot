@@ -17,17 +17,15 @@ class AppScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.stylus,
-        PointerDeviceKind.trackpad,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.trackpad,
+  };
 
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) {
-    return const BouncingScrollPhysics(
-      parent: AlwaysScrollableScrollPhysics(),
-    );
+    return const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
   }
 }
 
@@ -36,11 +34,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('settings');
 
-  runApp(
-    const ProviderScope(
-      child: ClinicPilotApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: ClinicPilotApp()));
 }
 
 class ClinicPilotApp extends ConsumerStatefulWidget {
@@ -77,7 +71,8 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final notifier = ref.read(appLockProvider.notifier);
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       notifier.onAppPaused();
     } else if (state == AppLifecycleState.resumed) {
       notifier.onAppResumed();
@@ -119,10 +114,7 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
               }
             },
           },
-          child: Focus(
-            autofocus: true,
-            child: appChild,
-          ),
+          child: Focus(autofocus: true, child: appChild),
         );
       },
     );

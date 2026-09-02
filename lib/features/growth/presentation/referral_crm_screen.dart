@@ -47,21 +47,29 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, ReferralContact contact) {
+  void _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    ReferralContact contact,
+  ) {
     AppHaptics.error();
     showDialog(
       context: context,
-      builder: (ctx) => AppConfirmDialog(
-        title: 'Delete Partner',
-        message: 'Are you sure you want to remove "${contact.name}" from the referral network?',
-        confirmLabel: 'Delete',
-        isDestructive: true,
-        onConfirm: () async {
-          Navigator.of(ctx).pop();
-          await ref.read(referralCrmNotifierProvider.notifier).deleteContact(contact.id);
-          AppHaptics.medium();
-        },
-      ),
+      builder:
+          (ctx) => AppConfirmDialog(
+            title: 'Delete Partner',
+            message:
+                'Are you sure you want to remove "${contact.name}" from the referral network?',
+            confirmLabel: 'Delete',
+            isDestructive: true,
+            onConfirm: () async {
+              Navigator.of(ctx).pop();
+              await ref
+                  .read(referralCrmNotifierProvider.notifier)
+                  .deleteContact(contact.id);
+              AppHaptics.medium();
+            },
+          ),
     );
   }
 
@@ -75,14 +83,17 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
     final allContacts = contactsAsync.value ?? [];
     final query = _searchController.text.trim().toLowerCase();
 
-    final filteredContacts = allContacts.where((c) {
-      final matchesCat = _selectedCategory == null || c.category == _selectedCategory;
-      final matchesQuery = query.isEmpty ||
-          c.name.toLowerCase().contains(query) ||
-          (c.contactPerson ?? '').toLowerCase().contains(query) ||
-          (c.address ?? '').toLowerCase().contains(query);
-      return matchesCat && matchesQuery;
-    }).toList();
+    final filteredContacts =
+        allContacts.where((c) {
+          final matchesCat =
+              _selectedCategory == null || c.category == _selectedCategory;
+          final matchesQuery =
+              query.isEmpty ||
+              c.name.toLowerCase().contains(query) ||
+              (c.contactPerson ?? '').toLowerCase().contains(query) ||
+              (c.address ?? '').toLowerCase().contains(query);
+          return matchesCat && matchesQuery;
+        }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -100,7 +111,12 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
           // KPI Metric Summary Bar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.md, Spacing.lg, Spacing.sm),
+              padding: const EdgeInsets.fromLTRB(
+                Spacing.lg,
+                Spacing.md,
+                Spacing.lg,
+                Spacing.sm,
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -150,15 +166,16 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
                       isDense: true,
                       hintText: 'Search pharmacy, lab, clinic, locality...',
                       prefixIcon: const Icon(Icons.search, size: 20),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 20),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {});
-                              },
-                            )
-                          : null,
+                      suffixIcon:
+                          _searchController.text.isNotEmpty
+                              ? IconButton(
+                                icon: const Icon(Icons.clear, size: 20),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {});
+                                },
+                              )
+                              : null,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: Spacing.md,
                         vertical: 12,
@@ -194,7 +211,9 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
                             selected: _selectedCategory == cat,
                             onSelected: (selected) {
                               AppHaptics.selection();
-                              setState(() => _selectedCategory = selected ? cat : null);
+                              setState(
+                                () => _selectedCategory = selected ? cat : null,
+                              );
                             },
                           ),
                           const SizedBox(width: Spacing.xs),
@@ -216,9 +235,10 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
                 child: EmptyState(
                   icon: Icons.share_location_outlined,
                   title: 'No referral partners found',
-                  message: query.isNotEmpty
-                      ? 'No partners matching "$query". Try clearing search filters.'
-                      : 'Build professional outreach with nearby pharmacies, labs & practitioners to grow your practice footfalls.',
+                  message:
+                      query.isNotEmpty
+                          ? 'No partners matching "$query". Try clearing search filters.'
+                          : 'Build professional outreach with nearby pharmacies, labs & practitioners to grow your practice footfalls.',
                   actionLabel: 'Add First Partner',
                   onAction: () => _openAddPartner(context),
                 ),
@@ -226,30 +246,34 @@ class _ReferralCrmScreenState extends ConsumerState<ReferralCrmScreen> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xs),
+              padding: const EdgeInsets.symmetric(
+                horizontal: Spacing.lg,
+                vertical: Spacing.xs,
+              ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final contact = filteredContacts[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: Spacing.md),
-                      child: _PartnerCard(
-                        contact: contact,
-                        onEdit: () => _openEditPartner(context, contact),
-                        onDelete: () => _confirmDelete(context, ref, contact),
-                        onLogVisit: () {
-                          AppHaptics.selection();
-                          ref.read(referralCrmNotifierProvider.notifier).logOutreachVisit(contact.id);
-                        },
-                        onAddReferral: () {
-                          AppHaptics.selection();
-                          ref.read(referralCrmNotifierProvider.notifier).incrementReferralCount(contact.id);
-                        },
-                      ),
-                    );
-                  },
-                  childCount: filteredContacts.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final contact = filteredContacts[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: Spacing.md),
+                    child: _PartnerCard(
+                      contact: contact,
+                      onEdit: () => _openEditPartner(context, contact),
+                      onDelete: () => _confirmDelete(context, ref, contact),
+                      onLogVisit: () {
+                        AppHaptics.selection();
+                        ref
+                            .read(referralCrmNotifierProvider.notifier)
+                            .logOutreachVisit(contact.id);
+                      },
+                      onAddReferral: () {
+                        AppHaptics.selection();
+                        ref
+                            .read(referralCrmNotifierProvider.notifier)
+                            .incrementReferralCount(contact.id);
+                      },
+                    ),
+                  );
+                }, childCount: filteredContacts.length),
               ),
             ),
         ],
@@ -368,7 +392,8 @@ class _PartnerCardState extends State<_PartnerCard> {
     final hasNotes = (contact.notes ?? '').trim().isNotEmpty;
     final hasLastVisit = contact.lastVisitedDate != null;
 
-    final hasSecondaryDetails = hasContactPerson || hasPhone || hasAddress || hasNotes || hasLastVisit;
+    final hasSecondaryDetails =
+        hasContactPerson || hasPhone || hasAddress || hasNotes || hasLastVisit;
 
     // Concise location / context subtitle
     String? subtitleText;
@@ -415,10 +440,7 @@ class _PartnerCardState extends State<_PartnerCard> {
                 ),
               ),
               const SizedBox(width: Spacing.xs),
-              CustomBadge(
-                label: contact.category,
-                color: scheme.primary,
-              ),
+              CustomBadge(label: contact.category, color: scheme.primary),
               const SizedBox(width: Spacing.xs),
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, size: 20),
@@ -439,7 +461,8 @@ class _PartnerCardState extends State<_PartnerCard> {
                         AppHaptics.selection();
                         ContactService.openWhatsApp(
                           phone: contact.phone!,
-                          message: 'Hello ${contact.contactPerson ?? contact.name}, Dr. Saifuddin here from City Care Homeopathy.',
+                          message:
+                              'Hello ${contact.contactPerson ?? contact.name}, Dr. Saifuddin here from City Care Homeopathy.',
                         );
                       }
                       break;
@@ -448,50 +471,58 @@ class _PartnerCardState extends State<_PartnerCard> {
                       break;
                   }
                 },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: Spacing.sm),
-                        Text('Edit Partner'),
-                      ],
-                    ),
-                  ),
-                  if (hasPhone) ...[
-                    const PopupMenuItem(
-                      value: 'call',
-                      child: Row(
-                        children: [
-                          Icon(Icons.call_outlined, size: 18),
-                          SizedBox(width: Spacing.sm),
-                          Text('Call Partner'),
-                        ],
+                itemBuilder:
+                    (_) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined, size: 18),
+                            SizedBox(width: Spacing.sm),
+                            Text('Edit Partner'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'whatsapp',
-                      child: Row(
-                        children: [
-                          Icon(Icons.chat_outlined, size: 18),
-                          SizedBox(width: Spacing.sm),
-                          Text('WhatsApp Message'),
-                        ],
-                      ),
-                    ),
-                  ],
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline, size: 18, color: scheme.error),
-                        const SizedBox(width: Spacing.sm),
-                        Text('Delete', style: TextStyle(color: scheme.error)),
+                      if (hasPhone) ...[
+                        const PopupMenuItem(
+                          value: 'call',
+                          child: Row(
+                            children: [
+                              Icon(Icons.call_outlined, size: 18),
+                              SizedBox(width: Spacing.sm),
+                              Text('Call Partner'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'whatsapp',
+                          child: Row(
+                            children: [
+                              Icon(Icons.chat_outlined, size: 18),
+                              SizedBox(width: Spacing.sm),
+                              Text('WhatsApp Message'),
+                            ],
+                          ),
+                        ),
                       ],
-                    ),
-                  ),
-                ],
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              size: 18,
+                              color: scheme.error,
+                            ),
+                            const SizedBox(width: Spacing.sm),
+                            Text(
+                              'Delete',
+                              style: TextStyle(color: scheme.error),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
               ),
             ],
           ),
@@ -505,17 +536,20 @@ class _PartnerCardState extends State<_PartnerCard> {
             children: [
               CustomBadge(
                 icon: Icons.people_outline,
-                label: '${contact.referralCount} ${contact.referralCount == 1 ? 'Referral' : 'Referrals'}',
+                label:
+                    '${contact.referralCount} ${contact.referralCount == 1 ? 'Referral' : 'Referrals'}',
                 color: scheme.tertiary,
               ),
               CustomBadge(
                 icon: Icons.directions_walk_outlined,
-                label: '${contact.visitCount} ${contact.visitCount == 1 ? 'Doctor Visit' : 'Doctor Visits'}',
+                label:
+                    '${contact.visitCount} ${contact.visitCount == 1 ? 'Doctor Visit' : 'Doctor Visits'}',
                 color: scheme.secondary,
               ),
               if (hasLastVisit)
                 CustomBadge(
-                  label: 'Last: ${Formatters.formatDate(contact.lastVisitedDate!)}',
+                  label:
+                      'Last: ${Formatters.formatDate(contact.lastVisitedDate!)}',
                   color: scheme.onSurfaceVariant,
                 ),
             ],
@@ -543,9 +577,12 @@ class _PartnerCardState extends State<_PartnerCard> {
                     ),
                     const Spacer(),
                     Icon(
-                      _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      _expanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
                       size: 16,
-                      color: _expanded ? scheme.primary : scheme.onSurfaceVariant,
+                      color:
+                          _expanded ? scheme.primary : scheme.onSurfaceVariant,
                     ),
                   ],
                 ),
@@ -561,11 +598,17 @@ class _PartnerCardState extends State<_PartnerCard> {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
-                    Icon(Icons.person_outline, size: 14, color: scheme.onSurfaceVariant),
+                    Icon(
+                      Icons.person_outline,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: Spacing.xs),
                     Text(
                       'Contact: ${contact.contactPerson!}',
-                      style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -575,11 +618,17 @@ class _PartnerCardState extends State<_PartnerCard> {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
-                    Icon(Icons.phone_outlined, size: 14, color: scheme.onSurfaceVariant),
+                    Icon(
+                      Icons.phone_outlined,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: Spacing.xs),
                     Text(
                       contact.phone!,
-                      style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const Spacer(),
                     IconButton(
@@ -590,7 +639,8 @@ class _PartnerCardState extends State<_PartnerCard> {
                         AppHaptics.selection();
                         ContactService.openWhatsApp(
                           phone: contact.phone!,
-                          message: 'Hello ${contact.contactPerson ?? contact.name}, Dr. Saifuddin here from City Care Homeopathy.',
+                          message:
+                              'Hello ${contact.contactPerson ?? contact.name}, Dr. Saifuddin here from City Care Homeopathy.',
                         );
                       },
                     ),

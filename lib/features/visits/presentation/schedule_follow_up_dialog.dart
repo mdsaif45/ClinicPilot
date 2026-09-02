@@ -23,10 +23,12 @@ class ScheduleFollowUpDialog extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ScheduleFollowUpDialog> createState() => _ScheduleFollowUpDialogState();
+  ConsumerState<ScheduleFollowUpDialog> createState() =>
+      _ScheduleFollowUpDialogState();
 }
 
-class _ScheduleFollowUpDialogState extends ConsumerState<ScheduleFollowUpDialog> {
+class _ScheduleFollowUpDialogState
+    extends ConsumerState<ScheduleFollowUpDialog> {
   final _formKey = GlobalKey<FormState>();
   late DateTime _followUpDate;
   final _noteController = TextEditingController();
@@ -59,10 +61,15 @@ class _ScheduleFollowUpDialogState extends ConsumerState<ScheduleFollowUpDialog>
     AppHaptics.medium();
 
     try {
-      await ref.read(visitNotifierProvider.notifier).scheduleFollowUp(
+      await ref
+          .read(visitNotifierProvider.notifier)
+          .scheduleFollowUp(
             patientId: widget.patient.id,
             nextFollowUpDate: _followUpDate,
-            reason: _noteController.text.trim().isNotEmpty ? _noteController.text.trim() : null,
+            reason:
+                _noteController.text.trim().isNotEmpty
+                    ? _noteController.text.trim()
+                    : null,
             disease: widget.defaultDisease ?? widget.patient.primaryDisease,
             clinicId: widget.defaultClinicId ?? widget.patient.primaryClinicId,
           );
@@ -103,13 +110,14 @@ class _ScheduleFollowUpDialogState extends ConsumerState<ScheduleFollowUpDialog>
         ),
         FilledButton(
           onPressed: _submitting ? null : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Save Schedule'),
+          child:
+              _submitting
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Save Schedule'),
         ),
       ],
       child: Form(

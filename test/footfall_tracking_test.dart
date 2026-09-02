@@ -16,14 +16,13 @@ void main() {
     setUp(() async {
       db = AppDatabase(NativeDatabase.memory());
       // Seed clinic
-      await db.into(db.clinics).insert(
-            ClinicsCompanion.insert(
-              id: 'c1',
-              name: 'Main Clinic',
-            ),
-          );
+      await db
+          .into(db.clinics)
+          .insert(ClinicsCompanion.insert(id: 'c1', name: 'Main Clinic'));
       // Seed patient
-      await db.into(db.patients).insert(
+      await db
+          .into(db.patients)
+          .insert(
             PatientsCompanion.insert(
               id: 'p1',
               patientCode: const drift.Value('P-2026-00001'),
@@ -68,18 +67,19 @@ void main() {
         phone: '9988776655',
       );
 
-      await notifier.convertFootfall(
-        footfallId: id,
-        patientId: 'p1',
-      );
+      await notifier.convertFootfall(footfallId: id, patientId: 'p1');
 
-      final footfall = await (db.select(db.footfalls)..where((t) => t.id.equals(id))).getSingle();
+      final footfall =
+          await (db.select(db.footfalls)
+            ..where((t) => t.id.equals(id))).getSingle();
       expect(footfall.convertedPatientId, equals('p1'));
     });
   });
 
   group('FootfallsScreen & AddFootfallDialog Widget Tests', () {
-    testWidgets('renders empty state and opens AddFootfallDialog', (tester) async {
+    testWidgets('renders empty state and opens AddFootfallDialog', (
+      tester,
+    ) async {
       final clinic = Clinic(
         id: 'c1',
         name: 'Main Clinic',
@@ -98,12 +98,14 @@ void main() {
             clinicsStreamProvider.overrideWith((ref) => Stream.value([clinic])),
             footfallsStreamProvider.overrideWith((ref) => Stream.value([])),
             footfallStatsProvider.overrideWithValue(
-              const AsyncData(FootfallStats(
-                totalCount: 0,
-                convertedCount: 0,
-                pendingCount: 0,
-                conversionRate: 0.0,
-              )),
+              const AsyncData(
+                FootfallStats(
+                  totalCount: 0,
+                  convertedCount: 0,
+                  pendingCount: 0,
+                  conversionRate: 0.0,
+                ),
+              ),
             ),
           ],
           child: MaterialApp(

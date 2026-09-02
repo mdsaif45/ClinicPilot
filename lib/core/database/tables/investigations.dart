@@ -6,18 +6,25 @@ class Investigations extends Table {
   TextColumn get id => text()();
   TextColumn get patientId => text().references(Patients, #id)();
   TextColumn get visitId => text().nullable().references(Visits, #id)();
-  DateTimeColumn get testDate => dateTime().nullable().withDefault(currentDateAndTime)();
-  BoolColumn get isBaseline => boolean().nullable().withDefault(const Constant(true))();
-  TextColumn get testCategory => text().withDefault(const Constant('Blood / Biochemistry'))();
+  DateTimeColumn get testDate =>
+      dateTime().nullable().withDefault(currentDateAndTime)();
+  BoolColumn get isBaseline =>
+      boolean().nullable().withDefault(const Constant(true))();
+  TextColumn get testCategory =>
+      text().withDefault(const Constant('Blood / Biochemistry'))();
   TextColumn get testName => text()();
   RealColumn get numericValue => real().nullable()();
   TextColumn get stringValue => text().nullable()();
   TextColumn get unit => text().nullable()();
   RealColumn get refRangeMin => real().nullable()();
   RealColumn get refRangeMax => real().nullable()();
-  TextColumn get flag => text().withDefault(const Constant('Normal'))(); // High, Low, Normal, Borderline, Abnormal
+  TextColumn get flag =>
+      text().withDefault(
+        const Constant('Normal'),
+      )(); // High, Low, Normal, Borderline, Abnormal
   TextColumn get labName => text().nullable()();
-  TextColumn get reportAttachments => text().nullable()(); // JSON list of file paths (PDF, images, etc.)
+  TextColumn get reportAttachments =>
+      text().nullable()(); // JSON list of file paths (PDF, images, etc.)
   TextColumn get notes => text().nullable()();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();

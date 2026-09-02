@@ -23,12 +23,17 @@ class MediaAttachmentService {
           imageQuality: 85,
         );
         if (photo == null) return [];
-        final savedPath = await saveFileLocally(patientId: patientId, file: photo);
+        final savedPath = await saveFileLocally(
+          patientId: patientId,
+          file: photo,
+        );
         return [savedPath];
       }
 
       // Multi-image picker
-      final List<XFile> picked = await _imagePicker.pickMultiImage(imageQuality: 85);
+      final List<XFile> picked = await _imagePicker.pickMultiImage(
+        imageQuality: 85,
+      );
       if (picked.isEmpty) return [];
 
       final List<String> savedPaths = [];
@@ -44,9 +49,7 @@ class MediaAttachmentService {
   }
 
   /// Picks document/PDF files or images for lab reports
-  static Future<List<String>> pickDocuments({
-    required String patientId,
-  }) async {
+  static Future<List<String>> pickDocuments({required String patientId}) async {
     try {
       final result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
@@ -60,7 +63,10 @@ class MediaAttachmentService {
       for (final platformFile in result.files) {
         if (platformFile.path != null) {
           final xFile = XFile(platformFile.path!, name: platformFile.name);
-          final saved = await saveFileLocally(patientId: patientId, file: xFile);
+          final saved = await saveFileLocally(
+            patientId: patientId,
+            file: xFile,
+          );
           savedPaths.add(saved);
         } else if (platformFile.bytes != null && kIsWeb) {
           savedPaths.add(platformFile.name);
@@ -84,14 +90,18 @@ class MediaAttachmentService {
 
     try {
       final appDir = await getApplicationDocumentsDirectory();
-      final patientMediaDir = Directory(p.join(appDir.path, 'clinic_pilot', 'patient_media', patientId));
+      final patientMediaDir = Directory(
+        p.join(appDir.path, 'clinic_pilot', 'patient_media', patientId),
+      );
       if (!await patientMediaDir.exists()) {
         await patientMediaDir.create(recursive: true);
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final ext = p.extension(file.path).isNotEmpty ? p.extension(file.path) : '.jpg';
-      final fileName = '${timestamp}_${p.basenameWithoutExtension(file.name)}$ext';
+      final ext =
+          p.extension(file.path).isNotEmpty ? p.extension(file.path) : '.jpg';
+      final fileName =
+          '${timestamp}_${p.basenameWithoutExtension(file.name)}$ext';
       final targetPath = p.join(patientMediaDir.path, fileName);
 
       await file.saveTo(targetPath);
@@ -130,7 +140,10 @@ class MediaAttachmentService {
     if (rootDir == null || !await rootDir.exists()) return [];
 
     final files = <File>[];
-    await for (final entity in rootDir.list(recursive: true, followLinks: false)) {
+    await for (final entity in rootDir.list(
+      recursive: true,
+      followLinks: false,
+    )) {
       if (entity is File) {
         files.add(entity);
       }

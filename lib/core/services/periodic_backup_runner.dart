@@ -62,7 +62,8 @@ class PeriodicBackupRunner {
     if (!Hive.isBoxOpen('settings')) return false;
 
     final box = Hive.box('settings');
-    final enabled = box.get('periodic_backup_enabled', defaultValue: false) == true;
+    final enabled =
+        box.get('periodic_backup_enabled', defaultValue: false) == true;
     if (!enabled) return false;
 
     final lastRunStr = box.get('periodic_backup_last_run') as String?;
@@ -71,7 +72,9 @@ class PeriodicBackupRunner {
     final lastRun = DateTime.tryParse(lastRunStr);
     if (lastRun == null) return true;
 
-    final frequency = box.get('periodic_backup_frequency', defaultValue: 'Once per week') as String;
+    final frequency =
+        box.get('periodic_backup_frequency', defaultValue: 'Once per week')
+            as String;
     final duration = frequencyToDuration(frequency);
 
     return DateTime.now().difference(lastRun) >= duration;
@@ -105,7 +108,9 @@ class PeriodicBackupRunner {
       if (targetDir == null) return null;
 
       // 1. Build .cpbak bytes with all database tables + patient media
-      final backupBytes = await BackupContainerService(db).buildBackupBytes(includeMedia: true);
+      final backupBytes = await BackupContainerService(
+        db,
+      ).buildBackupBytes(includeMedia: true);
 
       // 2. Generate timestamped file name
       final now = DateTime.now();
@@ -118,8 +123,11 @@ class PeriodicBackupRunner {
       await file.writeAsBytes(backupBytes);
 
       // 3. Rotate old backups if enabled
-      final deleteOld = box.get('periodic_backup_delete_old', defaultValue: true) == true;
-      final maxCount = (box.get('periodic_backup_max_count', defaultValue: 10) as num).toInt();
+      final deleteOld =
+          box.get('periodic_backup_delete_old', defaultValue: true) == true;
+      final maxCount =
+          (box.get('periodic_backup_max_count', defaultValue: 10) as num)
+              .toInt();
 
       if (deleteOld && maxCount > 0) {
         await _rotateOldBackups(targetDir, maxCount);
@@ -137,7 +145,10 @@ class PeriodicBackupRunner {
   }
 
   /// Deletes older backup files exceeding the max count.
-  static Future<void> _rotateOldBackups(Directory directory, int maxCount) async {
+  static Future<void> _rotateOldBackups(
+    Directory directory,
+    int maxCount,
+  ) async {
     try {
       final backupFiles = <File>[];
       await for (final entity in directory.list(followLinks: false)) {
@@ -149,7 +160,9 @@ class PeriodicBackupRunner {
       }
 
       // Sort newest first
-      backupFiles.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+      backupFiles.sort(
+        (a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()),
+      );
 
       // Delete files beyond maxCount
       if (backupFiles.length > maxCount) {
@@ -157,7 +170,9 @@ class PeriodicBackupRunner {
           try {
             await backupFiles[i].delete();
           } catch (e) {
-            debugPrint('Failed to delete old backup file: ${backupFiles[i].path}');
+            debugPrint(
+              'Failed to delete old backup file: ${backupFiles[i].path}',
+            );
           }
         }
       }
@@ -185,7 +200,9 @@ class PeriodicBackupRunner {
         }
       }
 
-      backupFiles.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+      backupFiles.sort(
+        (a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()),
+      );
       return backupFiles;
     } catch (e) {
       debugPrint('Error getting existing backups: $e');

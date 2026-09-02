@@ -19,7 +19,8 @@ Future<void> saveExportFile(
   try {
     final mimeType = switch (extension.toLowerCase()) {
       'csv' => 'text/csv',
-      'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'xlsx' =>
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'pdf' => 'application/pdf',
       _ => 'application/octet-stream',
     };
@@ -43,12 +44,13 @@ Future<void> saveExportFile(
     messenger.showSnackBar(
       SnackBar(
         content: Text('Exported $rowCount rows to $fileName'),
-        action: savedPath.isNotEmpty && !savedPath.startsWith('http')
-            ? SnackBarAction(
-                label: 'Share',
-                onPressed: () => Share.shareXFiles([XFile(savedPath)]),
-              )
-            : null,
+        action:
+            savedPath.isNotEmpty && !savedPath.startsWith('http')
+                ? SnackBarAction(
+                  label: 'Share',
+                  onPressed: () => Share.shareXFiles([XFile(savedPath)]),
+                )
+                : null,
       ),
     );
   } catch (e) {
@@ -82,9 +84,9 @@ class ExportAction<T> extends StatelessWidget {
 
   Future<void> _export(BuildContext context) async {
     if (rows.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nothing to export yet.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Nothing to export yet.')));
       return;
     }
 
@@ -94,23 +96,24 @@ class ExportAction<T> extends StatelessWidget {
     final now = DateTime.now();
     final bytes = switch (format) {
       ExportFormat.csv => ListExportService.encodeCsv(
-          ListExportService.buildCsv(rows, columns, totals: totals),
-        ),
-      ExportFormat.xlsx => customXlsxBuilder != null
-          ? await customXlsxBuilder!()
-          : ListExportService.buildXlsx(
+        ListExportService.buildCsv(rows, columns, totals: totals),
+      ),
+      ExportFormat.xlsx =>
+        customXlsxBuilder != null
+            ? await customXlsxBuilder!()
+            : ListExportService.buildXlsx(
               rows,
               columns,
               totals: totals,
               sheetName: screenSlug,
             ),
       ExportFormat.pdf => await ListPdfExportService.buildRowsPdf(
-          title: title,
-          subtitle: subtitle,
-          rows: rows,
-          columns: pdfColumns ?? columns,
-          totals: totals,
-        ),
+        title: title,
+        subtitle: subtitle,
+        rows: rows,
+        columns: pdfColumns ?? columns,
+        totals: totals,
+      ),
     };
     final extension = format.name;
 

@@ -118,7 +118,10 @@ class RemedyAutocompleteField extends StatelessWidget {
                 borderRadius: Radii.mdAll,
                 color: scheme.surfaceContainerHigh,
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 240, maxWidth: 320),
+                  constraints: const BoxConstraints(
+                    maxHeight: 240,
+                    maxWidth: 320,
+                  ),
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
                     shrinkWrap: true,
@@ -141,8 +144,12 @@ class RemedyAutocompleteField extends StatelessWidget {
               ),
             );
           },
-          fieldViewBuilder:
-              (context, textEditingController, focusNode, onFieldSubmitted) {
+          fieldViewBuilder: (
+            context,
+            textEditingController,
+            focusNode,
+            onFieldSubmitted,
+          ) {
             return TextFormField(
               controller: textEditingController,
               focusNode: focusNode,

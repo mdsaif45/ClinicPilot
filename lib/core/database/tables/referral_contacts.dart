@@ -4,7 +4,10 @@ class ReferralContacts extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
   TextColumn get contactPerson => text().nullable()();
-  TextColumn get category => text().withDefault(const Constant('Pharmacy'))(); // Pharmacy, Diagnostic Lab, Physiotherapy, Dentist, Gym / Fitness, Specialist Doctor, Other
+  TextColumn get category =>
+      text().withDefault(
+        const Constant('Pharmacy'),
+      )(); // Pharmacy, Diagnostic Lab, Physiotherapy, Dentist, Gym / Fitness, Specialist Doctor, Other
   TextColumn get phone => text().nullable()();
   TextColumn get address => text().nullable()();
   DateTimeColumn get lastVisitedDate => dateTime().nullable()();

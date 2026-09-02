@@ -61,11 +61,19 @@ class _MoneySpentScreenState extends ConsumerState<MoneySpentScreen> {
             children: [
               // Sort by pill button (Matching Image 3)
               Padding(
-                padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.sm, Spacing.lg, Spacing.sm),
+                padding: const EdgeInsets.fromLTRB(
+                  Spacing.lg,
+                  Spacing.sm,
+                  Spacing.lg,
+                  Spacing.sm,
+                ),
                 child: _SortPill(
                   sortOption: _sortOption,
                   onTap: () async {
-                    final selected = await showSortByBottomSheet(context, _sortOption);
+                    final selected = await showSortByBottomSheet(
+                      context,
+                      _sortOption,
+                    );
                     if (selected != null && mounted) {
                       setState(() => _sortOption = selected);
                     }
@@ -101,9 +109,15 @@ class _MoneySpentScreenState extends ConsumerState<MoneySpentScreen> {
               // Expense List
               Expanded(
                 child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(0, Spacing.xs, 0, Spacing.xxl),
+                  padding: const EdgeInsets.fromLTRB(
+                    0,
+                    Spacing.xs,
+                    0,
+                    Spacing.xxl,
+                  ),
                   itemCount: sortedExpenses.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1, indent: 68),
+                  separatorBuilder:
+                      (_, __) => const Divider(height: 1, indent: 68),
                   itemBuilder: (context, index) {
                     final item = sortedExpenses[index];
                     return _ExpenseTile(item: item);
@@ -133,7 +147,10 @@ class _SortPill extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.md,
+          vertical: Spacing.xs,
+        ),
         decoration: BoxDecoration(
           color: scheme.surfaceContainerHighest.withAlpha(140),
           borderRadius: BorderRadius.circular(20),
@@ -173,15 +190,19 @@ class _ExpenseTile extends StatelessWidget {
     final scheme = theme.colorScheme;
     final exp = item.expense;
 
-    final title = exp.notes != null && exp.notes!.trim().isNotEmpty
-        ? exp.notes!
-        : (exp.subcategory != null && exp.subcategory!.trim().isNotEmpty
-            ? '${exp.category} (${exp.subcategory})'
-            : exp.category);
+    final title =
+        exp.notes != null && exp.notes!.trim().isNotEmpty
+            ? exp.notes!
+            : (exp.subcategory != null && exp.subcategory!.trim().isNotEmpty
+                ? '${exp.category} (${exp.subcategory})'
+                : exp.category);
     final dateStr = Formatters.formatDayMonth(exp.date);
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xxs),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: Spacing.lg,
+        vertical: Spacing.xxs,
+      ),
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -196,19 +217,13 @@ class _ExpenseTile extends StatelessWidget {
           color: FinanceColors.redBg, // Soft red for expense
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          Icons.north_east,
-          size: 20,
-          color: FinanceColors.red,
-        ),
+        child: const Icon(Icons.north_east, size: 20, color: FinanceColors.red),
       ),
       title: Text(
         title,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 2),

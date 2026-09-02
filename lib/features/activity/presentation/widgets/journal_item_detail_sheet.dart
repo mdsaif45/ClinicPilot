@@ -12,10 +12,7 @@ import '../../providers/practice_journal_provider.dart';
 class JournalItemDetailSheet extends StatelessWidget {
   final PracticeJournalEntry entry;
 
-  const JournalItemDetailSheet({
-    super.key,
-    required this.entry,
-  });
+  const JournalItemDetailSheet({super.key, required this.entry});
 
   static Future<void> show(BuildContext context, PracticeJournalEntry entry) {
     AppHaptics.medium();
@@ -32,7 +29,9 @@ class JournalItemDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final formattedFullDate = DateFormat('EEEE, d MMMM yyyy • h:mm a').format(entry.timestamp);
+    final formattedFullDate = DateFormat(
+      'EEEE, d MMMM yyyy • h:mm a',
+    ).format(entry.timestamp);
 
     // Resolve Category Visuals & Clean non-duplicated titles
     IconData heroIcon;
@@ -48,16 +47,19 @@ class JournalItemDetailSheet extends StatelessWidget {
         // Clean headline: Patient Name (avoids duplicating "New Consultation" in both headline & hero pill)
         heroHeadline = entry.patientName ?? entry.title;
         statusTitle = 'Consultation Logged';
-        statusSubtitle = 'Clinical notes and examination recorded in patient history.';
+        statusSubtitle =
+            'Clinical notes and examination recorded in patient history.';
         break;
       case JournalEventType.dispense:
         heroIcon = Icons.medication_outlined;
         heroColor = scheme.primary;
-        heroHeadline = entry.memoNumber != null
-            ? 'Invoice #${entry.memoNumber} • ${entry.patientName ?? 'Patient'}'
-            : entry.title;
+        heroHeadline =
+            entry.memoNumber != null
+                ? 'Invoice #${entry.memoNumber} • ${entry.patientName ?? 'Patient'}'
+                : entry.title;
         statusTitle = 'Payment & Dispense Settled';
-        statusSubtitle = 'Cash memo receipt generated and clinic ledger updated.';
+        statusSubtitle =
+            'Cash memo receipt generated and clinic ledger updated.';
         break;
       case JournalEventType.expense:
         heroIcon = Icons.receipt_long_outlined;
@@ -75,7 +77,12 @@ class JournalItemDetailSheet extends StatelessWidget {
       ),
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(Spacing.xl, Spacing.md, Spacing.xl, Spacing.xl),
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.xl,
+            Spacing.md,
+            Spacing.xl,
+            Spacing.xl,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -130,11 +137,7 @@ class JournalItemDetailSheet extends StatelessWidget {
 
               Row(
                 children: [
-                  Icon(
-                    heroIcon,
-                    size: 15,
-                    color: heroColor,
-                  ),
+                  Icon(heroIcon, size: 15, color: heroColor),
                   const SizedBox(width: Spacing.xs),
                   Text(
                     formattedFullDate,
@@ -150,7 +153,10 @@ class JournalItemDetailSheet extends StatelessWidget {
               // 4. Big Center Hero Numbers (Like 💚 31  ⚡ 3,580 in Google Fit)
               Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.xl, vertical: Spacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Spacing.xl,
+                    vertical: Spacing.lg,
+                  ),
                   decoration: BoxDecoration(
                     color: heroColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
@@ -350,7 +356,10 @@ class JournalItemDetailSheet extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.md,
+            vertical: Spacing.md,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -386,9 +395,14 @@ class JournalItemDetailSheet extends StatelessWidget {
                     if (patientCode != null && patientCode.isNotEmpty) ...[
                       const SizedBox(height: 3),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 1.5,
+                        ),
                         decoration: BoxDecoration(
-                          color: scheme.surfaceContainerHighest.withValues(alpha: 0.8),
+                          color: scheme.surfaceContainerHighest.withValues(
+                            alpha: 0.8,
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -432,15 +446,14 @@ class JournalItemDetailSheet extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.md,
+            vertical: Spacing.md,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 18,
-                color: scheme.onSurfaceVariant,
-              ),
+              Icon(icon, size: 18, color: scheme.onSurfaceVariant),
               const SizedBox(width: Spacing.md),
               Text(
                 label,
@@ -453,7 +466,8 @@ class JournalItemDetailSheet extends StatelessWidget {
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: customTrailing ??
+                  child:
+                      customTrailing ??
                       Text(
                         value,
                         textAlign: TextAlign.end,

@@ -86,14 +86,18 @@ class PeriodSelector extends ConsumerWidget {
             // ── Next Period (>) ──
             IconButton(
               icon: const Icon(Icons.chevron_right, size: 22),
-              tooltip: state.canGoForward ? 'Next Period' : 'Future period not available',
+              tooltip:
+                  state.canGoForward
+                      ? 'Next Period'
+                      : 'Future period not available',
               visualDensity: VisualDensity.compact,
-              onPressed: state.canGoForward
-                  ? () {
-                      AppHaptics.selection();
-                      ref.read(periodProvider.notifier).nextPeriod();
-                    }
-                  : null,
+              onPressed:
+                  state.canGoForward
+                      ? () {
+                        AppHaptics.selection();
+                        ref.read(periodProvider.notifier).nextPeriod();
+                      }
+                      : null,
             ),
           ],
         ),
@@ -112,15 +116,18 @@ class PeriodSelector extends ConsumerWidget {
 
     final now = DateTime.now();
     final isFullMonth = state.isFullMonth;
-    final isThisMonth = isFullMonth &&
+    final isThisMonth =
+        isFullMonth &&
         state.dateRange.start.year == now.year &&
         state.dateRange.start.month == now.month;
     final lastMonth = DateTime(now.year, now.month - 1, 1);
-    final isLastMonth = isFullMonth &&
+    final isLastMonth =
+        isFullMonth &&
         state.dateRange.start.year == lastMonth.year &&
         state.dateRange.start.month == lastMonth.month;
     final isSpecificMonth = isFullMonth && !isThisMonth && !isLastMonth;
-    final isCustomRange = currentFilter == PeriodFilter.custom &&
+    final isCustomRange =
+        currentFilter == PeriodFilter.custom &&
         !isFullMonth &&
         !state.isSingleDay &&
         currentFilter != PeriodFilter.thisWeek;
@@ -129,136 +136,145 @@ class PeriodSelector extends ConsumerWidget {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (ctx) => SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Spacing.lg,
-                  0,
-                  Spacing.lg,
-                  Spacing.sm,
-                ),
-                child: Text(
-                  'Period',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const Divider(height: 1),
-            // Today
-            ListTile(
-              dense: true,
-              leading: Icon(
-                currentFilter == PeriodFilter.today
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-                color: currentFilter == PeriodFilter.today
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
-              ),
-              title: const Text('Today'),
-              onTap: () => Navigator.of(ctx).pop(PeriodFilter.today),
-            ),
-            // This Week
-            ListTile(
-              dense: true,
-              leading: Icon(
-                currentFilter == PeriodFilter.thisWeek
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-                color: currentFilter == PeriodFilter.thisWeek
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
-              ),
-              title: const Text('This Week'),
-              onTap: () => Navigator.of(ctx).pop(PeriodFilter.thisWeek),
-            ),
-            // This Month
-            ListTile(
-              dense: true,
-              leading: Icon(
-                isThisMonth
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-                color: isThisMonth
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
-              ),
-              title: const Text('This Month'),
-              subtitle: Text(Formatters.formatMonthYear(now)),
-              onTap: () => Navigator.of(ctx).pop(PeriodFilter.thisMonth),
-            ),
-            // Last Month
-            ListTile(
-              dense: true,
-              leading: Icon(
-                isLastMonth
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-                color: isLastMonth
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
-              ),
-              title: const Text('Last Month'),
-              subtitle: Text(Formatters.formatMonthYear(lastMonth)),
-              onTap: () => Navigator.of(ctx).pop(PeriodFilter.lastMonth),
-            ),
-            // Pick Specific Month (Calendar Year/Month jump)
-            ListTile(
-              dense: true,
-              leading: Icon(
-                isSpecificMonth
-                    ? Icons.radio_button_checked
-                    : Icons.calendar_view_month,
-                color: isSpecificMonth
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
-              ),
-              title: Text(
-                isSpecificMonth
-                    ? 'Specific Month (${Formatters.formatMonthYear(state.dateRange.start)})'
-                    : 'Select Specific Month...',
-                style: isSpecificMonth
-                    ? TextStyle(
+      builder:
+          (ctx) => SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Spacing.lg,
+                      0,
+                      Spacing.lg,
+                      Spacing.sm,
+                    ),
+                    child: Text(
+                      'Period',
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: scheme.primary,
-                      )
-                    : null,
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  // Today
+                  ListTile(
+                    dense: true,
+                    leading: Icon(
+                      currentFilter == PeriodFilter.today
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color:
+                          currentFilter == PeriodFilter.today
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                    ),
+                    title: const Text('Today'),
+                    onTap: () => Navigator.of(ctx).pop(PeriodFilter.today),
+                  ),
+                  // This Week
+                  ListTile(
+                    dense: true,
+                    leading: Icon(
+                      currentFilter == PeriodFilter.thisWeek
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color:
+                          currentFilter == PeriodFilter.thisWeek
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                    ),
+                    title: const Text('This Week'),
+                    onTap: () => Navigator.of(ctx).pop(PeriodFilter.thisWeek),
+                  ),
+                  // This Month
+                  ListTile(
+                    dense: true,
+                    leading: Icon(
+                      isThisMonth
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color:
+                          isThisMonth
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                    ),
+                    title: const Text('This Month'),
+                    subtitle: Text(Formatters.formatMonthYear(now)),
+                    onTap: () => Navigator.of(ctx).pop(PeriodFilter.thisMonth),
+                  ),
+                  // Last Month
+                  ListTile(
+                    dense: true,
+                    leading: Icon(
+                      isLastMonth
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color:
+                          isLastMonth
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                    ),
+                    title: const Text('Last Month'),
+                    subtitle: Text(Formatters.formatMonthYear(lastMonth)),
+                    onTap: () => Navigator.of(ctx).pop(PeriodFilter.lastMonth),
+                  ),
+                  // Pick Specific Month (Calendar Year/Month jump)
+                  ListTile(
+                    dense: true,
+                    leading: Icon(
+                      isSpecificMonth
+                          ? Icons.radio_button_checked
+                          : Icons.calendar_view_month,
+                      color:
+                          isSpecificMonth
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                    ),
+                    title: Text(
+                      isSpecificMonth
+                          ? 'Specific Month (${Formatters.formatMonthYear(state.dateRange.start)})'
+                          : 'Select Specific Month...',
+                      style:
+                          isSpecificMonth
+                              ? TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: scheme.primary,
+                              )
+                              : null,
+                    ),
+                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    onTap: () => Navigator.of(ctx).pop('pick_month'),
+                  ),
+                  // Custom Date Range
+                  ListTile(
+                    dense: true,
+                    leading: Icon(
+                      isCustomRange
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color:
+                          isCustomRange
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                    ),
+                    title: const Text('Custom Range...'),
+                    trailing: const Icon(Icons.date_range, size: 20),
+                    onTap: () => Navigator.of(ctx).pop(PeriodFilter.custom),
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                ],
               ),
-              trailing: const Icon(Icons.chevron_right, size: 20),
-              onTap: () => Navigator.of(ctx).pop('pick_month'),
             ),
-            // Custom Date Range
-            ListTile(
-              dense: true,
-              leading: Icon(
-                isCustomRange
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-                color: isCustomRange
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
-              ),
-              title: const Text('Custom Range...'),
-              trailing: const Icon(Icons.date_range, size: 20),
-              onTap: () => Navigator.of(ctx).pop(PeriodFilter.custom),
-            ),
-            const SizedBox(height: Spacing.sm),
-          ],
-        ),
-      ),
-    ),
-  );
+          ),
+    );
 
     if (chosen == null || !context.mounted) return;
 
     if (chosen == 'pick_month') {
-      final initial = state.dateRange.start.isAfter(now) ? now : state.dateRange.start;
+      final initial =
+          state.dateRange.start.isAfter(now) ? now : state.dateRange.start;
       final picked = await showDatePicker(
         context: context,
         initialDate: initial,
@@ -274,7 +290,8 @@ class PeriodSelector extends ConsumerWidget {
     }
 
     if (chosen == PeriodFilter.custom) {
-      final start = state.dateRange.start.isAfter(now) ? now : state.dateRange.start;
+      final start =
+          state.dateRange.start.isAfter(now) ? now : state.dateRange.start;
       final end = state.dateRange.end.isAfter(now) ? now : state.dateRange.end;
       final picked = await showDateRangePicker(
         context: context,

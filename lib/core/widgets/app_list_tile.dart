@@ -35,7 +35,8 @@ class AppListTile extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     final effectiveIconColor = iconColor ?? scheme.primary;
-    final effectiveLeadingBg = leadingBackgroundColor ??
+    final effectiveLeadingBg =
+        leadingBackgroundColor ??
         scheme.surfaceContainerHighest.withValues(alpha: 0.6);
 
     return ListTile(
@@ -60,22 +61,24 @@ class AppListTile extends StatelessWidget {
           color: titleColor,
         ),
       ),
-      subtitle: subtitle == null
-          ? null
-          : Text(
-              subtitle!,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-                fontSize: 13,
+      subtitle:
+          subtitle == null
+              ? null
+              : Text(
+                subtitle!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
               ),
-            ),
-      trailing: trailing ??
+      trailing:
+          trailing ??
           (onTap != null
               ? Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
-                )
+                Icons.chevron_right,
+                size: 20,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+              )
               : null),
       onTap: onTap,
     );
@@ -109,7 +112,8 @@ class AppSwitchTile extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     final effectiveIconColor = iconColor ?? scheme.primary;
-    final effectiveLeadingBg = leadingBackgroundColor ??
+    final effectiveLeadingBg =
+        leadingBackgroundColor ??
         scheme.surfaceContainerHighest.withValues(alpha: 0.6);
 
     return Padding(
@@ -157,10 +161,7 @@ class AppSwitchTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: Spacing.sm),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-          ),
+          Switch(value: value, onChanged: onChanged),
         ],
       ),
     );
@@ -202,7 +203,8 @@ class AppSliderTile extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     final effectiveIconColor = iconColor ?? scheme.primary;
-    final effectiveLeadingBg = leadingBackgroundColor ??
+    final effectiveLeadingBg =
+        leadingBackgroundColor ??
         scheme.surfaceContainerHighest.withValues(alpha: 0.6);
 
     return Padding(
@@ -284,18 +286,17 @@ class SettingsGroup extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  const SettingsGroup({
-    super.key,
-    required this.title,
-    required this.children,
-  });
+  const SettingsGroup({super.key, required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final validChildren = children.where((w) => w is! SizedBox || (w.height != 0 && w.width != 0)).toList();
+    final validChildren =
+        children
+            .where((w) => w is! SizedBox || (w.height != 0 && w.width != 0))
+            .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

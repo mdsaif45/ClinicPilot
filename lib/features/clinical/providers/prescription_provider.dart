@@ -8,33 +8,36 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../models/case_record_models.dart';
 
-
 final patientPrescriptionsProvider =
     StreamProvider.family<List<Prescription>, String>((ref, patientId) {
-  final db = ref.watch(databaseProvider);
+      final db = ref.watch(databaseProvider);
 
-  final query = db.select(db.prescriptions)
-    ..where((t) => t.patientId.equals(patientId) & t.isDeleted.equals(false))
-    ..orderBy([
-      (t) => OrderingTerm.desc(t.prescriptionDate),
-      (t) => OrderingTerm.asc(t.remedyIndex),
-    ]);
+      final query =
+          db.select(db.prescriptions)
+            ..where(
+              (t) => t.patientId.equals(patientId) & t.isDeleted.equals(false),
+            )
+            ..orderBy([
+              (t) => OrderingTerm.desc(t.prescriptionDate),
+              (t) => OrderingTerm.asc(t.remedyIndex),
+            ]);
 
-  return query.watch();
-});
+      return query.watch();
+    });
 
 final visitPrescriptionsProvider =
     StreamProvider.family<List<Prescription>, String>((ref, visitId) {
-  final db = ref.watch(databaseProvider);
+      final db = ref.watch(databaseProvider);
 
-  final query = db.select(db.prescriptions)
-    ..where((t) => t.visitId.equals(visitId) & t.isDeleted.equals(false))
-    ..orderBy([
-      (t) => OrderingTerm.asc(t.remedyIndex),
-    ]);
+      final query =
+          db.select(db.prescriptions)
+            ..where(
+              (t) => t.visitId.equals(visitId) & t.isDeleted.equals(false),
+            )
+            ..orderBy([(t) => OrderingTerm.asc(t.remedyIndex)]);
 
-  return query.watch();
-});
+      return query.watch();
+    });
 
 class PrescriptionNotifier extends StateNotifier<AsyncValue<void>> {
   final AppDatabase _db;
@@ -42,29 +45,40 @@ class PrescriptionNotifier extends StateNotifier<AsyncValue<void>> {
   PrescriptionNotifier(this._db) : super(const AsyncData(null));
 
   Future<void> _syncWithCaseRecord(String patientId) async {
-    final activeBaselineRx = await (_db.select(_db.prescriptions)
-          ..where((t) =>
-              t.patientId.equals(patientId) &
-              t.isDeleted.equals(false) &
-              t.isBaseline.equals(true))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.remedyIndex),
-            (t) => OrderingTerm.asc(t.createdAt),
-          ]))
-        .get();
+    final activeBaselineRx =
+        await (_db.select(_db.prescriptions)
+              ..where(
+                (t) =>
+                    t.patientId.equals(patientId) &
+                    t.isDeleted.equals(false) &
+                    t.isBaseline.equals(true),
+              )
+              ..orderBy([
+                (t) => OrderingTerm.asc(t.remedyIndex),
+                (t) => OrderingTerm.asc(t.createdAt),
+              ]))
+            .get();
 
     if (activeBaselineRx.isEmpty) return;
 
     final first = activeBaselineRx.first;
     final combinedRemedies = activeBaselineRx
-        .map((r) => '${r.remedyName} ${r.potency} (${r.doseCount ?? ''} ${r.frequency ?? ''})'.trim())
+        .map(
+          (r) =>
+              '${r.remedyName} ${r.potency} (${r.doseCount ?? ''} ${r.frequency ?? ''})'
+                  .trim(),
+        )
         .join('\n');
 
-    final existingCase = await (_db.select(_db.patientCaseRecords)
-          ..where((t) => t.patientId.equals(patientId) & t.isDeleted.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.recordDate)])
-          ..limit(1))
-        .getSingleOrNull();
+    final existingCase =
+        await (_db.select(_db.patientCaseRecords)
+              ..where(
+                (t) =>
+                    t.patientId.equals(patientId) & t.isDeleted.equals(false),
+              )
+              ..orderBy([(t) => OrderingTerm.desc(t.recordDate)])
+              ..limit(1))
+            .getSingleOrNull();
 
     if (existingCase != null) {
       final details = PrescriptionPlanDetails(
@@ -77,8 +91,7 @@ class PrescriptionNotifier extends StateNotifier<AsyncValue<void>> {
       );
 
       await (_db.update(_db.patientCaseRecords)
-            ..where((t) => t.id.equals(existingCase.id)))
-          .write(
+        ..where((t) => t.id.equals(existingCase.id))).write(
         PatientCaseRecordsCompanion(
           baselinePrescriptionJson: Value(jsonEncode(details.toJson())),
           updatedAt: Value(DateTime.now()),
@@ -153,12 +166,19 @@ class PrescriptionNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      final existing = await (_db.select(_db.prescriptions)..where((t) => t.id.equals(id))).getSingleOrNull();
-      await (_db.update(_db.prescriptions)..where((t) => t.id.equals(id))).write(
+      final existing =
+          await (_db.select(_db.prescriptions)
+            ..where((t) => t.id.equals(id))).getSingleOrNull();
+      await (_db.update(_db.prescriptions)
+        ..where((t) => t.id.equals(id))).write(
         PrescriptionsCompanion(
           remedyIndex: Value(remedyIndex),
-          prescriptionDate: prescriptionDate != null ? Value(prescriptionDate) : const Value.absent(),
-          isBaseline: isBaseline != null ? Value(isBaseline) : const Value.absent(),
+          prescriptionDate:
+              prescriptionDate != null
+                  ? Value(prescriptionDate)
+                  : const Value.absent(),
+          isBaseline:
+              isBaseline != null ? Value(isBaseline) : const Value.absent(),
           remedyName: Value(remedyName.trim()),
           potency: Value(potency.trim()),
           doseCount: Value(doseCount?.trim()),
@@ -170,7 +190,8 @@ class PrescriptionNotifier extends StateNotifier<AsyncValue<void>> {
           updatedAt: Value(now),
         ),
       );
-      if (existing != null && ((existing.isBaseline ?? true) || (isBaseline ?? false))) {
+      if (existing != null &&
+          ((existing.isBaseline ?? true) || (isBaseline ?? false))) {
         await _syncWithCaseRecord(existing.patientId);
       }
     });
@@ -181,8 +202,11 @@ class PrescriptionNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
 
     state = await AsyncValue.guard(() async {
-      final existing = await (_db.select(_db.prescriptions)..where((t) => t.id.equals(id))).getSingleOrNull();
-      await (_db.update(_db.prescriptions)..where((t) => t.id.equals(id))).write(
+      final existing =
+          await (_db.select(_db.prescriptions)
+            ..where((t) => t.id.equals(id))).getSingleOrNull();
+      await (_db.update(_db.prescriptions)
+        ..where((t) => t.id.equals(id))).write(
         PrescriptionsCompanion(
           isDeleted: const Value(true),
           updatedAt: Value(now),
@@ -197,6 +221,6 @@ class PrescriptionNotifier extends StateNotifier<AsyncValue<void>> {
 
 final prescriptionNotifierProvider =
     StateNotifierProvider<PrescriptionNotifier, AsyncValue<void>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return PrescriptionNotifier(db);
-});
+      final db = ref.watch(databaseProvider);
+      return PrescriptionNotifier(db);
+    });

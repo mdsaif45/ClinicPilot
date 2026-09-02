@@ -22,7 +22,8 @@ void main() {
 
       final path = entity.path.replaceAll(r'\', '/');
       // Generated code and explicit demo data seeder hold test/demo records.
-      if (path.endsWith('.g.dart') || path.endsWith('sample_data_seeder.dart')) continue;
+      if (path.endsWith('.g.dart') || path.endsWith('sample_data_seeder.dart'))
+        continue;
 
       final lines = entity.readAsLinesSync();
       for (var i = 0; i < lines.length; i++) {
@@ -35,7 +36,8 @@ void main() {
     expect(
       offenders,
       isEmpty,
-      reason: 'Use a neutral example, or leave the hint empty and let the '
+      reason:
+          'Use a neutral example, or leave the hint empty and let the '
           'label carry the meaning:\n${offenders.join('\n')}',
     );
   });

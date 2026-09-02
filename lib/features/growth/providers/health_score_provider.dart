@@ -34,7 +34,9 @@ class ClinicHealthScore {
   });
 }
 
-final clinicHealthScoreProvider = Provider<AsyncValue<ClinicHealthScore>>((ref) {
+final clinicHealthScoreProvider = Provider<AsyncValue<ClinicHealthScore>>((
+  ref,
+) {
   final growthAsync = ref.watch(growthAnalyticsProvider);
   final profitAsync = ref.watch(profitSummaryProvider);
   final reviewStatsAsync = ref.watch(reviewStatsProvider);
@@ -68,7 +70,8 @@ final clinicHealthScoreProvider = Provider<AsyncValue<ClinicHealthScore>>((ref) 
     title: 'Revenue Performance',
     score: revenueScore.clamp(0.0, 25.0),
     maxScore: 25.0,
-    detail: '₹${profit.totalIncome.toStringAsFixed(0)} earned in selected period',
+    detail:
+        '₹${profit.totalIncome.toStringAsFixed(0)} earned in selected period',
   );
 
   // 2. New Patient Acquisition (25 pts)
@@ -103,9 +106,10 @@ final clinicHealthScoreProvider = Provider<AsyncValue<ClinicHealthScore>>((ref) 
 
   // 4. Profit Margin (15 pts)
   // Target: >= 50% net profit margin = 15 pts
-  final double margin = profit.totalIncome > 0
-      ? (profit.netProfit / profit.totalIncome) * 100
-      : 0.0;
+  final double margin =
+      profit.totalIncome > 0
+          ? (profit.netProfit / profit.totalIncome) * 100
+          : 0.0;
   final double profitScore;
   if (margin >= 50.0) {
     profitScore = 15.0;
@@ -118,7 +122,8 @@ final clinicHealthScoreProvider = Provider<AsyncValue<ClinicHealthScore>>((ref) 
     title: 'Operating Profit Margin',
     score: profitScore.clamp(0.0, 15.0),
     maxScore: 15.0,
-    detail: '${margin.toStringAsFixed(1)}% margin (Net profit ₹${profit.netProfit.toStringAsFixed(0)})',
+    detail:
+        '${margin.toStringAsFixed(1)}% margin (Net profit ₹${profit.netProfit.toStringAsFixed(0)})',
   );
 
   // 5. Reputation & Growth Engagement (15 pts)
@@ -162,10 +167,12 @@ final clinicHealthScoreProvider = Provider<AsyncValue<ClinicHealthScore>>((ref) 
   final summaryReason =
       '$totalScore / 100 ($grade) • ${growth.totalNewPatients} new pts, ${growth.repeatRate.toStringAsFixed(0)}% repeat, ₹${profit.netProfit.toStringAsFixed(0)} net';
 
-  return AsyncData(ClinicHealthScore(
-    totalScore: totalScore,
-    grade: grade,
-    summaryReason: summaryReason,
-    pillars: pillars,
-  ));
+  return AsyncData(
+    ClinicHealthScore(
+      totalScore: totalScore,
+      grade: grade,
+      summaryReason: summaryReason,
+      pillars: pillars,
+    ),
+  );
 });

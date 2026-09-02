@@ -18,16 +18,22 @@ class MonthlyStatementScreen extends ConsumerStatefulWidget {
   const MonthlyStatementScreen({super.key, required this.initialMonth});
 
   @override
-  ConsumerState<MonthlyStatementScreen> createState() => _MonthlyStatementScreenState();
+  ConsumerState<MonthlyStatementScreen> createState() =>
+      _MonthlyStatementScreenState();
 }
 
-class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen> {
+class _MonthlyStatementScreenState
+    extends ConsumerState<MonthlyStatementScreen> {
   late DateTime _currentMonth;
 
   @override
   void initState() {
     super.initState();
-    _currentMonth = DateTime(widget.initialMonth.year, widget.initialMonth.month, 1);
+    _currentMonth = DateTime(
+      widget.initialMonth.year,
+      widget.initialMonth.month,
+      1,
+    );
   }
 
   void _prevMonth() {
@@ -78,7 +84,10 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
               onTap: () => _pickMonth(context),
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xxs),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Spacing.sm,
+                  vertical: Spacing.xxs,
+                ),
                 decoration: BoxDecoration(
                   color: scheme.surfaceContainerHighest.withAlpha(120),
                   borderRadius: Radii.smAll,
@@ -96,7 +105,11 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                       ),
                     ),
                     const SizedBox(width: Spacing.xxs),
-                    Icon(Icons.keyboard_arrow_down, size: 18, color: scheme.onSurfaceVariant),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 18,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ],
                 ),
               ),
@@ -120,7 +133,12 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
           final recentReceived = data.cashMemos.take(4).toList();
 
           return ListView(
-            padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.sm, Spacing.lg, Spacing.xxl),
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.lg,
+              Spacing.sm,
+              Spacing.lg,
+              Spacing.xxl,
+            ),
             children: [
               // 1. Executive Practice Performance Card
               AppCard(
@@ -133,7 +151,11 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.analytics_outlined, size: 18, color: scheme.primary),
+                            Icon(
+                              Icons.analytics_outlined,
+                              size: 18,
+                              color: scheme.primary,
+                            ),
                             const SizedBox(width: Spacing.xs),
                             Text(
                               'Executive Summary',
@@ -145,27 +167,35 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
-                            color: isSurplus
-                                ? FinanceColors.greenBg
-                                : FinanceColors.redBg,
+                            color:
+                                isSurplus
+                                    ? FinanceColors.greenBg
+                                    : FinanceColors.redBg,
                             borderRadius: Radii.pillAll,
                             border: Border.all(
-                              color: isSurplus
-                                  ? FinanceColors.greenLight
-                                  : FinanceColors.redLight,
+                              color:
+                                  isSurplus
+                                      ? FinanceColors.greenLight
+                                      : FinanceColors.redLight,
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                isSurplus ? Icons.trending_up : Icons.trending_down,
+                                isSurplus
+                                    ? Icons.trending_up
+                                    : Icons.trending_down,
                                 size: 14,
-                                color: isSurplus
-                                    ? FinanceColors.green
-                                    : FinanceColors.red,
+                                color:
+                                    isSurplus
+                                        ? FinanceColors.green
+                                        : FinanceColors.red,
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -173,9 +203,10 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: isSurplus
-                                      ? FinanceColors.green
-                                      : FinanceColors.red,
+                                  color:
+                                      isSurplus
+                                          ? FinanceColors.green
+                                          : FinanceColors.red,
                                 ),
                               ),
                             ],
@@ -190,9 +221,8 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                       Formatters.formatCurrency(netMargin.abs()),
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: isSurplus
-                            ? FinanceColors.green
-                            : FinanceColors.red,
+                        color:
+                            isSurplus ? FinanceColors.green : FinanceColors.red,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -218,7 +248,10 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (_) => MoneyReceivedScreen(month: _currentMonth),
+                                  builder:
+                                      (_) => MoneyReceivedScreen(
+                                        month: _currentMonth,
+                                      ),
                                 ),
                               );
                             },
@@ -228,20 +261,24 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                               decoration: BoxDecoration(
                                 color: FinanceColors.greenBg.withAlpha(120),
                                 borderRadius: Radii.smAll,
-                                border: Border.all(color: FinanceColors.greenBorder),
+                                border: Border.all(
+                                  color: FinanceColors.greenBorder,
+                                ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         'Cash Memo',
-                                        style: theme.textTheme.labelMedium?.copyWith(
-                                          color: FinanceColors.green,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
+                                              color: FinanceColors.green,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                       ),
                                       const Icon(
                                         Icons.chevron_right,
@@ -253,10 +290,11 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                                   const SizedBox(height: Spacing.xs),
                                   Text(
                                     '+ ${Formatters.formatCurrency(data.totalReceived)}',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                      color: FinanceColors.green,
-                                    ),
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: FinanceColors.green,
+                                        ),
                                   ),
                                   Text(
                                     '${data.cashMemos.length} collections',
@@ -276,7 +314,10 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (_) => MoneySpentScreen(month: _currentMonth),
+                                  builder:
+                                      (_) => MoneySpentScreen(
+                                        month: _currentMonth,
+                                      ),
                                 ),
                               );
                             },
@@ -286,20 +327,24 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                               decoration: BoxDecoration(
                                 color: FinanceColors.redBg.withAlpha(120),
                                 borderRadius: Radii.smAll,
-                                border: Border.all(color: FinanceColors.redBorder),
+                                border: Border.all(
+                                  color: FinanceColors.redBorder,
+                                ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         'Expenses',
-                                        style: theme.textTheme.labelMedium?.copyWith(
-                                          color: FinanceColors.red,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
+                                              color: FinanceColors.red,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                       ),
                                       const Icon(
                                         Icons.chevron_right,
@@ -311,10 +356,11 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                                   const SizedBox(height: Spacing.xs),
                                   Text(
                                     '- ${Formatters.formatCurrency(data.totalSpent)}',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                      color: FinanceColors.red,
-                                    ),
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: FinanceColors.red,
+                                        ),
                                   ),
                                   Text(
                                     '${data.expenses.length} records',
@@ -354,7 +400,11 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                                 color: FinanceColors.redBg,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.north_east, size: 16, color: FinanceColors.red),
+                              child: const Icon(
+                                Icons.north_east,
+                                size: 16,
+                                color: FinanceColors.red,
+                              ),
                             ),
                             const SizedBox(width: Spacing.sm),
                             Text(
@@ -369,7 +419,9 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => MoneySpentScreen(month: _currentMonth),
+                                builder:
+                                    (_) =>
+                                        MoneySpentScreen(month: _currentMonth),
                               ),
                             );
                           },
@@ -380,7 +432,9 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                     const SizedBox(height: Spacing.xs),
                     if (recentExpenses.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: Spacing.md),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: Spacing.md,
+                        ),
                         child: Text(
                           'No expense records found for this month.',
                           style: theme.textTheme.bodyMedium?.copyWith(
@@ -413,7 +467,11 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                                 color: FinanceColors.greenBg,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.south_west, size: 16, color: FinanceColors.green),
+                              child: const Icon(
+                                Icons.south_west,
+                                size: 16,
+                                color: FinanceColors.green,
+                              ),
                             ),
                             const SizedBox(width: Spacing.sm),
                             Text(
@@ -428,7 +486,10 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => MoneyReceivedScreen(month: _currentMonth),
+                                builder:
+                                    (_) => MoneyReceivedScreen(
+                                      month: _currentMonth,
+                                    ),
                               ),
                             );
                           },
@@ -440,7 +501,9 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                     const SizedBox(height: Spacing.xs),
                     if (recentReceived.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: Spacing.md),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: Spacing.md,
+                        ),
                         child: Center(
                           child: Text(
                             'No collections recorded for this month.',
@@ -455,8 +518,11 @@ class _MonthlyStatementScreenState extends ConsumerState<MonthlyStatementScreen>
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: recentReceived.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1, indent: 48),
-                        itemBuilder: (context, i) => _PreviewReceivedRow(item: recentReceived[i]),
+                        separatorBuilder:
+                            (_, __) => const Divider(height: 1, indent: 48),
+                        itemBuilder:
+                            (context, i) =>
+                                _PreviewReceivedRow(item: recentReceived[i]),
                       ),
                   ],
                 ),
@@ -480,11 +546,12 @@ class _PreviewExpenseRow extends StatelessWidget {
     final scheme = theme.colorScheme;
     final exp = item.expense;
 
-    final title = exp.notes != null && exp.notes!.trim().isNotEmpty
-        ? exp.notes!
-        : (exp.subcategory != null && exp.subcategory!.trim().isNotEmpty
-            ? '${exp.category} (${exp.subcategory})'
-            : exp.category);
+    final title =
+        exp.notes != null && exp.notes!.trim().isNotEmpty
+            ? exp.notes!
+            : (exp.subcategory != null && exp.subcategory!.trim().isNotEmpty
+                ? '${exp.category} (${exp.subcategory})'
+                : exp.category);
 
     return ListTile(
       dense: true,
@@ -503,11 +570,7 @@ class _PreviewExpenseRow extends StatelessWidget {
           color: FinanceColors.redBg,
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          Icons.north_east,
-          size: 16,
-          color: FinanceColors.red,
-        ),
+        child: const Icon(Icons.north_east, size: 16, color: FinanceColors.red),
       ),
       title: Text(
         title,

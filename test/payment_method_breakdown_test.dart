@@ -102,8 +102,9 @@ void main() {
       ),
     ];
 
-    testWidgets('calculates and renders payment breakdown properly',
-        (tester) async {
+    testWidgets('calculates and renders payment breakdown properly', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

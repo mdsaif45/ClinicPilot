@@ -37,9 +37,10 @@ class AppLockState {
       isBiometricsEnabled: isBiometricsEnabled ?? this.isBiometricsEnabled,
       isLocked: isLocked ?? this.isLocked,
       autoLockMinutes: autoLockMinutes ?? this.autoLockMinutes,
-      lastBackgroundTime: clearLastBackgroundTime
-          ? null
-          : (lastBackgroundTime ?? this.lastBackgroundTime),
+      lastBackgroundTime:
+          clearLastBackgroundTime
+              ? null
+              : (lastBackgroundTime ?? this.lastBackgroundTime),
     );
   }
 }
@@ -65,8 +66,16 @@ class AppLockNotifier extends StateNotifier<AppLockState> {
     );
   }
 
-  Future<void> setupPin(String pin, {bool enableBiometrics = false, int autoLockMinutes = 5}) async {
-    await _service.setPin(pin, enableBiometrics: enableBiometrics, autoLockMinutes: autoLockMinutes);
+  Future<void> setupPin(
+    String pin, {
+    bool enableBiometrics = false,
+    int autoLockMinutes = 5,
+  }) async {
+    await _service.setPin(
+      pin,
+      enableBiometrics: enableBiometrics,
+      autoLockMinutes: autoLockMinutes,
+    );
     state = state.copyWith(
       isEnabled: true,
       isBiometricsEnabled: enableBiometrics,
@@ -142,7 +151,9 @@ class AppLockNotifier extends StateNotifier<AppLockState> {
   }
 }
 
-final appLockProvider = StateNotifierProvider<AppLockNotifier, AppLockState>((ref) {
+final appLockProvider = StateNotifierProvider<AppLockNotifier, AppLockState>((
+  ref,
+) {
   final service = ref.watch(securityServiceProvider);
   return AppLockNotifier(service);
 });

@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 class Settings extends Table {
   TextColumn get key => text()();
-  TextColumn get value => text()();     // store as String, parse on read
+  TextColumn get value => text()(); // store as String, parse on read
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override

@@ -41,7 +41,12 @@ class FloatingBottomNavBar extends StatelessWidget {
     this.activeHighlightColor,
     this.activeColor,
     this.inactiveColor,
-    this.margin = const EdgeInsets.fromLTRB(Spacing.md, 0, Spacing.md, Spacing.md),
+    this.margin = const EdgeInsets.fromLTRB(
+      Spacing.md,
+      0,
+      Spacing.md,
+      Spacing.md,
+    ),
     this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
   });
 
@@ -52,14 +57,18 @@ class FloatingBottomNavBar extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     // Resolves entirely from theme ColorScheme with high contrast WCAG standards
-    final barBg = backgroundColor ??
+    final barBg =
+        backgroundColor ??
         (isDark ? scheme.surfaceContainerHigh : scheme.inverseSurface);
-    final activeHighlight = activeHighlightColor ??
+    final activeHighlight =
+        activeHighlightColor ??
         (isDark
             ? scheme.primary.withValues(alpha: 0.24)
             : scheme.onInverseSurface.withValues(alpha: 0.20));
-    final active = activeColor ?? (isDark ? scheme.primary : scheme.inversePrimary);
-    final inactive = inactiveColor ??
+    final active =
+        activeColor ?? (isDark ? scheme.primary : scheme.inversePrimary);
+    final inactive =
+        inactiveColor ??
         (isDark
             ? scheme.onSurfaceVariant
             : scheme.onInverseSurface.withValues(alpha: 0.85));
@@ -191,10 +200,7 @@ class _FloatingNavItem extends StatelessWidget {
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  child: Text(
-                    destination.label,
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Text(destination.label, textAlign: TextAlign.center),
                 ),
               ],
             ),

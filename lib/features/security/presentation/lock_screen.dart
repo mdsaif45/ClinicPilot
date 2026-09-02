@@ -118,9 +118,13 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                     height: 18,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isFilled ? scheme.primary : scheme.surfaceContainerHighest,
+                      color:
+                          isFilled
+                              ? scheme.primary
+                              : scheme.surfaceContainerHighest,
                       border: Border.all(
-                        color: isFilled ? scheme.primary : scheme.outlineVariant,
+                        color:
+                            isFilled ? scheme.primary : scheme.outlineVariant,
                         width: 1.5,
                       ),
                     ),
@@ -155,10 +159,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildIconButton(
-                          icon: Icons.clear,
-                          onTap: _onClear,
-                        ),
+                        _buildIconButton(icon: Icons.clear, onTap: _onClear),
                         _buildDigitButton('0'),
                         _buildIconButton(
                           icon: Icons.backspace_outlined,
@@ -210,7 +211,10 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     );
   }
 
-  Widget _buildIconButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     final scheme = Theme.of(context).colorScheme;
 
     return InkWell(

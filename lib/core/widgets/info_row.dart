@@ -26,7 +26,8 @@ class InfoRow extends StatelessWidget {
     if (v.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final rowPadding = padding ??
+    final rowPadding =
+        padding ??
         const EdgeInsets.symmetric(
           horizontal: Spacing.lg,
           vertical: Spacing.sm + 2,

@@ -19,16 +19,15 @@ class SecuritySettingsCard extends ConsumerWidget {
         AppListTile(
           icon: Icons.shield_outlined,
           title: 'Security & Privacy',
-          subtitle: lockState.isEnabled
-              ? 'App Lock active (4-digit PIN)'
-              : 'Off (protect patient records)',
+          subtitle:
+              lockState.isEnabled
+                  ? 'App Lock active (4-digit PIN)'
+                  : 'Off (protect patient records)',
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             AppHaptics.selection();
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const SecurityPrivacyScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const SecurityPrivacyScreen()),
             );
           },
         ),

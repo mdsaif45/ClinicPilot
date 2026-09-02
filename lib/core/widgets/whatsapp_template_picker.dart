@@ -29,11 +29,12 @@ class WhatsAppTemplatePickerSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => WhatsAppTemplatePickerSheet(
-        patient: patient,
-        clinicName: clinicName,
-        dueDate: dueDate,
-      ),
+      builder:
+          (_) => WhatsAppTemplatePickerSheet(
+            patient: patient,
+            clinicName: clinicName,
+            dueDate: dueDate,
+          ),
     );
   }
 
@@ -80,9 +81,7 @@ class _WhatsAppTemplatePickerSheetState
       ),
     ];
 
-    _messageController = TextEditingController(
-      text: _templates[0].message,
-    );
+    _messageController = TextEditingController(text: _templates[0].message);
   }
 
   @override
@@ -101,15 +100,18 @@ class _WhatsAppTemplatePickerSheetState
 
   Future<void> _send() async {
     AppHaptics.success();
-    final phone = widget.patient.whatsapp?.isNotEmpty == true
-        ? widget.patient.whatsapp!
-        : widget.patient.phone;
+    final phone =
+        widget.patient.whatsapp?.isNotEmpty == true
+            ? widget.patient.whatsapp!
+            : widget.patient.phone;
 
     if (phone.trim().isEmpty) {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No phone number recorded for this patient.')),
+          const SnackBar(
+            content: Text('No phone number recorded for this patient.'),
+          ),
         );
       }
       return;

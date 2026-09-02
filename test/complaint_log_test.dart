@@ -28,7 +28,9 @@ void main() {
       addTearDown(container.dispose);
 
       // Create a test patient
-      await db.into(db.patients).insert(
+      await db
+          .into(db.patients)
+          .insert(
             PatientsCompanion.insert(
               id: 'p_comp_1',
               name: 'John Doe',
@@ -69,18 +71,24 @@ void main() {
 
       // Update status
       await notifier.updateStatus(complaintId, 'Improving');
-      final updated = await (db.select(db.complaints)..where((t) => t.id.equals(complaintId))).getSingle();
+      final updated =
+          await (db.select(db.complaints)
+            ..where((t) => t.id.equals(complaintId))).getSingle();
       expect(updated.status, equals('Improving'));
 
       // Soft delete
       await notifier.deleteComplaint(complaintId);
-      final activeList = await (db.select(db.complaints)..where((t) => t.isDeleted.equals(false))).get();
+      final activeList =
+          await (db.select(db.complaints)
+            ..where((t) => t.isDeleted.equals(false))).get();
       expect(activeList, isEmpty);
     });
   });
 
   group('ComplaintListView & AddEditComplaintDialog Widget Tests', () {
-    testWidgets('renders empty state and opens add complaint dialog', (tester) async {
+    testWidgets('renders empty state and opens add complaint dialog', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 2000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -105,13 +113,13 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            patientComplaintsProvider(patient.id).overrideWith((ref) => Stream.value([])),
+            patientComplaintsProvider(
+              patient.id,
+            ).overrideWith((ref) => Stream.value([])),
           ],
           child: MaterialApp(
             theme: AppTheme.lightTheme,
-            home: Scaffold(
-              body: ComplaintListView(patient: patient),
-            ),
+            home: Scaffold(body: ComplaintListView(patient: patient)),
           ),
         ),
       );

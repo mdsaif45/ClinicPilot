@@ -16,20 +16,17 @@ class GoalTrackerCard extends ConsumerWidget {
   final DashboardStats stats;
   final DateTime now;
 
-  const GoalTrackerCard({
-    super.key,
-    required this.stats,
-    required this.now,
-  });
+  const GoalTrackerCard({super.key, required this.stats, required this.now});
 
   void _openEditGoalsDialog(BuildContext context, WidgetRef ref) {
     AppHaptics.selection();
     showDialog(
       context: context,
-      builder: (_) => _EditGoalsDialog(
-        currentRevenueGoal: stats.monthlyRevenueGoal,
-        currentPatientGoal: stats.monthlyNewPatientGoal,
-      ),
+      builder:
+          (_) => _EditGoalsDialog(
+            currentRevenueGoal: stats.monthlyRevenueGoal,
+            currentPatientGoal: stats.monthlyNewPatientGoal,
+          ),
     );
   }
 
@@ -44,10 +41,12 @@ class GoalTrackerCard extends ConsumerWidget {
 
     // Revenue calculations
     final remainingRev = stats.monthlyRevenueGoal - stats.monthlyRevenue;
-    final revPct = stats.monthlyRevenueGoal > 0
-        ? (stats.monthlyRevenue / stats.monthlyRevenueGoal * 100)
-        : 0.0;
-    final perDayRev = daysLeft > 0 && remainingRev > 0 ? remainingRev / daysLeft : 0.0;
+    final revPct =
+        stats.monthlyRevenueGoal > 0
+            ? (stats.monthlyRevenue / stats.monthlyRevenueGoal * 100)
+            : 0.0;
+    final perDayRev =
+        daysLeft > 0 && remainingRev > 0 ? remainingRev / daysLeft : 0.0;
 
     final (revColor, revBg, revStatus) = _evalPace(
       actualProgress: stats.revenueGoalProgress,
@@ -57,9 +56,10 @@ class GoalTrackerCard extends ConsumerWidget {
 
     // Patient goal calculations
     final remainingPts = stats.monthlyNewPatientGoal - stats.monthlyNewPatients;
-    final ptsPct = stats.monthlyNewPatientGoal > 0
-        ? (stats.monthlyNewPatients / stats.monthlyNewPatientGoal * 100)
-        : 0.0;
+    final ptsPct =
+        stats.monthlyNewPatientGoal > 0
+            ? (stats.monthlyNewPatients / stats.monthlyNewPatientGoal * 100)
+            : 0.0;
 
     final (ptColor, ptBg, ptStatus) = _evalPace(
       actualProgress: stats.newPatientGoalProgress,
@@ -303,14 +303,18 @@ class _EditGoalsDialogState extends ConsumerState<_EditGoalsDialog> {
 
     final activeClinic = ref.read(activeClinicProvider);
     if (activeClinic != null) {
-      await db.into(db.settings).insertOnConflictUpdate(
+      await db
+          .into(db.settings)
+          .insertOnConflictUpdate(
             SettingsCompanion.insert(
               key: 'monthly_revenue_goal_${activeClinic.id}',
               value: rev.toStringAsFixed(0),
               updatedAt: drift.Value(DateTime.now()),
             ),
           );
-      await db.into(db.settings).insertOnConflictUpdate(
+      await db
+          .into(db.settings)
+          .insertOnConflictUpdate(
             SettingsCompanion.insert(
               key: 'monthly_new_patient_goal_${activeClinic.id}',
               value: pat.toString(),
@@ -319,7 +323,9 @@ class _EditGoalsDialogState extends ConsumerState<_EditGoalsDialog> {
           );
     }
 
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'monthly_revenue_goal',
             value: rev.toStringAsFixed(0),
@@ -327,7 +333,9 @@ class _EditGoalsDialogState extends ConsumerState<_EditGoalsDialog> {
           ),
         );
 
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: 'monthly_new_patient_goal',
             value: pat.toString(),
@@ -365,8 +373,11 @@ class _EditGoalsDialogState extends ConsumerState<_EditGoalsDialog> {
                 hintText: 'e.g. 50000',
                 prefixIcon: Icon(Icons.currency_rupee),
               ),
-              validator: (v) =>
-                  v == null || double.tryParse(v.trim()) == null ? 'Enter valid amount' : null,
+              validator:
+                  (v) =>
+                      v == null || double.tryParse(v.trim()) == null
+                          ? 'Enter valid amount'
+                          : null,
             ),
             const SizedBox(height: Spacing.md),
             TextFormField(
@@ -377,8 +388,11 @@ class _EditGoalsDialogState extends ConsumerState<_EditGoalsDialog> {
                 hintText: 'e.g. 15',
                 prefixIcon: Icon(Icons.person_add_outlined),
               ),
-              validator: (v) =>
-                  v == null || int.tryParse(v.trim()) == null ? 'Enter valid number' : null,
+              validator:
+                  (v) =>
+                      v == null || int.tryParse(v.trim()) == null
+                          ? 'Enter valid number'
+                          : null,
             ),
           ],
         ),

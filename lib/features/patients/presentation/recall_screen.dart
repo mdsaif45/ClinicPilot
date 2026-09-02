@@ -37,9 +37,7 @@ class RecallScreen extends ConsumerWidget {
     final listsAsync = ref.watch(recallListProvider);
 
     return Scaffold(
-      appBar: showAppBar
-          ? AppBar(title: const Text('Follow-ups'))
-          : null,
+      appBar: showAppBar ? AppBar(title: const Text('Follow-ups')) : null,
       body: listsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Could not load: $e')),
@@ -60,7 +58,8 @@ class RecallScreen extends ConsumerWidget {
                 SectionHeader(
                   tightTop: !hasRenderedFirstSection,
                   title: 'Overdue',
-                  subtitle: '${lists.overdue.length} '
+                  subtitle:
+                      '${lists.overdue.length} '
                       '${lists.overdue.length == 1 ? 'patient' : 'patients'}',
                 ),
                 for (final e in lists.overdue) _RecallCard(entry: e),
@@ -73,7 +72,8 @@ class RecallScreen extends ConsumerWidget {
                 SectionHeader(
                   tightTop: !hasRenderedFirstSection,
                   title: 'Due this week',
-                  subtitle: '${lists.dueSoon.length} '
+                  subtitle:
+                      '${lists.dueSoon.length} '
                       '${lists.dueSoon.length == 1 ? 'patient' : 'patients'}',
                 ),
                 for (final e in lists.dueSoon) _RecallCard(entry: e),
@@ -115,7 +115,10 @@ class _RecallCard extends ConsumerWidget {
 
   const _RecallCard({required this.entry});
 
-  Future<void> _confirmCancelFollowUp(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmCancelFollowUp(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     AppHaptics.medium();
     final confirmed = await AppConfirmDialog.show(
       context,
@@ -128,13 +131,15 @@ class _RecallCard extends ConsumerWidget {
 
     if (confirmed == true && context.mounted) {
       final db = ref.read(databaseProvider);
-      await (db.update(db.visits)..where((t) => t.id.equals(entry.visit.id))).write(
-        const VisitsCompanion(nextFollowUpDate: Value(null)),
-      );
+      await (db.update(db.visits)..where(
+        (t) => t.id.equals(entry.visit.id),
+      )).write(const VisitsCompanion(nextFollowUpDate: Value(null)));
       AppHaptics.medium();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Follow-up cancelled for ${entry.patient.name}.')),
+          SnackBar(
+            content: Text('Follow-up cancelled for ${entry.patient.name}.'),
+          ),
         );
       }
     }
@@ -146,9 +151,10 @@ class _RecallCard extends ConsumerWidget {
     final scheme = theme.colorScheme;
     final p = entry.patient;
 
-    final label = entry.isDueToday
-        ? 'Due today'
-        : entry.isOverdue
+    final label =
+        entry.isDueToday
+            ? 'Due today'
+            : entry.isOverdue
             ? '${entry.daysOverdue} '
                 '${entry.daysOverdue == 1 ? 'day' : 'days'} overdue'
             : 'In ${-entry.daysOverdue} '
@@ -157,17 +163,11 @@ class _RecallCard extends ConsumerWidget {
     final urgent = entry.isOverdue || entry.isDueToday;
 
     return AppCard(
-      margin: const EdgeInsets.fromLTRB(
-        Spacing.lg,
-        0,
-        Spacing.lg,
-        Spacing.md,
-      ),
-      onTap: () => Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute(
-          builder: (_) => PatientProfileScreen(patient: p),
-        ),
-      ),
+      margin: const EdgeInsets.fromLTRB(Spacing.lg, 0, Spacing.lg, Spacing.md),
+      onTap:
+          () => Navigator.of(context, rootNavigator: true).push(
+            MaterialPageRoute(builder: (_) => PatientProfileScreen(patient: p)),
+          ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -229,7 +229,11 @@ class _RecallCard extends ConsumerWidget {
                 children: [
                   IconButton.outlined(
                     onPressed: () => _confirmCancelFollowUp(context, ref),
-                    icon: Icon(Icons.event_busy_outlined, size: 18, color: scheme.error),
+                    icon: Icon(
+                      Icons.event_busy_outlined,
+                      size: 18,
+                      color: scheme.error,
+                    ),
                     tooltip: 'Cancel follow-up',
                   ),
                   const SizedBox(width: Spacing.xs),
@@ -241,7 +245,11 @@ class _RecallCard extends ConsumerWidget {
                         builder: (_) => AddVisitDialog(patient: p),
                       );
                     },
-                    icon: Icon(Icons.event_available_outlined, size: 18, color: scheme.primary),
+                    icon: Icon(
+                      Icons.event_available_outlined,
+                      size: 18,
+                      color: scheme.primary,
+                    ),
                     tooltip: 'Record visit',
                   ),
                   const SizedBox(width: Spacing.xs),

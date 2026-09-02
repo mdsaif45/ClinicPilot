@@ -21,56 +21,66 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('a clinic id that does not exist leaves no patient row behind',
-      () async {
-    await expectLater(
-      notifier.registerPatient(
-        name: 'Test Patient',
-        phone: '9800000099',
-        age: 30,
-        gender: 'Male',
-        primaryClinicId: 'no-such-clinic',
-        serialNo: '1',
-        disease: 'Test',
-      ),
-      throwsA(anything),
-    );
+  test(
+    'a clinic id that does not exist leaves no patient row behind',
+    () async {
+      await expectLater(
+        notifier.registerPatient(
+          name: 'Test Patient',
+          phone: '9800000099',
+          age: 30,
+          gender: 'Male',
+          primaryClinicId: 'no-such-clinic',
+          serialNo: '1',
+          disease: 'Test',
+        ),
+        throwsA(anything),
+      );
 
-    final patients = await db.select(db.patients).get();
-    expect(patients, isEmpty,
-        reason: 'the visit insert failed on the bad clinic id, so the '
-            'patient half of the same registration must not survive it');
+      final patients = await db.select(db.patients).get();
+      expect(
+        patients,
+        isEmpty,
+        reason:
+            'the visit insert failed on the bad clinic id, so the '
+            'patient half of the same registration must not survive it',
+      );
 
-    final visits = await db.select(db.visits).get();
-    expect(visits, isEmpty);
-  });
+      final visits = await db.select(db.visits).get();
+      expect(visits, isEmpty);
+    },
+  );
 
-  test('patient registered with custom entry date records historical date on patient and initial visit', () async {
-    // Add clinic first
-    await db.into(db.clinics).insert(
-          ClinicsCompanion.insert(
-            id: 'clinic_test',
-            name: 'Clinic Test',
-          ),
-        );
+  test(
+    'patient registered with custom entry date records historical date on patient and initial visit',
+    () async {
+      // Add clinic first
+      await db
+          .into(db.clinics)
+          .insert(
+            ClinicsCompanion.insert(id: 'clinic_test', name: 'Clinic Test'),
+          );
 
-    final historicalDate = DateTime(2023, 5, 15);
-    final patient = await notifier.registerPatient(
-      name: 'Historical Patient',
-      phone: '9800000001',
-      age: 45,
-      gender: 'Female',
-      primaryClinicId: 'clinic_test',
-      serialNo: 'H-101',
-      disease: 'Migraine',
-      entryDate: historicalDate,
-    );
+      final historicalDate = DateTime(2023, 5, 15);
+      final patient = await notifier.registerPatient(
+        name: 'Historical Patient',
+        phone: '9800000001',
+        age: 45,
+        gender: 'Female',
+        primaryClinicId: 'clinic_test',
+        serialNo: 'H-101',
+        disease: 'Migraine',
+        entryDate: historicalDate,
+      );
 
-    expect(patient.createdAt, equals(historicalDate));
-    expect(patient.patientCode, startsWith('P-2023-'));
+      expect(patient.createdAt, equals(historicalDate));
+      expect(patient.patientCode, startsWith('P-2023-'));
 
-    final visit = await (db.select(db.visits)..where((v) => v.patientId.equals(patient.id))).getSingle();
-    expect(visit.visitDate, equals(historicalDate));
-    expect(visit.createdAt, equals(historicalDate));
-  });
+      final visit =
+          await (db.select(db.visits)
+            ..where((v) => v.patientId.equals(patient.id))).getSingle();
+      expect(visit.visitDate, equals(historicalDate));
+      expect(visit.createdAt, equals(historicalDate));
+    },
+  );
 }

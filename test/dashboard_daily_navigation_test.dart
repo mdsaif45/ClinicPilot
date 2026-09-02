@@ -21,242 +21,278 @@ void main() {
   });
 
   group('Dashboard Daily Snapshot Date Navigation Unit Tests', () {
-    test('calculates historical daily revenue, expense and patients independently of monthly aggregates', () async {
-      final container = ProviderContainer(
-        overrides: [databaseProvider.overrideWithValue(db)],
-      );
-      addTearDown(container.dispose);
+    test(
+      'calculates historical daily revenue, expense and patients independently of monthly aggregates',
+      () async {
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
+        addTearDown(container.dispose);
 
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final yesterday = today.subtract(const Duration(days: 1));
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final yesterday = today.subtract(const Duration(days: 1));
 
-      // Seed a clinic
-      await db.into(db.clinics).insert(
-            ClinicsCompanion.insert(
-              id: 'c1',
-              name: 'Main Clinic',
-              address: const drift.Value('City Center'),
-            ),
-          );
+        // Seed a clinic
+        await db
+            .into(db.clinics)
+            .insert(
+              ClinicsCompanion.insert(
+                id: 'c1',
+                name: 'Main Clinic',
+                address: const drift.Value('City Center'),
+              ),
+            );
 
-      // Seed a patient
-      await db.into(db.patients).insert(
-            PatientsCompanion.insert(
-              id: 'p1',
-              patientCode: const drift.Value('P-001'),
-              name: 'John Doe',
-              age: 30,
-              phone: '9876543210',
-              primaryClinicId: const drift.Value('c1'),
-              gender: 'Male',
-            ),
-          );
+        // Seed a patient
+        await db
+            .into(db.patients)
+            .insert(
+              PatientsCompanion.insert(
+                id: 'p1',
+                patientCode: const drift.Value('P-001'),
+                name: 'John Doe',
+                age: 30,
+                phone: '9876543210',
+                primaryClinicId: const drift.Value('c1'),
+                gender: 'Male',
+              ),
+            );
 
-      // Insert 1 visit on today and 2 visits on yesterday
-      await db.into(db.visits).insert(
-            VisitsCompanion.insert(
-              id: 'v1',
-              patientId: 'p1',
-              clinicId: 'c1',
-              visitDate: today.add(const Duration(hours: 10)),
-              disease: 'Fever',
-              visitType: 'new',
-            ),
-          );
+        // Insert 1 visit on today and 2 visits on yesterday
+        await db
+            .into(db.visits)
+            .insert(
+              VisitsCompanion.insert(
+                id: 'v1',
+                patientId: 'p1',
+                clinicId: 'c1',
+                visitDate: today.add(const Duration(hours: 10)),
+                disease: 'Fever',
+                visitType: 'new',
+              ),
+            );
 
-      await db.into(db.visits).insert(
-            VisitsCompanion.insert(
-              id: 'v2',
-              patientId: 'p1',
-              clinicId: 'c1',
-              visitDate: yesterday.add(const Duration(hours: 11)),
-              disease: 'Cold',
-              visitType: 'repeat',
-            ),
-          );
+        await db
+            .into(db.visits)
+            .insert(
+              VisitsCompanion.insert(
+                id: 'v2',
+                patientId: 'p1',
+                clinicId: 'c1',
+                visitDate: yesterday.add(const Duration(hours: 11)),
+                disease: 'Cold',
+                visitType: 'repeat',
+              ),
+            );
 
-      await db.into(db.visits).insert(
-            VisitsCompanion.insert(
-              id: 'v3',
-              patientId: 'p1',
-              clinicId: 'c1',
-              visitDate: yesterday.add(const Duration(hours: 15)),
-              disease: 'Headache',
-              visitType: 'repeat',
-            ),
-          );
+        await db
+            .into(db.visits)
+            .insert(
+              VisitsCompanion.insert(
+                id: 'v3',
+                patientId: 'p1',
+                clinicId: 'c1',
+                visitDate: yesterday.add(const Duration(hours: 15)),
+                disease: 'Headache',
+                visitType: 'repeat',
+              ),
+            );
 
-      // Insert Cash Memos: 1000 today, 2500 yesterday
-      await db.into(db.cashMemos).insert(
-            CashMemosCompanion.insert(
-              id: 'cm1',
-              memoNumber: 'CM-001',
-              patientId: 'p1',
-              clinicId: const drift.Value('c1'),
-              memoDate: drift.Value(today.add(const Duration(hours: 10))),
-              total: 1000,
-              paymentMethod: 'cash',
-            ),
-          );
+        // Insert Cash Memos: 1000 today, 2500 yesterday
+        await db
+            .into(db.cashMemos)
+            .insert(
+              CashMemosCompanion.insert(
+                id: 'cm1',
+                memoNumber: 'CM-001',
+                patientId: 'p1',
+                clinicId: const drift.Value('c1'),
+                memoDate: drift.Value(today.add(const Duration(hours: 10))),
+                total: 1000,
+                paymentMethod: 'cash',
+              ),
+            );
 
-      await db.into(db.cashMemos).insert(
-            CashMemosCompanion.insert(
-              id: 'cm2',
-              memoNumber: 'CM-002',
-              patientId: 'p1',
-              clinicId: const drift.Value('c1'),
-              memoDate: drift.Value(yesterday.add(const Duration(hours: 12))),
-              total: 2500,
-              paymentMethod: 'cash',
-            ),
-          );
+        await db
+            .into(db.cashMemos)
+            .insert(
+              CashMemosCompanion.insert(
+                id: 'cm2',
+                memoNumber: 'CM-002',
+                patientId: 'p1',
+                clinicId: const drift.Value('c1'),
+                memoDate: drift.Value(yesterday.add(const Duration(hours: 12))),
+                total: 2500,
+                paymentMethod: 'cash',
+              ),
+            );
 
-      // Insert Expense: 400 on yesterday
-      await db.into(db.expenses).insert(
-            ExpensesCompanion.insert(
-              id: 'e1',
-              clinicId: 'c1',
-              date: yesterday.add(const Duration(hours: 14)),
-              amount: 400,
-              category: 'Supplies',
-            ),
-          );
+        // Insert Expense: 400 on yesterday
+        await db
+            .into(db.expenses)
+            .insert(
+              ExpensesCompanion.insert(
+                id: 'e1',
+                clinicId: 'c1',
+                date: yesterday.add(const Duration(hours: 14)),
+                amount: 400,
+                category: 'Supplies',
+              ),
+            );
 
-      // Allow underlying streams to emit initial database state
-      await container.read(dailyRawStreamsProvider.future);
+        // Allow underlying streams to emit initial database state
+        await container.read(dailyRawStreamsProvider.future);
 
-      // 1. Initial State (Today)
-      container.read(selectedDashboardDateProvider.notifier).state = today;
-      final todayStats = container.read(dailyStatsProvider);
+        // 1. Initial State (Today)
+        container.read(selectedDashboardDateProvider.notifier).state = today;
+        final todayStats = container.read(dailyStatsProvider);
 
-      expect(todayStats.isToday, isTrue);
-      expect(todayStats.dailyPatients, equals(1));
-      expect(todayStats.dailyRevenue, equals(1000.0));
-      expect(todayStats.dailyExpense, equals(0.0));
-      expect(todayStats.dailyNetProfit, equals(1000.0));
+        expect(todayStats.isToday, isTrue);
+        expect(todayStats.dailyPatients, equals(1));
+        expect(todayStats.dailyRevenue, equals(1000.0));
+        expect(todayStats.dailyExpense, equals(0.0));
+        expect(todayStats.dailyNetProfit, equals(1000.0));
 
-      // 2. Select Yesterday
-      container.read(selectedDashboardDateProvider.notifier).state = yesterday;
-      final yesterdayStats = container.read(dailyStatsProvider);
+        // 2. Select Yesterday
+        container.read(selectedDashboardDateProvider.notifier).state =
+            yesterday;
+        final yesterdayStats = container.read(dailyStatsProvider);
 
-      expect(yesterdayStats.isToday, isFalse);
-      expect(yesterdayStats.isYesterday, isTrue);
-      expect(yesterdayStats.dailyPatients, equals(2));
-      expect(yesterdayStats.dailyRevenue, equals(2500.0));
-      expect(yesterdayStats.dailyExpense, equals(400.0));
-      expect(yesterdayStats.dailyNetProfit, equals(2100.0));
-    });
+        expect(yesterdayStats.isToday, isFalse);
+        expect(yesterdayStats.isYesterday, isTrue);
+        expect(yesterdayStats.dailyPatients, equals(2));
+        expect(yesterdayStats.dailyRevenue, equals(2500.0));
+        expect(yesterdayStats.dailyExpense, equals(400.0));
+        expect(yesterdayStats.dailyNetProfit, equals(2100.0));
+      },
+    );
   });
 
   group('Dashboard Daily Snapshot Widget Navigation Tests', () {
-    testWidgets('navigates to yesterday with < and restores today with Today shortcut', (tester) async {
-      tester.view.physicalSize = const Size(1200, 2000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+    testWidgets(
+      'navigates to yesterday with < and restores today with Today shortcut',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 2000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final yesterday = today.subtract(const Duration(days: 1));
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final yesterday = today.subtract(const Duration(days: 1));
 
-      final container = ProviderContainer(
-        overrides: [
-          databaseProvider.overrideWithValue(db),
-          dailyStatsProvider.overrideWith((ref) {
-            final selected = ref.watch(selectedDashboardDateProvider);
-            final isT = selected.year == today.year &&
-                selected.month == today.month &&
-                selected.day == today.day;
-            return DailyStats(
-              selectedDate: selected,
-              dailyRevenue: isT ? 2800.0 : 1500.0,
-              dailyExpense: isT ? 0.0 : 300.0,
-              dailyNetProfit: isT ? 2800.0 : 1200.0,
-              dailyPatients: isT ? 1 : 4,
-            );
-          }),
-          dashboardStatsProvider.overrideWith((ref) {
-            return Stream.value(
-              DashboardStats(
-                todayRevenue: 2800.0,
-                todayExpense: 0.0,
-                todayNetProfit: 2800.0,
-                todayPatients: 1,
-                monthlyRevenue: 10000.0,
-                monthlyExpense: 2000.0,
-                monthlyNetProfit: 8000.0,
-                monthlyRevenueGoal: 50000.0,
-                totalPatients: 20,
-                monthlyNewPatients: 5,
-                monthlyRepeatPatients: 10,
-                monthlyNewPatientGoal: 15,
-              ),
-            );
-          }),
-        ],
-      );
+        final container = ProviderContainer(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            dailyStatsProvider.overrideWith((ref) {
+              final selected = ref.watch(selectedDashboardDateProvider);
+              final isT =
+                  selected.year == today.year &&
+                  selected.month == today.month &&
+                  selected.day == today.day;
+              return DailyStats(
+                selectedDate: selected,
+                dailyRevenue: isT ? 2800.0 : 1500.0,
+                dailyExpense: isT ? 0.0 : 300.0,
+                dailyNetProfit: isT ? 2800.0 : 1200.0,
+                dailyPatients: isT ? 1 : 4,
+              );
+            }),
+            dashboardStatsProvider.overrideWith((ref) {
+              return Stream.value(
+                DashboardStats(
+                  todayRevenue: 2800.0,
+                  todayExpense: 0.0,
+                  todayNetProfit: 2800.0,
+                  todayPatients: 1,
+                  monthlyRevenue: 10000.0,
+                  monthlyExpense: 2000.0,
+                  monthlyNetProfit: 8000.0,
+                  monthlyRevenueGoal: 50000.0,
+                  totalPatients: 20,
+                  monthlyNewPatients: 5,
+                  monthlyRepeatPatients: 10,
+                  monthlyNewPatientGoal: 15,
+                ),
+              );
+            }),
+          ],
+        );
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: AppTheme.lightTheme,
-            home: const DashboardScreen(),
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: const DashboardScreen(),
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      // Verify Today state
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text("Today's Patients"), findsOneWidget);
-      expect(find.text('1'), findsOneWidget);
-      expect(find.text("Today's Revenue"), findsOneWidget);
-      expect(find.text('₹ 2,800'), findsWidgets);
+        // Verify Today state
+        expect(find.text('Today'), findsOneWidget);
+        expect(find.text("Today's Patients"), findsOneWidget);
+        expect(find.text('1'), findsOneWidget);
+        expect(find.text("Today's Revenue"), findsOneWidget);
+        expect(find.text('₹ 2,800'), findsWidgets);
 
-      // Tap Previous Day (<)
-      final prevBtn = find.byTooltip('Previous Day');
-      expect(prevBtn, findsOneWidget);
-      await tester.tap(prevBtn);
-      await tester.pumpAndSettle();
+        // Tap Previous Day (<)
+        final prevBtn = find.byTooltip('Previous Day');
+        expect(prevBtn, findsOneWidget);
+        await tester.tap(prevBtn);
+        await tester.pumpAndSettle();
 
-      // Now viewing yesterday
-      expect(container.read(selectedDashboardDateProvider).day, equals(yesterday.day));
-      expect(find.text('Yesterday'), findsOneWidget);
-      expect(find.text('Patients'), findsOneWidget);
-      expect(find.text('4'), findsOneWidget);
-      expect(find.text('Revenue'), findsWidgets);
-      expect(find.text('₹ 1,500'), findsOneWidget);
+        // Now viewing yesterday
+        expect(
+          container.read(selectedDashboardDateProvider).day,
+          equals(yesterday.day),
+        );
+        expect(find.text('Yesterday'), findsOneWidget);
+        expect(find.text('Patients'), findsOneWidget);
+        expect(find.text('4'), findsOneWidget);
+        expect(find.text('Revenue'), findsWidgets);
+        expect(find.text('₹ 1,500'), findsOneWidget);
 
-      // Verify "Today" quick jump badge is present and tap it
-      expect(find.text('Today'), findsOneWidget);
-      await tester.tap(find.text('Today'));
-      await tester.pumpAndSettle();
+        // Verify "Today" quick jump badge is present and tap it
+        expect(find.text('Today'), findsOneWidget);
+        await tester.tap(find.text('Today'));
+        await tester.pumpAndSettle();
 
-      // Back to Today
-      expect(container.read(selectedDashboardDateProvider).day, equals(today.day));
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text("Today's Patients"), findsOneWidget);
-      expect(find.text('1'), findsOneWidget);
+        // Back to Today
+        expect(
+          container.read(selectedDashboardDateProvider).day,
+          equals(today.day),
+        );
+        expect(find.text('Today'), findsOneWidget);
+        expect(find.text("Today's Patients"), findsOneWidget);
+        expect(find.text('1'), findsOneWidget);
 
-      // Tap Previous Day (<) again
-      await tester.tap(prevBtn);
-      await tester.pumpAndSettle();
-      expect(container.read(selectedDashboardDateProvider).day, equals(yesterday.day));
-      expect(find.text('Yesterday'), findsOneWidget);
+        // Tap Previous Day (<) again
+        await tester.tap(prevBtn);
+        await tester.pumpAndSettle();
+        expect(
+          container.read(selectedDashboardDateProvider).day,
+          equals(yesterday.day),
+        );
+        expect(find.text('Yesterday'), findsOneWidget);
 
-      // Tap Next Day (>) to return to Today using the right arrow icon
-      final nextBtn = find.byTooltip('Next Day');
-      expect(nextBtn, findsOneWidget);
-      await tester.tap(nextBtn);
-      await tester.pumpAndSettle();
+        // Tap Next Day (>) to return to Today using the right arrow icon
+        final nextBtn = find.byTooltip('Next Day');
+        expect(nextBtn, findsOneWidget);
+        await tester.tap(nextBtn);
+        await tester.pumpAndSettle();
 
-      expect(container.read(selectedDashboardDateProvider).day, equals(today.day));
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text("Today's Patients"), findsOneWidget);
-      expect(find.text('1'), findsOneWidget);
-    });
+        expect(
+          container.read(selectedDashboardDateProvider).day,
+          equals(today.day),
+        );
+        expect(find.text('Today'), findsOneWidget);
+        expect(find.text("Today's Patients"), findsOneWidget);
+        expect(find.text('1'), findsOneWidget);
+      },
+    );
   });
 }

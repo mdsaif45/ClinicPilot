@@ -17,21 +17,18 @@ class PrescriptionListView extends ConsumerWidget {
   final Patient patient;
   final String? visitId;
 
-  const PrescriptionListView({
-    super.key,
-    required this.patient,
-    this.visitId,
-  });
+  const PrescriptionListView({super.key, required this.patient, this.visitId});
 
   void _openAddPrescription(BuildContext context, int defaultIndex) {
     AppHaptics.selection();
     showDialog(
       context: context,
-      builder: (_) => AddEditPrescriptionDialog(
-        patientId: patient.id,
-        visitId: visitId,
-        defaultIndex: defaultIndex,
-      ),
+      builder:
+          (_) => AddEditPrescriptionDialog(
+            patientId: patient.id,
+            visitId: visitId,
+            defaultIndex: defaultIndex,
+          ),
     );
   }
 
@@ -39,11 +36,12 @@ class PrescriptionListView extends ConsumerWidget {
     AppHaptics.selection();
     showDialog(
       context: context,
-      builder: (_) => AddEditPrescriptionDialog(
-        patientId: patient.id,
-        visitId: visitId,
-        existingPrescription: rx,
-      ),
+      builder:
+          (_) => AddEditPrescriptionDialog(
+            patientId: patient.id,
+            visitId: visitId,
+            existingPrescription: rx,
+          ),
     );
   }
 
@@ -51,17 +49,21 @@ class PrescriptionListView extends ConsumerWidget {
     AppHaptics.error();
     showDialog(
       context: context,
-      builder: (ctx) => AppConfirmDialog(
-        title: 'Delete Prescription',
-        message: 'Are you sure you want to remove "${rx.remedyName} ${rx.potency}"?',
-        confirmLabel: 'Delete',
-        isDestructive: true,
-        onConfirm: () async {
-          Navigator.of(ctx).pop();
-          await ref.read(prescriptionNotifierProvider.notifier).deletePrescription(rx.id);
-          AppHaptics.medium();
-        },
-      ),
+      builder:
+          (ctx) => AppConfirmDialog(
+            title: 'Delete Prescription',
+            message:
+                'Are you sure you want to remove "${rx.remedyName} ${rx.potency}"?',
+            confirmLabel: 'Delete',
+            isDestructive: true,
+            onConfirm: () async {
+              Navigator.of(ctx).pop();
+              await ref
+                  .read(prescriptionNotifierProvider.notifier)
+                  .deletePrescription(rx.id);
+              AppHaptics.medium();
+            },
+          ),
     );
   }
 
@@ -77,7 +79,9 @@ class PrescriptionListView extends ConsumerWidget {
       final rx = list[i];
       buffer.writeln('${i + 1}. *${rx.remedyName}* ${rx.potency}');
       if ((rx.doseCount ?? '').isNotEmpty || (rx.frequency ?? '').isNotEmpty) {
-        buffer.writeln('   Dose: ${rx.doseCount ?? ''} • ${rx.frequency ?? ''}');
+        buffer.writeln(
+          '   Dose: ${rx.doseCount ?? ''} • ${rx.frequency ?? ''}',
+        );
       }
       if ((rx.vehicle ?? '').isNotEmpty) {
         buffer.writeln('   Form: ${rx.vehicle}');
@@ -107,9 +111,10 @@ class PrescriptionListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final prescriptionsAsync = visitId != null
-        ? ref.watch(visitPrescriptionsProvider(visitId!))
-        : ref.watch(patientPrescriptionsProvider(patient.id));
+    final prescriptionsAsync =
+        visitId != null
+            ? ref.watch(visitPrescriptionsProvider(visitId!))
+            : ref.watch(patientPrescriptionsProvider(patient.id));
     final visitsAsync = ref.watch(patientVisitsStreamProvider(patient.id));
     final theme = Theme.of(context);
 
@@ -124,7 +129,8 @@ class PrescriptionListView extends ConsumerWidget {
           child: EmptyState(
             icon: Icons.medication_outlined,
             title: 'No prescriptions logged',
-            message: 'Prescribe multi-remedy posology with Latin binomials, potency, and dosage.',
+            message:
+                'Prescribe multi-remedy posology with Latin binomials, potency, and dosage.',
             actionLabel: 'Prescribe Remedy',
             onAction: () => _openAddPrescription(context, 1),
           ),
@@ -202,7 +208,11 @@ class _PrescriptionCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(Icons.calendar_today_outlined, size: 13, color: scheme.primary),
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 13,
+                color: scheme.primary,
+              ),
               const SizedBox(width: 5),
               Text(
                 Formatters.formatDate(rx.prescriptionDate ?? rx.createdAt),
@@ -247,13 +257,17 @@ class _PrescriptionCard extends StatelessWidget {
                     if (val == 'edit') onEdit();
                     if (val == 'delete') onDelete();
                   },
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text('Delete', style: TextStyle(color: scheme.error)),
-                    ),
-                  ],
+                  itemBuilder:
+                      (_) => [
+                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text(
+                            'Delete',
+                            style: TextStyle(color: scheme.error),
+                          ),
+                        ),
+                      ],
                 ),
               ),
             ],
@@ -302,7 +316,10 @@ class _PrescriptionCard extends StatelessWidget {
               if ((rx.vehicle ?? '').isNotEmpty)
                 _ChipInfo(icon: Icons.water_drop_outlined, text: rx.vehicle!),
               if ((rx.durationDays ?? '').isNotEmpty)
-                _ChipInfo(icon: Icons.calendar_today_outlined, text: rx.durationDays!),
+                _ChipInfo(
+                  icon: Icons.calendar_today_outlined,
+                  text: rx.durationDays!,
+                ),
             ],
           ),
 
@@ -340,7 +357,11 @@ class _PrescriptionCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.no_food_outlined, size: 14, color: scheme.tertiary),
+                  Icon(
+                    Icons.no_food_outlined,
+                    size: 14,
+                    color: scheme.tertiary,
+                  ),
                   const SizedBox(width: Spacing.xs),
                   Expanded(
                     child: Text(

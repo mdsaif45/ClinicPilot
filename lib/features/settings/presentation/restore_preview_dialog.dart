@@ -219,7 +219,11 @@ class _RestorePreviewDialogState extends State<RestorePreviewDialog> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.warning_amber_rounded, size: 18, color: scheme.error),
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    size: 18,
+                    color: scheme.error,
+                  ),
                   const SizedBox(width: Spacing.xs),
                   Expanded(
                     child: Text(
@@ -241,23 +245,25 @@ class _RestorePreviewDialogState extends State<RestorePreviewDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: _isRestoring
-              ? null
-              : () async {
-                  setState(() => _isRestoring = true);
-                  try {
-                    await widget.onConfirm();
-                  } finally {
-                    if (mounted) setState(() => _isRestoring = false);
-                  }
-                },
-          child: _isRestoring
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Restore Data Now'),
+          onPressed:
+              _isRestoring
+                  ? null
+                  : () async {
+                    setState(() => _isRestoring = true);
+                    try {
+                      await widget.onConfirm();
+                    } finally {
+                      if (mounted) setState(() => _isRestoring = false);
+                    }
+                  },
+          child:
+              _isRestoring
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Restore Data Now'),
         ),
       ],
     );

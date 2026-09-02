@@ -52,77 +52,101 @@ final financeSortOptionProvider = StateProvider<FinanceSortOption>((ref) {
 
 /// Computes all inflow/outflow metrics and transactions for a specific month.
 final monthlyStatementProvider =
-    Provider.family<AsyncValue<MonthlyStatementData>, DateTime>((ref, monthDate) {
-  final memosAsync = ref.watch(cashMemosStreamProvider);
-  final expensesAsync = ref.watch(expensesStreamProvider);
-  final selectedClinicId = ref.watch(financesClinicFilterProvider);
+    Provider.family<AsyncValue<MonthlyStatementData>, DateTime>((
+      ref,
+      monthDate,
+    ) {
+      final memosAsync = ref.watch(cashMemosStreamProvider);
+      final expensesAsync = ref.watch(expensesStreamProvider);
+      final selectedClinicId = ref.watch(financesClinicFilterProvider);
 
-  if (memosAsync is AsyncLoading || expensesAsync is AsyncLoading) {
-    return const AsyncLoading();
-  }
+      if (memosAsync is AsyncLoading || expensesAsync is AsyncLoading) {
+        return const AsyncLoading();
+      }
 
-  if (memosAsync.hasError) {
-    return AsyncError(memosAsync.error!, memosAsync.stackTrace!);
-  }
-  if (expensesAsync.hasError) {
-    return AsyncError(expensesAsync.error!, expensesAsync.stackTrace!);
-  }
+      if (memosAsync.hasError) {
+        return AsyncError(memosAsync.error!, memosAsync.stackTrace!);
+      }
+      if (expensesAsync.hasError) {
+        return AsyncError(expensesAsync.error!, expensesAsync.stackTrace!);
+      }
 
-  final allMemos = memosAsync.value ?? const [];
-  final allExpenses = expensesAsync.value ?? const [];
+      final allMemos = memosAsync.value ?? const [];
+      final allExpenses = expensesAsync.value ?? const [];
 
-  final startOfMonth = DateTime(monthDate.year, monthDate.month, 1);
-  final endOfMonth = DateTime(monthDate.year, monthDate.month + 1, 0, 23, 59, 59);
+      final startOfMonth = DateTime(monthDate.year, monthDate.month, 1);
+      final endOfMonth = DateTime(
+        monthDate.year,
+        monthDate.month + 1,
+        0,
+        23,
+        59,
+        59,
+      );
 
-  // Filter expenses by month
-  var monthExpenses = allExpenses.where((e) {
-    final d = e.expense.date;
-    return !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
-  }).toList();
+      // Filter expenses by month
+      var monthExpenses =
+          allExpenses.where((e) {
+            final d = e.expense.date;
+            return !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
+          }).toList();
 
-  // Filter cash memos by month and selected clinic
-  var monthMemos = allMemos.where((m) {
-    final d = m.memo.memoDate;
-    final inMonth = !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
-    if (!inMonth) return false;
-    if (selectedClinicId != null && m.memo.clinicId != selectedClinicId) return false;
-    return true;
-  }).toList();
+      // Filter cash memos by month and selected clinic
+      var monthMemos =
+          allMemos.where((m) {
+            final d = m.memo.memoDate;
+            final inMonth = !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
+            if (!inMonth) return false;
+            if (selectedClinicId != null && m.memo.clinicId != selectedClinicId)
+              return false;
+            return true;
+          }).toList();
 
-  // Compute totals
-  final totalSpent = monthExpenses.fold<double>(0, (sum, e) => sum + e.expense.amount);
-  final totalReceived = monthMemos.fold<double>(0, (sum, m) => sum + m.memo.paidAmount);
-  final totalBilled = monthMemos.fold<double>(0, (sum, m) => sum + m.memo.total);
-  final netCashFlow = totalReceived - totalSpent;
+      // Compute totals
+      final totalSpent = monthExpenses.fold<double>(
+        0,
+        (sum, e) => sum + e.expense.amount,
+      );
+      final totalReceived = monthMemos.fold<double>(
+        0,
+        (sum, m) => sum + m.memo.paidAmount,
+      );
+      final totalBilled = monthMemos.fold<double>(
+        0,
+        (sum, m) => sum + m.memo.total,
+      );
+      final netCashFlow = totalReceived - totalSpent;
 
-  // Find top expense category
-  final categoryTotals = <String, double>{};
-  for (final e in monthExpenses) {
-    categoryTotals[e.expense.category] =
-        (categoryTotals[e.expense.category] ?? 0) + e.expense.amount;
-  }
-  String? topCategory;
-  double topAmount = 0.0;
-  if (categoryTotals.isNotEmpty) {
-    final topEntry = categoryTotals.entries.reduce((a, b) => a.value >= b.value ? a : b);
-    topCategory = topEntry.key;
-    topAmount = topEntry.value;
-  }
+      // Find top expense category
+      final categoryTotals = <String, double>{};
+      for (final e in monthExpenses) {
+        categoryTotals[e.expense.category] =
+            (categoryTotals[e.expense.category] ?? 0) + e.expense.amount;
+      }
+      String? topCategory;
+      double topAmount = 0.0;
+      if (categoryTotals.isNotEmpty) {
+        final topEntry = categoryTotals.entries.reduce(
+          (a, b) => a.value >= b.value ? a : b,
+        );
+        topCategory = topEntry.key;
+        topAmount = topEntry.value;
+      }
 
-  return AsyncData(
-    MonthlyStatementData(
-      month: startOfMonth,
-      totalSpent: totalSpent,
-      totalReceived: totalReceived,
-      totalBilled: totalBilled,
-      netCashFlow: netCashFlow,
-      expenses: monthExpenses,
-      cashMemos: monthMemos,
-      topExpenseCategory: topCategory,
-      topExpenseAmount: topAmount,
-    ),
-  );
-});
+      return AsyncData(
+        MonthlyStatementData(
+          month: startOfMonth,
+          totalSpent: totalSpent,
+          totalReceived: totalReceived,
+          totalBilled: totalBilled,
+          netCashFlow: netCashFlow,
+          expenses: monthExpenses,
+          cashMemos: monthMemos,
+          topExpenseCategory: topCategory,
+          topExpenseAmount: topAmount,
+        ),
+      );
+    });
 
 /// Sorter helper functions
 List<ExpenseWithClinic> sortExpenses(

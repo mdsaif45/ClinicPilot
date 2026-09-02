@@ -28,7 +28,9 @@ void main() {
       addTearDown(container.dispose);
 
       // Create a test patient
-      await db.into(db.patients).insert(
+      await db
+          .into(db.patients)
+          .insert(
             PatientsCompanion.insert(
               id: 'p_rx_1',
               name: 'Jane Doe',
@@ -74,19 +76,25 @@ void main() {
         dietaryAdvice: 'Avoid raw onion, garlic',
       );
 
-      final updated = await (db.select(db.prescriptions)..where((t) => t.id.equals(rxId))).getSingle();
+      final updated =
+          await (db.select(db.prescriptions)
+            ..where((t) => t.id.equals(rxId))).getSingle();
       expect(updated.potency, equals('1M'));
       expect(updated.frequency, equals('Stat (Single dose)'));
 
       // Soft delete
       await notifier.deletePrescription(rxId);
-      final activeList = await (db.select(db.prescriptions)..where((t) => t.isDeleted.equals(false))).get();
+      final activeList =
+          await (db.select(db.prescriptions)
+            ..where((t) => t.isDeleted.equals(false))).get();
       expect(activeList, isEmpty);
     });
   });
 
   group('PrescriptionListView & AddEditPrescriptionDialog Widget Tests', () {
-    testWidgets('renders empty state and opens prescribe remedy dialog', (tester) async {
+    testWidgets('renders empty state and opens prescribe remedy dialog', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 2000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -111,13 +119,13 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            patientPrescriptionsProvider(patient.id).overrideWith((ref) => Stream.value([])),
+            patientPrescriptionsProvider(
+              patient.id,
+            ).overrideWith((ref) => Stream.value([])),
           ],
           child: MaterialApp(
             theme: AppTheme.lightTheme,
-            home: Scaffold(
-              body: PrescriptionListView(patient: patient),
-            ),
+            home: Scaffold(body: PrescriptionListView(patient: patient)),
           ),
         ),
       );

@@ -84,7 +84,9 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
 
     try {
       if (widget.existingCamp != null) {
-        await ref.read(campNotifierProvider.notifier).updateCamp(
+        await ref
+            .read(campNotifierProvider.notifier)
+            .updateCamp(
               id: widget.existingCamp!.id,
               name: name,
               date: _date,
@@ -95,7 +97,9 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
               notes: notes.isEmpty ? null : notes,
             );
       } else {
-        await ref.read(campNotifierProvider.notifier).addCamp(
+        await ref
+            .read(campNotifierProvider.notifier)
+            .addCamp(
               name: name,
               date: _date,
               location: location.isEmpty ? null : location,
@@ -112,9 +116,9 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
       AppHaptics.error();
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save camp: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not save camp: $e')));
       }
     }
   }
@@ -147,8 +151,11 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
                 labelText: 'Camp Name *',
                 prefixIcon: Icon(Icons.campaign_outlined),
               ),
-              validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'Camp name is required' : null,
+              validator:
+                  (v) =>
+                      v == null || v.trim().isEmpty
+                          ? 'Camp name is required'
+                          : null,
             ),
             const SizedBox(height: Spacing.md),
             ListTile(
@@ -198,8 +205,13 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
                 label: 'Associated Clinic',
                 value: _clinicId,
                 options: [
-                  const PickerOption(value: null, label: 'All / General Practice'),
-                  ...clinics.map((c) => PickerOption(value: c.id, label: c.name)),
+                  const PickerOption(
+                    value: null,
+                    label: 'All / General Practice',
+                  ),
+                  ...clinics.map(
+                    (c) => PickerOption(value: c.id, label: c.name),
+                  ),
                 ],
                 onChanged: (val) => setState(() => _clinicId = val),
               ),
@@ -208,9 +220,7 @@ class _AddEditCampDialogState extends ConsumerState<AddEditCampDialog> {
             TextFormField(
               controller: _notesController,
               maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Notes',
-              ),
+              decoration: const InputDecoration(labelText: 'Notes'),
             ),
           ],
         ),

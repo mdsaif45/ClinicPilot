@@ -20,85 +20,85 @@ void main() {
     }
   });
 
-  testWidgets('BackupRestoreScreen renders dual-tier backup and export options', (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(
-          home: BackupRestoreScreen(),
-        ),
-      ),
-    );
+  testWidgets(
+    'BackupRestoreScreen renders dual-tier backup and export options',
+    (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: BackupRestoreScreen())),
+      );
 
-    expect(find.text('Backup and restore'), findsOneWidget);
-    expect(find.text('Create Data Backup (.cpbak)'), findsOneWidget);
-    expect(find.text('Restore from Backup'), findsOneWidget);
-    expect(find.text('Periodic Backups'), findsOneWidget);
-    expect(find.text('Export to Excel (.xlsx)'), findsOneWidget);
-    expect(find.text('Export to CSV (.csv)'), findsOneWidget);
-    expect(find.text('Import Patients from Excel'), findsOneWidget);
-  });
+      expect(find.text('Backup and restore'), findsOneWidget);
+      expect(find.text('Create Data Backup (.cpbak)'), findsOneWidget);
+      expect(find.text('Restore from Backup'), findsOneWidget);
+      expect(find.text('Periodic Backups'), findsOneWidget);
+      expect(find.text('Export to Excel (.xlsx)'), findsOneWidget);
+      expect(find.text('Export to CSV (.csv)'), findsOneWidget);
+      expect(find.text('Import Patients from Excel'), findsOneWidget);
+    },
+  );
 
-  testWidgets('RestorePreviewDialog displays exact record counts and media count', (tester) async {
-    final metadata = BackupMetadata(
-      app: 'ClinicPilot',
-      formatVersion: 2,
-      appVersion: '0.8.7',
-      schemaVersion: 15,
-      createdAt: DateTime.now(),
-      checksumSha256: 'test_hash_123',
-      mediaCount: 18,
-      hasMedia: true,
-      counts: {
-        'patients': 120,
-        'patientCaseRecords': 120,
-        'complaints': 240,
-        'prescriptions': 310,
-        'investigations': 45,
-        'visits': 450,
-        'cashMemos': 420,
-        'expenses': 85,
-        'clinics': 3,
-      },
-    );
+  testWidgets(
+    'RestorePreviewDialog displays exact record counts and media count',
+    (tester) async {
+      final metadata = BackupMetadata(
+        app: 'ClinicPilot',
+        formatVersion: 2,
+        appVersion: '0.8.7',
+        schemaVersion: 15,
+        createdAt: DateTime.now(),
+        checksumSha256: 'test_hash_123',
+        mediaCount: 18,
+        hasMedia: true,
+        counts: {
+          'patients': 120,
+          'patientCaseRecords': 120,
+          'complaints': 240,
+          'prescriptions': 310,
+          'investigations': 45,
+          'visits': 450,
+          'cashMemos': 420,
+          'expenses': 85,
+          'clinics': 3,
+        },
+      );
 
-    var confirmed = false;
+      var confirmed = false;
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: Scaffold(
-          body: RestorePreviewDialog(
-            metadata: metadata,
-            onConfirm: () async {
-              confirmed = true;
-            },
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: RestorePreviewDialog(
+              metadata: metadata,
+              onConfirm: () async {
+                confirmed = true;
+              },
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('Restore Practice Data'), findsOneWidget);
-    expect(find.text('Backup File Validated'), findsOneWidget);
-    expect(find.text('120'), findsNWidgets(2)); // Patients & Case Records
-    expect(find.text('450'), findsOneWidget); // Visits
-    expect(find.text('420'), findsOneWidget); // Cash Memos
-    expect(find.text('Photos & Lab Reports (PDF)'), findsOneWidget);
-    expect(find.text('18'), findsOneWidget); // Media count
-    expect(find.text('Restore Data Now'), findsOneWidget);
+      expect(find.text('Restore Practice Data'), findsOneWidget);
+      expect(find.text('Backup File Validated'), findsOneWidget);
+      expect(find.text('120'), findsNWidgets(2)); // Patients & Case Records
+      expect(find.text('450'), findsOneWidget); // Visits
+      expect(find.text('420'), findsOneWidget); // Cash Memos
+      expect(find.text('Photos & Lab Reports (PDF)'), findsOneWidget);
+      expect(find.text('18'), findsOneWidget); // Media count
+      expect(find.text('Restore Data Now'), findsOneWidget);
 
-    await tester.tap(find.text('Restore Data Now'));
-    await tester.pump();
+      await tester.tap(find.text('Restore Data Now'));
+      await tester.pump();
 
-    expect(confirmed, isTrue);
-  });
+      expect(confirmed, isTrue);
+    },
+  );
 
-  testWidgets('PeriodicBackupsScreen toggles enabled and displays settings', (tester) async {
+  testWidgets('PeriodicBackupsScreen toggles enabled and displays settings', (
+    tester,
+  ) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(
-          home: PeriodicBackupsScreen(),
-        ),
-      ),
+      const ProviderScope(child: MaterialApp(home: PeriodicBackupsScreen())),
     );
 
     expect(find.text('Periodic backups'), findsOneWidget);

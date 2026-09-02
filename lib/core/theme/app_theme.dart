@@ -53,9 +53,10 @@ class AppTheme {
       );
     }
 
-    final base = brightness == Brightness.light
-        ? ThemeData.light(useMaterial3: true)
-        : ThemeData.dark(useMaterial3: true);
+    final base =
+        brightness == Brightness.light
+            ? ThemeData.light(useMaterial3: true)
+            : ThemeData.dark(useMaterial3: true);
 
     final textTheme = _textTheme(base.textTheme, scheme);
 
@@ -152,14 +153,20 @@ class AppTheme {
           final selected = states.contains(WidgetState.selected);
           return textTheme.labelMedium?.copyWith(
             // Selected must be clearly stronger than unselected, not a faint tint.
-            color: selected ? scheme.onSecondaryContainer : scheme.onSurfaceVariant,
+            color:
+                selected
+                    ? scheme.onSecondaryContainer
+                    : scheme.onSurfaceVariant,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
-            color: selected ? scheme.onSecondaryContainer : scheme.onSurfaceVariant,
+            color:
+                selected
+                    ? scheme.onSecondaryContainer
+                    : scheme.onSurfaceVariant,
           );
         }),
       ),
@@ -228,8 +235,9 @@ class AppTheme {
 
   /// Digits that occupy equal width, so money columns line up when stacked.
   static TextStyle tabularFigures(TextStyle? style) =>
-      (style ?? const TextStyle())
-          .copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+      (style ?? const TextStyle()).copyWith(
+        fontFeatures: const [FontFeature.tabularFigures()],
+      );
 
   /// Colour for a monetary value, by sign.
   static Color moneyColor(BuildContext context, double value) {

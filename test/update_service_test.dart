@@ -40,9 +40,15 @@ void main() {
     });
 
     test('malformed inputs handle gracefully without throwing', () {
-      expect(() => UpdateService.compareVersions('abc', '0.2.0'), returnsNormally);
+      expect(
+        () => UpdateService.compareVersions('abc', '0.2.0'),
+        returnsNormally,
+      );
       expect(() => UpdateService.compareVersions('', '0.2.0'), returnsNormally);
-      expect(() => UpdateService.compareVersions('1.x.0', '1.0.0'), returnsNormally);
+      expect(
+        () => UpdateService.compareVersions('1.x.0', '1.0.0'),
+        returnsNormally,
+      );
       expect(UpdateService.compareVersions('abc', '0.0.0'), 0);
     });
   });
@@ -72,9 +78,11 @@ void main() {
 
     test('Valid GitHub JSON parses into AppRelease', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(validReleaseJson, 200, headers: {
-          'content-type': 'application/json',
-        });
+        return http.Response(
+          validReleaseJson,
+          200,
+          headers: {'content-type': 'application/json'},
+        );
       });
 
       final service = UpdateService(
@@ -200,11 +208,14 @@ void main() {
       final release = await service.checkForUpdate();
       expect(release, isNotNull);
       expect(release!.apkAssets, hasLength(3));
-      expect(release.apkAssets.map((a) => a.name), containsAll([
-        'ClinicPilot-v0.8.0-armeabi-v7a-release.apk',
-        'ClinicPilot-v0.8.0-arm64-v8a-release.apk',
-        'ClinicPilot-v0.8.0-x86_64-release.apk',
-      ]));
+      expect(
+        release.apkAssets.map((a) => a.name),
+        containsAll([
+          'ClinicPilot-v0.8.0-armeabi-v7a-release.apk',
+          'ClinicPilot-v0.8.0-arm64-v8a-release.apk',
+          'ClinicPilot-v0.8.0-x86_64-release.apk',
+        ]),
+      );
     });
 
     test('Same or older version remote -> returns null', () async {
@@ -256,12 +267,18 @@ void main() {
     final assets = [armeabi, arm64, x86_64];
 
     test('arm64 device picks the arm64-v8a asset', () {
-      final picked = UpdateService.pickApkForAbis(assets, ['arm64-v8a', 'armeabi-v7a']);
+      final picked = UpdateService.pickApkForAbis(assets, [
+        'arm64-v8a',
+        'armeabi-v7a',
+      ]);
       expect(picked, same(arm64));
     });
 
     test('32-bit-only device picks the armeabi-v7a asset', () {
-      final picked = UpdateService.pickApkForAbis(assets, ['armeabi-v7a', 'armeabi']);
+      final picked = UpdateService.pickApkForAbis(assets, [
+        'armeabi-v7a',
+        'armeabi',
+      ]);
       expect(picked, same(armeabi));
     });
 

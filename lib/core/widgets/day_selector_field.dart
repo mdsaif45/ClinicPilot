@@ -17,15 +17,15 @@ class DaySelectorField extends StatelessWidget {
 
   static const _labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  static Set<int> parse(String raw) => raw
-      .split(',')
-      .map((e) => int.tryParse(e.trim()))
-      .whereType<int>()
-      .where((d) => d >= 1 && d <= 7)
-      .toSet();
+  static Set<int> parse(String raw) =>
+      raw
+          .split(',')
+          .map((e) => int.tryParse(e.trim()))
+          .whereType<int>()
+          .where((d) => d >= 1 && d <= 7)
+          .toSet();
 
-  static String format(Set<int> days) =>
-      (days.toList()..sort()).join(',');
+  static String format(Set<int> days) => (days.toList()..sort()).join(',');
 
   static String describe(String raw) {
     final days = parse(raw).toList()..sort();
@@ -74,7 +74,9 @@ class DaySelectorField extends StatelessWidget {
                   _labels[d - 1],
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight:
-                        selected.contains(d) ? FontWeight.bold : FontWeight.normal,
+                        selected.contains(d)
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                   ),
                 ),
                 selected: selected.contains(d),

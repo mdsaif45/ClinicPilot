@@ -84,17 +84,17 @@ class GrowthScreen extends ConsumerWidget {
     final title = growthExportTitle(range);
     final bytes = switch (format) {
       ExportFormat.csv => ListExportService.encodeCsv(
-          ListExportService.buildKeyValueCsv(entries, title: title),
-        ),
+        ListExportService.buildKeyValueCsv(entries, title: title),
+      ),
       ExportFormat.xlsx => ListExportService.buildKeyValueXlsx(
-          entries,
-          title: title,
-          sheetName: 'Growth',
-        ),
+        entries,
+        title: title,
+        sheetName: 'Growth',
+      ),
       ExportFormat.pdf => await ListPdfExportService.buildKeyValuePdf(
-          title: title,
-          entries: growthExportEntriesForPdf(analytics),
-        ),
+        title: title,
+        entries: growthExportEntriesForPdf(analytics),
+      ),
     };
     final extension = format.name;
 
@@ -124,9 +124,10 @@ class GrowthScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.file_download_outlined),
             tooltip: 'Export',
-            onPressed: analyticsAsync.hasValue
-                ? () => _export(context, analyticsAsync.value!, range)
-                : null,
+            onPressed:
+                analyticsAsync.hasValue
+                    ? () => _export(context, analyticsAsync.value!, range)
+                    : null,
           ),
         ],
       ),
@@ -143,232 +144,287 @@ class GrowthScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _GrowthTile(
-                        label: 'New Patients',
-                        value: '${analytics.totalNewPatients}',
-                        delta: analytics.newPatientGrowth,
-                        tone: _Tone.primary,
-                      ),
-                    ),
-                    const SizedBox(width: Spacing.md),
-                    Expanded(
-                      child: _GrowthTile(
-                        label: 'Repeat Patients',
-                        value: '${analytics.totalRepeatPatients}',
-                        delta: analytics.repeatPatientGrowth,
-                        tone: _Tone.tertiary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Spacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _GrowthTile(
-                        label: 'Total Patients',
-                        value: '${analytics.totalPatients}',
-                        tone: _Tone.neutral,
-                      ),
-                    ),
-                    const SizedBox(width: Spacing.md),
-                    Expanded(
-                      child: _GrowthTile(
-                        label: 'Repeat Rate',
-                        value: '${analytics.repeatRate.toStringAsFixed(1)}%',
-                        tone: _Tone.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Spacing.xl),
-
-                // Patient count per day, distinct from the money trend below.
-                Text('Patient Growth Trend',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: Spacing.md),
-                SizedBox(
-                  height: 180,
-                  child: LineChart(
-                    _buildPatientChartData(context, analytics.dailyPatientMap),
-                  ),
-                ),
-                const SizedBox(height: Spacing.xl),
-
-                Text('Quick Stats',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: Spacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _GrowthTile(
-                        label: 'Avg. Daily New Patients',
-                        value:
-                            analytics.avgDailyNewPatients.toStringAsFixed(1),
-                        tone: _Tone.neutral,
-                      ),
-                    ),
-                    const SizedBox(width: Spacing.md),
-                    Expanded(
-                      child: _GrowthTile(
-                        label: 'Avg. Daily Revenue',
-                        value: Formatters.formatCurrency(
-                            analytics.avgDailyRevenue),
-                        tone: _Tone.neutral,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Spacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _GrowthTile(
-                        label: 'Avg. Revenue / Visit',
-                        value: Formatters.formatCurrency(
-                            analytics.avgRevenuePerVisit),
-                        tone: _Tone.neutral,
-                      ),
-                    ),
-                    const SizedBox(width: Spacing.md),
-                    Expanded(
-                      child: _GrowthTile(
-                        label: 'Net Profit',
-                        value: Formatters.formatCurrency(analytics.netProfit),
-                        tone: analytics.netProfit < 0
-                            ? _Tone.negative
-                            : _Tone.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Spacing.xl),
-
-                // Financial Trend Line Chart Card
-                Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: Radii.mdAll,
-                    side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(Spacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Revenue vs Expenses Trend',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _GrowthTile(
+                              label: 'New Patients',
+                              value: '${analytics.totalNewPatients}',
+                              delta: analytics.newPatientGrowth,
+                              tone: _Tone.primary,
                             ),
-                            Row(
-                              children: [
-                                Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Income',
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
-                                const SizedBox(width: Spacing.md),
-                                Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.error,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Expenses',
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
-                              ],
+                          ),
+                          const SizedBox(width: Spacing.md),
+                          Expanded(
+                            child: _GrowthTile(
+                              label: 'Repeat Patients',
+                              value: '${analytics.totalRepeatPatients}',
+                              delta: analytics.repeatPatientGrowth,
+                              tone: _Tone.tertiary,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: Spacing.lg),
-                        SizedBox(
-                          height: 200,
-                          child: LineChart(
-                            _buildLineChartData(context,
-                                analytics.dailyRevenueMap, analytics.dailyExpenseMap),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _GrowthTile(
+                              label: 'Total Patients',
+                              value: '${analytics.totalPatients}',
+                              tone: _Tone.neutral,
+                            ),
+                          ),
+                          const SizedBox(width: Spacing.md),
+                          Expanded(
+                            child: _GrowthTile(
+                              label: 'Repeat Rate',
+                              value:
+                                  '${analytics.repeatRate.toStringAsFixed(1)}%',
+                              tone: _Tone.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Spacing.xl),
+
+                      // Patient count per day, distinct from the money trend below.
+                      Text(
+                        'Patient Growth Trend',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      SizedBox(
+                        height: 180,
+                        child: LineChart(
+                          _buildPatientChartData(
+                            context,
+                            analytics.dailyPatientMap,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: Spacing.xl),
+                      ),
+                      const SizedBox(height: Spacing.xl),
 
-                // Referral Sources Distribution
-                Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: Radii.mdAll,
-                    side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(Spacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Referral Source Distribution',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
+                      Text(
+                        'Quick Stats',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _GrowthTile(
+                              label: 'Avg. Daily New Patients',
+                              value: analytics.avgDailyNewPatients
+                                  .toStringAsFixed(1),
+                              tone: _Tone.neutral,
+                            ),
+                          ),
+                          const SizedBox(width: Spacing.md),
+                          Expanded(
+                            child: _GrowthTile(
+                              label: 'Avg. Daily Revenue',
+                              value: Formatters.formatCurrency(
+                                analytics.avgDailyRevenue,
+                              ),
+                              tone: _Tone.neutral,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _GrowthTile(
+                              label: 'Avg. Revenue / Visit',
+                              value: Formatters.formatCurrency(
+                                analytics.avgRevenuePerVisit,
+                              ),
+                              tone: _Tone.neutral,
+                            ),
+                          ),
+                          const SizedBox(width: Spacing.md),
+                          Expanded(
+                            child: _GrowthTile(
+                              label: 'Net Profit',
+                              value: Formatters.formatCurrency(
+                                analytics.netProfit,
+                              ),
+                              tone:
+                                  analytics.netProfit < 0
+                                      ? _Tone.negative
+                                      : _Tone.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Spacing.xl),
+
+                      // Financial Trend Line Chart Card
+                      Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: Radii.mdAll,
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
                         ),
-                        const SizedBox(height: Spacing.lg),
-                        if (analytics.referralSourceCount.isEmpty)
-                          const Center(child: Text('No referral data available.'))
-                        else
-                          Column(
-                            children: analytics.referralSourceCount.entries.map((e) {
-                              final total = analytics.referralSourceCount.values
-                                   .fold(0, (a, b) => a + b);
-                              final pct = total > 0 ? e.value / total : 0.0;
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: Spacing.sm),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      flex: 2,
-                                      child: Text(e.key),
+                        child: Padding(
+                          padding: const EdgeInsets.all(Spacing.lg),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Revenue vs Expenses Trend',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
                                     ),
-                                    Expanded(
-                                      flex: 3,
-                                      child: LinearProgressIndicator(
-                                        value: pct,
-                                        minHeight: 8,
-                                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                        color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 10,
+                                        height: 10,
+                                        decoration: BoxDecoration(
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                          shape: BoxShape.circle,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: Spacing.sm),
-                                    Text('${(pct * 100).toStringAsFixed(0)}%'),
-                                  ],
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Income',
+                                        style:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.labelSmall,
+                                      ),
+                                      const SizedBox(width: Spacing.md),
+                                      Container(
+                                        width: 10,
+                                        height: 10,
+                                        decoration: BoxDecoration(
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.error,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Expenses',
+                                        style:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.labelSmall,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: Spacing.lg),
+                              SizedBox(
+                                height: 200,
+                                child: LineChart(
+                                  _buildLineChartData(
+                                    context,
+                                    analytics.dailyRevenueMap,
+                                    analytics.dailyExpenseMap,
+                                  ),
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                            ],
                           ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: Spacing.xxl + 48),
+                        ),
+                      ),
+                      const SizedBox(height: Spacing.xl),
+
+                      // Referral Sources Distribution
+                      Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: Radii.mdAll,
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(Spacing.lg),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Referral Source Distribution',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: Spacing.lg),
+                              if (analytics.referralSourceCount.isEmpty)
+                                const Center(
+                                  child: Text('No referral data available.'),
+                                )
+                              else
+                                Column(
+                                  children:
+                                      analytics.referralSourceCount.entries.map((
+                                        e,
+                                      ) {
+                                        final total = analytics
+                                            .referralSourceCount
+                                            .values
+                                            .fold(0, (a, b) => a + b);
+                                        final pct =
+                                            total > 0 ? e.value / total : 0.0;
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: Spacing.sm,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(e.key),
+                                              ),
+                                              Expanded(
+                                                flex: 3,
+                                                child: LinearProgressIndicator(
+                                                  value: pct,
+                                                  minHeight: 8,
+                                                  backgroundColor:
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .surfaceContainerHighest,
+                                                  color:
+                                                      Theme.of(
+                                                        context,
+                                                      ).colorScheme.primary,
+                                                ),
+                                              ),
+                                              const SizedBox(width: Spacing.sm),
+                                              Text(
+                                                '${(pct * 100).toStringAsFixed(0)}%',
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: Spacing.xxl + 48),
                     ],
                   ),
                 ),
@@ -385,17 +441,21 @@ class GrowthScreen extends ConsumerWidget {
   /// Visits per day. Kept separate from the money chart so a busy day is not
   /// confused with a profitable one.
   LineChartData _buildPatientChartData(
-      BuildContext context, Map<int, int> dailyPatients) {
+    BuildContext context,
+    Map<int, int> dailyPatients,
+  ) {
     final scheme = Theme.of(context).colorScheme;
-    final spots = dailyPatients.entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.toDouble()))
-        .toList()
-      ..sort((a, b) => a.x.compareTo(b.x));
+    final spots =
+        dailyPatients.entries
+            .map((e) => FlSpot(e.key.toDouble(), e.value.toDouble()))
+            .toList()
+          ..sort((a, b) => a.x.compareTo(b.x));
 
     // Whole-number axis: half a patient is not a thing.
-    final maxY = spots.isEmpty
-        ? 4.0
-        : spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) + 1;
+    final maxY =
+        spots.isEmpty
+            ? 4.0
+            : spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) + 1;
 
     return LineChartData(
       minY: 0,
@@ -403,11 +463,12 @@ class GrowthScreen extends ConsumerWidget {
       gridData: FlGridData(
         show: true,
         drawVerticalLine: false,
-        getDrawingHorizontalLine: (value) => FlLine(
-          color: scheme.outlineVariant.withValues(alpha: 0.35),
-          strokeWidth: 1,
-          dashArray: [4, 4],
-        ),
+        getDrawingHorizontalLine:
+            (value) => FlLine(
+              color: scheme.outlineVariant.withValues(alpha: 0.35),
+              strokeWidth: 1,
+              dashArray: [4, 4],
+            ),
       ),
       lineTouchData: LineTouchData(
         handleBuiltInTouches: true,
@@ -416,35 +477,41 @@ class GrowthScreen extends ConsumerWidget {
           tooltipRoundedRadius: 8,
           fitInsideHorizontally: true,
           fitInsideVertically: true,
-          tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
-            return LineTooltipItem(
-              'Day ${s.x.toInt()}: ${s.y.toInt()} ${s.y.toInt() == 1 ? 'patient' : 'patients'}',
-              TextStyle(
-                color: scheme.onInverseSurface,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-            );
-          }).toList(),
+          tooltipPadding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 6,
+          ),
+          getTooltipItems:
+              (touchedSpots) =>
+                  touchedSpots.map((s) {
+                    return LineTooltipItem(
+                      'Day ${s.x.toInt()}: ${s.y.toInt()} ${s.y.toInt() == 1 ? 'patient' : 'patients'}',
+                      TextStyle(
+                        color: scheme.onInverseSurface,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    );
+                  }).toList(),
         ),
       ),
       titlesData: FlTitlesData(
-        topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false)),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false)),
+          sideTitles: SideTitles(showTitles: false),
+        ),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             reservedSize: 28,
             interval: maxY <= 4 ? 1 : (maxY / 4).ceilToDouble(),
-            getTitlesWidget: (value, meta) => Text(
-              value.toInt().toString(),
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            getTitlesWidget:
+                (value, meta) => Text(
+                  value.toInt().toString(),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
-            ),
+                ),
           ),
         ),
         bottomTitles: AxisTitles(
@@ -452,12 +519,13 @@ class GrowthScreen extends ConsumerWidget {
             showTitles: true,
             reservedSize: 24,
             interval: 5,
-            getTitlesWidget: (value, meta) => Text(
-              value.toInt().toString(),
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            getTitlesWidget:
+                (value, meta) => Text(
+                  value.toInt().toString(),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
-            ),
+                ),
           ),
         ),
       ),
@@ -472,12 +540,13 @@ class GrowthScreen extends ConsumerWidget {
           isStrokeCapRound: true,
           dotData: FlDotData(
             show: true,
-            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-              radius: 4,
-              color: scheme.tertiary,
-              strokeWidth: 2,
-              strokeColor: scheme.surface,
-            ),
+            getDotPainter:
+                (spot, percent, barData, index) => FlDotCirclePainter(
+                  radius: 4,
+                  color: scheme.tertiary,
+                  strokeWidth: 2,
+                  strokeColor: scheme.surface,
+                ),
           ),
           belowBarData: BarAreaData(
             show: true,
@@ -495,26 +564,32 @@ class GrowthScreen extends ConsumerWidget {
     );
   }
 
-  LineChartData _buildLineChartData(BuildContext context,
-      Map<int, double> revenueMap, Map<int, double> expenseMap) {
+  LineChartData _buildLineChartData(
+    BuildContext context,
+    Map<int, double> revenueMap,
+    Map<int, double> expenseMap,
+  ) {
     final scheme = Theme.of(context).colorScheme;
-    final revenueSpots = revenueMap.entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value))
-        .toList()
-      ..sort((a, b) => a.x.compareTo(b.x));
+    final revenueSpots =
+        revenueMap.entries
+            .map((e) => FlSpot(e.key.toDouble(), e.value))
+            .toList()
+          ..sort((a, b) => a.x.compareTo(b.x));
 
-    final expenseSpots = expenseMap.entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value))
-        .toList()
-      ..sort((a, b) => a.x.compareTo(b.x));
+    final expenseSpots =
+        expenseMap.entries
+            .map((e) => FlSpot(e.key.toDouble(), e.value))
+            .toList()
+          ..sort((a, b) => a.x.compareTo(b.x));
 
     final allValues = [
       ...revenueSpots.map((s) => s.y),
       ...expenseSpots.map((s) => s.y),
     ];
-    final maxY = allValues.isEmpty
-        ? 1000.0
-        : (allValues.reduce((a, b) => a > b ? a : b) * 1.15);
+    final maxY =
+        allValues.isEmpty
+            ? 1000.0
+            : (allValues.reduce((a, b) => a > b ? a : b) * 1.15);
 
     return LineChartData(
       minY: 0,
@@ -522,11 +597,12 @@ class GrowthScreen extends ConsumerWidget {
       gridData: FlGridData(
         show: true,
         drawVerticalLine: false,
-        getDrawingHorizontalLine: (value) => FlLine(
-          color: scheme.outlineVariant.withValues(alpha: 0.35),
-          strokeWidth: 1,
-          dashArray: [4, 4],
-        ),
+        getDrawingHorizontalLine:
+            (value) => FlLine(
+              color: scheme.outlineVariant.withValues(alpha: 0.35),
+              strokeWidth: 1,
+              dashArray: [4, 4],
+            ),
       ),
       lineTouchData: LineTouchData(
         handleBuiltInTouches: true,
@@ -535,39 +611,51 @@ class GrowthScreen extends ConsumerWidget {
           tooltipRoundedRadius: 8,
           fitInsideHorizontally: true,
           fitInsideVertically: true,
-          tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
-            final isRevenue = s.barIndex == 0;
-            return LineTooltipItem(
-              '${isRevenue ? "Income: " : "Expense: "}${Formatters.formatCurrency(s.y)}',
-              TextStyle(
-                color: isRevenue ? scheme.primaryContainer : scheme.errorContainer,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            );
-          }).toList(),
+          tooltipPadding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 6,
+          ),
+          getTooltipItems:
+              (touchedSpots) =>
+                  touchedSpots.map((s) {
+                    final isRevenue = s.barIndex == 0;
+                    return LineTooltipItem(
+                      '${isRevenue ? "Income: " : "Expense: "}${Formatters.formatCurrency(s.y)}',
+                      TextStyle(
+                        color:
+                            isRevenue
+                                ? scheme.primaryContainer
+                                : scheme.errorContainer,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    );
+                  }).toList(),
         ),
       ),
       titlesData: FlTitlesData(
         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             reservedSize: 44,
             interval: maxY <= 1000 ? 500 : (maxY / 4).ceilToDouble(),
             getTitlesWidget: (v, _) {
-              if (v == 0) return Text('0', style: Theme.of(context).textTheme.labelSmall);
-              final k = v >= 1000
-                  ? '${(v / 1000).toStringAsFixed(v % 1000 == 0 ? 0 : 1)}k'
-                  : v.toInt().toString();
+              if (v == 0)
+                return Text('0', style: Theme.of(context).textTheme.labelSmall);
+              final k =
+                  v >= 1000
+                      ? '${(v / 1000).toStringAsFixed(v % 1000 == 0 ? 0 : 1)}k'
+                      : v.toInt().toString();
               return Text(
                 '₹$k',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontSize: 10,
-                    ),
+                  color: scheme.onSurfaceVariant,
+                  fontSize: 10,
+                ),
               );
             },
           ),
@@ -577,12 +665,13 @@ class GrowthScreen extends ConsumerWidget {
             showTitles: true,
             reservedSize: 24,
             interval: 5,
-            getTitlesWidget: (value, meta) => Text(
-              value.toInt().toString(),
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            getTitlesWidget:
+                (value, meta) => Text(
+                  value.toInt().toString(),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
-            ),
+                ),
           ),
         ),
       ),
@@ -597,12 +686,13 @@ class GrowthScreen extends ConsumerWidget {
           isStrokeCapRound: true,
           dotData: FlDotData(
             show: true,
-            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-              radius: 4,
-              color: scheme.primary,
-              strokeWidth: 2,
-              strokeColor: scheme.surface,
-            ),
+            getDotPainter:
+                (spot, percent, barData, index) => FlDotCirclePainter(
+                  radius: 4,
+                  color: scheme.primary,
+                  strokeWidth: 2,
+                  strokeColor: scheme.surface,
+                ),
           ),
           belowBarData: BarAreaData(
             show: true,
@@ -625,12 +715,13 @@ class GrowthScreen extends ConsumerWidget {
           isStrokeCapRound: true,
           dotData: FlDotData(
             show: true,
-            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-              radius: 4,
-              color: scheme.error,
-              strokeWidth: 2,
-              strokeColor: scheme.surface,
-            ),
+            getDotPainter:
+                (spot, percent, barData, index) => FlDotCirclePainter(
+                  radius: 4,
+                  color: scheme.error,
+                  strokeWidth: 2,
+                  strokeColor: scheme.surface,
+                ),
           ),
           belowBarData: BarAreaData(
             show: true,
@@ -690,10 +781,12 @@ class _GrowthTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: theme.textTheme.labelSmall,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: Spacing.sm),
           Row(
             children: [
@@ -703,8 +796,10 @@ class _GrowthTile extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     value,
-                    style: theme.textTheme.headlineSmall
-                        ?.copyWith(color: fg, fontWeight: FontWeight.w700),
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: fg,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),

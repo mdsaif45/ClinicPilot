@@ -13,11 +13,9 @@ class SecurityService {
   final FlutterSecureStorage _storage;
   final LocalAuthentication _auth;
 
-  SecurityService({
-    FlutterSecureStorage? storage,
-    LocalAuthentication? auth,
-  })  : _storage = storage ?? const FlutterSecureStorage(),
-        _auth = auth ?? LocalAuthentication();
+  SecurityService({FlutterSecureStorage? storage, LocalAuthentication? auth})
+    : _storage = storage ?? const FlutterSecureStorage(),
+      _auth = auth ?? LocalAuthentication();
 
   Future<bool> isAppLockEnabled() async {
     final val = await _storage.read(key: _lockEnabledKey);
@@ -39,15 +37,25 @@ class SecurityService {
     return hash != null && hash.isNotEmpty;
   }
 
-  Future<void> setPin(String pin, {bool enableBiometrics = false, int autoLockMinutes = 5}) async {
+  Future<void> setPin(
+    String pin, {
+    bool enableBiometrics = false,
+    int autoLockMinutes = 5,
+  }) async {
     final salt = DateTime.now().millisecondsSinceEpoch.toString();
     final hash = _hashPin(pin, salt);
 
     await _storage.write(key: _pinHashKey, value: hash);
     await _storage.write(key: _saltKey, value: salt);
     await _storage.write(key: _lockEnabledKey, value: 'true');
-    await _storage.write(key: _biometricsEnabledKey, value: enableBiometrics ? 'true' : 'false');
-    await _storage.write(key: _autoLockMinutesKey, value: autoLockMinutes.toString());
+    await _storage.write(
+      key: _biometricsEnabledKey,
+      value: enableBiometrics ? 'true' : 'false',
+    );
+    await _storage.write(
+      key: _autoLockMinutesKey,
+      value: autoLockMinutes.toString(),
+    );
   }
 
   Future<bool> verifyPin(String pin) async {
@@ -67,7 +75,10 @@ class SecurityService {
   }
 
   Future<void> setBiometricsEnabled(bool enabled) async {
-    await _storage.write(key: _biometricsEnabledKey, value: enabled ? 'true' : 'false');
+    await _storage.write(
+      key: _biometricsEnabledKey,
+      value: enabled ? 'true' : 'false',
+    );
   }
 
   Future<void> setAutoLockMinutes(int minutes) async {
@@ -84,7 +95,9 @@ class SecurityService {
     }
   }
 
-  Future<bool> authenticateWithBiometrics({String reason = 'Unlock ClinicPilot'}) async {
+  Future<bool> authenticateWithBiometrics({
+    String reason = 'Unlock ClinicPilot',
+  }) async {
     try {
       final supported = await isBiometricsSupported();
       if (!supported) return false;

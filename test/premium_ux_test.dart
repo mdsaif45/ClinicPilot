@@ -21,9 +21,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
-          home: Scaffold(
-            body: AnimatedCounter.currency(value: 5000),
-          ),
+          home: Scaffold(body: AnimatedCounter.currency(value: 5000)),
         ),
       );
 
@@ -39,9 +37,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
-          home: Scaffold(
-            body: AnimatedCounter.count(value: 42),
-          ),
+          home: Scaffold(body: AnimatedCounter.count(value: 42)),
         ),
       );
 
@@ -55,9 +51,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
-          home: const Scaffold(
-            body: ListTileShimmer(),
-          ),
+          home: const Scaffold(body: ListTileShimmer()),
         ),
       );
 
@@ -69,9 +63,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
-          home: const Scaffold(
-            body: DashboardShimmer(),
-          ),
+          home: const Scaffold(body: DashboardShimmer()),
         ),
       );
 

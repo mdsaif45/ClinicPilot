@@ -23,9 +23,10 @@ import 'package:clinic_pilot/core/widgets/stat_card.dart';
 
 Widget wrap(Widget child, {Brightness brightness = Brightness.light}) {
   return MaterialApp(
-    theme: brightness == Brightness.light
-        ? AppTheme.lightTheme
-        : AppTheme.darkTheme,
+    theme:
+        brightness == Brightness.light
+            ? AppTheme.lightTheme
+            : AppTheme.darkTheme,
     home: Scaffold(body: SingleChildScrollView(child: child)),
   );
 }
@@ -49,10 +50,16 @@ void main() {
 
   group('MetricStrip', () {
     testWidgets('renders every metric', (t) async {
-      await t.pumpWidget(wrap(const MetricStrip(metrics: [
-        Metric(label: 'Visits', value: '4'),
-        Metric(label: 'Lifetime', value: 'Rs 1,200'),
-      ])));
+      await t.pumpWidget(
+        wrap(
+          const MetricStrip(
+            metrics: [
+              Metric(label: 'Visits', value: '4'),
+              Metric(label: 'Lifetime', value: 'Rs 1,200'),
+            ],
+          ),
+        ),
+      );
       expect(find.text('Visits'), findsOneWidget);
       expect(find.text('4'), findsOneWidget);
       expect(find.text('Lifetime'), findsOneWidget);
@@ -63,66 +70,124 @@ void main() {
       expect(find.byType(VerticalDivider), findsNothing);
     });
 
-    testWidgets('compact phone width (360px): drops icons and preserves full readable text', (t) async {
-      t.view.physicalSize = const Size(360, 640);
-      t.view.devicePixelRatio = 1.0;
-      addTearDown(t.view.resetPhysicalSize);
-      addTearDown(t.view.resetDevicePixelRatio);
+    testWidgets(
+      'compact phone width (360px): drops icons and preserves full readable text',
+      (t) async {
+        t.view.physicalSize = const Size(360, 640);
+        t.view.devicePixelRatio = 1.0;
+        addTearDown(t.view.resetPhysicalSize);
+        addTearDown(t.view.resetDevicePixelRatio);
 
-      await t.pumpWidget(wrap(const MetricStrip(metrics: [
-        Metric(label: 'Visits', value: '2', icon: Icons.event_available_outlined),
-        Metric(label: 'Lifetime', value: '₹ 900', icon: Icons.account_balance_wallet_outlined),
-        Metric(label: 'Avg bill', value: '₹ 450', icon: Icons.calculate_outlined),
-        Metric(label: 'Pending', value: '₹ 0', icon: Icons.pending_actions_outlined),
-      ])));
+        await t.pumpWidget(
+          wrap(
+            const MetricStrip(
+              metrics: [
+                Metric(
+                  label: 'Visits',
+                  value: '2',
+                  icon: Icons.event_available_outlined,
+                ),
+                Metric(
+                  label: 'Lifetime',
+                  value: '₹ 900',
+                  icon: Icons.account_balance_wallet_outlined,
+                ),
+                Metric(
+                  label: 'Avg bill',
+                  value: '₹ 450',
+                  icon: Icons.calculate_outlined,
+                ),
+                Metric(
+                  label: 'Pending',
+                  value: '₹ 0',
+                  icon: Icons.pending_actions_outlined,
+                ),
+              ],
+            ),
+          ),
+        );
 
-      await t.pumpAndSettle();
+        await t.pumpAndSettle();
 
-      // Verify all 4 values and labels are fully present
-      expect(find.text('2'), findsOneWidget);
-      expect(find.text('₹ 900'), findsOneWidget);
-      expect(find.text('₹ 450'), findsOneWidget);
-      expect(find.text('₹ 0'), findsOneWidget);
-      expect(find.text('Visits'), findsOneWidget);
-      expect(find.text('Lifetime'), findsOneWidget);
-      expect(find.text('Avg bill'), findsOneWidget);
-      expect(find.text('Pending'), findsOneWidget);
+        // Verify all 4 values and labels are fully present
+        expect(find.text('2'), findsOneWidget);
+        expect(find.text('₹ 900'), findsOneWidget);
+        expect(find.text('₹ 450'), findsOneWidget);
+        expect(find.text('₹ 0'), findsOneWidget);
+        expect(find.text('Visits'), findsOneWidget);
+        expect(find.text('Lifetime'), findsOneWidget);
+        expect(find.text('Avg bill'), findsOneWidget);
+        expect(find.text('Pending'), findsOneWidget);
 
-      // Icons should be hidden to prioritize text readability
-      expect(find.byIcon(Icons.event_available_outlined), findsNothing);
-      expect(find.byIcon(Icons.account_balance_wallet_outlined), findsNothing);
-      expect(find.byIcon(Icons.calculate_outlined), findsNothing);
-      expect(find.byIcon(Icons.pending_actions_outlined), findsNothing);
-    });
+        // Icons should be hidden to prioritize text readability
+        expect(find.byIcon(Icons.event_available_outlined), findsNothing);
+        expect(
+          find.byIcon(Icons.account_balance_wallet_outlined),
+          findsNothing,
+        );
+        expect(find.byIcon(Icons.calculate_outlined), findsNothing);
+        expect(find.byIcon(Icons.pending_actions_outlined), findsNothing);
+      },
+    );
 
-    testWidgets('wide screen / tablet (600px+): renders icons alongside values and labels', (t) async {
-      t.view.physicalSize = const Size(800, 1000);
-      t.view.devicePixelRatio = 1.0;
-      addTearDown(t.view.resetPhysicalSize);
-      addTearDown(t.view.resetDevicePixelRatio);
+    testWidgets(
+      'wide screen / tablet (600px+): renders icons alongside values and labels',
+      (t) async {
+        t.view.physicalSize = const Size(800, 1000);
+        t.view.devicePixelRatio = 1.0;
+        addTearDown(t.view.resetPhysicalSize);
+        addTearDown(t.view.resetDevicePixelRatio);
 
-      await t.pumpWidget(wrap(const MetricStrip(metrics: [
-        Metric(label: 'Visits', value: '2', icon: Icons.event_available_outlined),
-        Metric(label: 'Lifetime', value: '₹ 900', icon: Icons.account_balance_wallet_outlined),
-        Metric(label: 'Avg bill', value: '₹ 450', icon: Icons.calculate_outlined),
-        Metric(label: 'Pending', value: '₹ 0', icon: Icons.pending_actions_outlined),
-      ])));
+        await t.pumpWidget(
+          wrap(
+            const MetricStrip(
+              metrics: [
+                Metric(
+                  label: 'Visits',
+                  value: '2',
+                  icon: Icons.event_available_outlined,
+                ),
+                Metric(
+                  label: 'Lifetime',
+                  value: '₹ 900',
+                  icon: Icons.account_balance_wallet_outlined,
+                ),
+                Metric(
+                  label: 'Avg bill',
+                  value: '₹ 450',
+                  icon: Icons.calculate_outlined,
+                ),
+                Metric(
+                  label: 'Pending',
+                  value: '₹ 0',
+                  icon: Icons.pending_actions_outlined,
+                ),
+              ],
+            ),
+          ),
+        );
 
-      await t.pumpAndSettle();
+        await t.pumpAndSettle();
 
-      // Icons should be visible
-      expect(find.byIcon(Icons.event_available_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.account_balance_wallet_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.calculate_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.pending_actions_outlined), findsOneWidget);
+        // Icons should be visible
+        expect(find.byIcon(Icons.event_available_outlined), findsOneWidget);
+        expect(
+          find.byIcon(Icons.account_balance_wallet_outlined),
+          findsOneWidget,
+        );
+        expect(find.byIcon(Icons.calculate_outlined), findsOneWidget);
+        expect(find.byIcon(Icons.pending_actions_outlined), findsOneWidget);
 
-      // Values and labels are visible
-      expect(find.text('2'), findsOneWidget);
-      expect(find.text('₹ 900'), findsOneWidget);
-      expect(find.text('Lifetime'), findsOneWidget);
-    });
+        // Values and labels are visible
+        expect(find.text('2'), findsOneWidget);
+        expect(find.text('₹ 900'), findsOneWidget);
+        expect(find.text('Lifetime'), findsOneWidget);
+      },
+    );
 
-    testWidgets('handles accessibility large text scaling without overflow', (t) async {
+    testWidgets('handles accessibility large text scaling without overflow', (
+      t,
+    ) async {
       t.view.physicalSize = const Size(360, 640);
       t.view.devicePixelRatio = 1.0;
       addTearDown(t.view.resetPhysicalSize);
@@ -134,12 +199,32 @@ void main() {
             size: Size(360, 640),
             textScaler: TextScaler.linear(1.5),
           ),
-          child: wrap(const MetricStrip(metrics: [
-            Metric(label: 'Visits', value: '2', icon: Icons.event_available_outlined),
-            Metric(label: 'Lifetime', value: '₹ 900', icon: Icons.account_balance_wallet_outlined),
-            Metric(label: 'Avg bill', value: '₹ 450', icon: Icons.calculate_outlined),
-            Metric(label: 'Pending', value: '₹ 0', icon: Icons.pending_actions_outlined),
-          ])),
+          child: wrap(
+            const MetricStrip(
+              metrics: [
+                Metric(
+                  label: 'Visits',
+                  value: '2',
+                  icon: Icons.event_available_outlined,
+                ),
+                Metric(
+                  label: 'Lifetime',
+                  value: '₹ 900',
+                  icon: Icons.account_balance_wallet_outlined,
+                ),
+                Metric(
+                  label: 'Avg bill',
+                  value: '₹ 450',
+                  icon: Icons.calculate_outlined,
+                ),
+                Metric(
+                  label: 'Pending',
+                  value: '₹ 0',
+                  icon: Icons.pending_actions_outlined,
+                ),
+              ],
+            ),
+          ),
         ),
       );
 
@@ -162,13 +247,17 @@ void main() {
   group('EmptyState & EmptyIllustration', () {
     testWidgets('shows title, message and action', (t) async {
       var tapped = false;
-      await t.pumpWidget(wrap(EmptyState(
-        icon: Icons.info,
-        title: 'Nothing here',
-        message: 'Add something',
-        actionLabel: 'Add',
-        onAction: () => tapped = true,
-      )));
+      await t.pumpWidget(
+        wrap(
+          EmptyState(
+            icon: Icons.info,
+            title: 'Nothing here',
+            message: 'Add something',
+            actionLabel: 'Add',
+            onAction: () => tapped = true,
+          ),
+        ),
+      );
       expect(find.text('Nothing here'), findsOneWidget);
       expect(find.text('Add something'), findsOneWidget);
       await t.tap(find.text('Add'));
@@ -177,7 +266,9 @@ void main() {
 
     testWidgets('renders EmptyState.patients factory', (t) async {
       var tapped = false;
-      await t.pumpWidget(wrap(EmptyState.patients(onAction: () => tapped = true)));
+      await t.pumpWidget(
+        wrap(EmptyState.patients(onAction: () => tapped = true)),
+      );
       expect(find.text('No patients found'), findsOneWidget);
       expect(find.text('Add Patient'), findsOneWidget);
       await t.tap(find.text('Add Patient'));
@@ -227,28 +318,36 @@ void main() {
 
   group('MoneyText', () {
     testWidgets('renders in dark theme without error', (t) async {
-      await t.pumpWidget(wrap(
-        const MoneyText(amount: -250, colorBySign: true),
-        brightness: Brightness.dark,
-      ));
+      await t.pumpWidget(
+        wrap(
+          const MoneyText(amount: -250, colorBySign: true),
+          brightness: Brightness.dark,
+        ),
+      );
       expect(find.byType(MoneyText), findsOneWidget);
     });
   });
 
   group('SegmentedTabs', () {
     testWidgets('swaps body when a tab is tapped', (t) async {
-      await t.pumpWidget(wrap(SegmentedTabs(tabs: [
-        SegmentedTab(
-          icon: Icons.info,
-          label: 'Info',
-          builder: (_) => const Text('INFO BODY'),
+      await t.pumpWidget(
+        wrap(
+          SegmentedTabs(
+            tabs: [
+              SegmentedTab(
+                icon: Icons.info,
+                label: 'Info',
+                builder: (_) => const Text('INFO BODY'),
+              ),
+              SegmentedTab(
+                icon: Icons.list,
+                label: 'List',
+                builder: (_) => const Text('LIST BODY'),
+              ),
+            ],
+          ),
         ),
-        SegmentedTab(
-          icon: Icons.list,
-          label: 'List',
-          builder: (_) => const Text('LIST BODY'),
-        ),
-      ])));
+      );
 
       expect(find.text('INFO BODY'), findsOneWidget);
 
@@ -259,18 +358,34 @@ void main() {
     });
 
     testWidgets('swipes left and right to switch tabs', (t) async {
-      await t.pumpWidget(wrap(SegmentedTabs(tabs: [
-        SegmentedTab(
-          icon: Icons.info,
-          label: 'Info',
-          builder: (_) => const SizedBox(width: 300, height: 300, child: Text('INFO BODY')),
+      await t.pumpWidget(
+        wrap(
+          SegmentedTabs(
+            tabs: [
+              SegmentedTab(
+                icon: Icons.info,
+                label: 'Info',
+                builder:
+                    (_) => const SizedBox(
+                      width: 300,
+                      height: 300,
+                      child: Text('INFO BODY'),
+                    ),
+              ),
+              SegmentedTab(
+                icon: Icons.list,
+                label: 'List',
+                builder:
+                    (_) => const SizedBox(
+                      width: 300,
+                      height: 300,
+                      child: Text('LIST BODY'),
+                    ),
+              ),
+            ],
+          ),
         ),
-        SegmentedTab(
-          icon: Icons.list,
-          label: 'List',
-          builder: (_) => const SizedBox(width: 300, height: 300, child: Text('LIST BODY')),
-        ),
-      ])));
+      );
 
       expect(find.text('INFO BODY'), findsOneWidget);
 
@@ -290,13 +405,17 @@ void main() {
   group('StatCard', () {
     testWidgets('renders title, value, subtitle and icon', (t) async {
       var tapped = false;
-      await t.pumpWidget(wrap(StatCard(
-        title: 'Total Patients',
-        value: '128',
-        subtitle: '+12% this month',
-        icon: Icons.people,
-        onTap: () => tapped = true,
-      )));
+      await t.pumpWidget(
+        wrap(
+          StatCard(
+            title: 'Total Patients',
+            value: '128',
+            subtitle: '+12% this month',
+            icon: Icons.people,
+            onTap: () => tapped = true,
+          ),
+        ),
+      );
 
       expect(find.text('Total Patients'), findsOneWidget);
       expect(find.text('128'), findsOneWidget);
@@ -318,12 +437,16 @@ void main() {
   group('CustomTextField', () {
     testWidgets('renders label, hint and responds to text changes', (t) async {
       final controller = TextEditingController();
-      await t.pumpWidget(wrap(CustomTextField(
-        label: 'Patient Name',
-        hint: 'Enter full name',
-        controller: controller,
-        prefixIcon: Icons.person,
-      )));
+      await t.pumpWidget(
+        wrap(
+          CustomTextField(
+            label: 'Patient Name',
+            hint: 'Enter full name',
+            controller: controller,
+            prefixIcon: Icons.person,
+          ),
+        ),
+      );
 
       expect(find.text('Patient Name'), findsOneWidget);
       expect(find.text('Enter full name'), findsOneWidget);
@@ -335,14 +458,20 @@ void main() {
   });
 
   group('DateField', () {
-    testWidgets('renders label and handles manual entry and formatting', (t) async {
+    testWidgets('renders label and handles manual entry and formatting', (
+      t,
+    ) async {
       DateTime? selected;
       final now = DateTime(2026, 8, 23);
-      await t.pumpWidget(wrap(DateField(
-        label: 'Date of Visit',
-        value: now,
-        onChanged: (d) => selected = d,
-      )));
+      await t.pumpWidget(
+        wrap(
+          DateField(
+            label: 'Date of Visit',
+            value: now,
+            onChanged: (d) => selected = d,
+          ),
+        ),
+      );
 
       expect(find.text('Date of Visit'), findsOneWidget);
       expect(find.text('23/08/2026'), findsOneWidget);
@@ -359,11 +488,15 @@ void main() {
   group('DaySelectorField', () {
     testWidgets('renders weekday chips and toggles selection', (t) async {
       String? updated;
-      await t.pumpWidget(wrap(DaySelectorField(
-        label: 'Clinic Days',
-        value: '1,3,5',
-        onChanged: (v) => updated = v,
-      )));
+      await t.pumpWidget(
+        wrap(
+          DaySelectorField(
+            label: 'Clinic Days',
+            value: '1,3,5',
+            onChanged: (v) => updated = v,
+          ),
+        ),
+      );
 
       expect(find.text('Clinic Days'), findsOneWidget);
       expect(find.text('Mon'), findsOneWidget);
@@ -378,10 +511,14 @@ void main() {
   group('AppCard', () {
     testWidgets('renders child and handles tap', (t) async {
       var tapped = false;
-      await t.pumpWidget(wrap(AppCard(
-        onTap: () => tapped = true,
-        child: const Text('Card Content'),
-      )));
+      await t.pumpWidget(
+        wrap(
+          AppCard(
+            onTap: () => tapped = true,
+            child: const Text('Card Content'),
+          ),
+        ),
+      );
 
       expect(find.text('Card Content'), findsOneWidget);
       await t.tap(find.text('Card Content'));
@@ -392,18 +529,22 @@ void main() {
   group('AppListTile and SettingsGroup', () {
     testWidgets('renders tile and grouped section', (t) async {
       var tapped = false;
-      await t.pumpWidget(wrap(SettingsGroup(
-        title: 'Preferences',
-        children: [
-          AppListTile(
-            icon: Icons.palette,
-            title: 'Theme',
-            subtitle: 'Dark Mode',
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => tapped = true,
+      await t.pumpWidget(
+        wrap(
+          SettingsGroup(
+            title: 'Preferences',
+            children: [
+              AppListTile(
+                icon: Icons.palette,
+                title: 'Theme',
+                subtitle: 'Dark Mode',
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => tapped = true,
+              ),
+            ],
           ),
-        ],
-      )));
+        ),
+      );
 
       expect(find.text('PREFERENCES'), findsOneWidget);
       expect(find.text('Theme'), findsOneWidget);
@@ -418,13 +559,17 @@ void main() {
   group('ChoiceChipField', () {
     testWidgets('renders options and selects chip on tap', (t) async {
       String? selected;
-      await t.pumpWidget(wrap(ChoiceChipField<String>(
-        label: 'Payment Method',
-        options: const ['Cash', 'UPI', 'Due'],
-        value: 'Cash',
-        labelOf: (s) => s,
-        onChanged: (v) => selected = v,
-      )));
+      await t.pumpWidget(
+        wrap(
+          ChoiceChipField<String>(
+            label: 'Payment Method',
+            options: const ['Cash', 'UPI', 'Due'],
+            value: 'Cash',
+            labelOf: (s) => s,
+            onChanged: (v) => selected = v,
+          ),
+        ),
+      );
 
       expect(find.text('Payment Method'), findsOneWidget);
       expect(find.text('Cash'), findsOneWidget);
@@ -437,13 +582,19 @@ void main() {
   });
 
   group('EntityHeader', () {
-    testWidgets('renders avatar initial, title, subtitle and badges', (t) async {
-      await t.pumpWidget(wrap(const EntityHeader(
-        title: 'Dr. John',
-        subtitle: 'Senior Consultant',
-        avatarText: 'John',
-        badges: [CustomBadge(label: 'Clinic A')],
-      )));
+    testWidgets('renders avatar initial, title, subtitle and badges', (
+      t,
+    ) async {
+      await t.pumpWidget(
+        wrap(
+          const EntityHeader(
+            title: 'Dr. John',
+            subtitle: 'Senior Consultant',
+            avatarText: 'John',
+            badges: [CustomBadge(label: 'Clinic A')],
+          ),
+        ),
+      );
 
       expect(find.text('Dr. John'), findsOneWidget);
       expect(find.text('Senior Consultant'), findsOneWidget);
@@ -454,14 +605,16 @@ void main() {
 
   group('PickerField', () {
     testWidgets('renders label and selected option', (t) async {
-      await t.pumpWidget(wrap(PickerField<String>(
-        label: 'Clinic',
-        value: 'c1',
-        options: const [
-          PickerOption(value: 'c1', label: 'Main Clinic'),
-        ],
-        onChanged: (_) {},
-      )));
+      await t.pumpWidget(
+        wrap(
+          PickerField<String>(
+            label: 'Clinic',
+            value: 'c1',
+            options: const [PickerOption(value: 'c1', label: 'Main Clinic')],
+            onChanged: (_) {},
+          ),
+        ),
+      );
 
       expect(find.text('Clinic'), findsOneWidget);
       expect(find.text('Main Clinic'), findsOneWidget);
@@ -469,26 +622,32 @@ void main() {
   });
 
   group('AppButton', () {
-    testWidgets('renders primary, tonal, outlined and text variants', (t) async {
+    testWidgets('renders primary, tonal, outlined and text variants', (
+      t,
+    ) async {
       var primaryPressed = false;
       var tonalPressed = false;
 
-      await t.pumpWidget(wrap(Column(
-        children: [
-          AppButton.primary(
-            label: 'Save',
-            icon: Icons.check,
-            onPressed: () => primaryPressed = true,
+      await t.pumpWidget(
+        wrap(
+          Column(
+            children: [
+              AppButton.primary(
+                label: 'Save',
+                icon: Icons.check,
+                onPressed: () => primaryPressed = true,
+              ),
+              AppButton.tonal(
+                label: 'Add',
+                icon: Icons.add,
+                onPressed: () => tonalPressed = true,
+              ),
+              const AppButton.outlined(label: 'Cancel'),
+              const AppButton.text(label: 'Close'),
+            ],
           ),
-          AppButton.tonal(
-            label: 'Add',
-            icon: Icons.add,
-            onPressed: () => tonalPressed = true,
-          ),
-          const AppButton.outlined(label: 'Cancel'),
-          const AppButton.text(label: 'Close'),
-        ],
-      )));
+        ),
+      );
 
       expect(find.text('Save'), findsOneWidget);
       expect(find.text('Add'), findsOneWidget);
@@ -507,16 +666,23 @@ void main() {
     testWidgets('renders title, message and fires callbacks', (t) async {
       var confirmed = false;
 
-      await t.pumpWidget(wrap(AppConfirmDialog(
-        title: 'Delete Item',
-        message: 'Are you sure you want to delete this?',
-        confirmLabel: 'Delete',
-        isDestructive: true,
-        onConfirm: () => confirmed = true,
-      )));
+      await t.pumpWidget(
+        wrap(
+          AppConfirmDialog(
+            title: 'Delete Item',
+            message: 'Are you sure you want to delete this?',
+            confirmLabel: 'Delete',
+            isDestructive: true,
+            onConfirm: () => confirmed = true,
+          ),
+        ),
+      );
 
       expect(find.text('Delete Item'), findsOneWidget);
-      expect(find.text('Are you sure you want to delete this?'), findsOneWidget);
+      expect(
+        find.text('Are you sure you want to delete this?'),
+        findsOneWidget,
+      );
       expect(find.text('Delete'), findsOneWidget);
 
       await t.tap(find.text('Delete'));

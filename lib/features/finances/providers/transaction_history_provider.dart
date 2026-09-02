@@ -52,12 +52,14 @@ class MonthTransactionGroup {
 final transactionSearchQueryProvider = StateProvider<String>((ref) => '');
 
 /// Stream provider for all transactions grouped chronologically by month.
-final transactionHistoryGroupsProvider =
-    Provider<AsyncValue<List<MonthTransactionGroup>>>((ref) {
+final transactionHistoryGroupsProvider = Provider<
+  AsyncValue<List<MonthTransactionGroup>>
+>((ref) {
   final memosAsync = ref.watch(cashMemosStreamProvider);
   final expensesAsync = ref.watch(expensesStreamProvider);
   final selectedClinicId = ref.watch(financesClinicFilterProvider);
-  final searchQuery = ref.watch(transactionSearchQueryProvider).trim().toLowerCase();
+  final searchQuery =
+      ref.watch(transactionSearchQueryProvider).trim().toLowerCase();
 
   if (memosAsync is AsyncLoading || expensesAsync is AsyncLoading) {
     return const AsyncLoading();
@@ -79,18 +81,20 @@ final transactionHistoryGroupsProvider =
   for (final expWithClinic in allExpenses) {
     final exp = expWithClinic.expense;
 
-    final noteTitle = exp.notes != null && exp.notes!.trim().isNotEmpty
-        ? exp.notes!
-        : (exp.subcategory != null && exp.subcategory!.trim().isNotEmpty
-            ? '${exp.category} (${exp.subcategory})'
-            : exp.category);
+    final noteTitle =
+        exp.notes != null && exp.notes!.trim().isNotEmpty
+            ? exp.notes!
+            : (exp.subcategory != null && exp.subcategory!.trim().isNotEmpty
+                ? '${exp.category} (${exp.subcategory})'
+                : exp.category);
 
     final title = noteTitle;
     final subtitle = exp.paymentMethod;
 
     // Search filter match
     if (searchQuery.isNotEmpty) {
-      final matches = title.toLowerCase().contains(searchQuery) ||
+      final matches =
+          title.toLowerCase().contains(searchQuery) ||
           subtitle.toLowerCase().contains(searchQuery) ||
           exp.category.toLowerCase().contains(searchQuery) ||
           (exp.notes?.toLowerCase().contains(searchQuery) ?? false);
@@ -124,7 +128,8 @@ final transactionHistoryGroupsProvider =
 
     // Search filter match
     if (searchQuery.isNotEmpty) {
-      final matches = title.toLowerCase().contains(searchQuery) ||
+      final matches =
+          title.toLowerCase().contains(searchQuery) ||
           subtitle.toLowerCase().contains(searchQuery) ||
           patient.name.toLowerCase().contains(searchQuery) ||
           patient.patientCode.toLowerCase().contains(searchQuery) ||

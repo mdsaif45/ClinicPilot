@@ -42,7 +42,12 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.md, Spacing.lg, Spacing.lg),
+        padding: const EdgeInsets.fromLTRB(
+          Spacing.lg,
+          Spacing.md,
+          Spacing.lg,
+          Spacing.lg,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -118,7 +123,10 @@ class _SortOptionTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: Spacing.md, horizontal: Spacing.xs),
+        padding: const EdgeInsets.symmetric(
+          vertical: Spacing.md,
+          horizontal: Spacing.xs,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -137,11 +145,7 @@ class _SortOptionTile extends StatelessWidget {
                   color: scheme.primary,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.check,
-                  size: 16,
-                  color: scheme.onPrimary,
-                ),
+                child: Icon(Icons.check, size: 16, color: scheme.onPrimary),
               )
             else
               Container(

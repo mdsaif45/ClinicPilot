@@ -8,9 +8,18 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('ContactService WhatsApp Templates & Normalization', () {
     test('normalises standard 10-digit Indian phone numbers', () {
-      expect(ContactService.normalisePhone('9876543210'), equals('919876543210'));
-      expect(ContactService.normalisePhone('+91 98765 43210'), equals('919876543210'));
-      expect(ContactService.normalisePhone('09876543210'), equals('919876543210'));
+      expect(
+        ContactService.normalisePhone('9876543210'),
+        equals('919876543210'),
+      );
+      expect(
+        ContactService.normalisePhone('+91 98765 43210'),
+        equals('919876543210'),
+      );
+      expect(
+        ContactService.normalisePhone('09876543210'),
+        equals('919876543210'),
+      );
     });
 
     test('generates follow-up reminder message', () {
@@ -73,8 +82,9 @@ void main() {
       reviewGiven: false,
     );
 
-    testWidgets('renders templates and allows switching selection',
-        (tester) async {
+    testWidgets('renders templates and allows switching selection', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,

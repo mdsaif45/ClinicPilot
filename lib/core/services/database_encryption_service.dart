@@ -7,7 +7,7 @@ class DatabaseEncryptionService {
   final FlutterSecureStorage _storage;
 
   DatabaseEncryptionService({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   Future<String> getOrCreateDatabaseKey() async {
     final existing = await _storage.read(key: keyStorageKey);

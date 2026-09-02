@@ -13,22 +13,22 @@ import 'edit_expense_dialog.dart';
 
 /// Category icons, so a row can be identified without reading its label.
 IconData expenseCategoryIcon(String category) => switch (category) {
-      'All' => Icons.tune_rounded,
-      'Rent' => Icons.home_outlined,
-      'Electricity' || 'Utilities' => Icons.bolt_outlined,
-      'Staff Salary' || 'Assistant Salary' => Icons.badge_outlined,
-      'Medicine Purchase' || 'Medicine' => Icons.medication_outlined,
-      'Packaging & Dispensing' || 'Packaging' => Icons.inventory_2_outlined,
-      'Furniture' => Icons.chair_outlined,
-      'Marketing' => Icons.campaign_outlined,
-      'Camp' || 'Camp Expense' => Icons.festival_outlined,
-      'Equipment' => Icons.medical_services_outlined,
-      'Maintenance' => Icons.build_outlined,
-      'Internet' => Icons.wifi,
-      'Travel' => Icons.directions_car_outlined,
-      'Personal' => Icons.person_outline,
-      _ => Icons.receipt_outlined,
-    };
+  'All' => Icons.tune_rounded,
+  'Rent' => Icons.home_outlined,
+  'Electricity' || 'Utilities' => Icons.bolt_outlined,
+  'Staff Salary' || 'Assistant Salary' => Icons.badge_outlined,
+  'Medicine Purchase' || 'Medicine' => Icons.medication_outlined,
+  'Packaging & Dispensing' || 'Packaging' => Icons.inventory_2_outlined,
+  'Furniture' => Icons.chair_outlined,
+  'Marketing' => Icons.campaign_outlined,
+  'Camp' || 'Camp Expense' => Icons.festival_outlined,
+  'Equipment' => Icons.medical_services_outlined,
+  'Maintenance' => Icons.build_outlined,
+  'Internet' => Icons.wifi,
+  'Travel' => Icons.directions_car_outlined,
+  'Personal' => Icons.person_outline,
+  _ => Icons.receipt_outlined,
+};
 
 class ExpensesScreen extends ConsumerWidget {
   const ExpensesScreen({super.key});
@@ -62,7 +62,8 @@ class ExpensesScreen extends ConsumerWidget {
     final selectedCategory = ref.watch(expenseCategoryFilterProvider);
     final theme = Theme.of(context);
 
-    final total = expensesAsync.asData?.value.fold<double>(
+    final total =
+        expensesAsync.asData?.value.fold<double>(
           0,
           (sum, e) => sum + e.expense.amount,
         ) ??
@@ -101,15 +102,19 @@ class ExpensesScreen extends ConsumerWidget {
               separatorBuilder: (_, __) => const SizedBox(width: Spacing.xs),
               itemBuilder: (context, i) {
                 final c = _categories[i];
-                final isSelected = c == 'All'
-                    ? (selectedCategory == null || selectedCategory == 'All')
-                    : selectedCategory == c;
+                final isSelected =
+                    c == 'All'
+                        ? (selectedCategory == null ||
+                            selectedCategory == 'All')
+                        : selectedCategory == c;
                 final icon = expenseCategoryIcon(c);
 
                 return Material(
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+                  color:
+                      isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.45),
                   borderRadius: Radii.pillAll,
                   child: InkWell(
                     borderRadius: Radii.pillAll,
@@ -119,13 +124,19 @@ class ExpensesScreen extends ConsumerWidget {
                           c == 'All' ? null : c;
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: Radii.pillAll,
                         border: Border.all(
-                          color: isSelected
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                          color:
+                              isSelected
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.outlineVariant.withValues(
+                                    alpha: 0.5,
+                                  ),
                           width: isSelected ? 1.5 : 1,
                         ),
                       ),
@@ -135,19 +146,24 @@ class ExpensesScreen extends ConsumerWidget {
                           Icon(
                             icon,
                             size: 15,
-                            color: isSelected
-                                ? theme.colorScheme.onPrimary
-                                : theme.colorScheme.onSurfaceVariant,
+                            color:
+                                isSelected
+                                    ? theme.colorScheme.onPrimary
+                                    : theme.colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             c,
                             style: TextStyle(
                               fontSize: 12.5,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                              color: isSelected
-                                  ? theme.colorScheme.onPrimary
-                                  : theme.colorScheme.onSurface,
+                              fontWeight:
+                                  isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                              color:
+                                  isSelected
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -162,18 +178,23 @@ class ExpensesScreen extends ConsumerWidget {
           Expanded(
             child: expensesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error loading expenses: $err')),
+              error:
+                  (err, _) =>
+                      Center(child: Text('Error loading expenses: $err')),
               data: (expenses) {
                 if (expenses.isEmpty) {
                   return EmptyState.expenses(
-                    title: selectedCategory == 'All'
-                        ? 'No expenses recorded'
-                        : 'Nothing under $selectedCategory',
-                    message: 'Track clinic supplies, rent, and travel costs here.',
-                    onAction: () => showDialog(
-                      context: context,
-                      builder: (_) => const AddExpenseDialog(),
-                    ),
+                    title:
+                        selectedCategory == 'All'
+                            ? 'No expenses recorded'
+                            : 'Nothing under $selectedCategory',
+                    message:
+                        'Track clinic supplies, rent, and travel costs here.',
+                    onAction:
+                        () => showDialog(
+                          context: context,
+                          builder: (_) => const AddExpenseDialog(),
+                        ),
                   );
                 }
 
@@ -187,30 +208,31 @@ class ExpensesScreen extends ConsumerWidget {
                           SliverPersistentHeader(
                             pinned: true,
                             delegate: _StickyExpenseMonthHeaderDelegate(
-                                group: group),
+                              group: group,
+                            ),
                           ),
                           SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final item = group.items[index];
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    _ExpenseRow(item: item),
-                                    if (index < group.items.length - 1)
-                                      const Divider(
-                                          height: 1, indent: Spacing.lg),
-                                  ],
-                                );
-                              },
-                              childCount: group.items.length,
-                            ),
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final item = group.items[index];
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _ExpenseRow(item: item),
+                                  if (index < group.items.length - 1)
+                                    const Divider(
+                                      height: 1,
+                                      indent: Spacing.lg,
+                                    ),
+                                ],
+                              );
+                            }, childCount: group.items.length),
                           ),
                         ],
                       ),
-                    const SliverPadding(
-                      padding: EdgeInsets.only(bottom: 96),
-                    ),
+                    const SliverPadding(padding: EdgeInsets.only(bottom: 96)),
                   ],
                 );
               },
@@ -261,7 +283,10 @@ class _StickyExpenseMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final monthTitle = Formatters.formatMonthYear(group.month);
@@ -273,9 +298,7 @@ class _StickyExpenseMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => MonthlyStatementScreen(
-                initialMonth: group.month,
-              ),
+              builder: (_) => MonthlyStatementScreen(initialMonth: group.month),
             ),
           );
         },
@@ -283,8 +306,9 @@ class _StickyExpenseMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
           height: 42,
           padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
           decoration: BoxDecoration(
-            color: scheme.surfaceContainerHighest
-                .withAlpha(overlapsContent ? 250 : 180),
+            color: scheme.surfaceContainerHighest.withAlpha(
+              overlapsContent ? 250 : 180,
+            ),
             border: Border(
               top: BorderSide(color: theme.dividerColor.withAlpha(80)),
               bottom: BorderSide(color: theme.dividerColor.withAlpha(80)),
@@ -295,11 +319,7 @@ class _StickyExpenseMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.calendar_month,
-                    size: 16,
-                    color: scheme.primary,
-                  ),
+                  Icon(Icons.calendar_month, size: 16, color: scheme.primary),
                   const SizedBox(width: Spacing.xs),
                   Text(
                     monthTitle,
@@ -381,8 +401,9 @@ class _ExpenseRow extends ConsumerWidget {
             child: Text(
               expense.category,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(width: Spacing.sm),
@@ -428,24 +449,25 @@ class _ExpenseRow extends ConsumerWidget {
               _confirmDelete(context, ref);
           }
         },
-        itemBuilder: (_) => const [
-          PopupMenuItem(
-            value: 'edit',
-            child: ListTile(
-              leading: Icon(Icons.edit_outlined),
-              title: Text('Edit'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: 'delete',
-            child: ListTile(
-              leading: Icon(Icons.delete_outline),
-              title: Text('Delete'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
+        itemBuilder:
+            (_) => const [
+              PopupMenuItem(
+                value: 'edit',
+                child: ListTile(
+                  leading: Icon(Icons.edit_outlined),
+                  title: Text('Edit'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: ListTile(
+                  leading: Icon(Icons.delete_outline),
+                  title: Text('Delete'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
       ),
     );
   }
@@ -453,33 +475,34 @@ class _ExpenseRow extends ConsumerWidget {
   void _confirmDelete(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete expense'),
-        content: Text(
-          'This ${Formatters.formatCurrency(item.expense.amount)} '
-          '${item.expense.category} entry stops counting toward totals. The '
-          'record '
-          'is kept in the database.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete expense'),
+            content: Text(
+              'This ${Formatters.formatCurrency(item.expense.amount)} '
+              '${item.expense.category} entry stops counting toward totals. The '
+              'record '
+              'is kept in the database.',
             ),
-            onPressed: () async {
-              await ref
-                  .read(expenseNotifierProvider.notifier)
-                  .archiveExpense(item.expense.id);
-              if (ctx.mounted) Navigator.of(ctx).pop();
-            },
-            child: const Text('Delete'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                ),
+                onPressed: () async {
+                  await ref
+                      .read(expenseNotifierProvider.notifier)
+                      .archiveExpense(item.expense.id);
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -517,8 +540,10 @@ class _SummaryTile extends StatelessWidget {
           const SizedBox(height: Spacing.xs),
           Text(
             value,
-            style: theme.textTheme.titleLarge
-                ?.copyWith(color: fg, fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: fg,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           Text(caption, style: theme.textTheme.labelSmall),
         ],

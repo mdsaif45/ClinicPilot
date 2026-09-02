@@ -97,9 +97,9 @@ enum AppPalette {
   Color get swatch => seed;
 
   static AppPalette fromName(String? name) => AppPalette.values.firstWhere(
-        (p) => p.name == name,
-        orElse: () => AppPalette.emerald,
-      );
+    (p) => p.name == name,
+    orElse: () => AppPalette.emerald,
+  );
 }
 
 /// Brightness options offered in Settings.
@@ -113,19 +113,19 @@ enum AppThemeMode {
   dark;
 
   String get label => switch (this) {
-        AppThemeMode.system => 'Follow system',
-        AppThemeMode.light => 'Light',
-        AppThemeMode.dark => 'Dark',
-      };
+    AppThemeMode.system => 'Follow system',
+    AppThemeMode.light => 'Light',
+    AppThemeMode.dark => 'Dark',
+  };
 
   ThemeMode get material => switch (this) {
-        AppThemeMode.system => ThemeMode.system,
-        AppThemeMode.light => ThemeMode.light,
-        AppThemeMode.dark => ThemeMode.dark,
-      };
+    AppThemeMode.system => ThemeMode.system,
+    AppThemeMode.light => ThemeMode.light,
+    AppThemeMode.dark => ThemeMode.dark,
+  };
 
   static AppThemeMode fromName(String? name) => AppThemeMode.values.firstWhere(
-        (m) => m.name == name,
-        orElse: () => AppThemeMode.system,
-      );
+    (m) => m.name == name,
+    orElse: () => AppThemeMode.system,
+  );
 }

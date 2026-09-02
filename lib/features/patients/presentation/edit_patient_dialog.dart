@@ -47,20 +47,19 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
     _entryDate = widget.patient.createdAt;
     _nameController = TextEditingController(text: widget.patient.name);
     _phoneController = TextEditingController(text: widget.patient.phone);
-    _whatsappController =
-        TextEditingController(text: widget.patient.whatsapp ?? '');
-    _emailController =
-        TextEditingController(text: widget.patient.email ?? '');
-    _ageController =
-        TextEditingController(text: widget.patient.age.toString());
-    _areaController =
-        TextEditingController(text: widget.patient.area ?? '');
-    _addressController =
-        TextEditingController(text: widget.patient.address ?? '');
-    _occupationController =
-        TextEditingController(text: widget.patient.occupation ?? '');
-    _notesController =
-        TextEditingController(text: widget.patient.notes ?? '');
+    _whatsappController = TextEditingController(
+      text: widget.patient.whatsapp ?? '',
+    );
+    _emailController = TextEditingController(text: widget.patient.email ?? '');
+    _ageController = TextEditingController(text: widget.patient.age.toString());
+    _areaController = TextEditingController(text: widget.patient.area ?? '');
+    _addressController = TextEditingController(
+      text: widget.patient.address ?? '',
+    );
+    _occupationController = TextEditingController(
+      text: widget.patient.occupation ?? '',
+    );
+    _notesController = TextEditingController(text: widget.patient.notes ?? '');
     _gender = widget.patient.gender;
   }
 
@@ -82,16 +81,21 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
   @override
   Widget build(BuildContext context) {
     final serialText = _serialController.text.trim();
-    final liveSerialInUse = serialText.isEmpty
-        ? false
-        : ref
-                .watch(serialNoInUseProvider(SerialLookupArgs(
-                  clinicId: widget.patient.primaryClinicId,
-                  serialNo: serialText,
-                  excludingPatientId: widget.patient.id,
-                )))
-                .value ==
-            true;
+    final liveSerialInUse =
+        serialText.isEmpty
+            ? false
+            : ref
+                    .watch(
+                      serialNoInUseProvider(
+                        SerialLookupArgs(
+                          clinicId: widget.patient.primaryClinicId,
+                          serialNo: serialText,
+                          excludingPatientId: widget.patient.id,
+                        ),
+                      ),
+                    )
+                    .value ==
+                true;
 
     return AppFormDialog(
       title: 'Edit Patient (${widget.patient.patientCode})',
@@ -102,13 +106,14 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
         ),
         FilledButton(
           onPressed: _submitting ? null : _saveChanges,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Save Changes'),
+          child:
+              _submitting
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Save Changes'),
         ),
       ],
       child: Form(
@@ -142,8 +147,9 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
               controller: _nameController,
               label: 'Patient Full Name',
               prefixIcon: Icons.person,
-              validator: (val) =>
-                  val == null || val.trim().isEmpty ? 'Required' : null,
+              validator:
+                  (val) =>
+                      val == null || val.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
             CustomTextField(
@@ -233,27 +239,47 @@ class _EditPatientDialogState extends ConsumerState<EditPatientDialog> {
     setState(() => _submitting = true);
 
     try {
-      await ref.read(patientNotifierProvider.notifier).updatePatient(
+      await ref
+          .read(patientNotifierProvider.notifier)
+          .updatePatient(
             id: widget.patient.id,
             name: _nameController.text.trim(),
             phone: _phoneController.text.trim(),
-            whatsapp: _whatsappController.text.trim().isEmpty ? null : _whatsappController.text.trim(),
-            email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
+            whatsapp:
+                _whatsappController.text.trim().isEmpty
+                    ? null
+                    : _whatsappController.text.trim(),
+            email:
+                _emailController.text.trim().isEmpty
+                    ? null
+                    : _emailController.text.trim(),
             age: int.parse(_ageController.text.trim()),
             gender: _gender,
-            area: _areaController.text.trim().isEmpty ? null : _areaController.text.trim(),
-            address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
-            occupation: _occupationController.text.trim().isEmpty ? null : _occupationController.text.trim(),
-            notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+            area:
+                _areaController.text.trim().isEmpty
+                    ? null
+                    : _areaController.text.trim(),
+            address:
+                _addressController.text.trim().isEmpty
+                    ? null
+                    : _addressController.text.trim(),
+            occupation:
+                _occupationController.text.trim().isEmpty
+                    ? null
+                    : _occupationController.text.trim(),
+            notes:
+                _notesController.text.trim().isEmpty
+                    ? null
+                    : _notesController.text.trim(),
             serialNo: _serialController.text.trim(),
             createdAt: _entryDate,
           );
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not update patient: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not update patient: $e')));
       }
       return;
     }

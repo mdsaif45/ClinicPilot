@@ -94,15 +94,15 @@ class ImportTemplateService {
   const ImportTemplateService._();
 
   static xlsx.CellStyle get _headerStyle => xlsx.CellStyle(
-        bold: true,
-        backgroundColorHex: xlsx.ExcelColor.fromHexString('#0F5132'),
-        fontColorHex: xlsx.ExcelColor.fromHexString('#FFFFFF'),
-      );
+    bold: true,
+    backgroundColorHex: xlsx.ExcelColor.fromHexString('#0F5132'),
+    fontColorHex: xlsx.ExcelColor.fromHexString('#FFFFFF'),
+  );
 
   static xlsx.CellStyle get _exampleStyle => xlsx.CellStyle(
-        italic: true,
-        fontColorHex: xlsx.ExcelColor.fromHexString('#6C757D'),
-      );
+    italic: true,
+    fontColorHex: xlsx.ExcelColor.fromHexString('#6C757D'),
+  );
 
   static void _writeHeader(xlsx.Sheet sheet, List<String> headers) {
     sheet.appendRow(headers.map((h) => xlsx.TextCellValue(h)).toList());
@@ -116,15 +116,21 @@ class ImportTemplateService {
 
   static void _writeExampleRow(xlsx.Sheet sheet, List<Object?> cells) {
     final rowIndex = sheet.maxRows;
-    sheet.appendRow(cells.map((c) {
-      if (c == null) return null;
-      if (c is num) return xlsx.DoubleCellValue(c.toDouble());
-      return xlsx.TextCellValue(c.toString());
-    }).toList());
+    sheet.appendRow(
+      cells.map((c) {
+        if (c == null) return null;
+        if (c is num) return xlsx.DoubleCellValue(c.toDouble());
+        return xlsx.TextCellValue(c.toString());
+      }).toList(),
+    );
     for (var col = 0; col < cells.length; col++) {
       sheet
-          .cell(xlsx.CellIndex.indexByColumnRow(
-              columnIndex: col, rowIndex: rowIndex))
+          .cell(
+            xlsx.CellIndex.indexByColumnRow(
+              columnIndex: col,
+              rowIndex: rowIndex,
+            ),
+          )
           .cellStyle = _exampleStyle;
     }
   }
@@ -136,28 +142,53 @@ class ImportTemplateService {
     final patients = book[ImportTemplateSchema.patientsSheet];
     _writeHeader(patients, ImportTemplateSchema.patientsHeaders);
     _writeExampleRow(patients, [
-      'DELETE-THIS-EXAMPLE-1', 'Example Clinic', 'Asha Rao', '9800000001',
-      '', 34, 'Female', 'Kharagpur', 'Migraine', 'Walk-in',
+      'DELETE-THIS-EXAMPLE-1',
+      'Example Clinic',
+      'Asha Rao',
+      '9800000001',
+      '',
+      34,
+      'Female',
+      'Kharagpur',
+      'Migraine',
+      'Walk-in',
     ]);
 
     final visits = book[ImportTemplateSchema.visitsSheet];
     _writeHeader(visits, ImportTemplateSchema.visitsHeaders);
     _writeExampleRow(visits, [
-      'DELETE-THIS-EXAMPLE-1', 'Example Clinic', '2026-03-14', 'new',
-      'clinic', 'Migraine', 'improved',
+      'DELETE-THIS-EXAMPLE-1',
+      'Example Clinic',
+      '2026-03-14',
+      'new',
+      'clinic',
+      'Migraine',
+      'improved',
     ]);
 
     final memos = book[ImportTemplateSchema.cashMemosSheet];
     _writeHeader(memos, ImportTemplateSchema.cashMemosHeaders);
     _writeExampleRow(memos, [
-      'DELETE-THIS-EXAMPLE-1', 'Example Clinic', '2026-03-14', 300, 100,
-      0, 0, 400, 'Cash',
+      'DELETE-THIS-EXAMPLE-1',
+      'Example Clinic',
+      '2026-03-14',
+      300,
+      100,
+      0,
+      0,
+      400,
+      'Cash',
     ]);
 
     final expenses = book[ImportTemplateSchema.expensesSheet];
     _writeHeader(expenses, ImportTemplateSchema.expensesHeaders);
     _writeExampleRow(expenses, [
-      'Example Clinic', '2026-03-01', 'Rent', '', 3000, 'Cash',
+      'Example Clinic',
+      '2026-03-01',
+      'Rent',
+      '',
+      3000,
+      'Cash',
     ]);
 
     final readMe = book[ImportTemplateSchema.readMeSheet];
@@ -167,7 +198,9 @@ class ImportTemplateService {
       readMe.appendRow([xlsx.TextCellValue(text)]);
       if (bold) {
         readMe
-            .cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+            .cell(
+              xlsx.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row),
+            )
             .cellStyle = xlsx.CellStyle(bold: true);
       }
       row++;
@@ -175,32 +208,46 @@ class ImportTemplateService {
 
     line('ClinicPilot Import Template', bold: true);
     line('');
-    line('Delete the example row on each sheet before importing - it is '
-        'marked DELETE-THIS-EXAMPLE and will otherwise be rejected as a '
-        'row for a clinic or serial that does not exist.');
+    line(
+      'Delete the example row on each sheet before importing - it is '
+      'marked DELETE-THIS-EXAMPLE and will otherwise be rejected as a '
+      'row for a clinic or serial that does not exist.',
+    );
     line('');
     line('Patients (required - at least one real row)', bold: true);
-    line('Clinic must exactly match a clinic already in the app - import '
-        'does not create clinics, since a clinic carries settings (rent, '
-        'default fee, open days) a spreadsheet row cannot define.');
-    line('Serial No., Clinic, Name, Phone, Age, Gender and Disease are '
-        'required. Gender must be one of: ${ImportTemplateSchema.genders.join(', ')}');
+    line(
+      'Clinic must exactly match a clinic already in the app - import '
+      'does not create clinics, since a clinic carries settings (rent, '
+      'default fee, open days) a spreadsheet row cannot define.',
+    );
+    line(
+      'Serial No., Clinic, Name, Phone, Age, Gender and Disease are '
+      'required. Gender must be one of: ${ImportTemplateSchema.genders.join(', ')}',
+    );
     line('');
     line('Visits and Cash Memos (optional - can be left empty)', bold: true);
-    line('Patient Serial No. + Clinic must match a row on the Patients '
-        'sheet - that pair is how a row here links back to a patient, '
-        'since a spreadsheet cannot reference an internal database id.');
-    line('Visit Type: ${ImportTemplateSchema.visitTypes.join(', ')}. '
-        'Consultation Type: ${ImportTemplateSchema.consultationTypes.join(', ')}. '
-        'Outcome (optional): ${ImportTemplateSchema.outcomes.join(', ')}');
+    line(
+      'Patient Serial No. + Clinic must match a row on the Patients '
+      'sheet - that pair is how a row here links back to a patient, '
+      'since a spreadsheet cannot reference an internal database id.',
+    );
+    line(
+      'Visit Type: ${ImportTemplateSchema.visitTypes.join(', ')}. '
+      'Consultation Type: ${ImportTemplateSchema.consultationTypes.join(', ')}. '
+      'Outcome (optional): ${ImportTemplateSchema.outcomes.join(', ')}',
+    );
     line('Payment Method: ${ImportTemplateSchema.paymentMethods.join(', ')}');
     line('');
     line('Expenses (optional - can be left empty)', bold: true);
-    line('Clinic must match an existing clinic. Category: '
-        '${ImportTemplateSchema.expenseCategories.join(', ')}');
+    line(
+      'Clinic must match an existing clinic. Category: '
+      '${ImportTemplateSchema.expenseCategories.join(', ')}',
+    );
     line('');
-    line('A row with a problem is skipped and reported after import - it '
-        'does not stop the rows that are valid from being imported.');
+    line(
+      'A row with a problem is skipped and reported after import - it '
+      'does not stop the rows that are valid from being imported.',
+    );
 
     return book.encode()!;
   }

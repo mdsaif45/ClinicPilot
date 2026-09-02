@@ -112,10 +112,9 @@ abstract class SemanticColors {
 /// Standard icon for each payment method across the app.
 abstract class PaymentIcons {
   static IconData forMethod(String method) => switch (method.toLowerCase()) {
-        'cash' => Icons.payments_outlined,
-        'upi' => Icons.qr_code_2,
-        'card' => Icons.credit_card,
-        _ => Icons.account_balance_outlined,
-      };
+    'cash' => Icons.payments_outlined,
+    'upi' => Icons.qr_code_2,
+    'card' => Icons.credit_card,
+    _ => Icons.account_balance_outlined,
+  };
 }
-

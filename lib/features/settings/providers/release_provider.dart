@@ -32,9 +32,9 @@ final latestReleaseProvider = FutureProvider<AppRelease?>((ref) async {
   final service = ref.watch(updateServiceProvider);
 
   Future<AppRelease?> readCache() async {
-    final row = await (db.select(db.settings)
-          ..where((t) => t.key.equals(_kCachedRelease)))
-        .getSingleOrNull();
+    final row =
+        await (db.select(db.settings)
+          ..where((t) => t.key.equals(_kCachedRelease))).getSingleOrNull();
     if (row == null) return null;
     try {
       return AppRelease.fromGitHubJson(jsonDecode(row.value));
@@ -45,7 +45,9 @@ final latestReleaseProvider = FutureProvider<AppRelease?>((ref) async {
 
   final fresh = await service.fetchLatestRelease();
   if (fresh != null) {
-    await db.into(db.settings).insertOnConflictUpdate(
+    await db
+        .into(db.settings)
+        .insertOnConflictUpdate(
           SettingsCompanion.insert(
             key: _kCachedRelease,
             value: jsonEncode(fresh.rawJson),
@@ -72,8 +74,7 @@ class UpdatePromptNotifier extends StateNotifier<AppRelease?> {
     // dismissed previously are not permanently locked out of update notifications.
     try {
       await (_db.delete(_db.settings)
-            ..where((t) => t.key.equals(_kSkippedVersion)))
-          .go();
+        ..where((t) => t.key.equals(_kSkippedVersion))).go();
     } catch (_) {}
 
     final release = await _ref.read(availableUpdateProvider.future);
@@ -93,5 +94,5 @@ class UpdatePromptNotifier extends StateNotifier<AppRelease?> {
 
 final updatePromptProvider =
     StateNotifierProvider<UpdatePromptNotifier, AppRelease?>((ref) {
-  return UpdatePromptNotifier(ref.watch(databaseProvider), ref);
-});
+      return UpdatePromptNotifier(ref.watch(databaseProvider), ref);
+    });

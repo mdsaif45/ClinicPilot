@@ -14,7 +14,8 @@ class PracticeJournalScreen extends ConsumerStatefulWidget {
   const PracticeJournalScreen({super.key});
 
   @override
-  ConsumerState<PracticeJournalScreen> createState() => _PracticeJournalScreenState();
+  ConsumerState<PracticeJournalScreen> createState() =>
+      _PracticeJournalScreenState();
 }
 
 class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
@@ -37,32 +38,33 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: scheme.onSurface,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Search patient, condition, invoice...',
-                  hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSurfaceVariant,
+        title:
+            _isSearching
+                ? TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: scheme.onSurface,
                   ),
-                  border: InputBorder.none,
+                  decoration: InputDecoration(
+                    hintText: 'Search patient, condition, invoice...',
+                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (val) {
+                    ref.read(journalSearchQueryProvider.notifier).state = val;
+                  },
+                )
+                : const Text(
+                  'Journal',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-                onChanged: (val) {
-                  ref.read(journalSearchQueryProvider.notifier).state = val;
-                },
-              )
-            : const Text(
-                'Journal',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 26,
-                  letterSpacing: -0.5,
-                ),
-              ),
         centerTitle: false,
         actions: [
           IconButton(
@@ -93,20 +95,21 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
 
           // Main Journal Feed
           Expanded(
-            child: dayGroups.isEmpty
-                ? _buildEmptyState(context)
-                : ListView.builder(
-                    padding: const EdgeInsets.only(
-                      left: Spacing.md,
-                      right: Spacing.md,
-                      bottom: Spacing.xxl * 2,
+            child:
+                dayGroups.isEmpty
+                    ? _buildEmptyState(context)
+                    : ListView.builder(
+                      padding: const EdgeInsets.only(
+                        left: Spacing.md,
+                        right: Spacing.md,
+                        bottom: Spacing.xxl * 2,
+                      ),
+                      itemCount: dayGroups.length,
+                      itemBuilder: (context, index) {
+                        final group = dayGroups[index];
+                        return _buildDateSection(context, group);
+                      },
                     ),
-                    itemCount: dayGroups.length,
-                    itemBuilder: (context, index) {
-                      final group = dayGroups[index];
-                      return _buildDateSection(context, group);
-                    },
-                  ),
           ),
         ],
       ),
@@ -123,49 +126,72 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
 
     final chips = [
       {'label': 'All Events', 'filter': null, 'icon': Icons.all_inclusive},
-      {'label': 'Consultations', 'filter': JournalEventType.consultation, 'icon': Icons.medical_services_outlined},
-      {'label': 'Dispenses', 'filter': JournalEventType.dispense, 'icon': Icons.medication_outlined},
-      {'label': 'Expenses', 'filter': JournalEventType.expense, 'icon': Icons.receipt_long_outlined},
+      {
+        'label': 'Consultations',
+        'filter': JournalEventType.consultation,
+        'icon': Icons.medical_services_outlined,
+      },
+      {
+        'label': 'Dispenses',
+        'filter': JournalEventType.dispense,
+        'icon': Icons.medication_outlined,
+      },
+      {
+        'label': 'Expenses',
+        'filter': JournalEventType.expense,
+        'icon': Icons.receipt_long_outlined,
+      },
     ];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.xs,
+      ),
       child: Row(
-        children: chips.map((c) {
-          final isSelected = currentFilter == c['filter'];
-          return Padding(
-            padding: const EdgeInsets.only(right: Spacing.xs),
-            child: FilterChip(
-              avatar: Icon(
-                c['icon'] as IconData,
-                size: 16,
-                color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
-              ),
-              label: Text(c['label'] as String),
-              selected: isSelected,
-              showCheckmark: false,
-              labelStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? scheme.onPrimary : scheme.onSurface,
-              ),
-              selectedColor: scheme.primary,
-              backgroundColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.3),
+        children:
+            chips.map((c) {
+              final isSelected = currentFilter == c['filter'];
+              return Padding(
+                padding: const EdgeInsets.only(right: Spacing.xs),
+                child: FilterChip(
+                  avatar: Icon(
+                    c['icon'] as IconData,
+                    size: 16,
+                    color:
+                        isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
+                  ),
+                  label: Text(c['label'] as String),
+                  selected: isSelected,
+                  showCheckmark: false,
+                  labelStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected ? scheme.onPrimary : scheme.onSurface,
+                  ),
+                  selectedColor: scheme.primary,
+                  backgroundColor: scheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color:
+                          isSelected
+                              ? scheme.primary
+                              : scheme.outlineVariant.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    AppHaptics.selection();
+                    ref.read(journalCategoryFilterProvider.notifier).state =
+                        c['filter'] as JournalEventType?;
+                  },
                 ),
-              ),
-              onSelected: (selected) {
-                AppHaptics.selection();
-                ref.read(journalCategoryFilterProvider.notifier).state =
-                    c['filter'] as JournalEventType?;
-              },
-            ),
-          );
-        }).toList(),
+              );
+            }).toList(),
       ),
     );
   }
@@ -181,7 +207,10 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
 
         // Section Header (Matching Google Fit: Date on left, aggregate stats on right)
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: Spacing.sm, horizontal: Spacing.xs),
+          padding: const EdgeInsets.symmetric(
+            vertical: Spacing.sm,
+            horizontal: Spacing.xs,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -245,12 +274,13 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: group.entries.length,
-          separatorBuilder: (context, i) => Divider(
-            height: 1,
-            indent: Spacing.md,
-            endIndent: Spacing.md,
-            color: scheme.outlineVariant.withValues(alpha: 0.3),
-          ),
+          separatorBuilder:
+              (context, i) => Divider(
+                height: 1,
+                indent: Spacing.md,
+                endIndent: Spacing.md,
+                color: scheme.outlineVariant.withValues(alpha: 0.3),
+              ),
           itemBuilder: (context, i) {
             final entry = group.entries[i];
             return _buildJournalEntryCard(context, entry);
@@ -260,7 +290,10 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
     );
   }
 
-  Widget _buildJournalEntryCard(BuildContext context, PracticeJournalEntry entry) {
+  Widget _buildJournalEntryCard(
+    BuildContext context,
+    PracticeJournalEntry entry,
+  ) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
@@ -299,7 +332,10 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: Spacing.md, horizontal: Spacing.xs),
+        padding: const EdgeInsets.symmetric(
+          vertical: Spacing.md,
+          horizontal: Spacing.xs,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -311,11 +347,7 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
                   // 1. Top row: Mini Icon + Time
                   Row(
                     children: [
-                      Icon(
-                        miniIcon,
-                        size: 13,
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      Icon(miniIcon, size: 13, color: scheme.onSurfaceVariant),
                       const SizedBox(width: Spacing.xs),
                       Text(
                         timeStr,
@@ -357,7 +389,10 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
                       if (entry.amount != null) ...[
                         if (entry.subtitle != null) ...[
                           const SizedBox(width: Spacing.xs),
-                          Text('•', style: TextStyle(color: scheme.onSurfaceVariant)),
+                          Text(
+                            '•',
+                            style: TextStyle(color: scheme.onSurfaceVariant),
+                          ),
                           const SizedBox(width: Spacing.xs),
                         ],
                         Text(
@@ -366,9 +401,10 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
                               : Formatters.formatCurrency(entry.amount!),
                           style: theme.textTheme.bodySmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: entry.type == JournalEventType.expense
-                                ? scheme.error
-                                : scheme.primary,
+                            color:
+                                entry.type == JournalEventType.expense
+                                    ? scheme.error
+                                    : scheme.primary,
                           ),
                         ),
                       ],
@@ -388,13 +424,7 @@ class _PracticeJournalScreenState extends ConsumerState<PracticeJournalScreen> {
                 shape: BoxShape.circle,
                 color: avatarBg,
               ),
-              child: Center(
-                child: Icon(
-                  avatarIcon,
-                  size: 26,
-                  color: avatarFg,
-                ),
-              ),
+              child: Center(child: Icon(avatarIcon, size: 26, color: avatarFg)),
             ),
           ],
         ),

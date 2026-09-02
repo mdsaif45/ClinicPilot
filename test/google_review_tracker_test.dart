@@ -16,14 +16,13 @@ void main() {
     setUp(() async {
       db = AppDatabase(NativeDatabase.memory());
       // Seed clinic
-      await db.into(db.clinics).insert(
-            ClinicsCompanion.insert(
-              id: 'clinic-1',
-              name: 'Test Clinic',
-            ),
-          );
+      await db
+          .into(db.clinics)
+          .insert(ClinicsCompanion.insert(id: 'clinic-1', name: 'Test Clinic'));
       // Seed patient
-      await db.into(db.patients).insert(
+      await db
+          .into(db.patients)
+          .insert(
             PatientsCompanion.insert(
               id: 'pat-1',
               patientCode: const drift.Value('P-2026-00001'),
@@ -55,34 +54,40 @@ void main() {
       expect(requests.first.patientId, equals('pat-1'));
       expect(requests.first.notes, equals('Sent via WhatsApp'));
 
-      final patient = await (db.select(db.patients)..where((t) => t.id.equals('pat-1'))).getSingle();
+      final patient =
+          await (db.select(db.patients)
+            ..where((t) => t.id.equals('pat-1'))).getSingle();
       expect(patient.reviewAskedAt, isNotNull);
       expect(patient.reviewGiven, isFalse);
     });
 
-    test('records review submission with rating and marks patient review_given', () async {
-      final notifier = ReviewNotifier(db);
-      await notifier.requestReview(
-        patientId: 'pat-1',
-        clinicId: 'clinic-1',
-      );
+    test(
+      'records review submission with rating and marks patient review_given',
+      () async {
+        final notifier = ReviewNotifier(db);
+        await notifier.requestReview(patientId: 'pat-1', clinicId: 'clinic-1');
 
-      final req = (await db.select(db.reviewRequests).get()).first;
+        final req = (await db.select(db.reviewRequests).get()).first;
 
-      await notifier.recordReviewSubmitted(
-        requestId: req.id,
-        patientId: 'pat-1',
-        rating: 5,
-        notes: 'Left 5 star rating',
-      );
+        await notifier.recordReviewSubmitted(
+          requestId: req.id,
+          patientId: 'pat-1',
+          rating: 5,
+          notes: 'Left 5 star rating',
+        );
 
-      final updatedReq = await (db.select(db.reviewRequests)..where((t) => t.id.equals(req.id))).getSingle();
-      expect(updatedReq.rating, equals(5));
-      expect(updatedReq.reviewedAt, isNotNull);
+        final updatedReq =
+            await (db.select(db.reviewRequests)
+              ..where((t) => t.id.equals(req.id))).getSingle();
+        expect(updatedReq.rating, equals(5));
+        expect(updatedReq.reviewedAt, isNotNull);
 
-      final patient = await (db.select(db.patients)..where((t) => t.id.equals('pat-1'))).getSingle();
-      expect(patient.reviewGiven, isTrue);
-    });
+        final patient =
+            await (db.select(db.patients)
+              ..where((t) => t.id.equals('pat-1'))).getSingle();
+        expect(patient.reviewGiven, isTrue);
+      },
+    );
   });
 
   group('RecordReviewDialog Widget Test', () {
@@ -108,14 +113,10 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            databaseProvider.overrideWithValue(db),
-          ],
+          overrides: [databaseProvider.overrideWithValue(db)],
           child: MaterialApp(
             theme: AppTheme.lightTheme,
-            home: Scaffold(
-              body: RecordReviewDialog(patient: testPatient),
-            ),
+            home: Scaffold(body: RecordReviewDialog(patient: testPatient)),
           ),
         ),
       );

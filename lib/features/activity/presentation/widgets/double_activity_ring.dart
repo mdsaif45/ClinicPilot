@@ -61,20 +61,22 @@ class _DoubleActivityRingPainter extends CustomPainter {
     final innerRadius = outerRadius - strokeWidth - gap;
 
     // 1. Outer Track (Background)
-    final outerTrackPaint = Paint()
-      ..color = outerColor.withValues(alpha: 0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
+    final outerTrackPaint =
+        Paint()
+          ..color = outerColor.withValues(alpha: 0.22)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth;
 
     canvas.drawCircle(center, outerRadius, outerTrackPaint);
 
     // 2. Outer Progress Arc
     if (outerProgress > 0) {
-      final outerArcPaint = Paint()
-        ..color = outerColor
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = strokeWidth;
+      final outerArcPaint =
+          Paint()
+            ..color = outerColor
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = strokeWidth;
 
       const startAngle = -math.pi / 2; // 12 o'clock
       final sweepAngle = 2 * math.pi * outerProgress;
@@ -90,20 +92,22 @@ class _DoubleActivityRingPainter extends CustomPainter {
 
     // 3. Inner Track (Background)
     if (innerRadius > 0) {
-      final innerTrackPaint = Paint()
-        ..color = innerColor.withValues(alpha: 0.22)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth;
+      final innerTrackPaint =
+          Paint()
+            ..color = innerColor.withValues(alpha: 0.22)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = strokeWidth;
 
       canvas.drawCircle(center, innerRadius, innerTrackPaint);
 
       // 4. Inner Progress Arc
       if (innerProgress > 0) {
-        final innerArcPaint = Paint()
-          ..color = innerColor
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round
-          ..strokeWidth = strokeWidth;
+        final innerArcPaint =
+            Paint()
+              ..color = innerColor
+              ..style = PaintingStyle.stroke
+              ..strokeCap = StrokeCap.round
+              ..strokeWidth = strokeWidth;
 
         const startAngle = -math.pi / 2; // 12 o'clock
         final sweepAngle = 2 * math.pi * innerProgress;

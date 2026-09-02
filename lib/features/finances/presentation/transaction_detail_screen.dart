@@ -15,29 +15,39 @@ class TransactionDetailScreen extends ConsumerStatefulWidget {
   final CashMemoWithDetails? memoItem;
   final ExpenseWithClinic? expenseItem;
 
-  const TransactionDetailScreen({
-    super.key,
-    this.memoItem,
-    this.expenseItem,
-  }) : assert(memoItem != null || expenseItem != null, 'Either memo or expense must be provided');
+  const TransactionDetailScreen({super.key, this.memoItem, this.expenseItem})
+    : assert(
+        memoItem != null || expenseItem != null,
+        'Either memo or expense must be provided',
+      );
 
   @override
-  ConsumerState<TransactionDetailScreen> createState() => _TransactionDetailScreenState();
+  ConsumerState<TransactionDetailScreen> createState() =>
+      _TransactionDetailScreenState();
 }
 
-class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScreen> {
-  void _shareVoucher(String title, double amount, String dateStr, String? clinicName, bool isExpense, String paymentMethod) {
-    final shareText = isExpense
-        ? 'Expense Voucher: $title\n'
-          'Amount: ${Formatters.formatCurrency(amount)}\n'
-          'Paid Via: $paymentMethod\n'
-          'Date: $dateStr\n'
-          'Clinic: ${clinicName ?? "ClinicPilot"}'
-        : 'Cash Memo Receipt: $title\n'
-          'Amount Paid: ${Formatters.formatCurrency(amount)}\n'
-          'Payment Mode: $paymentMethod\n'
-          'Date: $dateStr\n'
-          'Clinic: ${clinicName ?? "ClinicPilot"}';
+class _TransactionDetailScreenState
+    extends ConsumerState<TransactionDetailScreen> {
+  void _shareVoucher(
+    String title,
+    double amount,
+    String dateStr,
+    String? clinicName,
+    bool isExpense,
+    String paymentMethod,
+  ) {
+    final shareText =
+        isExpense
+            ? 'Expense Voucher: $title\n'
+                'Amount: ${Formatters.formatCurrency(amount)}\n'
+                'Paid Via: $paymentMethod\n'
+                'Date: $dateStr\n'
+                'Clinic: ${clinicName ?? "ClinicPilot"}'
+            : 'Cash Memo Receipt: $title\n'
+                'Amount Paid: ${Formatters.formatCurrency(amount)}\n'
+                'Payment Mode: $paymentMethod\n'
+                'Date: $dateStr\n'
+                'Clinic: ${clinicName ?? "ClinicPilot"}';
     Share.share(shareText);
   }
 
@@ -53,21 +63,27 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
     final exp = widget.expenseItem?.expense;
 
     final date = isExpense ? exp!.date : memo!.memoDate;
-    final timeStr = TimeOfDay.fromDateTime(isExpense ? exp!.createdAt : memo!.createdAt).format(context);
+    final timeStr = TimeOfDay.fromDateTime(
+      isExpense ? exp!.createdAt : memo!.createdAt,
+    ).format(context);
     final dateStr = Formatters.formatDate(date);
     final amount = isExpense ? exp!.amount : memo!.paidAmount;
 
-    final title = isExpense
-        ? (exp!.notes != null && exp.notes!.trim().isNotEmpty
-            ? exp.notes!
-            : (exp.subcategory != null && exp.subcategory!.trim().isNotEmpty
-                ? '${exp.category} (${exp.subcategory})'
-                : exp.category))
-        : patient!.name;
+    final title =
+        isExpense
+            ? (exp!.notes != null && exp.notes!.trim().isNotEmpty
+                ? exp.notes!
+                : (exp.subcategory != null && exp.subcategory!.trim().isNotEmpty
+                    ? '${exp.category} (${exp.subcategory})'
+                    : exp.category))
+            : patient!.name;
 
-    final subtitle = isExpense
-        ? exp!.category
-        : (patient!.phone.isNotEmpty ? '+91 ${patient.phone}' : patient.patientCode);
+    final subtitle =
+        isExpense
+            ? exp!.category
+            : (patient!.phone.isNotEmpty
+                ? '+91 ${patient.phone}'
+                : patient.patientCode);
 
     final paymentMethod = isExpense ? exp!.paymentMethod : memo!.paymentMethod;
 
@@ -95,12 +111,25 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
           IconButton(
             icon: const Icon(Icons.share_outlined),
             tooltip: 'Share Voucher',
-            onPressed: () => _shareVoucher(title, amount, dateStr, clinic?.name, isExpense, paymentMethod),
+            onPressed:
+                () => _shareVoucher(
+                  title,
+                  amount,
+                  dateStr,
+                  clinic?.name,
+                  isExpense,
+                  paymentMethod,
+                ),
           ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.sm, Spacing.lg, Spacing.xxl),
+        padding: const EdgeInsets.fromLTRB(
+          Spacing.lg,
+          Spacing.sm,
+          Spacing.lg,
+          Spacing.xxl,
+        ),
         children: [
           // 1. Hero Practice Voucher Card
           Container(
@@ -120,21 +149,22 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: isExpense
-                            ? FinanceColors.redBg
-                            : FinanceColors.greenBg,
+                        color:
+                            isExpense
+                                ? FinanceColors.redBg
+                                : FinanceColors.greenBg,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isExpense
-                              ? FinanceColors.redBorder
-                              : FinanceColors.greenBorder,
+                          color:
+                              isExpense
+                                  ? FinanceColors.redBorder
+                                  : FinanceColors.greenBorder,
                         ),
                       ),
                       child: Icon(
                         isExpense ? Icons.north_east : Icons.south_west,
-                        color: isExpense
-                            ? FinanceColors.red
-                            : FinanceColors.green,
+                        color:
+                            isExpense ? FinanceColors.red : FinanceColors.green,
                         size: 22,
                       ),
                     ),
@@ -161,16 +191,21 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
-                        color: isExpense
-                            ? FinanceColors.redBg
-                            : FinanceColors.greenBg,
+                        color:
+                            isExpense
+                                ? FinanceColors.redBg
+                                : FinanceColors.greenBg,
                         borderRadius: Radii.pillAll,
                         border: Border.all(
-                          color: isExpense
-                              ? FinanceColors.redLight
-                              : FinanceColors.greenLight,
+                          color:
+                              isExpense
+                                  ? FinanceColors.redLight
+                                  : FinanceColors.greenLight,
                         ),
                       ),
                       child: Text(
@@ -178,9 +213,10 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: isExpense
-                              ? FinanceColors.red
-                              : FinanceColors.green,
+                          color:
+                              isExpense
+                                  ? FinanceColors.red
+                                  : FinanceColors.green,
                         ),
                       ),
                     ),
@@ -196,9 +232,7 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                       : '+ ${Formatters.formatCurrency(amount)}',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: isExpense
-                        ? FinanceColors.red
-                        : FinanceColors.green,
+                    color: isExpense ? FinanceColors.red : FinanceColors.green,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -242,7 +276,11 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
               children: [
                 Row(
                   children: [
-                    Icon(Icons.fact_check_outlined, size: 18, color: scheme.primary),
+                    Icon(
+                      Icons.fact_check_outlined,
+                      size: 18,
+                      color: scheme.primary,
+                    ),
                     const SizedBox(width: Spacing.xs),
                     Text(
                       'Voucher Specifications',
@@ -267,11 +305,20 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                 if (!isExpense && memo != null) ...[
                   _DetailRow(label: 'Memo Number', value: memo.memoNumber),
                   if (patient != null) ...[
-                    _DetailRow(label: 'Patient Code', value: patient.patientCode),
+                    _DetailRow(
+                      label: 'Patient Code',
+                      value: patient.patientCode,
+                    ),
                     if (patient.serialNo.isNotEmpty)
-                      _DetailRow(label: 'Serial No', value: '#${patient.serialNo}'),
+                      _DetailRow(
+                        label: 'Serial No',
+                        value: '#${patient.serialNo}',
+                      ),
                     if (patient.area != null && patient.area!.isNotEmpty)
-                      _DetailRow(label: 'Area / Location', value: patient.area!),
+                      _DetailRow(
+                        label: 'Area / Location',
+                        value: patient.area!,
+                      ),
                   ],
                   if (memo.consultationFee > 0)
                     _DetailRow(
@@ -306,7 +353,9 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                   if (memo.total - memo.paidAmount > 0)
                     _DetailRow(
                       label: 'Pending Balance',
-                      value: Formatters.formatCurrency(memo.total - memo.paidAmount),
+                      value: Formatters.formatCurrency(
+                        memo.total - memo.paidAmount,
+                      ),
                       valueColor: theme.colorScheme.error,
                       isBold: true,
                     ),
@@ -317,9 +366,10 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                     _DetailRow(label: 'Subcategory', value: exp.subcategory!),
                   _DetailRow(
                     label: 'Nature',
-                    value: exp.isRecurring
-                        ? 'Recurring (Monthly Fixed)'
-                        : 'One-time (Variable)',
+                    value:
+                        exp.isRecurring
+                            ? 'Recurring (Monthly Fixed)'
+                            : 'One-time (Variable)',
                   ),
                   if (exp.notes != null && exp.notes!.isNotEmpty)
                     _DetailRow(label: 'Notes / Recipient', value: exp.notes!),
@@ -340,11 +390,12 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (_) => ReceiptPreviewDialog(
-                    cashMemo: widget.memoItem!.memo,
-                    patient: widget.memoItem!.patient,
-                    clinicName: widget.memoItem!.clinic.name,
-                  ),
+                  builder:
+                      (_) => ReceiptPreviewDialog(
+                        cashMemo: widget.memoItem!.memo,
+                        patient: widget.memoItem!.patient,
+                        clinicName: widget.memoItem!.clinic.name,
+                      ),
                 );
               },
               icon: const Icon(Icons.receipt_long_outlined, size: 20),
@@ -376,7 +427,15 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                       minimumSize: const Size.fromHeight(44),
                       shape: RoundedRectangleBorder(borderRadius: Radii.smAll),
                     ),
-                    onPressed: () => _shareVoucher(title, amount, dateStr, clinic?.name, isExpense, paymentMethod),
+                    onPressed:
+                        () => _shareVoucher(
+                          title,
+                          amount,
+                          dateStr,
+                          clinic?.name,
+                          isExpense,
+                          paymentMethod,
+                        ),
                     icon: const Icon(Icons.share_outlined, size: 18),
                     label: const Text('Share Record'),
                   ),
@@ -406,7 +465,15 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                 minimumSize: const Size.fromHeight(44),
                 shape: RoundedRectangleBorder(borderRadius: Radii.smAll),
               ),
-              onPressed: () => _shareVoucher(title, amount, dateStr, clinic?.name, isExpense, paymentMethod),
+              onPressed:
+                  () => _shareVoucher(
+                    title,
+                    amount,
+                    dateStr,
+                    clinic?.name,
+                    isExpense,
+                    paymentMethod,
+                  ),
               icon: const Icon(Icons.share_outlined, size: 18),
               label: const Text('Share Expense Record'),
             ),
@@ -416,7 +483,10 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
 
           // 4. Practice Audit Stamp Footer
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.md,
+              vertical: Spacing.sm,
+            ),
             decoration: BoxDecoration(
               color: scheme.surfaceContainerHighest.withAlpha(40),
               borderRadius: Radii.smAll,
@@ -494,4 +564,3 @@ class _DetailRow extends StatelessWidget {
     );
   }
 }
-

@@ -48,21 +48,27 @@ void main() {
     updatedAt: DateTime(2026, 1, 1),
   );
 
-  Expense makeExpense(String id, String category, double amount, DateTime date) => Expense(
-        id: id,
-        clinicId: 'c1',
-        category: category,
-        subcategory: null,
-        amount: amount,
-        paymentMethod: 'UPI',
-        isRecurring: false,
-        notes: 'Vendor payment $id',
-        date: date,
-        isDeleted: false,
-        createdAt: date,
-      );
+  Expense makeExpense(
+    String id,
+    String category,
+    double amount,
+    DateTime date,
+  ) => Expense(
+    id: id,
+    clinicId: 'c1',
+    category: category,
+    subcategory: null,
+    amount: amount,
+    paymentMethod: 'UPI',
+    isRecurring: false,
+    notes: 'Vendor payment $id',
+    date: date,
+    isDeleted: false,
+    createdAt: date,
+  );
 
-  CashMemo makeMemo(String id, double total, double paid, DateTime date) => CashMemo(
+  CashMemo makeMemo(String id, double total, double paid, DateTime date) =>
+      CashMemo(
         id: id,
         memoNumber: 'CM-$id',
         patientId: 'p1',
@@ -144,19 +150,25 @@ void main() {
   });
 
   group('SortByBottomSheet Widget Test', () {
-    testWidgets('renders sort options and selection interaction', (tester) async {
+    testWidgets('renders sort options and selection interaction', (
+      tester,
+    ) async {
       FinanceSortOption? result;
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () async {
-                  result = await showSortByBottomSheet(context, FinanceSortOption.highestFirst);
-                },
-                child: const Text('Open'),
-              ),
+              builder:
+                  (context) => ElevatedButton(
+                    onPressed: () async {
+                      result = await showSortByBottomSheet(
+                        context,
+                        FinanceSortOption.highestFirst,
+                      );
+                    },
+                    child: const Text('Open'),
+                  ),
             ),
           ),
         ),
@@ -184,88 +196,90 @@ void main() {
   });
 
   group('MonthlyStatementScreen Terminology Widget Test', () {
-    testWidgets('renders Expenses and Cash Memo labels instead of generic spent/received', (tester) async {
-      final e1 = ExpenseWithClinic(
-        expense: makeExpense('1', 'Rent', 8000, DateTime(2026, 7, 3)),
-        clinic: clinic,
-      );
-      final m1 = CashMemoWithDetails(
-        memo: makeMemo('1', 500, 500, DateTime(2026, 7, 10)),
-        patient: patient,
-        clinic: clinic,
-      );
+    testWidgets(
+      'renders Expenses and Cash Memo labels instead of generic spent/received',
+      (tester) async {
+        final e1 = ExpenseWithClinic(
+          expense: makeExpense('1', 'Rent', 8000, DateTime(2026, 7, 3)),
+          clinic: clinic,
+        );
+        final m1 = CashMemoWithDetails(
+          memo: makeMemo('1', 500, 500, DateTime(2026, 7, 10)),
+          patient: patient,
+          clinic: clinic,
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            expensesStreamProvider.overrideWithValue(AsyncData([e1])),
-            cashMemosStreamProvider.overrideWith((ref) => Stream.value([m1])),
-          ],
-          child: MaterialApp(
-            home: MonthlyStatementScreen(
-              initialMonth: DateTime(2026, 7, 1),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              expensesStreamProvider.overrideWithValue(AsyncData([e1])),
+              cashMemosStreamProvider.overrideWith((ref) => Stream.value([m1])),
+            ],
+            child: MaterialApp(
+              home: MonthlyStatementScreen(initialMonth: DateTime(2026, 7, 1)),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Expenses'), findsWidgets);
-      expect(find.text('Cash Memo'), findsWidgets);
-      expect(find.text('Spent'), findsNothing);
-      expect(find.text('Received'), findsNothing);
-    });
+        expect(find.text('Expenses'), findsWidgets);
+        expect(find.text('Cash Memo'), findsWidgets);
+        expect(find.text('Spent'), findsNothing);
+        expect(find.text('Received'), findsNothing);
+      },
+    );
   });
 
   group('TransactionHistoryScreen Widget Test', () {
-    testWidgets('renders clean titles, day-month dates, and navigates to TransactionDetailScreen', (tester) async {
-      final e1 = ExpenseWithClinic(
-        expense: makeExpense('1', 'Bakery', 65, DateTime(2026, 8, 30)),
-        clinic: clinic,
-      );
-      final m1 = CashMemoWithDetails(
-        memo: makeMemo('1', 500, 500, DateTime(2026, 8, 28)),
-        patient: patient,
-        clinic: clinic,
-      );
+    testWidgets(
+      'renders clean titles, day-month dates, and navigates to TransactionDetailScreen',
+      (tester) async {
+        final e1 = ExpenseWithClinic(
+          expense: makeExpense('1', 'Bakery', 65, DateTime(2026, 8, 30)),
+          clinic: clinic,
+        );
+        final m1 = CashMemoWithDetails(
+          memo: makeMemo('1', 500, 500, DateTime(2026, 8, 28)),
+          patient: patient,
+          clinic: clinic,
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            expensesStreamProvider.overrideWithValue(AsyncData([e1])),
-            cashMemosStreamProvider.overrideWith((ref) => Stream.value([m1])),
-          ],
-          child: const MaterialApp(
-            home: TransactionHistoryScreen(),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              expensesStreamProvider.overrideWithValue(AsyncData([e1])),
+              cashMemosStreamProvider.overrideWith((ref) => Stream.value([m1])),
+            ],
+            child: const MaterialApp(home: TransactionHistoryScreen()),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(TextField), findsOneWidget);
-      expect(find.text('August 2026'), findsOneWidget);
-      // Clean titles without repetitive prefix
-      expect(find.text('Vendor payment 1'), findsOneWidget);
-      expect(find.text('Kandukuri Khaja Bee'), findsOneWidget);
-      // Clean dates without year
-      expect(find.text('30 Aug'), findsOneWidget);
-      expect(find.text('28 Aug'), findsOneWidget);
-      // Amounts with minus (-) and plus (+)
-      expect(find.text('- ₹ 65'), findsOneWidget);
-      expect(find.text('+ ₹ 500'), findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
+        expect(find.text('August 2026'), findsOneWidget);
+        // Clean titles without repetitive prefix
+        expect(find.text('Vendor payment 1'), findsOneWidget);
+        expect(find.text('Kandukuri Khaja Bee'), findsOneWidget);
+        // Clean dates without year
+        expect(find.text('30 Aug'), findsOneWidget);
+        expect(find.text('28 Aug'), findsOneWidget);
+        // Amounts with minus (-) and plus (+)
+        expect(find.text('- ₹ 65'), findsOneWidget);
+        expect(find.text('+ ₹ 500'), findsOneWidget);
 
-      // Tap on Cash Memo row -> Navigates to TransactionDetailScreen
-      await tester.tap(find.text('Kandukuri Khaja Bee'));
-      await tester.pumpAndSettle();
+        // Tap on Cash Memo row -> Navigates to TransactionDetailScreen
+        await tester.tap(find.text('Kandukuri Khaja Bee'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(TransactionDetailScreen), findsOneWidget);
-      expect(find.text('Cash Memo Record'), findsOneWidget);
-      expect(find.text('Voucher Specifications'), findsOneWidget);
+        expect(find.byType(TransactionDetailScreen), findsOneWidget);
+        expect(find.text('Cash Memo Record'), findsOneWidget);
+        expect(find.text('Voucher Specifications'), findsOneWidget);
 
-      await tester.scrollUntilVisible(find.text('Share Record'), 200);
-      expect(find.text('View Formal Receipt'), findsOneWidget);
-      expect(find.text('Share Record'), findsOneWidget);
-      expect(find.text('Edit Memo'), findsOneWidget);
-    });
+        await tester.scrollUntilVisible(find.text('Share Record'), 200);
+        expect(find.text('View Formal Receipt'), findsOneWidget);
+        expect(find.text('Share Record'), findsOneWidget);
+        expect(find.text('Edit Memo'), findsOneWidget);
+      },
+    );
   });
 }

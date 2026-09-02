@@ -52,7 +52,8 @@ class PatientProfileScreen extends ConsumerStatefulWidget {
   const PatientProfileScreen({super.key, required this.patient});
 
   @override
-  ConsumerState<PatientProfileScreen> createState() => _PatientProfileScreenState();
+  ConsumerState<PatientProfileScreen> createState() =>
+      _PatientProfileScreenState();
 }
 
 class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
@@ -67,7 +68,8 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
             AppHaptics.selection();
             showDialog(
               context: context,
-              builder: (_) => AddEditComplaintDialog(patientId: widget.patient.id),
+              builder:
+                  (_) => AddEditComplaintDialog(patientId: widget.patient.id),
             );
           },
           icon: const Icon(Icons.healing_outlined),
@@ -80,7 +82,9 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
             AppHaptics.selection();
             showDialog(
               context: context,
-              builder: (_) => AddEditPrescriptionDialog(patientId: widget.patient.id),
+              builder:
+                  (_) =>
+                      AddEditPrescriptionDialog(patientId: widget.patient.id),
             );
           },
           icon: const Icon(Icons.medication_outlined),
@@ -106,7 +110,9 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
             AppHaptics.selection();
             showDialog(
               context: context,
-              builder: (_) => AddEditInvestigationDialog(patientId: widget.patient.id),
+              builder:
+                  (_) =>
+                      AddEditInvestigationDialog(patientId: widget.patient.id),
             );
           },
           icon: const Icon(Icons.biotech_outlined),
@@ -146,11 +152,12 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
             AppHaptics.selection();
             showDialog(
               context: context,
-              builder: (_) => ScheduleFollowUpDialog(
-                patient: widget.patient,
-                defaultDisease: widget.patient.primaryDisease,
-                defaultClinicId: widget.patient.primaryClinicId,
-              ),
+              builder:
+                  (_) => ScheduleFollowUpDialog(
+                    patient: widget.patient,
+                    defaultDisease: widget.patient.primaryDisease,
+                    defaultClinicId: widget.patient.primaryClinicId,
+                  ),
             );
           },
           icon: const Icon(Icons.event_repeat_outlined),
@@ -185,15 +192,20 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
     final primaryClinic =
         clinics.where((c) => c.id == patient.primaryClinicId).firstOrNull;
 
-    final patientMemos = (memosAsync.value ?? [])
-        .where((m) => m.memo.patientId == patient.id)
-        .toList()
-      ..sort((a, b) => b.memo.memoDate.compareTo(a.memo.memoDate));
+    final patientMemos =
+        (memosAsync.value ?? [])
+            .where((m) => m.memo.patientId == patient.id)
+            .toList()
+          ..sort((a, b) => b.memo.memoDate.compareTo(a.memo.memoDate));
 
-    final lifetimeRevenue =
-        patientMemos.fold<double>(0.0, (s, m) => s + m.memo.total);
-    final totalPending =
-        patientMemos.fold<double>(0.0, (s, m) => s + m.pendingAmount);
+    final lifetimeRevenue = patientMemos.fold<double>(
+      0.0,
+      (s, m) => s + m.memo.total,
+    );
+    final totalPending = patientMemos.fold<double>(
+      0.0,
+      (s, m) => s + m.pendingAmount,
+    );
     final visits = visitsAsync.value ?? [];
     final totalVisits = visits.length;
     final avgBill = totalVisits > 0 ? lifetimeRevenue / totalVisits : 0.0;
@@ -218,19 +230,21 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
                 IconButton(
                   icon: const Icon(Icons.chat_outlined),
                   tooltip: 'WhatsApp message',
-                  onPressed: () => WhatsAppTemplatePickerSheet.show(
-                    context,
-                    patient: patient,
-                    clinicName: primaryClinic?.name ?? 'Clinic',
-                  ),
+                  onPressed:
+                      () => WhatsAppTemplatePickerSheet.show(
+                        context,
+                        patient: patient,
+                        clinicName: primaryClinic?.name ?? 'Clinic',
+                      ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
                   tooltip: 'Edit patient',
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (_) => EditPatientDialog(patient: patient),
-                  ),
+                  onPressed:
+                      () => showDialog(
+                        context: context,
+                        builder: (_) => EditPatientDialog(patient: patient),
+                      ),
                 ),
               ],
               badges: [
@@ -287,12 +301,14 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.only(top: Spacing.sm),
-              child: ChipRow(labels: [
-                if ((patient.primaryDisease ?? '').isNotEmpty)
-                  patient.primaryDisease!,
-                if ((patient.referralSource ?? '').isNotEmpty)
-                  patient.referralSource!,
-              ]),
+              child: ChipRow(
+                labels: [
+                  if ((patient.primaryDisease ?? '').isNotEmpty)
+                    patient.primaryDisease!,
+                  if ((patient.referralSource ?? '').isNotEmpty)
+                    patient.referralSource!,
+                ],
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -342,7 +358,8 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
                   SegmentedTab(
                     icon: Icons.event_repeat_outlined,
                     label: 'Follow-ups',
-                    builder: (_) => _FollowUpsTab(patient: patient, visits: visits),
+                    builder:
+                        (_) => _FollowUpsTab(patient: patient, visits: visits),
                   ),
                   SegmentedTab(
                     icon: Icons.insights_outlined,
@@ -406,11 +423,7 @@ class _InfoTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Identifiers
-        InfoRow(
-          label: 'Serial No.',
-          value: patient.serialNo,
-          icon: Icons.tag,
-        ),
+        InfoRow(label: 'Serial No.', value: patient.serialNo, icon: Icons.tag),
         InfoRow(
           label: 'Patient code',
           value: patient.patientCode,
@@ -429,19 +442,23 @@ class _InfoTab extends StatelessWidget {
             icon: Icons.call_outlined,
             onTap: () => ContactService.call(patient.phone),
           ),
-        if (patient.whatsapp?.trim().isNotEmpty == true || patient.phone.trim().isNotEmpty)
+        if (patient.whatsapp?.trim().isNotEmpty == true ||
+            patient.phone.trim().isNotEmpty)
           InfoRow(
             label: 'WhatsApp',
-            value: patient.whatsapp?.trim().isNotEmpty == true
-                ? patient.whatsapp!
-                : patient.phone,
+            value:
+                patient.whatsapp?.trim().isNotEmpty == true
+                    ? patient.whatsapp!
+                    : patient.phone,
             icon: Icons.chat_outlined,
-            onTap: () => WhatsAppTemplatePickerSheet.show(
-              context,
-              patient: patient,
-              clinicName: visits.isNotEmpty ? visits.first.clinic.name : 'Clinic',
-              dueDate: nextFollowUp,
-            ),
+            onTap:
+                () => WhatsAppTemplatePickerSheet.show(
+                  context,
+                  patient: patient,
+                  clinicName:
+                      visits.isNotEmpty ? visits.first.clinic.name : 'Clinic',
+                  dueDate: nextFollowUp,
+                ),
           ),
         if (patient.email?.trim().isNotEmpty == true)
           InfoRow(
@@ -449,7 +466,8 @@ class _InfoTab extends StatelessWidget {
             value: patient.email,
             icon: Icons.email_outlined,
           ),
-        if (patient.phone.trim().isEmpty && (patient.email ?? '').trim().isEmpty)
+        if (patient.phone.trim().isEmpty &&
+            (patient.email ?? '').trim().isEmpty)
           const InfoRow(
             label: 'Contact',
             value: 'No contact details on file',
@@ -516,19 +534,22 @@ class _InfoTab extends StatelessWidget {
         // Reviews & Notes
         InfoRow(
           label: 'Google Review',
-          value: patient.reviewGiven
-              ? 'Reviewed ★'
-              : patient.reviewAskedAt != null
+          value:
+              patient.reviewGiven
+                  ? 'Reviewed ★'
+                  : patient.reviewAskedAt != null
                   ? 'Asked ${Formatters.formatDate(patient.reviewAskedAt!)}'
                   : 'Not requested',
           icon: Icons.star_outline,
-          onTap: () => showDialog(
-            context: context,
-            builder: (_) => RecordReviewDialog(
-              patient: patient,
-              clinicId: patient.primaryClinicId,
-            ),
-          ),
+          onTap:
+              () => showDialog(
+                context: context,
+                builder:
+                    (_) => RecordReviewDialog(
+                      patient: patient,
+                      clinicId: patient.primaryClinicId,
+                    ),
+              ),
         ),
         if (hasNotes)
           InfoRow(
@@ -606,30 +627,32 @@ class _VisitsTab extends ConsumerWidget {
               AppHaptics.medium();
               final confirmed = await showDialog<bool>(
                 context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Delete Visit Entry?'),
-                  content: Text(
-                    'Are you sure you want to delete the visit recorded on ${Formatters.formatDate(v.visit.visitDate)} for ${v.visit.disease}? This action cannot be undone.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(false),
-                      child: const Text('Cancel'),
-                    ),
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Theme.of(ctx).colorScheme.error,
+                builder:
+                    (ctx) => AlertDialog(
+                      title: const Text('Delete Visit Entry?'),
+                      content: Text(
+                        'Are you sure you want to delete the visit recorded on ${Formatters.formatDate(v.visit.visitDate)} for ${v.visit.disease}? This action cannot be undone.',
                       ),
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      child: const Text('Delete Entry'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(ctx).colorScheme.error,
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text('Delete Entry'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               );
 
               if (confirmed == true) {
                 final db = ref.read(databaseProvider);
-                await (db.delete(db.visits)..where((t) => t.id.equals(v.visit.id))).go();
+                await (db.delete(db.visits)
+                  ..where((t) => t.id.equals(v.visit.id))).go();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Visit entry deleted.')),
@@ -649,12 +672,14 @@ class _VisitsTab extends ConsumerWidget {
                       ),
                     ),
                     CustomBadge(
-                      label: v.visit.visitType == 'new'
-                          ? 'New Visit'
-                          : 'Repeat Visit',
-                      color: v.visit.visitType == 'new'
-                          ? scheme.primary
-                          : scheme.secondary,
+                      label:
+                          v.visit.visitType == 'new'
+                              ? 'New Visit'
+                              : 'Repeat Visit',
+                      color:
+                          v.visit.visitType == 'new'
+                              ? scheme.primary
+                              : scheme.secondary,
                     ),
                     if (v.visit.consultationType.isNotEmpty &&
                         v.visit.consultationType != 'clinic') ...[
@@ -691,10 +716,7 @@ class _VisitsTab extends ConsumerWidget {
                       color: scheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: Spacing.xs),
-                    Text(
-                      v.clinic.name,
-                      style: theme.textTheme.labelMedium,
-                    ),
+                    Text(v.clinic.name, style: theme.textTheme.labelMedium),
                     if (v.visit.outcome != null &&
                         v.visit.outcome!.isNotEmpty) ...[
                       const Spacer(),
@@ -741,14 +763,16 @@ class _PaymentsTab extends StatelessWidget {
               Spacing.lg,
               Spacing.md,
             ),
-            onTap: () => showDialog(
-              context: context,
-              builder: (_) => ReceiptPreviewDialog(
-                cashMemo: m.memo,
-                patient: m.patient,
-                clinicName: m.clinic.name,
-              ),
-            ),
+            onTap:
+                () => showDialog(
+                  context: context,
+                  builder:
+                      (_) => ReceiptPreviewDialog(
+                        cashMemo: m.memo,
+                        patient: m.patient,
+                        clinicName: m.clinic.name,
+                      ),
+                ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -787,10 +811,7 @@ class _PaymentsTab extends StatelessWidget {
                         color: scheme.error,
                       )
                     else
-                      CustomBadge(
-                        label: 'Paid',
-                        color: scheme.primary,
-                      ),
+                      CustomBadge(label: 'Paid', color: scheme.primary),
                   ],
                 ),
               ],
@@ -831,8 +852,7 @@ class _InsightsTab extends StatelessWidget {
 
     int? avgDaysBetweenVisits;
     if (visits.length > 1) {
-      final sortedDates = visits.map((v) => v.visit.visitDate).toList()
-        ..sort();
+      final sortedDates = visits.map((v) => v.visit.visitDate).toList()..sort();
       final span = sortedDates.last.difference(sortedDates.first).inDays;
       avgDaysBetweenVisits = (span / (visits.length - 1)).round();
     }
@@ -843,7 +863,10 @@ class _InsightsTab extends StatelessWidget {
         const SectionHeader(title: 'Visit breakdown', tightTop: true),
         InfoRow(label: 'Total visits', value: '${visits.length}'),
         InfoRow(label: 'New consultations', value: '$newCount'),
-        InfoRow(label: 'Repeat follow-ups', value: '${visits.length - newCount}'),
+        InfoRow(
+          label: 'Repeat follow-ups',
+          value: '${visits.length - newCount}',
+        ),
         if (avgDaysBetweenVisits != null)
           InfoRow(
             label: 'Avg interval between visits',
@@ -880,45 +903,50 @@ class _FollowUpsTab extends ConsumerWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    final scheduled = visits
-        .where((v) => v.visit.nextFollowUpDate != null)
-        .toList()
-      ..sort((a, b) =>
-          a.visit.nextFollowUpDate!.compareTo(b.visit.nextFollowUpDate!));
+    final scheduled =
+        visits.where((v) => v.visit.nextFollowUpDate != null).toList()..sort(
+          (a, b) =>
+              a.visit.nextFollowUpDate!.compareTo(b.visit.nextFollowUpDate!),
+        );
 
     if (scheduled.isEmpty) {
       return EmptyState(
         icon: Icons.event_repeat_outlined,
         title: 'No follow-ups scheduled',
-        message: 'Set a follow-up date when recording a visit or tap below to schedule a future check-in.',
+        message:
+            'Set a follow-up date when recording a visit or tap below to schedule a future check-in.',
         actionLabel: 'Schedule Follow-up',
         onAction: () {
           AppHaptics.selection();
           showDialog(
             context: context,
-            builder: (_) => ScheduleFollowUpDialog(
-              patient: patient,
-              defaultDisease: patient.primaryDisease,
-              defaultClinicId: patient.primaryClinicId,
-            ),
+            builder:
+                (_) => ScheduleFollowUpDialog(
+                  patient: patient,
+                  defaultDisease: patient.primaryDisease,
+                  defaultClinicId: patient.primaryClinicId,
+                ),
           );
         },
       );
     }
 
-    final overdue = scheduled
-        .where((v) => v.visit.nextFollowUpDate!.isBefore(today))
-        .toList();
-    final upcoming = scheduled
-        .where((v) => !v.visit.nextFollowUpDate!.isBefore(today))
-        .toList();
+    final overdue =
+        scheduled
+            .where((v) => v.visit.nextFollowUpDate!.isBefore(today))
+            .toList();
+    final upcoming =
+        scheduled
+            .where((v) => !v.visit.nextFollowUpDate!.isBefore(today))
+            .toList();
 
     Widget row(VisitWithDetails v, {required bool isOverdue}) {
       final due = v.visit.nextFollowUpDate!;
       final days = due.difference(today).inDays;
-      final label = isOverdue
-          ? '${-days} ${(-days) == 1 ? 'day' : 'days'} overdue'
-          : days == 0
+      final label =
+          isOverdue
+              ? '${-days} ${(-days) == 1 ? 'day' : 'days'} overdue'
+              : days == 0
               ? 'Due today'
               : 'In $days ${days == 1 ? 'day' : 'days'}';
 
@@ -933,32 +961,33 @@ class _FollowUpsTab extends ConsumerWidget {
           AppHaptics.medium();
           final confirmed = await showDialog<bool>(
             context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Remove Scheduled Follow-up?'),
-              content: Text(
-                'Remove follow-up scheduled for ${Formatters.formatDate(due)} (${v.visit.disease})?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(ctx).colorScheme.error,
+            builder:
+                (ctx) => AlertDialog(
+                  title: const Text('Remove Scheduled Follow-up?'),
+                  content: Text(
+                    'Remove follow-up scheduled for ${Formatters.formatDate(due)} (${v.visit.disease})?',
                   ),
-                  onPressed: () => Navigator.of(ctx).pop(true),
-                  child: const Text('Remove Follow-up'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(ctx).colorScheme.error,
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text('Remove Follow-up'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
           );
 
           if (confirmed == true) {
             final db = ref.read(databaseProvider);
-            await (db.update(db.visits)..where((t) => t.id.equals(v.visit.id))).write(
-              const VisitsCompanion(nextFollowUpDate: Value(null)),
-            );
+            await (db.update(db.visits)..where(
+              (t) => t.id.equals(v.visit.id),
+            )).write(const VisitsCompanion(nextFollowUpDate: Value(null)));
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Scheduled follow-up removed.')),
@@ -971,9 +1000,10 @@ class _FollowUpsTab extends ConsumerWidget {
           children: [
             Icon(
               isOverdue ? Icons.warning_amber_outlined : Icons.event_available,
-              color: isOverdue
-                  ? theme.colorScheme.error
-                  : theme.colorScheme.primary,
+              color:
+                  isOverdue
+                      ? theme.colorScheme.error
+                      : theme.colorScheme.primary,
             ),
             const SizedBox(width: Spacing.md),
             Expanded(
@@ -1013,9 +1043,10 @@ class _FollowUpsTab extends ConsumerWidget {
                 Text(
                   label,
                   style: theme.textTheme.labelMedium?.copyWith(
-                    color: isOverdue
-                        ? theme.colorScheme.error
-                        : theme.colorScheme.onSurfaceVariant,
+                    color:
+                        isOverdue
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1024,7 +1055,11 @@ class _FollowUpsTab extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton.outlined(
-                      icon: Icon(Icons.event_busy_outlined, size: 18, color: theme.colorScheme.error),
+                      icon: Icon(
+                        Icons.event_busy_outlined,
+                        size: 18,
+                        color: theme.colorScheme.error,
+                      ),
                       tooltip: 'Cancel follow-up',
                       onPressed: () async {
                         AppHaptics.medium();
@@ -1038,13 +1073,18 @@ class _FollowUpsTab extends ConsumerWidget {
                         );
                         if (confirmed == true && context.mounted) {
                           final db = ref.read(databaseProvider);
-                          await (db.update(db.visits)..where((t) => t.id.equals(v.visit.id))).write(
-                            const VisitsCompanion(nextFollowUpDate: Value(null)),
+                          await (db.update(db.visits)
+                            ..where((t) => t.id.equals(v.visit.id))).write(
+                            const VisitsCompanion(
+                              nextFollowUpDate: Value(null),
+                            ),
                           );
                           AppHaptics.medium();
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Scheduled follow-up cancelled.')),
+                              const SnackBar(
+                                content: Text('Scheduled follow-up cancelled.'),
+                              ),
                             );
                           }
                         }
@@ -1052,7 +1092,11 @@ class _FollowUpsTab extends ConsumerWidget {
                     ),
                     const SizedBox(width: Spacing.xs),
                     IconButton.outlined(
-                      icon: Icon(Icons.event_available_outlined, size: 18, color: theme.colorScheme.primary),
+                      icon: Icon(
+                        Icons.event_available_outlined,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
                       tooltip: 'Record visit',
                       onPressed: () {
                         AppHaptics.selection();
@@ -1140,7 +1184,10 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                         color: scheme.primaryContainer,
                         borderRadius: Radii.smAll,
                       ),
-                      child: Icon(Icons.assignment_outlined, color: scheme.primary),
+                      child: Icon(
+                        Icons.assignment_outlined,
+                        color: scheme.primary,
+                      ),
                     ),
                     const SizedBox(width: Spacing.sm),
                     Expanded(
@@ -1175,13 +1222,20 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                       value: record.chiefComplaints.first.complaint,
                       icon: Icons.healing_outlined,
                     ),
-                  if (record.clinicalAssessment.finalWorkingDiagnosis.isNotEmpty ||
+                  if (record
+                          .clinicalAssessment
+                          .finalWorkingDiagnosis
+                          .isNotEmpty ||
                       record.clinicalAssessment.provisionalDiagnosis.isNotEmpty)
                     InfoRow(
                       label: 'Diagnosis',
-                      value: record.clinicalAssessment.finalWorkingDiagnosis.isNotEmpty
-                          ? record.clinicalAssessment.finalWorkingDiagnosis
-                          : record.clinicalAssessment.provisionalDiagnosis,
+                      value:
+                          record
+                                  .clinicalAssessment
+                                  .finalWorkingDiagnosis
+                                  .isNotEmpty
+                              ? record.clinicalAssessment.finalWorkingDiagnosis
+                              : record.clinicalAssessment.provisionalDiagnosis,
                       icon: Icons.medical_services_outlined,
                     ),
                   InfoRow(
@@ -1196,9 +1250,11 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                   ),
                   InfoRow(
                     label: 'Simillimum Remedy',
-                    value: record.caseTotality.selectedRemedy.isNotEmpty
-                        ? '${record.caseTotality.selectedRemedy} ${record.caseTotality.potency}'.trim()
-                        : null,
+                    value:
+                        record.caseTotality.selectedRemedy.isNotEmpty
+                            ? '${record.caseTotality.selectedRemedy} ${record.caseTotality.potency}'
+                                .trim()
+                            : null,
                     icon: Icons.medication_outlined,
                   ),
                   InfoRow(
@@ -1246,7 +1302,8 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
-                          builder: (_) => MasterCaseTakingScreen(patient: patient),
+                          builder:
+                              (_) => MasterCaseTakingScreen(patient: patient),
                         ),
                       );
                     },
@@ -1259,7 +1316,8 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
-                          builder: (_) => ClinicalCaseSheetScreen(patient: patient),
+                          builder:
+                              (_) => ClinicalCaseSheetScreen(patient: patient),
                         ),
                       );
                     },
@@ -1289,18 +1347,21 @@ class PatientProfileLoaderScreen extends ConsumerWidget {
         if (patient == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Patient Not Found')),
-            body: const Center(child: Text('This patient record could not be found.')),
+            body: const Center(
+              child: Text('This patient record could not be found.'),
+            ),
           );
         }
         return PatientProfileScreen(patient: patient);
       },
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (err, _) => Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: Center(child: Text('Error loading patient: $err')),
-      ),
+      loading:
+          () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error:
+          (err, _) => Scaffold(
+            appBar: AppBar(title: const Text('Error')),
+            body: Center(child: Text('Error loading patient: $err')),
+          ),
     );
   }
 }

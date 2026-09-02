@@ -54,9 +54,10 @@ class MetricStrip extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     Widget buildContent(BoxConstraints constraints) {
-      final availableWidth = constraints.maxWidth.isFinite
-          ? constraints.maxWidth
-          : MediaQuery.sizeOf(context).width;
+      final availableWidth =
+          constraints.maxWidth.isFinite
+              ? constraints.maxWidth
+              : MediaQuery.sizeOf(context).width;
 
       final textScale = MediaQuery.textScalerOf(context).scale(1.0);
       // Comfortable cell with icon badge (28px) + gap (8px) + text column requires >= 104px * textScale
@@ -80,10 +81,7 @@ class MetricStrip extends StatelessWidget {
                     ),
                   ),
                 Expanded(
-                  child: _MetricCell(
-                    metric: metrics[i],
-                    showIcon: showIcons,
-                  ),
+                  child: _MetricCell(metric: metrics[i], showIcon: showIcons),
                 ),
               ],
             ],
@@ -99,7 +97,9 @@ class MetricStrip extends StatelessWidget {
                 for (var i = 0; i < metrics.length; i++) ...[
                   if (i > 0)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Spacing.sm,
+                      ),
                       child: VerticalDivider(
                         width: 1,
                         thickness: 1,
@@ -128,14 +128,11 @@ class MetricStrip extends StatelessWidget {
     }
 
     return Container(
-      margin: margin ??
-          const EdgeInsets.fromLTRB(
-            Spacing.lg,
-            0,
-            Spacing.lg,
-            Spacing.md,
-          ),
-      padding: padding ??
+      margin:
+          margin ??
+          const EdgeInsets.fromLTRB(Spacing.lg, 0, Spacing.lg, Spacing.md),
+      padding:
+          padding ??
           const EdgeInsets.symmetric(
             horizontal: Spacing.md,
             vertical: Spacing.md,
@@ -143,9 +140,7 @@ class MetricStrip extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
         borderRadius: Radii.lgAll,
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.5),
-        ),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) => buildContent(constraints),
@@ -158,10 +153,7 @@ class _MetricCell extends StatelessWidget {
   final Metric metric;
   final bool showIcon;
 
-  const _MetricCell({
-    required this.metric,
-    this.showIcon = true,
-  });
+  const _MetricCell({required this.metric, this.showIcon = true});
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +162,8 @@ class _MetricCell extends StatelessWidget {
     final signed = metric.signedAmount;
     final accent = metric.color ?? scheme.primary;
 
-    final valueColor = metric.color ??
+    final valueColor =
+        metric.color ??
         (signed == null
             ? scheme.onSurface
             : AppTheme.moneyColor(context, signed));
@@ -252,11 +245,7 @@ class _MetricCell extends StatelessWidget {
               color: accent.withValues(alpha: 0.12),
               borderRadius: Radii.mdAll,
             ),
-            child: Icon(
-              metric.icon,
-              size: 18,
-              color: accent,
-            ),
+            child: Icon(metric.icon, size: 18, color: accent),
           ),
           const SizedBox(width: Spacing.sm),
           Expanded(child: textContent),

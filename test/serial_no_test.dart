@@ -30,65 +30,84 @@ void main() {
   });
 
   Future<void> addPatient(String id, String serial, String clinicId) {
-    return db.into(db.patients).insert(PatientsCompanion.insert(
-          id: id,
-          patientCode: Value('P-$id'),
-          name: 'Patient $id',
-          phone: '9800000000',
-          age: 30,
-          gender: 'Male',
-          primaryClinicId: Value(clinicId),
-          serialNo: Value(serial),
-        ));
+    return db
+        .into(db.patients)
+        .insert(
+          PatientsCompanion.insert(
+            id: id,
+            patientCode: Value('P-$id'),
+            name: 'Patient $id',
+            phone: '9800000000',
+            age: 30,
+            gender: 'Male',
+            primaryClinicId: Value(clinicId),
+            serialNo: Value(serial),
+          ),
+        );
   }
 
   group('serialNoInUseProvider', () {
-    test('reports false when nothing at the clinic has that serial',
-        () async {
-      final inUse = await container.read(serialNoInUseProvider(
-        const SerialLookupArgs(clinicId: 'clinic_old', serialNo: '1'),
-      ).future);
+    test('reports false when nothing at the clinic has that serial', () async {
+      final inUse = await container.read(
+        serialNoInUseProvider(
+          const SerialLookupArgs(clinicId: 'clinic_old', serialNo: '1'),
+        ).future,
+      );
       expect(inUse, isFalse);
     });
 
-    test('reports true once a patient at the clinic holds that serial',
-        () async {
-      await addPatient('p1', '14', 'clinic_old');
+    test(
+      'reports true once a patient at the clinic holds that serial',
+      () async {
+        await addPatient('p1', '14', 'clinic_old');
 
-      final inUse = await container.read(serialNoInUseProvider(
-        const SerialLookupArgs(clinicId: 'clinic_old', serialNo: '14'),
-      ).future);
-      expect(inUse, isTrue);
-    });
+        final inUse = await container.read(
+          serialNoInUseProvider(
+            const SerialLookupArgs(clinicId: 'clinic_old', serialNo: '14'),
+          ).future,
+        );
+        expect(inUse, isTrue);
+      },
+    );
 
     test('the same serial is free at a different clinic', () async {
       await addPatient('p1', '14', 'clinic_old');
 
-      final inUse = await container.read(serialNoInUseProvider(
-        const SerialLookupArgs(clinicId: 'clinic_new', serialNo: '14'),
-      ).future);
+      final inUse = await container.read(
+        serialNoInUseProvider(
+          const SerialLookupArgs(clinicId: 'clinic_new', serialNo: '14'),
+        ).future,
+      );
       expect(inUse, isFalse);
     });
 
     test('excludingPatientId lets a patient keep their own serial', () async {
       await addPatient('p1', '14', 'clinic_old');
 
-      final inUse = await container.read(serialNoInUseProvider(
-        const SerialLookupArgs(
-          clinicId: 'clinic_old',
-          serialNo: '14',
-          excludingPatientId: 'p1',
-        ),
-      ).future);
-      expect(inUse, isFalse,
-          reason: 'checking a patient against their own existing serial '
-              'must not flag it as taken');
+      final inUse = await container.read(
+        serialNoInUseProvider(
+          const SerialLookupArgs(
+            clinicId: 'clinic_old',
+            serialNo: '14',
+            excludingPatientId: 'p1',
+          ),
+        ).future,
+      );
+      expect(
+        inUse,
+        isFalse,
+        reason:
+            'checking a patient against their own existing serial '
+            'must not flag it as taken',
+      );
     });
 
     test('an empty serial is never reported as in use', () async {
-      final inUse = await container.read(serialNoInUseProvider(
-        const SerialLookupArgs(clinicId: 'clinic_old', serialNo: ''),
-      ).future);
+      final inUse = await container.read(
+        serialNoInUseProvider(
+          const SerialLookupArgs(clinicId: 'clinic_old', serialNo: ''),
+        ).future,
+      );
       expect(inUse, isFalse);
     });
   });
@@ -108,34 +127,37 @@ void main() {
       expect(patient.serialNo, '7');
     });
 
-    test('a duplicate serial at the same clinic is rejected by the database',
-        () async {
-      final notifier = PatientNotifier(db);
-      await notifier.registerPatient(
-        name: 'Asha Rao',
-        phone: '9800000001',
-        age: 34,
-        gender: 'Female',
-        primaryClinicId: 'clinic_old',
-        serialNo: '7',
-        disease: 'Migraine',
-      );
-
-      await expectLater(
-        notifier.registerPatient(
-          name: 'Second Patient',
-          phone: '9800000002',
-          age: 40,
-          gender: 'Male',
+    test(
+      'a duplicate serial at the same clinic is rejected by the database',
+      () async {
+        final notifier = PatientNotifier(db);
+        await notifier.registerPatient(
+          name: 'Asha Rao',
+          phone: '9800000001',
+          age: 34,
+          gender: 'Female',
           primaryClinicId: 'clinic_old',
           serialNo: '7',
-          disease: 'Cold',
-        ),
-        throwsA(anything),
-        reason: 'the unique index must reject this, not only the live '
-            'check the form runs before submit',
-      );
-    });
+          disease: 'Migraine',
+        );
+
+        await expectLater(
+          notifier.registerPatient(
+            name: 'Second Patient',
+            phone: '9800000002',
+            age: 40,
+            gender: 'Male',
+            primaryClinicId: 'clinic_old',
+            serialNo: '7',
+            disease: 'Cold',
+          ),
+          throwsA(anything),
+          reason:
+              'the unique index must reject this, not only the live '
+              'check the form runs before submit',
+        );
+      },
+    );
   });
 
   group('updatePatient', () {
@@ -160,9 +182,9 @@ void main() {
         serialNo: '99',
       );
 
-      final updated = await (db.select(db.patients)
-            ..where((t) => t.id.equals(patient.id)))
-          .getSingle();
+      final updated =
+          await (db.select(db.patients)
+            ..where((t) => t.id.equals(patient.id))).getSingle();
       expect(updated.serialNo, '99');
     });
 

@@ -19,10 +19,7 @@ import 'recall_screen.dart';
 class PatientsTabScreen extends StatelessWidget {
   final int initialIndex;
 
-  const PatientsTabScreen({
-    super.key,
-    this.initialIndex = 0,
-  });
+  const PatientsTabScreen({super.key, this.initialIndex = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +42,9 @@ class PatientsTabScreen extends StatelessWidget {
 }
 
 /// Column spec for the Patients export (backward-compatibility pinned in tests).
-List<ExportColumn<Patient>> patientsExportColumns(Map<String, String> clinicNames) {
+List<ExportColumn<Patient>> patientsExportColumns(
+  Map<String, String> clinicNames,
+) {
   return [
     ExportColumn('Serial No.', (p) => p.serialNo),
     ExportColumn('Patient Code', (p) => p.patientCode),
@@ -65,7 +64,13 @@ List<ExportColumn<Patient>> patientsExportColumns(Map<String, String> clinicName
     ExportColumn('Primary Disease', (p) => p.primaryDisease ?? ''),
     ExportColumn('Referral Source', (p) => p.referralSource ?? ''),
     ExportColumn('Google Review Given', (p) => p.reviewGiven ? 'Yes' : 'No'),
-    ExportColumn('Google Review Asked Date', (p) => p.reviewAskedAt != null ? Formatters.formatDate(p.reviewAskedAt!) : ''),
+    ExportColumn(
+      'Google Review Asked Date',
+      (p) =>
+          p.reviewAskedAt != null
+              ? Formatters.formatDate(p.reviewAskedAt!)
+              : '',
+    ),
     ExportColumn('Registered On', (p) => Formatters.formatDate(p.createdAt)),
     ExportColumn('Last Updated', (p) => Formatters.formatDate(p.updatedAt)),
     ExportColumn('Notes', (p) => p.notes ?? ''),
@@ -86,7 +91,8 @@ class _PatientsExportAction extends ConsumerWidget {
       rows: exportRows,
       columns: PatientExportService.getMasterExportColumns(),
       pdfColumns: PatientExportService.getPdfExportColumns(),
-      customXlsxBuilder: () => PatientExportService.buildMultiSheetPatientXlsx(db),
+      customXlsxBuilder:
+          () => PatientExportService.buildMultiSheetPatientXlsx(db),
     );
   }
 }
@@ -100,12 +106,23 @@ List<ExportColumn<RecallEntry>> followUpsExportColumns() {
     ExportColumn('Phone', (e) => e.patient.phone),
     ExportColumn('Clinic', (e) => e.clinic.name),
     ExportColumn('Primary Disease', (e) => e.visit.disease),
-    ExportColumn('Last Visit Date', (e) => Formatters.formatDate(e.visit.visitDate)),
-    ExportColumn('Follow-up Due Date', (e) => e.visit.nextFollowUpDate != null ? Formatters.formatDate(e.visit.nextFollowUpDate!) : 'Not scheduled'),
+    ExportColumn(
+      'Last Visit Date',
+      (e) => Formatters.formatDate(e.visit.visitDate),
+    ),
+    ExportColumn(
+      'Follow-up Due Date',
+      (e) =>
+          e.visit.nextFollowUpDate != null
+              ? Formatters.formatDate(e.visit.nextFollowUpDate!)
+              : 'Not scheduled',
+    ),
     ExportColumn('Status', (e) {
-      if (e.isOverdue) return 'Overdue by ${e.daysOverdue} day${e.daysOverdue == 1 ? '' : 's'}';
+      if (e.isOverdue)
+        return 'Overdue by ${e.daysOverdue} day${e.daysOverdue == 1 ? '' : 's'}';
       if (e.isDueToday) return 'Due Today';
-      if (e.daysOverdue < 0) return 'Upcoming in ${-e.daysOverdue} day${-e.daysOverdue == 1 ? '' : 's'}';
+      if (e.daysOverdue < 0)
+        return 'Upcoming in ${-e.daysOverdue} day${-e.daysOverdue == 1 ? '' : 's'}';
       return 'Lapsed';
     }),
     ExportColumn('Last Visit Outcome', (e) => e.visit.outcome ?? ''),
@@ -119,14 +136,15 @@ class _FollowUpsExportAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recallLists = ref.watch(recallListProvider).value;
-    final allEntries = recallLists != null
-        ? [
-            ...recallLists.overdue,
-            ...recallLists.dueSoon,
-            ...recallLists.upcoming,
-            ...recallLists.lapsed,
-          ]
-        : <RecallEntry>[];
+    final allEntries =
+        recallLists != null
+            ? [
+              ...recallLists.overdue,
+              ...recallLists.dueSoon,
+              ...recallLists.upcoming,
+              ...recallLists.lapsed,
+            ]
+            : <RecallEntry>[];
 
     return ExportAction<RecallEntry>(
       screenSlug: 'follow-ups',
@@ -145,11 +163,23 @@ List<ExportColumn<FootfallWithDetails>> footfallsExportColumns() {
     ExportColumn('Phone', (f) => f.footfall.phone ?? ''),
     ExportColumn('Clinic', (f) => f.clinic.name),
     ExportColumn('Disease Inquired', (f) => f.footfall.disease ?? ''),
-    ExportColumn('Conversion Status', (f) => f.isConverted ? 'Converted to Patient' : 'Pending Inquiry'),
-    ExportColumn('Converted Patient Code', (f) => f.convertedPatient?.patientCode ?? ''),
-    ExportColumn('Converted Patient Name', (f) => f.convertedPatient?.name ?? ''),
+    ExportColumn(
+      'Conversion Status',
+      (f) => f.isConverted ? 'Converted to Patient' : 'Pending Inquiry',
+    ),
+    ExportColumn(
+      'Converted Patient Code',
+      (f) => f.convertedPatient?.patientCode ?? '',
+    ),
+    ExportColumn(
+      'Converted Patient Name',
+      (f) => f.convertedPatient?.name ?? '',
+    ),
     ExportColumn('Reception Notes', (f) => f.footfall.notes ?? ''),
-    ExportColumn('Logged On', (f) => Formatters.formatDate(f.footfall.createdAt)),
+    ExportColumn(
+      'Logged On',
+      (f) => Formatters.formatDate(f.footfall.createdAt),
+    ),
   ];
 }
 

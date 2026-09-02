@@ -9,10 +9,7 @@ import '../../../growth/providers/health_score_provider.dart';
 class ClinicHealthScoreCard extends ConsumerWidget {
   final EdgeInsetsGeometry? margin;
 
-  const ClinicHealthScoreCard({
-    super.key,
-    this.margin,
-  });
+  const ClinicHealthScoreCard({super.key, this.margin});
 
   void _showBreakdownSheet(BuildContext context, ClinicHealthScore score) {
     AppHaptics.selection();
@@ -43,82 +40,83 @@ class ClinicHealthScoreCard extends ConsumerWidget {
       _ => (scheme.error, scheme.errorContainer),
     };
 
-        return AppCard(
-          margin: margin ??
-              const EdgeInsets.symmetric(
-                horizontal: Spacing.lg,
-                vertical: Spacing.xs,
+    return AppCard(
+      margin:
+          margin ??
+          const EdgeInsets.symmetric(
+            horizontal: Spacing.lg,
+            vertical: Spacing.xs,
+          ),
+      onTap: () => _showBreakdownSheet(context, healthScore),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: scoreBg.withValues(alpha: 0.5),
+              shape: BoxShape.circle,
+              border: Border.all(color: scoreColor, width: 2.5),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$score',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: scoreColor,
               ),
-          onTap: () => _showBreakdownSheet(context, healthScore),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: scoreBg.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: scoreColor, width: 2.5),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '$score',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: scoreColor,
-                  ),
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+          const SizedBox(width: Spacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Practice Health Score',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: Spacing.xs),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: Spacing.xs + 2,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: scoreBg,
-                            borderRadius: Radii.smAll,
-                          ),
-                          child: Text(
-                            healthScore.grade,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: scoreColor,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
                     Text(
-                      healthScore.summaryReason,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
+                      'Practice Health Score',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(width: Spacing.xs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Spacing.xs + 2,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: scoreBg,
+                        borderRadius: Radii.smAll,
+                      ),
+                      child: Text(
+                        healthScore.grade,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: scoreColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              Icon(Icons.chevron_right, color: scheme.onSurfaceVariant, size: 20),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  healthScore.summaryReason,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
-        );
+          Icon(Icons.chevron_right, color: scheme.onSurfaceVariant, size: 20),
+        ],
+      ),
+    );
   }
 }
 
@@ -135,7 +133,9 @@ class _HealthScoreBreakdownSheet extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: scheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(Radii.lg)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(Radii.lg),
+        ),
       ),
       padding: const EdgeInsets.all(Spacing.xl),
       child: SafeArea(

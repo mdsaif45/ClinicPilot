@@ -47,7 +47,10 @@ class _DateFieldState extends State<DateField> {
     if (widget.controller == null) {
       _isSelfManaged = true;
       _internalController = TextEditingController(
-        text: widget.value != null ? Formatters.formatDdMmYyyy(widget.value!) : '',
+        text:
+            widget.value != null
+                ? Formatters.formatDdMmYyyy(widget.value!)
+                : '',
       );
     }
   }
@@ -85,9 +88,10 @@ class _DateFieldState extends State<DateField> {
 
     final picked = await showDatePicker(
       context: context,
-      initialDate: initial.isBefore(first)
-          ? first
-          : (initial.isAfter(last) ? last : initial),
+      initialDate:
+          initial.isBefore(first)
+              ? first
+              : (initial.isAfter(last) ? last : initial),
       firstDate: first,
       lastDate: last,
     );

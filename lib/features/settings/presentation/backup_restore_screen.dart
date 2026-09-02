@@ -23,7 +23,8 @@ class BackupRestoreScreen extends ConsumerStatefulWidget {
   const BackupRestoreScreen({super.key});
 
   @override
-  ConsumerState<BackupRestoreScreen> createState() => _BackupRestoreScreenState();
+  ConsumerState<BackupRestoreScreen> createState() =>
+      _BackupRestoreScreenState();
 }
 
 class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
@@ -79,7 +80,8 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       );
       if (res == null || res.files.isEmpty) return;
       final picked = res.files.first;
-      final fileBytes = picked.bytes ??
+      final fileBytes =
+          picked.bytes ??
           (picked.path != null ? await File(picked.path!).readAsBytes() : null);
       if (fileBytes == null) return;
 
@@ -94,16 +96,18 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
           final confirmed = await showDialog<bool>(
             context: context,
             barrierDismissible: false,
-            builder: (ctx) => RestorePreviewDialog(
-              metadata: metadata,
-              onConfirm: () async {
-                final result = await BackupContainerService(db)
-                    .restoreFromBackupBytes(fileBytes);
-                if (ctx.mounted) {
-                  Navigator.of(ctx).pop(result.success);
-                }
-              },
-            ),
+            builder:
+                (ctx) => RestorePreviewDialog(
+                  metadata: metadata,
+                  onConfirm: () async {
+                    final result = await BackupContainerService(
+                      db,
+                    ).restoreFromBackupBytes(fileBytes);
+                    if (ctx.mounted) {
+                      Navigator.of(ctx).pop(result.success);
+                    }
+                  },
+                ),
           );
 
           if (confirmed == true) {
@@ -123,9 +127,7 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
         } catch (e) {
           if (!mounted) return;
           messenger.showSnackBar(
-            SnackBar(
-              content: Text('Invalid or corrupted backup file: $e'),
-            ),
+            SnackBar(content: Text('Invalid or corrupted backup file: $e')),
           );
         }
         return;
@@ -139,17 +141,20 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
         if (!mounted) return;
         final imported = await nav.push<bool>(
           MaterialPageRoute(
-            builder: (_) => ImportPreviewScreen(
-              bytes: fileBytes,
-              clinicIdsByName: clinicIdsByName,
-            ),
+            builder:
+                (_) => ImportPreviewScreen(
+                  bytes: fileBytes,
+                  clinicIdsByName: clinicIdsByName,
+                ),
           ),
         );
 
         if (imported == true) {
           ref.invalidate(clinicsStreamProvider);
           messenger.showSnackBar(
-            const SnackBar(content: Text('Spreadsheet data imported successfully.')),
+            const SnackBar(
+              content: Text('Spreadsheet data imported successfully.'),
+            ),
           );
         }
       }
@@ -241,7 +246,8 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       );
       if (res == null || res.files.isEmpty) return;
       final picked = res.files.first;
-      final fileBytes = picked.bytes ??
+      final fileBytes =
+          picked.bytes ??
           (picked.path != null ? await File(picked.path!).readAsBytes() : null);
       if (fileBytes == null) return;
 
@@ -251,17 +257,20 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       if (!mounted) return;
       final imported = await nav.push<bool>(
         MaterialPageRoute(
-          builder: (_) => ImportPreviewScreen(
-            bytes: fileBytes,
-            clinicIdsByName: clinicIdsByName,
-          ),
+          builder:
+              (_) => ImportPreviewScreen(
+                bytes: fileBytes,
+                clinicIdsByName: clinicIdsByName,
+              ),
         ),
       );
 
       if (imported == true) {
         ref.invalidate(clinicsStreamProvider);
         messenger.showSnackBar(
-          const SnackBar(content: Text('Patient roster imported successfully.')),
+          const SnackBar(
+            content: Text('Patient roster imported successfully.'),
+          ),
         );
       }
     } catch (e) {
@@ -277,9 +286,7 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
     final scheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Backup and restore'),
-      ),
+      appBar: AppBar(title: const Text('Backup and restore')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
         children: [
@@ -292,13 +299,14 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                 title: 'Create Data Backup (.cpbak)',
                 subtitle:
                     '100% loss-free backup of all 14 clinical & financial tables',
-                trailing: _isCreatingBackup
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
+                trailing:
+                    _isCreatingBackup
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : null,
                 onTap: _isCreatingBackup ? null : _createFullBackup,
               ),
               AppListTile(
@@ -313,11 +321,12 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                 title: 'Periodic Backups',
                 subtitle: 'Configure automated periodic backup schedule',
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const PeriodicBackupsScreen(),
-                  ),
-                ),
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PeriodicBackupsScreen(),
+                      ),
+                    ),
               ),
             ],
           ),
@@ -331,26 +340,28 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                 title: 'Export to Excel (.xlsx)',
                 subtitle:
                     'Multi-sheet workbook for accounting, tax audit, and viewing',
-                trailing: _isExportingExcel
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
+                trailing:
+                    _isExportingExcel
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : null,
                 onTap: _isExportingExcel ? null : _exportExcel,
               ),
               AppListTile(
                 icon: Icons.description_outlined,
                 title: 'Export to CSV (.csv)',
                 subtitle: 'Raw CSV export for external spreadsheets',
-                trailing: _isExportingCsv
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
+                trailing:
+                    _isExportingCsv
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : null,
                 onTap: _isExportingCsv ? null : _exportCsv,
               ),
             ],
@@ -379,65 +390,74 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                 title: 'Load Demo Practice Data',
                 subtitle:
                     'Populate 125 realistic patients, case records, and finances',
-                trailing: _isSeedingDemo
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
-                onTap: _isSeedingDemo
-                    ? null
-                    : () async {
-                        setState(() => _isSeedingDemo = true);
-                        final messenger = ScaffoldMessenger.of(context);
-                        try {
-                          await SampleDataSeeder.seedRealisticData(ref);
-                          ref.invalidate(clinicsStreamProvider);
-                          messenger.showSnackBar(
-                            const SnackBar(
-                              content: Text('125 Patients & Multi-Clinic Demo Data Loaded!'),
-                            ),
-                          );
-                        } catch (e) {
-                          messenger.showSnackBar(
-                            SnackBar(content: Text('Failed to load demo data: $e')),
-                          );
-                        } finally {
-                          if (mounted) setState(() => _isSeedingDemo = false);
-                        }
-                      },
+                trailing:
+                    _isSeedingDemo
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : null,
+                onTap:
+                    _isSeedingDemo
+                        ? null
+                        : () async {
+                          setState(() => _isSeedingDemo = true);
+                          final messenger = ScaffoldMessenger.of(context);
+                          try {
+                            await SampleDataSeeder.seedRealisticData(ref);
+                            ref.invalidate(clinicsStreamProvider);
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  '125 Patients & Multi-Clinic Demo Data Loaded!',
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to load demo data: $e'),
+                              ),
+                            );
+                          } finally {
+                            if (mounted) setState(() => _isSeedingDemo = false);
+                          }
+                        },
               ),
               AppListTile(
                 icon: Icons.delete_sweep_outlined,
                 iconColor: scheme.error,
-                leadingBackgroundColor:
-                    scheme.errorContainer.withValues(alpha: 0.5),
+                leadingBackgroundColor: scheme.errorContainer.withValues(
+                  alpha: 0.5,
+                ),
                 titleColor: scheme.error,
                 title: 'Clear All Practice Data',
                 subtitle: 'Wipe all records and start fresh onboarding',
                 onTap: () async {
                   final confirmed = await showDialog<bool>(
                     context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Reset All Practice Data?'),
-                      content: const Text(
-                        'This will delete all patients, visits, cash memos, expenses, and clinics, resetting the app to a clean initial state. This action cannot be undone.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(false),
-                          child: const Text('Cancel'),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Theme.of(ctx).colorScheme.error,
+                    builder:
+                        (ctx) => AlertDialog(
+                          title: const Text('Reset All Practice Data?'),
+                          content: const Text(
+                            'This will delete all patients, visits, cash memos, expenses, and clinics, resetting the app to a clean initial state. This action cannot be undone.',
                           ),
-                          onPressed: () => Navigator.of(ctx).pop(true),
-                          child: const Text('Reset Everything'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(false),
+                              child: const Text('Cancel'),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(ctx).colorScheme.error,
+                              ),
+                              onPressed: () => Navigator.of(ctx).pop(true),
+                              child: const Text('Reset Everything'),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
                   );
                   if (confirmed == true) {
                     await ref.read(databaseProvider).clearAllPracticeData();

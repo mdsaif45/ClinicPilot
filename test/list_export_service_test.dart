@@ -18,10 +18,10 @@ void main() {
     ];
 
     test('writes a header row and one row per record', () {
-      final csv = ListExportService.buildCsv(
-        [const _Row('Alice', 100), const _Row('Bob', 200)],
-        columns,
-      );
+      final csv = ListExportService.buildCsv([
+        const _Row('Alice', 100),
+        const _Row('Bob', 200),
+      ], columns);
       final lines = csv.trim().split('\n');
 
       expect(lines[0], 'Name,Amount,Note');
@@ -30,34 +30,30 @@ void main() {
     });
 
     test('quotes a value containing a comma', () {
-      final csv = ListExportService.buildCsv(
-        [const _Row('Doe, John', 50)],
-        columns,
-      );
+      final csv = ListExportService.buildCsv([
+        const _Row('Doe, John', 50),
+      ], columns);
       expect(csv, contains('"Doe, John"'));
     });
 
     test('quotes and escapes a value containing a double quote', () {
-      final csv = ListExportService.buildCsv(
-        [const _Row('Say "hi"', 50)],
-        columns,
-      );
+      final csv = ListExportService.buildCsv([
+        const _Row('Say "hi"', 50),
+      ], columns);
       expect(csv, contains('"Say ""hi"""'));
     });
 
     test('quotes a value containing a newline', () {
-      final csv = ListExportService.buildCsv(
-        [const _Row('Multi\nline', 50)],
-        columns,
-      );
+      final csv = ListExportService.buildCsv([
+        const _Row('Multi\nline', 50),
+      ], columns);
       expect(csv, contains('"Multi\nline"'));
     });
 
     test('null values print as an empty cell, not the string "null"', () {
-      final csv = ListExportService.buildCsv(
-        [const _Row('No note', 50, null)],
-        columns,
-      );
+      final csv = ListExportService.buildCsv([
+        const _Row('No note', 50, null),
+      ], columns);
       expect(csv, isNot(contains('null')));
       expect(csv.trim().split('\n')[1], 'No note,50.0,');
     });
@@ -84,8 +80,7 @@ void main() {
       expect(lines.last, 'TOTAL,300.0,');
     });
 
-    test('no totals row is appended when there are no rows to total',
-        () {
+    test('no totals row is appended when there are no rows to total', () {
       final totals = ExportTotals<_Row>((rows) => ['TOTAL', 0, null]);
 
       final csv = ListExportService.buildCsv(<_Row>[], columns, totals: totals);
@@ -108,18 +103,20 @@ void main() {
       expect(lines[2], 'Total Revenue,45000.0');
     });
 
-    test('an optional title is written above the header, with a blank line',
-        () {
-      final csv = ListExportService.buildKeyValueCsv(
-        title: 'Growth summary: 2026-08-01 to 2026-08-31',
-        [const MapEntry('New Patients', 12)],
-      );
-      final lines = csv.trim().split('\n');
+    test(
+      'an optional title is written above the header, with a blank line',
+      () {
+        final csv = ListExportService.buildKeyValueCsv(
+          title: 'Growth summary: 2026-08-01 to 2026-08-31',
+          [const MapEntry('New Patients', 12)],
+        );
+        final lines = csv.trim().split('\n');
 
-      expect(lines[0], 'Growth summary: 2026-08-01 to 2026-08-31');
-      expect(lines[1], '');
-      expect(lines[2], 'Metric,Value');
-    });
+        expect(lines[0], 'Growth summary: 2026-08-01 to 2026-08-31');
+        expect(lines[1], '');
+        expect(lines[2], 'Metric,Value');
+      },
+    );
   });
 
   group('ListExportService.suggestedFileName', () {

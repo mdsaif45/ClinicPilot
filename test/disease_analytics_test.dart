@@ -17,42 +17,45 @@ void main() {
       expect(kCuratedDiseases.length, greaterThan(20));
     });
 
-    test('disease analytics summary groups revenue and patient metrics properly', () {
-      const stat1 = DiseaseStat(
-        disease: 'Eczema / Dermatitis',
-        patientCount: 5,
-        visitCount: 12,
-        totalRevenue: 6000,
-        repeatPatients: 4,
-        repeatRate: 80.0,
-        avgRevenuePerPatient: 1200,
-      );
+    test(
+      'disease analytics summary groups revenue and patient metrics properly',
+      () {
+        const stat1 = DiseaseStat(
+          disease: 'Eczema / Dermatitis',
+          patientCount: 5,
+          visitCount: 12,
+          totalRevenue: 6000,
+          repeatPatients: 4,
+          repeatRate: 80.0,
+          avgRevenuePerPatient: 1200,
+        );
 
-      const stat2 = DiseaseStat(
-        disease: 'Asthma',
-        patientCount: 3,
-        visitCount: 4,
-        totalRevenue: 2400,
-        repeatPatients: 1,
-        repeatRate: 33.3,
-        avgRevenuePerPatient: 800,
-      );
+        const stat2 = DiseaseStat(
+          disease: 'Asthma',
+          patientCount: 3,
+          visitCount: 4,
+          totalRevenue: 2400,
+          repeatPatients: 1,
+          repeatRate: 33.3,
+          avgRevenuePerPatient: 800,
+        );
 
-      const summary = DiseaseAnalyticsSummary(
-        totalConditions: 2,
-        topRevenueDisease: 'Eczema / Dermatitis',
-        topRevenueAmount: 6000,
-        topVolumeDisease: 'Eczema / Dermatitis',
-        topVolumeCount: 5,
-        totalRevenue: 8400,
-        stats: [stat1, stat2],
-      );
+        const summary = DiseaseAnalyticsSummary(
+          totalConditions: 2,
+          topRevenueDisease: 'Eczema / Dermatitis',
+          topRevenueAmount: 6000,
+          topVolumeDisease: 'Eczema / Dermatitis',
+          topVolumeCount: 5,
+          totalRevenue: 8400,
+          stats: [stat1, stat2],
+        );
 
-      expect(summary.totalConditions, equals(2));
-      expect(summary.topRevenueDisease, equals('Eczema / Dermatitis'));
-      expect(summary.totalRevenue, equals(8400.0));
-      expect(summary.stats.first.repeatRate, equals(80.0));
-    });
+        expect(summary.totalConditions, equals(2));
+        expect(summary.topRevenueDisease, equals('Eczema / Dermatitis'));
+        expect(summary.totalRevenue, equals(8400.0));
+        expect(summary.stats.first.repeatRate, equals(80.0));
+      },
+    );
   });
 
   group('DiseaseAutocompleteField Widget Tests', () {
@@ -64,9 +67,7 @@ void main() {
           child: MaterialApp(
             theme: AppTheme.lightTheme,
             home: Scaffold(
-              body: DiseaseAutocompleteField(
-                controller: controller,
-              ),
+              body: DiseaseAutocompleteField(controller: controller),
             ),
           ),
         ),

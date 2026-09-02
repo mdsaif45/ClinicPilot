@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -49,8 +48,12 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
   void initState() {
     super.initState();
     _categoryController = TextEditingController(text: widget.expense.category);
-    _subcategoryController = TextEditingController(text: widget.expense.subcategory ?? '');
-    _amountController = TextEditingController(text: widget.expense.amount.toString());
+    _subcategoryController = TextEditingController(
+      text: widget.expense.subcategory ?? '',
+    );
+    _amountController = TextEditingController(
+      text: widget.expense.amount.toString(),
+    );
     _notesController = TextEditingController(text: widget.expense.notes ?? '');
     _paymentMethod = widget.expense.paymentMethod;
     _isRecurring = widget.expense.isRecurring;
@@ -89,40 +92,49 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
             PickerField<String>(
               label: 'Category',
               prefixIcon: Icons.category,
-              value: _categories.contains(_categoryController.text)
-                  ? _categoryController.text
-                  : _categories.first,
-              options: _categories
-                  .map((c) => PickerOption(value: c, label: c))
-                  .toList(),
-              onChanged: (val) =>
-                  setState(() => _categoryController.text = val),
+              value:
+                  _categories.contains(_categoryController.text)
+                      ? _categoryController.text
+                      : _categories.first,
+              options:
+                  _categories
+                      .map((c) => PickerOption(value: c, label: c))
+                      .toList(),
+              onChanged:
+                  (val) => setState(() => _categoryController.text = val),
             ),
             const SizedBox(height: Spacing.md),
             TextFormField(
               controller: _subcategoryController,
-              decoration:
-                  const InputDecoration(labelText: 'Subcategory / Details'),
+              decoration: const InputDecoration(
+                labelText: 'Subcategory / Details',
+              ),
             ),
             const SizedBox(height: Spacing.md),
             TextFormField(
               controller: _amountController,
               decoration: const InputDecoration(labelText: 'Amount (Rs) *'),
               keyboardType: TextInputType.number,
-              validator: (val) =>
-                  val == null || double.tryParse(val.trim()) == null
-                      ? 'Required'
-                      : null,
+              validator:
+                  (val) =>
+                      val == null || double.tryParse(val.trim()) == null
+                          ? 'Required'
+                          : null,
             ),
             const SizedBox(height: Spacing.md),
             ChoiceChipField<String>(
               label: 'Payment Method',
               options: const ['Cash', 'UPI', 'Card', 'Bank Transfer'],
               // Fall back to Cash if a memo carries a method no longer offered.
-              value: const ['Cash', 'UPI', 'Card', 'Bank Transfer']
-                      .contains(_paymentMethod)
-                  ? _paymentMethod
-                  : 'Cash',
+              value:
+                  const [
+                        'Cash',
+                        'UPI',
+                        'Card',
+                        'Bank Transfer',
+                      ].contains(_paymentMethod)
+                      ? _paymentMethod
+                      : 'Cash',
               labelOf: (m) => m,
               iconOf: PaymentIcons.forMethod,
               onChanged: (m) => setState(() => _paymentMethod = m),
@@ -152,18 +164,22 @@ class _EditExpenseDialogState extends ConsumerState<EditExpenseDialog> {
 
     final amount = double.parse(_amountController.text.trim());
 
-    await ref.read(expenseNotifierProvider.notifier).updateExpense(
+    await ref
+        .read(expenseNotifierProvider.notifier)
+        .updateExpense(
           id: widget.expense.id,
           category: _categoryController.text.trim(),
-          subcategory: _subcategoryController.text.trim().isEmpty
-              ? null
-              : _subcategoryController.text.trim(),
+          subcategory:
+              _subcategoryController.text.trim().isEmpty
+                  ? null
+                  : _subcategoryController.text.trim(),
           amount: amount,
           paymentMethod: _paymentMethod,
           isRecurring: _isRecurring,
-          notes: _notesController.text.trim().isEmpty
-              ? null
-              : _notesController.text.trim(),
+          notes:
+              _notesController.text.trim().isEmpty
+                  ? null
+                  : _notesController.text.trim(),
           date: _date,
         );
 

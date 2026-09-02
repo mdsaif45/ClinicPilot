@@ -9,8 +9,11 @@ void main() {
 
     test('tolerates spacing and ignores junk', () {
       // The value used to be typed by hand, so old rows may hold anything.
-      expect(DaySelectorField.parse(' 2 , 4 ,x, 9 , 6 '), {2, 4, 6},
-          reason: 'out-of-range and unparsable entries are dropped');
+      expect(
+        DaySelectorField.parse(' 2 , 4 ,x, 9 , 6 '),
+        {2, 4, 6},
+        reason: 'out-of-range and unparsable entries are dropped',
+      );
     });
 
     test('formats ascending regardless of tap order', () {

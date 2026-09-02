@@ -16,7 +16,8 @@ class MoneyReceivedScreen extends ConsumerStatefulWidget {
   const MoneyReceivedScreen({super.key, required this.month});
 
   @override
-  ConsumerState<MoneyReceivedScreen> createState() => _MoneyReceivedScreenState();
+  ConsumerState<MoneyReceivedScreen> createState() =>
+      _MoneyReceivedScreenState();
 }
 
 class _MoneyReceivedScreenState extends ConsumerState<MoneyReceivedScreen> {
@@ -48,7 +49,8 @@ class _MoneyReceivedScreenState extends ConsumerState<MoneyReceivedScreen> {
       ),
       body: statementAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error loading collections: $err')),
+        error:
+            (err, _) => Center(child: Text('Error loading collections: $err')),
         data: (data) {
           final sortedMemos = sortCashMemos(data.cashMemos, _sortOption);
 
@@ -61,11 +63,19 @@ class _MoneyReceivedScreenState extends ConsumerState<MoneyReceivedScreen> {
             children: [
               // Sort by pill button (Matching Image 5)
               Padding(
-                padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.sm, Spacing.lg, Spacing.sm),
+                padding: const EdgeInsets.fromLTRB(
+                  Spacing.lg,
+                  Spacing.sm,
+                  Spacing.lg,
+                  Spacing.sm,
+                ),
                 child: _SortPill(
                   sortOption: _sortOption,
                   onTap: () async {
-                    final selected = await showSortByBottomSheet(context, _sortOption);
+                    final selected = await showSortByBottomSheet(
+                      context,
+                      _sortOption,
+                    );
                     if (selected != null && mounted) {
                       setState(() => _sortOption = selected);
                     }
@@ -104,7 +114,8 @@ class _MoneyReceivedScreenState extends ConsumerState<MoneyReceivedScreen> {
                 child: ListView.separated(
                   padding: const EdgeInsets.only(bottom: 96),
                   itemCount: sortedMemos.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1, indent: 68),
+                  separatorBuilder:
+                      (_, __) => const Divider(height: 1, indent: 68),
                   itemBuilder: (context, index) {
                     final item = sortedMemos[index];
                     return _ReceivedTile(item: item);
@@ -134,7 +145,10 @@ class _SortPill extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: 6),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.md,
+          vertical: 6,
+        ),
         decoration: BoxDecoration(
           color: scheme.surfaceContainerHighest.withAlpha(120),
           borderRadius: BorderRadius.circular(20),
@@ -157,7 +171,11 @@ class _SortPill extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down, size: 16, color: scheme.onSurfaceVariant),
+            Icon(
+              Icons.arrow_drop_down,
+              size: 16,
+              color: scheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),
@@ -179,7 +197,10 @@ class _ReceivedTile extends StatelessWidget {
     final dateStr = Formatters.formatDayMonth(memo.memoDate);
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.xxs),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: Spacing.lg,
+        vertical: Spacing.xxs,
+      ),
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -204,9 +225,7 @@ class _ReceivedTile extends StatelessWidget {
         patient.name,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 2),

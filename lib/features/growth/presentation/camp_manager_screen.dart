@@ -23,28 +23,37 @@ class CampManagerScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, CampWithAnalytics camp) {
+  void _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    CampWithAnalytics camp,
+  ) {
     AppHaptics.selection();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Camp?'),
-        content: Text('Are you sure you want to delete "${camp.camp.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete Camp?'),
+            content: Text(
+              'Are you sure you want to delete "${camp.camp.name}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  ref
+                      .read(campNotifierProvider.notifier)
+                      .deleteCamp(camp.camp.id);
+                  AppHaptics.success();
+                },
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              ref.read(campNotifierProvider.notifier).deleteCamp(camp.camp.id);
-              AppHaptics.success();
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -56,9 +65,7 @@ class CampManagerScreen extends ConsumerWidget {
     final scheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Camp Manager & ROI'),
-      ),
+      appBar: AppBar(title: const Text('Camp Manager & ROI')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddEditCamp(context),
         icon: const Icon(Icons.add),
@@ -88,7 +95,12 @@ class CampManagerScreen extends ConsumerWidget {
           final stats = statsAsync.value;
 
           return ListView(
-            padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl * 2),
+            padding: const EdgeInsets.fromLTRB(
+              0,
+              Spacing.sm,
+              0,
+              Spacing.xxl * 2,
+            ),
             children: [
               const PeriodSelector(),
               if (stats != null)
@@ -108,14 +120,17 @@ class CampManagerScreen extends ConsumerWidget {
                     ),
                     Metric(
                       label: 'Follow-up Rev',
-                      value: Formatters.formatCurrency(stats.totalFollowUpRevenue),
+                      value: Formatters.formatCurrency(
+                        stats.totalFollowUpRevenue,
+                      ),
                       signedAmount: stats.totalFollowUpRevenue,
                       icon: Icons.account_balance_wallet_outlined,
                       color: scheme.secondary,
                     ),
                     Metric(
                       label: 'Net ROI',
-                      value: '${stats.aggregateRoi >= 0 ? '+' : ''}${stats.aggregateRoi.toStringAsFixed(0)}%',
+                      value:
+                          '${stats.aggregateRoi >= 0 ? '+' : ''}${stats.aggregateRoi.toStringAsFixed(0)}%',
                       signedAmount: stats.totalNetProfit,
                       icon: Icons.trending_up_rounded,
                       color: scheme.tertiary,
@@ -158,7 +173,8 @@ class CampManagerScreen extends ConsumerWidget {
                             ),
                           ),
                           CustomBadge(
-                            label: '${c.roi >= 0 ? '+' : ''}${c.roi.toStringAsFixed(0)}% ROI',
+                            label:
+                                '${c.roi >= 0 ? '+' : ''}${c.roi.toStringAsFixed(0)}% ROI',
                             color: c.roi >= 0 ? scheme.primary : scheme.error,
                           ),
                         ],
@@ -227,11 +243,7 @@ class _FactCell extends StatelessWidget {
   final String value;
   final Color? color;
 
-  const _FactCell({
-    required this.label,
-    required this.value,
-    this.color,
-  });
+  const _FactCell({required this.label, required this.value, this.color});
 
   @override
   Widget build(BuildContext context) {

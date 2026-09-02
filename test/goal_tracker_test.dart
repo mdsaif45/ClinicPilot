@@ -29,7 +29,9 @@ void main() {
   });
 
   group('GoalTrackerCard Widget Tests', () {
-    testWidgets('renders revenue and new patient goal progress bars', (tester) async {
+    testWidgets('renders revenue and new patient goal progress bars', (
+      tester,
+    ) async {
       final now = DateTime(2026, 8, 15);
       const stats = DashboardStats(
         todayRevenue: 1500,
@@ -50,12 +52,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.lightTheme,
-            home: Scaffold(
-              body: GoalTrackerCard(
-                stats: stats,
-                now: now,
-              ),
-            ),
+            home: Scaffold(body: GoalTrackerCard(stats: stats, now: now)),
           ),
         ),
       );

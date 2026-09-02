@@ -27,9 +27,8 @@ class PracticeActivityScreen extends ConsumerWidget {
     final now = DateTime.now();
     final todayMidnight = DateTime(now.year, now.month, now.day);
 
-    final primaryColor = metric == ActivityMetric.revenue
-        ? scheme.primary
-        : scheme.secondary;
+    final primaryColor =
+        metric == ActivityMetric.revenue ? scheme.primary : scheme.secondary;
 
     // Compute Date Range Title & isCurrentPeriod
     String rangeTitle;
@@ -37,7 +36,8 @@ class PracticeActivityScreen extends ConsumerWidget {
 
     switch (range) {
       case ActivityTimeRange.day:
-        final isToday = selectedDate.year == todayMidnight.year &&
+        final isToday =
+            selectedDate.year == todayMidnight.year &&
             selectedDate.month == todayMidnight.month &&
             selectedDate.day == todayMidnight.day;
         final isYesterday = () {
@@ -50,7 +50,8 @@ class PracticeActivityScreen extends ConsumerWidget {
         if (isToday) {
           rangeTitle = 'Today, ${DateFormat('d MMMM').format(selectedDate)}';
         } else if (isYesterday) {
-          rangeTitle = 'Yesterday, ${DateFormat('d MMMM').format(selectedDate)}';
+          rangeTitle =
+              'Yesterday, ${DateFormat('d MMMM').format(selectedDate)}';
         } else {
           rangeTitle = DateFormat('EEEE, d MMMM').format(selectedDate);
         }
@@ -58,18 +59,25 @@ class PracticeActivityScreen extends ConsumerWidget {
         break;
 
       case ActivityTimeRange.week:
-        final weekStart = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+        final weekStart = selectedDate.subtract(
+          Duration(days: selectedDate.weekday - 1),
+        );
         final weekEnd = weekStart.add(const Duration(days: 6));
-        rangeTitle = '${DateFormat('d MMM').format(weekStart)} – ${DateFormat('d MMM').format(weekEnd)}';
-        final curWeekStart = todayMidnight.subtract(Duration(days: todayMidnight.weekday - 1));
-        isCurrentPeriod = weekStart.year == curWeekStart.year &&
+        rangeTitle =
+            '${DateFormat('d MMM').format(weekStart)} – ${DateFormat('d MMM').format(weekEnd)}';
+        final curWeekStart = todayMidnight.subtract(
+          Duration(days: todayMidnight.weekday - 1),
+        );
+        isCurrentPeriod =
+            weekStart.year == curWeekStart.year &&
             weekStart.month == curWeekStart.month &&
             weekStart.day == curWeekStart.day;
         break;
 
       case ActivityTimeRange.month:
         rangeTitle = DateFormat('MMMM yyyy').format(selectedDate);
-        isCurrentPeriod = selectedDate.year == todayMidnight.year &&
+        isCurrentPeriod =
+            selectedDate.year == todayMidnight.year &&
             selectedDate.month == todayMidnight.month;
         break;
     }
@@ -90,7 +98,10 @@ class PracticeActivityScreen extends ConsumerWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg, vertical: Spacing.md),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.lg,
+          vertical: Spacing.md,
+        ),
         children: [
           // 1. Google Fit Style Animated Sliding Segmented Tabs (Day | Week | Month)
           _ActivityTimeRangeTabs(
@@ -113,16 +124,26 @@ class PracticeActivityScreen extends ConsumerWidget {
                   AppHaptics.selection();
                   switch (range) {
                     case ActivityTimeRange.day:
-                      ref.read(selectedActivityDateProvider.notifier).state =
-                          DateTime(selectedDate.year, selectedDate.month, selectedDate.day - 1);
+                      ref
+                          .read(selectedActivityDateProvider.notifier)
+                          .state = DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day - 1,
+                      );
                       break;
                     case ActivityTimeRange.week:
                       ref.read(selectedActivityDateProvider.notifier).state =
                           selectedDate.subtract(const Duration(days: 7));
                       break;
                     case ActivityTimeRange.month:
-                      ref.read(selectedActivityDateProvider.notifier).state =
-                          DateTime(selectedDate.year, selectedDate.month - 1, 1);
+                      ref
+                          .read(selectedActivityDateProvider.notifier)
+                          .state = DateTime(
+                        selectedDate.year,
+                        selectedDate.month - 1,
+                        1,
+                      );
                       break;
                   }
                 },
@@ -153,7 +174,9 @@ class PracticeActivityScreen extends ConsumerWidget {
                         const SizedBox(width: 4),
                         Text(
                           metric == ActivityMetric.revenue
-                              ? Formatters.formatCurrency(state.totalRevenue).replaceAll('₹ ', '')
+                              ? Formatters.formatCurrency(
+                                state.totalRevenue,
+                              ).replaceAll('₹ ', '')
                               : '${state.totalPatients} patients',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontSize: 13.5,
@@ -169,27 +192,38 @@ class PracticeActivityScreen extends ConsumerWidget {
                       InkWell(
                         onTap: () {
                           AppHaptics.selection();
-                          ref.read(selectedActivityDateProvider.notifier).state = todayMidnight;
+                          ref
+                              .read(selectedActivityDateProvider.notifier)
+                              .state = todayMidnight;
                         },
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: primaryColor.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: primaryColor.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.history, size: 13, color: primaryColor),
+                              Icon(
+                                Icons.history,
+                                size: 13,
+                                color: primaryColor,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 range == ActivityTimeRange.day
                                     ? 'Jump to Today'
                                     : range == ActivityTimeRange.week
-                                        ? 'Jump to This Week'
-                                        : 'Jump to This Month',
+                                    ? 'Jump to This Week'
+                                    : 'Jump to This Month',
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -207,31 +241,48 @@ class PracticeActivityScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.chevron_right),
                 tooltip: 'Next',
-                onPressed: isCurrentPeriod
-                    ? null
-                    : () {
-                        AppHaptics.selection();
-                        switch (range) {
-                          case ActivityTimeRange.day:
-                            final next = DateTime(selectedDate.year, selectedDate.month, selectedDate.day + 1);
-                            if (!next.isAfter(todayMidnight)) {
-                              ref.read(selectedActivityDateProvider.notifier).state = next;
-                            }
-                            break;
-                          case ActivityTimeRange.week:
-                            final next = selectedDate.add(const Duration(days: 7));
-                            if (!next.isAfter(todayMidnight)) {
-                              ref.read(selectedActivityDateProvider.notifier).state = next;
-                            }
-                            break;
-                          case ActivityTimeRange.month:
-                            final next = DateTime(selectedDate.year, selectedDate.month + 1, 1);
-                            if (!next.isAfter(todayMidnight)) {
-                              ref.read(selectedActivityDateProvider.notifier).state = next;
-                            }
-                            break;
-                        }
-                      },
+                onPressed:
+                    isCurrentPeriod
+                        ? null
+                        : () {
+                          AppHaptics.selection();
+                          switch (range) {
+                            case ActivityTimeRange.day:
+                              final next = DateTime(
+                                selectedDate.year,
+                                selectedDate.month,
+                                selectedDate.day + 1,
+                              );
+                              if (!next.isAfter(todayMidnight)) {
+                                ref
+                                    .read(selectedActivityDateProvider.notifier)
+                                    .state = next;
+                              }
+                              break;
+                            case ActivityTimeRange.week:
+                              final next = selectedDate.add(
+                                const Duration(days: 7),
+                              );
+                              if (!next.isAfter(todayMidnight)) {
+                                ref
+                                    .read(selectedActivityDateProvider.notifier)
+                                    .state = next;
+                              }
+                              break;
+                            case ActivityTimeRange.month:
+                              final next = DateTime(
+                                selectedDate.year,
+                                selectedDate.month + 1,
+                                1,
+                              );
+                              if (!next.isAfter(todayMidnight)) {
+                                ref
+                                    .read(selectedActivityDateProvider.notifier)
+                                    .state = next;
+                              }
+                              break;
+                          }
+                        },
               ),
             ],
           ),
@@ -244,7 +295,9 @@ class PracticeActivityScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: scheme.surfaceContainerLow,
               borderRadius: Radii.lgAll,
-              border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: 0.3),
+              ),
             ),
             child: () {
               switch (range) {
@@ -267,8 +320,10 @@ class PracticeActivityScreen extends ConsumerWidget {
                     weeklySubtotals: state.monthlyWeeklySubtotals,
                     metric: metric,
                     onDaySelected: (date) {
-                      ref.read(selectedActivityDateProvider.notifier).state = date;
-                      ref.read(activityRangeProvider.notifier).state = ActivityTimeRange.day;
+                      ref.read(selectedActivityDateProvider.notifier).state =
+                          date;
+                      ref.read(activityRangeProvider.notifier).state =
+                          ActivityTimeRange.day;
                     },
                   );
               }
@@ -290,7 +345,8 @@ class PracticeActivityScreen extends ConsumerWidget {
                 isSelected: metric == ActivityMetric.revenue,
                 onTap: () {
                   AppHaptics.selection();
-                  ref.read(activityMetricProvider.notifier).state = ActivityMetric.revenue;
+                  ref.read(activityMetricProvider.notifier).state =
+                      ActivityMetric.revenue;
                 },
               ),
               const SizedBox(width: Spacing.sm),
@@ -303,7 +359,8 @@ class PracticeActivityScreen extends ConsumerWidget {
                 isSelected: metric == ActivityMetric.patients,
                 onTap: () {
                   AppHaptics.selection();
-                  ref.read(activityMetricProvider.notifier).state = ActivityMetric.patients;
+                  ref.read(activityMetricProvider.notifier).state =
+                      ActivityMetric.patients;
                 },
               ),
             ],
@@ -348,28 +405,34 @@ class PracticeActivityScreen extends ConsumerWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: state.weeklyBins.length,
-      separatorBuilder: (_, __) => Divider(
-        height: 1,
-        indent: Spacing.sm,
-        endIndent: Spacing.sm,
-        color: scheme.outlineVariant.withValues(alpha: 0.25),
-      ),
+      separatorBuilder:
+          (_, __) => Divider(
+            height: 1,
+            indent: Spacing.sm,
+            endIndent: Spacing.sm,
+            color: scheme.outlineVariant.withValues(alpha: 0.25),
+          ),
       itemBuilder: (context, index) {
         final bin = state.weeklyBins[index];
         final fullDateStr = DateFormat('EEEE, d MMMM yyyy').format(bin.date);
-        final valStr = metric == ActivityMetric.revenue
-            ? Formatters.formatCurrency(bin.revenue)
-            : '${bin.patients} patients';
+        final valStr =
+            metric == ActivityMetric.revenue
+                ? Formatters.formatCurrency(bin.revenue)
+                : '${bin.patients} patients';
 
         return InkWell(
           onTap: () {
             AppHaptics.selection();
             ref.read(selectedActivityDateProvider.notifier).state = bin.date;
-            ref.read(activityRangeProvider.notifier).state = ActivityTimeRange.day;
+            ref.read(activityRangeProvider.notifier).state =
+                ActivityTimeRange.day;
           },
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.xs, vertical: Spacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.xs,
+              vertical: Spacing.md,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -404,11 +467,7 @@ class PracticeActivityScreen extends ConsumerWidget {
                       color: primaryColor.withValues(alpha: 0.15),
                     ),
                     child: Center(
-                      child: Icon(
-                        Icons.check,
-                        color: primaryColor,
-                        size: 18,
-                      ),
+                      child: Icon(Icons.check, color: primaryColor, size: 18),
                     ),
                   ),
               ],
@@ -438,17 +497,27 @@ class PracticeActivityScreen extends ConsumerWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.15) : scheme.surfaceContainerLow,
+          color:
+              isSelected
+                  ? color.withValues(alpha: 0.15)
+                  : scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : scheme.outlineVariant.withValues(alpha: 0.4),
+            color:
+                isSelected
+                    ? color
+                    : scheme.outlineVariant.withValues(alpha: 0.4),
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: isSelected ? color : scheme.onSurfaceVariant),
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? color : scheme.onSurfaceVariant,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -487,7 +556,9 @@ class _ActivityTimeRangeTabs extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.35),
+        ),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -506,7 +577,9 @@ class _ActivityTimeRangeTabs extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: scheme.surface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.25)),
+                    border: Border.all(
+                      color: scheme.outlineVariant.withValues(alpha: 0.25),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: scheme.shadow.withValues(alpha: 0.1),
@@ -521,9 +594,27 @@ class _ActivityTimeRangeTabs extends StatelessWidget {
               // 3 Interactive Tabs
               Row(
                 children: [
-                  _buildTab(context, scheme, theme, 'Day', ActivityTimeRange.day),
-                  _buildTab(context, scheme, theme, 'Week', ActivityTimeRange.week),
-                  _buildTab(context, scheme, theme, 'Month', ActivityTimeRange.month),
+                  _buildTab(
+                    context,
+                    scheme,
+                    theme,
+                    'Day',
+                    ActivityTimeRange.day,
+                  ),
+                  _buildTab(
+                    context,
+                    scheme,
+                    theme,
+                    'Week',
+                    ActivityTimeRange.week,
+                  ),
+                  _buildTab(
+                    context,
+                    scheme,
+                    theme,
+                    'Month',
+                    ActivityTimeRange.month,
+                  ),
                 ],
               ),
             ],

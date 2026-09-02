@@ -19,12 +19,7 @@ class DailyInsightCard extends ConsumerWidget {
     final scheme = theme.colorScheme;
 
     return AppCard(
-      margin: const EdgeInsets.fromLTRB(
-        Spacing.lg,
-        0,
-        Spacing.lg,
-        Spacing.md,
-      ),
+      margin: const EdgeInsets.fromLTRB(Spacing.lg, 0, Spacing.lg, Spacing.md),
       onTap: () {
         AppHaptics.selection();
         if (insight.actionRoute.startsWith('/growth') ||
@@ -91,11 +86,7 @@ class DailyInsightCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 2),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 14,
-                      color: scheme.primary,
-                    ),
+                    Icon(Icons.arrow_forward, size: 14, color: scheme.primary),
                   ],
                 ),
               ],
