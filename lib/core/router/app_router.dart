@@ -187,10 +187,11 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 /// Offers the update once, with an explicit way to stop being asked.
+/// Prompts the user when a new release is available.
 ///
-/// "Later" records the version so it never prompts again; the release stays
-/// reachable from App Version whenever the doctor chooses. A prompt that
-/// returns every launch trains people to dismiss it without reading.
+/// Dismissing with "Later" or tapping outside clears the prompt for the current
+/// session so work is not interrupted, but will remind again on subsequent launches
+/// until the app is updated.
 Future<void> _showUpdatePrompt(
   BuildContext context,
   WidgetRef ref,
@@ -200,11 +201,12 @@ Future<void> _showUpdatePrompt(
 
   final proceed = await showDialog<bool>(
     context: context,
+    barrierDismissible: true,
     builder: (ctx) => AlertDialog(
       icon: const Icon(Icons.system_update),
       title: Text('Version ${release.version} available'),
       content: Text(
-        'You are running v${ref.read(runningVersionProvider).value ?? ''}. '
+        'A newer version of ClinicPilot (${release.version}) is available. '
         'Updating does not affect your clinic data.',
       ),
       actions: [
@@ -220,15 +222,13 @@ Future<void> _showUpdatePrompt(
     ),
   );
 
+  notifier.dismiss();
   if (proceed == true) {
-    notifier.dismiss();
     if (context.mounted) {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const AppVersionScreen()),
       );
     }
-  } else {
-    await notifier.skip(release);
   }
 }
 
@@ -264,14 +264,23 @@ class ScaffoldWithNavBar extends ConsumerStatefulWidget {
 
 class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
   StatefulNavigationShell get navigationShell => widget.navigationShell;
+  bool _hasPromptedThisSession = false;
 
   @override
   void initState() {
     super.initState();
-    // Runs once per launch; the notifier itself decides whether this version
-    // has already been declined.
+    // Runs once per launch / session.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(updatePromptProvider.notifier).evaluate();
+      final current = ref.read(updatePromptProvider);
+      if (current != null && !_hasPromptedThisSession) {
+        _hasPromptedThisSession = true;
+        final targetContext = rootNavigatorKey.currentContext ?? context;
+        if (targetContext.mounted) {
+          _showUpdatePrompt(targetContext, ref, current);
+        }
+      } else {
+        ref.read(updatePromptProvider.notifier).evaluate();
+      }
     });
   }
 
@@ -288,12 +297,15 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
     final scheme = Theme.of(context).colorScheme;
     final isDashboard = navigationShell.currentIndex == _dashboardIndex;
 
-    // Prompt once per new version, after the first frame so it never races
-    // the shell into existence.
+    // Prompt once per session when an update is available.
     ref.listen(updatePromptProvider, (previous, next) {
-      if (next != null && previous == null) {
+      if (next != null && !_hasPromptedThisSession) {
+        _hasPromptedThisSession = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) _showUpdatePrompt(context, ref, next);
+          final targetContext = rootNavigatorKey.currentContext ?? context;
+          if (targetContext.mounted) {
+            _showUpdatePrompt(targetContext, ref, next);
+          }
         });
       }
     });
