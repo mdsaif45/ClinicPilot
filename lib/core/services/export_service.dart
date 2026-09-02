@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:excel/excel.dart' as xlsx;
 
 import '../database/app_database.dart';
+import 'list_export_service.dart';
 
 /// Result of an export attempt.
 class ExportResult {
@@ -54,12 +55,7 @@ class ExportService {
   static void _styleHeaderRow(xlsx.Sheet sheet, int colCount) {
     for (var col = 0; col < colCount; col++) {
       final cell = sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0));
-      cell.cellStyle = xlsx.CellStyle(
-        backgroundColorHex: xlsx.ExcelColor.fromHexString('#1976D2'),
-        fontColorHex: xlsx.ExcelColor.fromHexString('#FFFFFF'),
-        bold: true,
-        fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
-      );
+      cell.cellStyle = ListExportService.headerStyle;
     }
   }
 
@@ -366,7 +362,8 @@ class ExportService {
     }
 
     final encoded = excel.encode();
-    return encoded ?? [];
+    if (encoded == null) return [];
+    return ListExportService.enableAutoFilter(encoded);
   }
 
   /// Produces the full backup as a single CSV document.

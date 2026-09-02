@@ -1,47 +1,110 @@
 import 'dart:convert';
 
+import 'package:archive/archive.dart';
 import 'package:excel/excel.dart' as xlsx;
 
-/// One column of a list export: how to label it and how to read it off a row.
-///
-/// Generic over the row type so the same machinery serves Patients,
-/// CashMemoWithDetails, ExpenseWithClinic and whatever Growth exports later -
-/// each screen supplies its own column list rather than this service knowing
-/// about any particular table.
+/// A single column in a list export.
 class ExportColumn<T> {
   final String header;
   final Object? Function(T row) value;
 
-  /// How this column's value should print in a rendered PDF, if plain
-  /// toString() is wrong for it - e.g. a currency figure, since the PDF
-  /// font used here has no Rupee glyph and needs "Rs." instead. CSV and
-  /// XLSX ignore this: they write the raw value, not a rendering of it.
+  /// Optional formatter for PDF table cells (e.g. adding 'Rs. ' or date format).
   final String Function(Object? value)? pdfFormat;
 
   const ExportColumn(this.header, this.value, {this.pdfFormat});
 }
 
-/// A totals row appended after the data - e.g. total revenue, total expense.
-/// Cells align with the column list positionally; a column with no total
-/// passes null, which prints as a blank cell rather than a stray zero.
+/// Optional totals row builder for lists that end in a summary row (e.g.
+/// Cash Memos, Expenses, Split).
 class ExportTotals<T> {
   final List<Object?> Function(List<T> rows) build;
 
   const ExportTotals(this.build);
 }
 
-/// Builds an export file for a screen's current row set - what's shown after
-/// its own search/filter has already been applied, not the whole table.
-///
-/// CSV only for now; XLSX and PDF share this same column spec once they land,
-/// so a screen that wires up columns once gets every format for free.
+/// Pure Dart service that turns a list of domain objects plus a column spec
+/// into a CSV string or an Excel (.xlsx) byte buffer.
 class ListExportService {
   const ListExportService._();
 
-  /// Escapes a single CSV field.
-  ///
-  /// Patient names and notes routinely contain commas and apostrophes, and
-  /// notes can hold newlines, so quoting is not optional.
+  static xlsx.CellStyle get headerStyle => xlsx.CellStyle(
+        backgroundColorHex: xlsx.ExcelColor.fromHexString('#8CB5F9'),
+        fontColorHex: xlsx.ExcelColor.fromHexString('#000000'),
+        bold: true,
+        fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
+      );
+
+  static xlsx.CellStyle get totalsStyle => xlsx.CellStyle(
+        bold: true,
+        fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
+      );
+
+  /// Injects Excel `<autoFilter>` and `<pane state="frozen">` (sticky top header row) into each worksheet.
+  static List<int> enableAutoFilter(List<int> excelBytes) {
+    try {
+      final archive = ZipDecoder().decodeBytes(excelBytes);
+      final newArchive = Archive();
+
+      for (final file in archive) {
+        if (file.name.startsWith('xl/worksheets/sheet') &&
+            file.name.endsWith('.xml') &&
+            !file.name.contains('_rels')) {
+          var content = utf8.decode(file.content as List<int>);
+
+          // 1. Freeze top row (Sticky Header)
+          if (!content.contains('<pane')) {
+            const frozenPaneTag = '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>';
+            if (content.contains('<sheetView workbookViewId="0"/>')) {
+              content = content.replaceFirst(
+                '<sheetView workbookViewId="0"/>',
+                '<sheetView workbookViewId="0">$frozenPaneTag</sheetView>',
+              );
+            } else if (content.contains('</sheetView>')) {
+              content = content.replaceFirst(
+                '</sheetView>',
+                '$frozenPaneTag</sheetView>',
+              );
+            } else if (content.contains('<sheetViews>')) {
+              content = content.replaceFirst(
+                '<sheetViews>',
+                '<sheetViews><sheetView workbookViewId="0">$frozenPaneTag</sheetView>',
+              );
+            }
+          }
+
+          // 2. AutoFilter Dropdowns on Row 1
+          if (!content.contains('<autoFilter')) {
+            final headerColMatch = RegExp(r'<c\s+r="([A-Z]+)1"').allMatches(content);
+            final rowMatch = RegExp(r'<row\s+r="(\d+)"').allMatches(content);
+
+            if (headerColMatch.isNotEmpty && rowMatch.isNotEmpty) {
+              final lastCol = headerColMatch.last.group(1);
+              final lastRow = rowMatch.last.group(1);
+
+              if (lastCol != null && lastRow != null) {
+                final autoFilterTag = '<autoFilter ref="A1:$lastCol$lastRow"/>';
+                if (content.contains('</sheetData>')) {
+                  content = content.replaceFirst('</sheetData>', '</sheetData>$autoFilterTag');
+                } else if (content.contains('</worksheet>')) {
+                  content = content.replaceFirst('</worksheet>', '$autoFilterTag</worksheet>');
+                }
+              }
+            }
+          }
+          final newBytes = utf8.encode(content);
+          newArchive.addFile(ArchiveFile(file.name, newBytes.length, newBytes));
+        } else {
+          newArchive.addFile(file);
+        }
+      }
+
+      return ZipEncoder().encode(newArchive) ?? excelBytes;
+    } catch (_) {
+      return excelBytes;
+    }
+  }
+
+  /// Escapes a single cell for CSV output per RFC 4180.
   static String _cell(Object? value) {
     if (value == null) return '';
     final s = value.toString();
@@ -53,6 +116,7 @@ class ListExportService {
 
   static String _row(List<Object?> cells) => cells.map(_cell).join(',');
 
+  /// Converts a typed row list into a CSV document string.
   static String buildCsv<T>(
     List<T> rows,
     List<ExportColumn<T>> columns, {
@@ -69,9 +133,7 @@ class ListExportService {
     return buffer.toString();
   }
 
-  /// Metric/value pairs rather than one row per record - for a screen like
-  /// Growth whose provider already returns one aggregated summary object,
-  /// not a list of rows the `ExportColumn` shape could iterate over.
+  /// Metric/value pairs rather than one row per record.
   static String buildKeyValueCsv(
     List<MapEntry<String, Object?>> entries, {
     String? title,
@@ -115,22 +177,20 @@ class ListExportService {
     for (var col = 0; col < 2; col++) {
       sheet
           .cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row))
-          .cellStyle = xlsx.CellStyle(bold: true);
+          .cellStyle = headerStyle;
     }
 
     for (final e in entries) {
       sheet.appendRow([xlsx.TextCellValue(e.key), _cellValue(e.value)]);
     }
 
-    return book.encode()!;
+    final rawBytes = book.encode()!;
+    return enableAutoFilter(rawBytes);
   }
 
   static List<int> encodeCsv(String csv) => utf8.encode(csv);
 
-  /// Converts a raw column value into the CellValue subtype the excel
-  /// package needs. Numbers and dates keep their type - so a spreadsheet can
-  /// sort or sum them - rather than every column landing as text the way
-  /// CSV's plain strings do.
+  /// Converts a raw column value into the CellValue subtype the excel package needs.
   static xlsx.CellValue? _cellValue(Object? value) {
     return switch (value) {
       null => null,
@@ -142,6 +202,7 @@ class ListExportService {
     };
   }
 
+  /// Builds a fully styled Excel workbook (.xlsx) with styled header row and auto-filter.
   static List<int> buildXlsx<T>(
     List<T> rows,
     List<ExportColumn<T>> columns, {
@@ -149,29 +210,29 @@ class ListExportService {
     String sheetName = 'Sheet1',
   }) {
     final book = xlsx.Excel.createExcel();
-    // createExcel() ships a default "Sheet1"; renaming rather than deleting
-    // and re-adding keeps exactly one sheet instead of leaving a stray blank
-    // one behind when sheetName differs from the default.
     if (sheetName != 'Sheet1') {
       book.rename('Sheet1', sheetName);
     }
     final sheet = book[sheetName];
 
+    // Header Row
     sheet.appendRow(
       columns.map((c) => xlsx.TextCellValue(c.header)).toList(),
     );
     for (var col = 0; col < columns.length; col++) {
       sheet
           .cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0))
-          .cellStyle = xlsx.CellStyle(bold: true);
+          .cellStyle = headerStyle;
     }
 
+    // Data Rows
     for (final row in rows) {
       sheet.appendRow(
         columns.map((c) => _cellValue(c.value(row))).toList(),
       );
     }
 
+    // Totals Row
     if (totals != null && rows.isNotEmpty) {
       final cells = totals.build(rows);
       final totalsRowIndex = rows.length + 1;
@@ -180,15 +241,15 @@ class ListExportService {
         sheet
             .cell(xlsx.CellIndex.indexByColumnRow(
                 columnIndex: col, rowIndex: totalsRowIndex))
-            .cellStyle = xlsx.CellStyle(bold: true);
+            .cellStyle = totalsStyle;
       }
     }
 
-    return book.encode()!;
+    final rawBytes = book.encode()!;
+    return enableAutoFilter(rawBytes);
   }
 
-  /// Suggested filename for a per-list export, stamped so exports of the
-  /// same screen on different days do not collide.
+  /// Suggested filename for a per-list export.
   static String suggestedFileName(
     String screenSlug,
     DateTime now, {

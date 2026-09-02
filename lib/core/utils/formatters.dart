@@ -9,6 +9,7 @@ class Formatters {
   );
 
   static final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
+  static final DateFormat _dayMonthFormat = DateFormat('dd MMM');
   static final DateFormat _monthYearFormat = DateFormat('MMMM yyyy');
   static final DateFormat _ddMmYyyyFormat = DateFormat('dd/MM/yyyy');
   static final DateFormat _dbDateFormat = DateFormat('yyyyMMdd');
@@ -22,6 +23,12 @@ class Formatters {
   static String formatDate(DateTime? date) {
     if (date == null) return '';
     return _dateFormat.format(date);
+  }
+
+  // Format date as 20 May (without year)
+  static String formatDayMonth(DateTime? date) {
+    if (date == null) return '';
+    return _dayMonthFormat.format(date);
   }
 
   // Format date as DD/MM/YYYY (e.g. 23/08/2026)

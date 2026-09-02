@@ -67,12 +67,7 @@ class PatientExportService {
   static void _styleHeaderRow(xlsx.Sheet sheet, int colCount) {
     for (var col = 0; col < colCount; col++) {
       final cell = sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 0));
-      cell.cellStyle = xlsx.CellStyle(
-        backgroundColorHex: xlsx.ExcelColor.fromHexString('#0F5132'),
-        fontColorHex: xlsx.ExcelColor.fromHexString('#FFFFFF'),
-        bold: true,
-        fontFamily: xlsx.getFontFamily(xlsx.FontFamily.Calibri),
-      );
+      cell.cellStyle = ListExportService.headerStyle;
     }
   }
 
@@ -859,6 +854,7 @@ class PatientExportService {
       ]);
     }
 
-    return excel.encode()!;
+    final rawBytes = excel.encode()!;
+    return ListExportService.enableAutoFilter(rawBytes);
   }
 }

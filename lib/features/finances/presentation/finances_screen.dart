@@ -10,25 +10,29 @@ import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../expenses/presentation/expenses_screen.dart';
 import '../../expenses/providers/expense_provider.dart';
 import '../providers/payment_method_breakdown_provider.dart';
+import '../providers/transaction_history_provider.dart';
 import 'payment_method_breakdown_screen.dart';
+import 'transaction_history_screen.dart';
 
-/// Money in, money out, and payment channel split under one tab.
+/// Unified money in, money out, expenses, and payment channel split.
 class FinancesScreen extends StatelessWidget {
   const FinancesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return SwipeableSections(
-      labels: const ['Cash Memo', 'Expenses', 'Split'],
+      labels: const ['Cash Memo', 'Expenses', 'History', 'Split'],
       children: const [
         CashMemoScreen(),
         ExpensesScreen(),
+        TransactionHistoryScreen(),
         PaymentMethodBreakdownScreen(),
       ],
       trailingBuilder: (index) {
         if (index == 0) return const _CashMemoExportAction();
         if (index == 1) return const _ExpensesExportAction();
-        if (index == 2) return const _SplitExportAction();
+        if (index == 2) return const _HistoryExportAction();
+        if (index == 3) return const _SplitExportAction();
         return null;
       },
     );
@@ -39,6 +43,48 @@ String _pdfMoney(Object? value) {
   if (value is num) return 'Rs. ${value.toStringAsFixed(2)}';
   if (value == null) return '';
   return value.toString();
+}
+
+/// Column spec for unified Transaction History export.
+List<ExportColumn<FinanceTransactionItem>> historyExportColumns() {
+  return [
+    ExportColumn('Date', (t) => Formatters.formatDate(t.date)),
+    ExportColumn('Type', (t) => t.isExpense ? 'Expense' : 'Cash Memo'),
+    ExportColumn('Description', (t) => t.title),
+    ExportColumn('Details', (t) => t.subtitle),
+    ExportColumn('Payment Method', (t) => t.paymentMethod),
+    ExportColumn('Clinic', (t) => t.clinicName),
+    ExportColumn('Inflow / Credit (Rs.)', (t) => t.isExpense ? 0.0 : t.amount, pdfFormat: _pdfMoney),
+    ExportColumn('Outflow / Debit (Rs.)', (t) => t.isExpense ? t.amount : 0.0, pdfFormat: _pdfMoney),
+  ];
+}
+
+ExportTotals<FinanceTransactionItem> historyExportTotals() {
+  return ExportTotals((rows) {
+    final totalInflow =
+        rows.where((r) => !r.isExpense).fold<double>(0, (sum, r) => sum + r.amount);
+    final totalOutflow =
+        rows.where((r) => r.isExpense).fold<double>(0, (sum, r) => sum + r.amount);
+    return ['TOTAL', null, null, null, null, null, totalInflow, totalOutflow];
+  });
+}
+
+class _HistoryExportAction extends ConsumerWidget {
+  const _HistoryExportAction();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final groups = ref.watch(transactionHistoryGroupsProvider).value ?? const [];
+    final allItems = groups.expand((g) => g.items).toList();
+
+    return ExportAction<FinanceTransactionItem>(
+      screenSlug: 'transaction-history',
+      title: 'Practice Transaction History',
+      rows: allItems,
+      columns: historyExportColumns(),
+      totals: historyExportTotals(),
+    );
+  }
 }
 
 /// Complete column spec for Cash Memo export.
@@ -98,7 +144,6 @@ List<ExportColumn<CashMemoWithDetails>> cashMemoPdfColumns() {
     ExportColumn('Paid', (m) => m.memo.paidAmount, pdfFormat: _pdfMoney),
     ExportColumn('Pending', (m) => m.pendingAmount, pdfFormat: _pdfMoney),
     ExportColumn('Method', (m) => m.memo.paymentMethod),
-    ExportColumn('Status', (m) => m.isFullyPaid ? 'Paid' : (m.memo.paidAmount > 0 ? 'Partial' : 'Due')),
   ];
 }
 
@@ -111,7 +156,7 @@ class _CashMemoExportAction extends ConsumerWidget {
 
     return ExportAction<CashMemoWithDetails>(
       screenSlug: 'cash-memos',
-      title: 'Cash Memos',
+      title: 'Practice Cash Memos',
       rows: memos,
       columns: cashMemoExportColumns(),
       pdfColumns: cashMemoPdfColumns(),
@@ -120,16 +165,16 @@ class _CashMemoExportAction extends ConsumerWidget {
   }
 }
 
-/// Complete column spec for Expenses export.
+/// Column spec for Expenses export.
 List<ExportColumn<ExpenseWithClinic>> expensesExportColumns() {
   return [
     ExportColumn('Date', (e) => Formatters.formatDate(e.expense.date)),
-    ExportColumn('Clinic', (e) => e.clinic.name),
     ExportColumn('Category', (e) => e.expense.category),
     ExportColumn('Subcategory', (e) => e.expense.subcategory ?? ''),
     ExportColumn('Nature', (e) => e.expense.isRecurring ? 'Recurring (Fixed Overhead)' : 'One-time (Variable Spend)'),
     ExportColumn('Amount', (e) => e.expense.amount, pdfFormat: _pdfMoney),
     ExportColumn('Payment Method', (e) => e.expense.paymentMethod),
+    ExportColumn('Clinic', (e) => e.clinic.name),
     ExportColumn('Notes / Vendor', (e) => e.expense.notes ?? ''),
     ExportColumn('Entry Date', (e) => Formatters.formatDate(e.expense.createdAt)),
   ];
@@ -138,19 +183,18 @@ List<ExportColumn<ExpenseWithClinic>> expensesExportColumns() {
 ExportTotals<ExpenseWithClinic> expensesExportTotals() {
   return ExportTotals((rows) {
     final total = rows.fold<double>(0, (sum, e) => sum + e.expense.amount);
-    return ['TOTAL', null, null, null, null, total, null, null, null];
+    return ['TOTAL', null, null, null, total, null, null, null, null];
   });
 }
 
 List<ExportColumn<ExpenseWithClinic>> expensesPdfColumns() {
   return [
     ExportColumn('Date', (e) => Formatters.formatDate(e.expense.date)),
-    ExportColumn('Clinic', (e) => e.clinic.name),
     ExportColumn('Category', (e) => e.expense.category),
     ExportColumn('Subcategory', (e) => e.expense.subcategory ?? ''),
-    ExportColumn('Nature', (e) => e.expense.isRecurring ? 'Fixed' : 'Variable'),
     ExportColumn('Amount', (e) => e.expense.amount, pdfFormat: _pdfMoney),
     ExportColumn('Method', (e) => e.expense.paymentMethod),
+    ExportColumn('Clinic', (e) => e.clinic.name),
     ExportColumn('Notes', (e) => e.expense.notes ?? ''),
   ];
 }
@@ -164,7 +208,7 @@ class _ExpensesExportAction extends ConsumerWidget {
 
     return ExportAction<ExpenseWithClinic>(
       screenSlug: 'expenses',
-      title: 'Expenses',
+      title: 'Practice Expenses',
       rows: expenses,
       columns: expensesExportColumns(),
       pdfColumns: expensesPdfColumns(),

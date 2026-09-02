@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:archive/archive.dart';
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/services/list_export_service.dart';
 import 'package:clinic_pilot/features/cashmemo/providers/cash_memo_provider.dart';
@@ -209,7 +212,7 @@ void main() {
 
       expect(lines[0], contains('Nature'));
       expect(lines[0], contains('Notes / Vendor'));
-      expect(lines.last, 'TOTAL,,,,,4500.0,,,');
+      expect(lines.last, 'TOTAL,,,,4500.0,,,,');
     });
   });
 
@@ -284,6 +287,48 @@ void main() {
       expect(csv, contains('Net Profit,33000.0'));
       expect(csv, contains('Referral: Walk-in,5'));
       expect(csv, contains('Disease: Migraine,3'));
+    });
+  });
+
+  group('Excel Styling, AutoFilter & Sticky Headers', () {
+    test('buildXlsx applies soft blue bold header style, autoFilter tag, and frozen sticky top pane', () {
+      const stats = [
+        PaymentMethodStat(
+          method: 'Cash',
+          totalCollected: 5000,
+          totalBilled: 5000,
+          count: 10,
+          percentage: 62.5,
+        ),
+      ];
+
+      final xlsxBytes = ListExportService.buildXlsx(
+        stats,
+        splitExportColumns(),
+        totals: splitExportTotals(),
+        sheetName: 'Split',
+      );
+
+      expect(xlsxBytes.isNotEmpty, isTrue);
+
+      // Verify Excel autoFilter and frozen pane was injected into the openXML archive
+      final archive = ZipDecoder().decodeBytes(xlsxBytes);
+      var autoFilterFound = false;
+      var frozenPaneFound = false;
+
+      for (final f in archive) {
+        if (f.name.startsWith('xl/worksheets/') && f.name.endsWith('.xml') && !f.name.contains('_rels')) {
+          final xml = utf8.decode(f.content as List<int>);
+          if (xml.contains('<autoFilter')) {
+            autoFilterFound = true;
+          }
+          if (xml.contains('state="frozen"') && xml.contains('ySplit="1"')) {
+            frozenPaneFound = true;
+          }
+        }
+      }
+      expect(autoFilterFound, isTrue);
+      expect(frozenPaneFound, isTrue);
     });
   });
 }

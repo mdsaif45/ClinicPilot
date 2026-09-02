@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../finances/presentation/monthly_statement_screen.dart';
+import '../../finances/presentation/transaction_detail_screen.dart';
 import '../providers/cash_memo_provider.dart';
 import 'edit_cash_memo_dialog.dart';
 import 'new_cash_memo_dialog.dart';
@@ -82,13 +84,41 @@ class CashMemoScreen extends ConsumerWidget {
                           builder: (_) => const NewCashMemoDialog(),
                         ),
                       )
-                    : ListView.separated(
-                        padding: const EdgeInsets.only(bottom: 96),
-                        itemCount: memos.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(height: 1, indent: Spacing.lg),
-                        itemBuilder: (context, i) =>
-                            _MemoRow(item: memos[i]),
+                    : CustomScrollView(
+                        slivers: [
+                          for (final group in _groupMemosByMonth(memos))
+                            SliverMainAxisGroup(
+                              slivers: [
+                                SliverPersistentHeader(
+                                  pinned: true,
+                                  delegate: _StickyMemoMonthHeaderDelegate(
+                                      group: group),
+                                ),
+                                SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final item = group.items[index];
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _MemoRow(item: item),
+                                          if (index < group.items.length - 1)
+                                            const Divider(
+                                              height: 1,
+                                              indent: Spacing.lg,
+                                            ),
+                                        ],
+                                      );
+                                    },
+                                    childCount: group.items.length,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          const SliverPadding(
+                            padding: EdgeInsets.only(bottom: 96),
+                          ),
+                        ],
                       ),
               ),
             ],
@@ -96,6 +126,127 @@ class CashMemoScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+}
+
+class _MemoMonthGroup {
+  final DateTime month;
+  final double totalRevenue;
+  final List<CashMemoWithDetails> items;
+
+  const _MemoMonthGroup({
+    required this.month,
+    required this.totalRevenue,
+    required this.items,
+  });
+}
+
+List<_MemoMonthGroup> _groupMemosByMonth(List<CashMemoWithDetails> list) {
+  final map = <DateTime, List<CashMemoWithDetails>>{};
+  for (final item in list) {
+    final m = DateTime(item.memo.memoDate.year, item.memo.memoDate.month, 1);
+    map.putIfAbsent(m, () => []).add(item);
+  }
+  final sortedKeys = map.keys.toList()..sort((a, b) => b.compareTo(a));
+  return sortedKeys.map((m) {
+    final items = map[m]!;
+    final sum = items.fold<double>(0, (s, e) => s + e.memo.paidAmount);
+    return _MemoMonthGroup(month: m, totalRevenue: sum, items: items);
+  }).toList();
+}
+
+class _StickyMemoMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final _MemoMonthGroup group;
+
+  _StickyMemoMonthHeaderDelegate({required this.group});
+
+  @override
+  double get minExtent => 42.0;
+
+  @override
+  double get maxExtent => 42.0;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final monthTitle = Formatters.formatMonthYear(group.month);
+
+    return Material(
+      color: scheme.surface,
+      elevation: overlapsContent ? 1.5 : 0,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => MonthlyStatementScreen(
+                initialMonth: group.month,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest
+                .withAlpha(overlapsContent ? 250 : 180),
+            border: Border(
+              top: BorderSide(color: theme.dividerColor.withAlpha(80)),
+              bottom: BorderSide(color: theme.dividerColor.withAlpha(80)),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_month,
+                    size: 16,
+                    color: scheme.primary,
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  Text(
+                    monthTitle,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    Formatters.formatCurrency(group.totalRevenue),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF2E7D32),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.xxs),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: Color(0xFF2E7D32),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _StickyMemoMonthHeaderDelegate oldDelegate) {
+    return oldDelegate.group.month != group.month ||
+        oldDelegate.group.totalRevenue != group.totalRevenue ||
+        oldDelegate.group.items.length != group.items.length;
   }
 }
 
@@ -115,14 +266,13 @@ class _MemoRow extends ConsumerWidget {
         horizontal: Spacing.lg,
         vertical: Spacing.xs,
       ),
-      onTap: () => showDialog(
-        context: context,
-        builder: (_) => ReceiptPreviewDialog(
-          cashMemo: memo,
-          patient: item.patient,
-          clinicName: item.clinic.name,
-        ),
-      ),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TransactionDetailScreen(memoItem: item),
+          ),
+        );
+      },
       leading: Tooltip(
         message: memo.paymentMethod,
         child: CircleAvatar(
@@ -161,7 +311,7 @@ class _MemoRow extends ConsumerWidget {
           children: [
             Expanded(
               child: Text(
-                '${memo.memoNumber} · ${Formatters.formatDate(memo.memoDate)}',
+                '${memo.memoNumber} · ${Formatters.formatDayMonth(memo.memoDate)}',
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelMedium,
               ),

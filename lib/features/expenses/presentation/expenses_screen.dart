@@ -5,6 +5,8 @@ import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../finances/presentation/monthly_statement_screen.dart';
+import '../../finances/presentation/transaction_detail_screen.dart';
 import '../providers/expense_provider.dart';
 import 'add_expense_dialog.dart';
 import 'edit_expense_dialog.dart';
@@ -156,7 +158,7 @@ class ExpensesScreen extends ConsumerWidget {
               },
             ),
           ),
-          const SizedBox(height: Spacing.md),
+          const SizedBox(height: Spacing.xs),
           Expanded(
             child: expensesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -174,11 +176,42 @@ class ExpensesScreen extends ConsumerWidget {
                     ),
                   );
                 }
-                return ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 96),
-                  itemCount: expenses.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1, indent: Spacing.lg),
-                  itemBuilder: (context, i) => _ExpenseRow(item: expenses[i]),
+
+                final monthGroups = _groupExpensesByMonth(expenses);
+
+                return CustomScrollView(
+                  slivers: [
+                    for (final group in monthGroups)
+                      SliverMainAxisGroup(
+                        slivers: [
+                          SliverPersistentHeader(
+                            pinned: true,
+                            delegate: _StickyExpenseMonthHeaderDelegate(
+                                group: group),
+                          ),
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final item = group.items[index];
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _ExpenseRow(item: item),
+                                    if (index < group.items.length - 1)
+                                      const Divider(
+                                          height: 1, indent: Spacing.lg),
+                                  ],
+                                );
+                              },
+                              childCount: group.items.length,
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SliverPadding(
+                      padding: EdgeInsets.only(bottom: 96),
+                    ),
+                  ],
                 );
               },
             ),
@@ -186,6 +219,127 @@ class ExpensesScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+class _ExpenseMonthGroup {
+  final DateTime month;
+  final double total;
+  final List<ExpenseWithClinic> items;
+
+  const _ExpenseMonthGroup({
+    required this.month,
+    required this.total,
+    required this.items,
+  });
+}
+
+List<_ExpenseMonthGroup> _groupExpensesByMonth(List<ExpenseWithClinic> list) {
+  final map = <DateTime, List<ExpenseWithClinic>>{};
+  for (final item in list) {
+    final m = DateTime(item.expense.date.year, item.expense.date.month, 1);
+    map.putIfAbsent(m, () => []).add(item);
+  }
+  final sortedKeys = map.keys.toList()..sort((a, b) => b.compareTo(a));
+  return sortedKeys.map((m) {
+    final items = map[m]!;
+    final sum = items.fold<double>(0, (s, e) => s + e.expense.amount);
+    return _ExpenseMonthGroup(month: m, total: sum, items: items);
+  }).toList();
+}
+
+class _StickyExpenseMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final _ExpenseMonthGroup group;
+
+  _StickyExpenseMonthHeaderDelegate({required this.group});
+
+  @override
+  double get minExtent => 42.0;
+
+  @override
+  double get maxExtent => 42.0;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final monthTitle = Formatters.formatMonthYear(group.month);
+
+    return Material(
+      color: scheme.surface,
+      elevation: overlapsContent ? 1.5 : 0,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => MonthlyStatementScreen(
+                initialMonth: group.month,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest
+                .withAlpha(overlapsContent ? 250 : 180),
+            border: Border(
+              top: BorderSide(color: theme.dividerColor.withAlpha(80)),
+              bottom: BorderSide(color: theme.dividerColor.withAlpha(80)),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_month,
+                    size: 16,
+                    color: scheme.primary,
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  Text(
+                    monthTitle,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    Formatters.formatCurrency(group.total),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFFD32F2F),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.xxs),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: Color(0xFFD32F2F),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _StickyExpenseMonthHeaderDelegate oldDelegate) {
+    return oldDelegate.group.month != group.month ||
+        oldDelegate.group.total != group.total ||
+        oldDelegate.group.items.length != group.items.length;
   }
 }
 
@@ -205,6 +359,13 @@ class _ExpenseRow extends ConsumerWidget {
         horizontal: Spacing.lg,
         vertical: Spacing.xs,
       ),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TransactionDetailScreen(expenseItem: item),
+          ),
+        );
+      },
       leading: CircleAvatar(
         backgroundColor: scheme.errorContainer.withValues(alpha: 0.5),
         child: Icon(expenseCategoryIcon(expense.category), color: scheme.error),
@@ -237,13 +398,7 @@ class _ExpenseRow extends ConsumerWidget {
           children: [
             Expanded(
               child: Text(
-                [
-                  if (expense.subcategory != null &&
-                      expense.subcategory!.isNotEmpty)
-                    expense.subcategory!,
-                  item.clinic.name,
-                  Formatters.formatDate(expense.date),
-                ].join(' · '),
+                Formatters.formatDayMonth(expense.date),
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelMedium,
               ),
