@@ -1376,7 +1376,7 @@ class _ClinicalRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return const SizedBox.shrink();
+    if (v.isEmpty || v.startsWith('{') || v.startsWith('[')) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -1431,7 +1431,7 @@ class _ModalityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = value.trim();
-    if (v.isEmpty) return const SizedBox.shrink();
+    if (v.isEmpty || v.startsWith('{') || v.startsWith('[')) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
