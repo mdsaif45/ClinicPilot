@@ -140,7 +140,7 @@ class NotificationCenterSheet extends ConsumerWidget {
                     onTap: () {
                       AppHaptics.selection();
                       Navigator.of(context).pop();
-                      context.push('/recall');
+                      context.go('/patients?tab=follow-ups');
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(Spacing.md),

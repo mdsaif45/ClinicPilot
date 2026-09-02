@@ -17,11 +17,17 @@ import 'recall_screen.dart';
 
 /// The patient directory, follow-up recall list, and walk-in footfalls under one tab.
 class PatientsTabScreen extends StatelessWidget {
-  const PatientsTabScreen({super.key});
+  final int initialIndex;
+
+  const PatientsTabScreen({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SwipeableSections(
+      initialIndex: initialIndex,
       labels: const ['Directory', 'Follow-ups', 'Footfalls'],
       children: const [
         PatientsScreen(),

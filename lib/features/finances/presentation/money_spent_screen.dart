@@ -193,13 +193,13 @@ class _ExpenseTile extends StatelessWidget {
         width: 42,
         height: 42,
         decoration: const BoxDecoration(
-          color: Color(0xFFFFEBEE), // Soft red for expense
+          color: FinanceColors.redBg, // Soft red for expense
           shape: BoxShape.circle,
         ),
         child: const Icon(
           Icons.north_east,
           size: 20,
-          color: Color(0xFFD32F2F),
+          color: FinanceColors.red,
         ),
       ),
       title: Text(
@@ -227,7 +227,7 @@ class _ExpenseTile extends StatelessWidget {
             '- ${Formatters.formatCurrency(exp.amount)}',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFD32F2F),
+              color: FinanceColors.red,
             ),
           ),
           const SizedBox(height: 2),

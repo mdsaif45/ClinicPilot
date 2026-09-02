@@ -84,7 +84,18 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/patients',
-                builder: (context, state) => const PatientsTabScreen(),
+                builder: (context, state) {
+                  final tab = state.uri.queryParameters['tab'];
+                  final initialIndex = switch (tab) {
+                    'follow-ups' || 'followups' || 'recall' => 1,
+                    'footfalls' => 2,
+                    _ => 0,
+                  };
+                  return PatientsTabScreen(
+                    key: ValueKey('patients_tab_$initialIndex'),
+                    initialIndex: initialIndex,
+                  );
+                },
               ),
             ],
           ),

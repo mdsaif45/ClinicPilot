@@ -90,7 +90,7 @@ class _MoneyReceivedScreenState extends ConsumerState<MoneyReceivedScreen> {
                       Formatters.formatCurrency(data.totalReceived),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2E7D32),
+                        color: FinanceColors.green,
                       ),
                     ),
                   ],
@@ -191,13 +191,13 @@ class _ReceivedTile extends StatelessWidget {
         width: 42,
         height: 42,
         decoration: const BoxDecoration(
-          color: Color(0xFFE8F5E9), // Soft green circle for money in
+          color: FinanceColors.greenBg, // Soft green circle for money in
           shape: BoxShape.circle,
         ),
         child: const Icon(
           Icons.south_west,
           size: 20,
-          color: Color(0xFF2E7D32),
+          color: FinanceColors.green,
         ),
       ),
       title: Text(
@@ -225,7 +225,7 @@ class _ReceivedTile extends StatelessWidget {
             '+ ${Formatters.formatCurrency(memo.paidAmount)}',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF2E7D32),
+              color: FinanceColors.green,
             ),
           ),
           const SizedBox(height: 2),

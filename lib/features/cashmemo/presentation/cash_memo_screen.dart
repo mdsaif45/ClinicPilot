@@ -227,16 +227,21 @@ class _StickyMemoMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
                 children: [
                   Text(
                     Formatters.formatCurrency(group.totalRevenue),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF2E7D32),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: scheme.primary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: Spacing.xxs),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: Color(0xFF2E7D32),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    width: 35,
+                    child: Center(
+                      child: Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: scheme.primary,
+                      ),
+                    ),
                   ),
                 ],
               ),

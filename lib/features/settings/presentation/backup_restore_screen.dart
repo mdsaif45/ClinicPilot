@@ -30,6 +30,7 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
   bool _isCreatingBackup = false;
   bool _isExportingExcel = false;
   bool _isExportingCsv = false;
+  bool _isSeedingDemo = false;
 
   /// Creates a 100% loss-free, compressed & verified `.cpbak` practice backup.
   Future<void> _createFullBackup() async {
@@ -377,16 +378,35 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                 icon: Icons.auto_awesome,
                 title: 'Load Demo Practice Data',
                 subtitle:
-                    'Populate realistic patients, case records, and finances',
-                onTap: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  await SampleDataSeeder.seedRealisticData(ref);
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Realistic practice demo data loaded!'),
-                    ),
-                  );
-                },
+                    'Populate 125 realistic patients, case records, and finances',
+                trailing: _isSeedingDemo
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : null,
+                onTap: _isSeedingDemo
+                    ? null
+                    : () async {
+                        setState(() => _isSeedingDemo = true);
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          await SampleDataSeeder.seedRealisticData(ref);
+                          ref.invalidate(clinicsStreamProvider);
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('125 Patients & Multi-Clinic Demo Data Loaded!'),
+                            ),
+                          );
+                        } catch (e) {
+                          messenger.showSnackBar(
+                            SnackBar(content: Text('Failed to load demo data: $e')),
+                          );
+                        } finally {
+                          if (mounted) setState(() => _isSeedingDemo = false);
+                        }
+                      },
               ),
               AppListTile(
                 icon: Icons.delete_sweep_outlined,

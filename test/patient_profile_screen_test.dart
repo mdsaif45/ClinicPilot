@@ -59,7 +59,7 @@ void main() {
       disease: 'Gastritis',
       chiefComplaint: 'Stomach burning after dinner',
       outcome: 'improved',
-      nextFollowUpDate: DateTime(2026, 9, 1),
+      nextFollowUpDate: DateTime.now().add(const Duration(days: 7)),
       visitDate: DateTime(2026, 8, 1),
       isDeleted: false,
       createdAt: DateTime(2026, 8, 1),

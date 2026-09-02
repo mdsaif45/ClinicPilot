@@ -27,10 +27,10 @@ class DailyInsightCard extends ConsumerWidget {
       ),
       onTap: () {
         AppHaptics.selection();
-        if (insight.actionRoute == '/growth' ||
-            insight.actionRoute == '/patients' ||
-            insight.actionRoute == '/finances' ||
-            insight.actionRoute == '/dashboard') {
+        if (insight.actionRoute.startsWith('/growth') ||
+            insight.actionRoute.startsWith('/patients') ||
+            insight.actionRoute.startsWith('/finances') ||
+            insight.actionRoute.startsWith('/dashboard')) {
           context.go(insight.actionRoute);
         } else {
           context.push(insight.actionRoute);

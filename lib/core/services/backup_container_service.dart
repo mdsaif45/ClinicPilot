@@ -45,7 +45,7 @@ class BackupMetadata {
     return BackupMetadata(
       app: json['app'] as String? ?? 'ClinicPilot',
       formatVersion: (json['formatVersion'] as num?)?.toInt() ?? 2,
-      appVersion: json['appVersion'] as String? ?? '0.8.7',
+      appVersion: json['appVersion'] as String? ?? '0.8.8',
       schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 15,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
@@ -100,7 +100,7 @@ class BackupCorruptedException implements Exception {
 class BackupContainerService {
   final AppDatabase _db;
   static const int currentFormatVersion = 2;
-  static const String currentAppVersion = '0.8.7';
+  static const String currentAppVersion = '0.8.8';
   static const int currentSchemaVersion = 15;
 
   const BackupContainerService(this._db);

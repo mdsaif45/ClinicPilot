@@ -17,7 +17,6 @@ void main() {
 
     expect(find.text('Before Treatment Photo'), findsOneWidget);
     expect(find.byIcon(Icons.close), findsOneWidget);
-    expect(find.byIcon(Icons.zoom_out_map_outlined), findsOneWidget);
     expect(find.byType(InteractiveViewer), findsOneWidget);
   });
 

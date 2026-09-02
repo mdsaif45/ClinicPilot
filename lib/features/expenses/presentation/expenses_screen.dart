@@ -315,16 +315,21 @@ class _StickyExpenseMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
                 children: [
                   Text(
                     Formatters.formatCurrency(group.total),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFFD32F2F),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: scheme.error,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: Spacing.xxs),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: Color(0xFFD32F2F),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    width: 35,
+                    child: Center(
+                      child: Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: scheme.error,
+                      ),
+                    ),
                   ),
                 ],
               ),

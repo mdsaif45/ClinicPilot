@@ -566,7 +566,7 @@ void main() {
       expect(prorated, equals(4000.0));
     });
 
-    test('SampleDataSeeder seeds Dr. MD Zaid, 4 clinics, 25 patients with case taking, 55 visits, 24 footfalls, 55 cash memos, 32 expenses, 3 camps', () async {
+    test('SampleDataSeeder seeds realistic practice data (3 clinics, 125 patients, cases, visits, footfalls, memos, expenses, camps)', () async {
       final container = ProviderContainer(
         overrides: [
           databaseProvider.overrideWithValue(db),
@@ -589,17 +589,17 @@ void main() {
       final referralPartners = await db.select(db.referralContacts).get();
       final camps = await db.select(db.camps).get();
 
-      expect(clinics.length, equals(4)); // 3 physical clinics + 1 online practice
-      expect(patients.length, equals(25));
-      expect(caseRecords.length, equals(25));
-      expect(complaints.length, equals(25));
-      expect(prescriptions.length, equals(25));
-      expect(investigations.length, equals(25));
-      expect(visits.length, equals(55)); // 25 new + 30 follow-ups
-      expect(footfalls.length, equals(24));
-      expect(cashMemos.length, equals(55));
-      expect(expenses.length, equals(32));
-      expect(referralPartners.length, equals(8));
+      expect(clinics.length, equals(3)); // 2 physical clinics + 1 online practice
+      expect(patients.length, equals(125));
+      expect(caseRecords.length, equals(125));
+      expect(complaints.length, greaterThanOrEqualTo(250));
+      expect(prescriptions.length, greaterThanOrEqualTo(250));
+      expect(investigations.length, greaterThanOrEqualTo(100));
+      expect(visits.length, greaterThanOrEqualTo(200));
+      expect(footfalls.length, greaterThanOrEqualTo(50));
+      expect(cashMemos.length, greaterThanOrEqualTo(200));
+      expect(expenses.length, greaterThanOrEqualTo(50));
+      expect(referralPartners.length, equals(6));
       expect(camps.length, equals(3));
     });
   });

@@ -58,6 +58,19 @@ abstract class BrandColors {
   static const Color positiveDark = Color(0xFF7FD68B);
 }
 
+/// Standard accounting colours for ledger receipts, vouchers and balance sheets.
+abstract class FinanceColors {
+  static const Color green = Color(0xFF2E7D32);
+  static const Color greenLight = Color(0xFF81C784);
+  static const Color greenBg = Color(0xFFE8F5E9);
+  static const Color greenBorder = Color(0xFFC8E6C9);
+
+  static const Color red = Color(0xFFD32F2F);
+  static const Color redLight = Color(0xFFE57373);
+  static const Color redBg = Color(0xFFFFEBEE);
+  static const Color redBorder = Color(0xFFFFCDD2);
+}
+
 /// Semantic accents for data categories.
 ///
 /// Charts and stat cards need several distinguishable colours, but they must

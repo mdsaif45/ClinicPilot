@@ -30,17 +30,18 @@ class ClinicHealthScoreCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return healthScoreAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
-      data: (healthScore) {
-        final score = healthScore.totalScore;
-        final (scoreColor, scoreBg) = switch (score) {
-          >= 80 => (scheme.primary, scheme.primaryContainer),
-          >= 60 => (scheme.tertiary, scheme.tertiaryContainer),
-          >= 40 => (scheme.error, scheme.errorContainer),
-          _ => (scheme.error, scheme.errorContainer),
-        };
+    final healthScore = healthScoreAsync.value;
+    if (healthScore == null) {
+      return const SizedBox.shrink();
+    }
+
+    final score = healthScore.totalScore;
+    final (scoreColor, scoreBg) = switch (score) {
+      >= 80 => (scheme.primary, scheme.primaryContainer),
+      >= 60 => (scheme.tertiary, scheme.tertiaryContainer),
+      >= 40 => (scheme.error, scheme.errorContainer),
+      _ => (scheme.error, scheme.errorContainer),
+    };
 
         return AppCard(
           margin: margin ??
@@ -118,8 +119,6 @@ class ClinicHealthScoreCard extends ConsumerWidget {
             ],
           ),
         );
-      },
-    );
   }
 }
 

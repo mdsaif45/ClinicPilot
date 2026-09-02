@@ -121,20 +121,20 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                       height: 46,
                       decoration: BoxDecoration(
                         color: isExpense
-                            ? const Color(0xFFFFEBEE)
-                            : const Color(0xFFE8F5E9),
+                            ? FinanceColors.redBg
+                            : FinanceColors.greenBg,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isExpense
-                              ? const Color(0xFFFFCDD2)
-                              : const Color(0xFFC8E6C9),
+                              ? FinanceColors.redBorder
+                              : FinanceColors.greenBorder,
                         ),
                       ),
                       child: Icon(
                         isExpense ? Icons.north_east : Icons.south_west,
                         color: isExpense
-                            ? const Color(0xFFD32F2F)
-                            : const Color(0xFF2E7D32),
+                            ? FinanceColors.red
+                            : FinanceColors.green,
                         size: 22,
                       ),
                     ),
@@ -164,13 +164,13 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: isExpense
-                            ? const Color(0xFFFFEBEE)
-                            : const Color(0xFFE8F5E9),
+                            ? FinanceColors.redBg
+                            : FinanceColors.greenBg,
                         borderRadius: Radii.pillAll,
                         border: Border.all(
                           color: isExpense
-                              ? const Color(0xFFE57373)
-                              : const Color(0xFF81C784),
+                              ? FinanceColors.redLight
+                              : FinanceColors.greenLight,
                         ),
                       ),
                       child: Text(
@@ -179,8 +179,8 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: isExpense
-                              ? const Color(0xFFD32F2F)
-                              : const Color(0xFF2E7D32),
+                              ? FinanceColors.red
+                              : FinanceColors.green,
                         ),
                       ),
                     ),
@@ -197,8 +197,8 @@ class _TransactionDetailScreenState extends ConsumerState<TransactionDetailScree
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: isExpense
-                        ? const Color(0xFFD32F2F)
-                        : const Color(0xFF2E7D32),
+                        ? FinanceColors.red
+                        : FinanceColors.green,
                     letterSpacing: -0.5,
                   ),
                 ),

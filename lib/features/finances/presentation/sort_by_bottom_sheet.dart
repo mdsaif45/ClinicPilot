@@ -133,14 +133,14 @@ class _SortOptionTile extends StatelessWidget {
               Container(
                 width: 22,
                 height: 22,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50), // Standard green checkmark circle
+                decoration: BoxDecoration(
+                  color: scheme.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check,
                   size: 16,
-                  color: Colors.white,
+                  color: scheme.onPrimary,
                 ),
               )
             else

@@ -47,7 +47,7 @@ final dailyInsightProvider = Provider<CoachInsight?>((ref) {
       title: '$overdueCount ${overdueCount == 1 ? 'Patient' : 'Patients'} Overdue for Follow-up',
       message: 'Send WhatsApp check-ins or follow-up reminders to ensure uninterrupted homeopathic treatment.',
       actionLabel: 'View Follow-ups',
-      actionRoute: '/patients',
+      actionRoute: '/patients?tab=follow-ups',
       icon: Icons.notifications_active_outlined,
       priority: 5,
     ));

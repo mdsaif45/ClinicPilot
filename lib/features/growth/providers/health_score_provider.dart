@@ -39,12 +39,15 @@ final clinicHealthScoreProvider = Provider<AsyncValue<ClinicHealthScore>>((ref) 
   final profitAsync = ref.watch(profitSummaryProvider);
   final reviewStatsAsync = ref.watch(reviewStatsProvider);
 
-  if (growthAsync.isLoading || profitAsync.isLoading) {
+  // If initial load and no data available yet, return loading
+  if (!growthAsync.hasValue || !profitAsync.hasValue) {
+    if (growthAsync.hasError) {
+      return AsyncError(growthAsync.error!, growthAsync.stackTrace!);
+    }
+    if (profitAsync.hasError) {
+      return AsyncError(profitAsync.error!, profitAsync.stackTrace!);
+    }
     return const AsyncLoading();
-  }
-
-  if (growthAsync.hasError) {
-    return AsyncError(growthAsync.error!, growthAsync.stackTrace!);
   }
 
   final growth = growthAsync.value!;

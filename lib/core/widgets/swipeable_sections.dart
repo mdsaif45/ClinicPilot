@@ -15,6 +15,7 @@ import 'section_switch.dart';
 class SwipeableSections extends StatefulWidget {
   final List<String> labels;
   final List<Widget> children;
+  final int initialIndex;
 
   /// Builds the trailing action for the currently selected section - a
   /// builder rather than a fixed widget, since e.g. Finances exports memos
@@ -26,6 +27,7 @@ class SwipeableSections extends StatefulWidget {
     super.key,
     required this.labels,
     required this.children,
+    this.initialIndex = 0,
     this.trailingBuilder,
   });
 
@@ -35,13 +37,23 @@ class SwipeableSections extends StatefulWidget {
 
 class _SwipeableSectionsState extends State<SwipeableSections> {
   late final PageController _controller;
-  int _index = 0;
+  late int _index;
 
   @override
   void initState() {
     super.initState();
     assert(widget.labels.length == widget.children.length);
+    _index = widget.initialIndex.clamp(0, widget.children.length - 1);
     _controller = PageController(initialPage: _index);
+  }
+
+  @override
+  void didUpdateWidget(covariant SwipeableSections oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialIndex != widget.initialIndex &&
+        widget.initialIndex != _index) {
+      _goTo(widget.initialIndex.clamp(0, widget.children.length - 1));
+    }
   }
 
   @override

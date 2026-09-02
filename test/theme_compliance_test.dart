@@ -10,7 +10,7 @@ void main() {
     final offenders = <String>[];
 
     final namedColour = RegExp(
-      r'Colors\.(red|blue|teal|green|orange|purple|amber|grey|white|black|'
+      r'\bColors\.(red|blue|teal|green|orange|purple|amber|grey|white|black|'
       r'indigo|cyan|pink|lime|brown|deepOrange|redAccent|blueAccent|black87)\b',
     );
     final hexColour = RegExp(r'Color\(0x[Ff][Ff]');

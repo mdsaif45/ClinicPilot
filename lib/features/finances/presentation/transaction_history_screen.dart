@@ -163,9 +163,9 @@ class _StickyMonthHeaderDelegate extends SliverPersistentHeaderDelegate {
             ? '- ${Formatters.formatCurrency(group.netCashFlow.abs())}'
             : Formatters.formatCurrency(0));
     final amountColor = group.netCashFlow > 0
-        ? const Color(0xFF2E7D32)
+        ? FinanceColors.green
         : (group.netCashFlow < 0
-            ? const Color(0xFFD32F2F)
+            ? FinanceColors.red
             : scheme.onSurfaceVariant);
 
     return Material(
@@ -278,16 +278,16 @@ class _TransactionItemTile extends StatelessWidget {
         height: 42,
         decoration: BoxDecoration(
           color: item.isExpense
-              ? const Color(0xFFFFEBEE) // Soft red circle for money out / expense
-              : const Color(0xFFE8F5E9), // Soft green circle for money in / cash memo
+              ? FinanceColors.redBg // Soft red circle for money out / expense
+              : FinanceColors.greenBg, // Soft green circle for money in / cash memo
           shape: BoxShape.circle,
         ),
         child: Icon(
           item.isExpense ? Icons.north_east : Icons.south_west,
           size: 18,
           color: item.isExpense
-              ? const Color(0xFFD32F2F) // Negative money red
-              : const Color(0xFF2E7D32), // Positive money green
+              ? FinanceColors.red // Negative money red
+              : FinanceColors.green, // Positive money green
         ),
       ),
       title: Text(
@@ -318,8 +318,8 @@ class _TransactionItemTile extends StatelessWidget {
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: item.isExpense
-                  ? const Color(0xFFD32F2F) // Red with minus (-)
-                  : const Color(0xFF2E7D32), // Green with plus (+)
+                  ? FinanceColors.red // Red with minus (-)
+                  : FinanceColors.green, // Green with plus (+)
             ),
           ),
           const SizedBox(height: 2),
