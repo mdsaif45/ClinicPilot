@@ -5,6 +5,8 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 
 
+import '../../finances/providers/finances_clinic_filter_provider.dart';
+
 final expenseCategoryFilterProvider = StateProvider<String?>((ref) => null);
 
 class ExpenseWithClinic {
@@ -40,10 +42,15 @@ final allExpensesStreamProvider = StreamProvider<List<ExpenseWithClinic>>((ref) 
 final expensesStreamProvider = Provider<AsyncValue<List<ExpenseWithClinic>>>((ref) {
   final allAsync = ref.watch(allExpensesStreamProvider);
   final categoryFilter = ref.watch(expenseCategoryFilterProvider);
+  final clinicFilter = ref.watch(financesClinicFilterProvider);
 
   return allAsync.whenData((allExpenses) {
+    var result = allExpenses;
+    if (clinicFilter != null) {
+      result = result.where((e) => e.expense.clinicId == clinicFilter).toList();
+    }
     if (categoryFilter == null || categoryFilter.isEmpty || categoryFilter == 'All') {
-      return allExpenses;
+      return result;
     }
 
     final List<String> matchingCategories;
@@ -61,7 +68,7 @@ final expensesStreamProvider = Provider<AsyncValue<List<ExpenseWithClinic>>>((re
       matchingCategories = [categoryFilter];
     }
 
-    return allExpenses
+    return result
         .where((e) => matchingCategories.contains(e.expense.category))
         .toList();
   });

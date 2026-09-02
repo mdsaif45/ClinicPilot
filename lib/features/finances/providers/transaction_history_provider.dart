@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../expenses/providers/expense_provider.dart';
+import 'finances_clinic_filter_provider.dart';
 
 /// Unified model for a transaction (Cash Memo or Expense) in the History stream.
 class FinanceTransactionItem {
@@ -55,6 +56,7 @@ final transactionHistoryGroupsProvider =
     Provider<AsyncValue<List<MonthTransactionGroup>>>((ref) {
   final memosAsync = ref.watch(cashMemosStreamProvider);
   final expensesAsync = ref.watch(expensesStreamProvider);
+  final selectedClinicId = ref.watch(financesClinicFilterProvider);
   final searchQuery = ref.watch(transactionSearchQueryProvider).trim().toLowerCase();
 
   if (memosAsync is AsyncLoading || expensesAsync is AsyncLoading) {
@@ -113,6 +115,7 @@ final transactionHistoryGroupsProvider =
   // 2. Process Cash Memos (Money In / Credits)
   for (final memoWithDetails in allMemos) {
     final memo = memoWithDetails.memo;
+    if (selectedClinicId != null && memo.clinicId != selectedClinicId) continue;
 
     final patient = memoWithDetails.patient;
     final disease = memoWithDetails.visit?.disease ?? patient.primaryDisease;

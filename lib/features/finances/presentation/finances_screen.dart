@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/design/tokens.dart';
 import '../../../core/services/list_export_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/export_action.dart';
@@ -9,10 +10,12 @@ import '../../cashmemo/presentation/cash_memo_screen.dart';
 import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../expenses/presentation/expenses_screen.dart';
 import '../../expenses/providers/expense_provider.dart';
+import '../providers/finances_clinic_filter_provider.dart';
 import '../providers/payment_method_breakdown_provider.dart';
 import '../providers/transaction_history_provider.dart';
 import 'payment_method_breakdown_screen.dart';
 import 'transaction_history_screen.dart';
+import 'widgets/finances_clinic_filter_pill.dart';
 
 /// Unified money in, money out, expenses, and payment channel split.
 class FinancesScreen extends StatelessWidget {
@@ -29,11 +32,17 @@ class FinancesScreen extends StatelessWidget {
         PaymentMethodBreakdownScreen(),
       ],
       trailingBuilder: (index) {
-        if (index == 0) return const _CashMemoExportAction();
-        if (index == 1) return const _ExpensesExportAction();
-        if (index == 2) return const _HistoryExportAction();
-        if (index == 3) return const _SplitExportAction();
-        return null;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const FinancesClinicFilterPill(),
+            const SizedBox(width: Spacing.xs),
+            if (index == 0) const _CashMemoExportAction(),
+            if (index == 1) const _ExpensesExportAction(),
+            if (index == 2) const _HistoryExportAction(),
+            if (index == 3) const _SplitExportAction(),
+          ],
+        );
       },
     );
   }
@@ -152,7 +161,11 @@ class _CashMemoExportAction extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memos = ref.watch(cashMemosStreamProvider).value ?? const [];
+    final allMemos = ref.watch(cashMemosStreamProvider).value ?? const [];
+    final selectedClinicId = ref.watch(financesClinicFilterProvider);
+    final memos = selectedClinicId == null
+        ? allMemos
+        : allMemos.where((m) => m.memo.clinicId == selectedClinicId).toList();
 
     return ExportAction<CashMemoWithDetails>(
       screenSlug: 'cash-memos',

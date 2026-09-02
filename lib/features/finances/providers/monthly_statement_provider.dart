@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../cashmemo/providers/cash_memo_provider.dart';
 import '../../expenses/providers/expense_provider.dart';
 
+import 'finances_clinic_filter_provider.dart';
+
 enum FinanceSortOption {
   recents('Recents'),
   oldest('Oldest'),
@@ -53,6 +55,7 @@ final monthlyStatementProvider =
     Provider.family<AsyncValue<MonthlyStatementData>, DateTime>((ref, monthDate) {
   final memosAsync = ref.watch(cashMemosStreamProvider);
   final expensesAsync = ref.watch(expensesStreamProvider);
+  final selectedClinicId = ref.watch(financesClinicFilterProvider);
 
   if (memosAsync is AsyncLoading || expensesAsync is AsyncLoading) {
     return const AsyncLoading();
@@ -77,10 +80,13 @@ final monthlyStatementProvider =
     return !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
   }).toList();
 
-  // Filter cash memos by month
+  // Filter cash memos by month and selected clinic
   var monthMemos = allMemos.where((m) {
     final d = m.memo.memoDate;
-    return !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
+    final inMonth = !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
+    if (!inMonth) return false;
+    if (selectedClinicId != null && m.memo.clinicId != selectedClinicId) return false;
+    return true;
   }).toList();
 
   // Compute totals

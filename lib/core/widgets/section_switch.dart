@@ -38,16 +38,16 @@ class SectionSwitch extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          Spacing.lg,
+        padding: EdgeInsets.fromLTRB(
+          labels.length > 2 ? Spacing.md : Spacing.lg,
           Spacing.md,
-          Spacing.lg,
+          labels.length > 2 ? Spacing.md : Spacing.lg,
           Spacing.sm,
         ),
         child: Row(
           children: [
             for (var i = 0; i < labels.length; i++) ...[
-              if (i > 0) const SizedBox(width: Spacing.xl),
+              if (i > 0) SizedBox(width: labels.length > 2 ? Spacing.md : Spacing.xl),
               InkWell(
                 borderRadius: Radii.smAll,
                 onTap: () => onChanged(i),

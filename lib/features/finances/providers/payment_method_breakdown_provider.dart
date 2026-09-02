@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/period_provider.dart';
 import '../../cashmemo/providers/cash_memo_provider.dart';
 
+import 'finances_clinic_filter_provider.dart';
+
 class PaymentMethodStat {
   final String method;
   final double totalCollected;
@@ -37,14 +39,18 @@ class PaymentBreakdownData {
 final paymentBreakdownProvider = Provider<AsyncValue<PaymentBreakdownData>>((ref) {
   final memosAsync = ref.watch(cashMemosStreamProvider);
   final period = ref.watch(periodProvider);
+  final selectedClinicId = ref.watch(financesClinicFilterProvider);
 
   return memosAsync.whenData((allMemos) {
     final range = period.dateRange;
 
-    // Filter by date range
+    // Filter by date range and selected clinic
     final memoList = allMemos.where((m) {
       final d = m.memo.memoDate;
-      return !d.isBefore(range.start) && !d.isAfter(range.end);
+      final inRange = !d.isBefore(range.start) && !d.isAfter(range.end);
+      if (!inRange) return false;
+      if (selectedClinicId != null && m.memo.clinicId != selectedClinicId) return false;
+      return true;
     }).toList();
 
     double totalBilled = 0;

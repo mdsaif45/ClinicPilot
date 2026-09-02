@@ -6,6 +6,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../finances/presentation/monthly_statement_screen.dart';
 import '../../finances/presentation/transaction_detail_screen.dart';
+import '../../finances/providers/finances_clinic_filter_provider.dart';
 import '../providers/cash_memo_provider.dart';
 import 'edit_cash_memo_dialog.dart';
 import 'new_cash_memo_dialog.dart';
@@ -21,6 +22,7 @@ class CashMemoScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cashMemosAsync = ref.watch(cashMemosStreamProvider);
+    final selectedClinicId = ref.watch(financesClinicFilterProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -32,9 +34,12 @@ class CashMemoScreen extends ConsumerWidget {
       body: cashMemosAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error loading memos: $err')),
-        data: (memos) {
+        data: (allMemos) {
+          final memos = selectedClinicId == null
+              ? allMemos
+              : allMemos.where((m) => m.memo.clinicId == selectedClinicId).toList();
           final totalRevenue =
-              memos.fold<double>(0, (sum, m) => sum + m.memo.total);
+              memos.fold<double>(0, (sum, m) => sum + m.memo.paidAmount);
           final totalPending =
               memos.fold<double>(0, (sum, m) => sum + m.pendingAmount);
 
