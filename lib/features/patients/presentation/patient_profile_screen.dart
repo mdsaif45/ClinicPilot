@@ -38,6 +38,10 @@ import '../../clinical/presentation/widgets/complaint_list_view.dart';
 import '../../clinical/presentation/widgets/prescription_list_view.dart';
 import '../../clinical/presentation/widgets/investigation_list_view.dart';
 import '../../clinical/providers/case_record_provider.dart';
+import '../../clinical/providers/complaint_provider.dart';
+import '../../clinical/providers/prescription_provider.dart';
+import '../../clinical/presentation/prescription_preview_dialog.dart';
+import '../../settings/providers/doctor_profile_provider.dart';
 import '../providers/patient_provider.dart';
 import 'edit_patient_dialog.dart';
 
@@ -181,6 +185,67 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
     }
   }
 
+  void _openPrescriptionPreview(BuildContext context, Clinic? primaryClinic) {
+    AppHaptics.selection();
+    final prescriptions =
+        ref.read(patientPrescriptionsProvider(widget.patient.id)).value ??
+        const [];
+    if (prescriptions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No prescriptions logged yet for this patient. Add remedies in the Prescriptions tab.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    final activeClinic = ref.read(activeClinicProvider);
+    final fallbackClinic = Clinic(
+      id: 'clinic-default',
+      name: 'Homeopathic Clinic',
+      monthlyRent: 0,
+      defaultConsultationFee: 0,
+      openDays: '1,2,3,4,5,6',
+      colorHex: '#0F5132',
+      isActive: true,
+      isDeleted: false,
+      createdAt: DateTime.now(),
+    );
+    final clinic = primaryClinic ?? activeClinic ?? fallbackClinic;
+    final doctorProfile =
+        ref.read(doctorProfileStreamProvider).value ?? const DoctorProfile();
+    final complaints =
+        ref.read(patientComplaintsProvider(widget.patient.id)).value ??
+        const [];
+    final caseRecord =
+        ref.read(patientCaseRecordProvider(widget.patient.id)).value;
+
+    final diagnosis =
+        caseRecord?.clinicalAssessment.finalWorkingDiagnosis
+                    .trim()
+                    .isNotEmpty ==
+                true
+            ? caseRecord?.clinicalAssessment.finalWorkingDiagnosis
+            : caseRecord?.clinicalAssessment.provisionalDiagnosis
+                    .trim()
+                    .isNotEmpty ==
+                true
+            ? caseRecord?.clinicalAssessment.provisionalDiagnosis
+            : widget.patient.primaryDisease;
+
+    PrescriptionPreviewDialog.show(
+      context,
+      patient: widget.patient,
+      clinic: clinic,
+      doctorProfile: doctorProfile,
+      prescriptions: prescriptions,
+      complaints: complaints,
+      diagnosis: diagnosis,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final patient = widget.patient;
@@ -227,6 +292,12 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
                 onPressed: () => Navigator.of(context).maybePop(),
               ),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.picture_as_pdf_outlined),
+                  tooltip: 'Prescription (Rx)',
+                  onPressed:
+                      () => _openPrescriptionPreview(context, primaryClinic),
+                ),
                 IconButton(
                   icon: const Icon(Icons.chat_outlined),
                   tooltip: 'WhatsApp message',

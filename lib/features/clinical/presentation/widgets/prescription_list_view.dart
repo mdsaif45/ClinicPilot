@@ -10,8 +10,13 @@ import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../visits/providers/visit_provider.dart';
+import '../../../clinics/providers/clinic_provider.dart';
+import '../../../settings/providers/doctor_profile_provider.dart';
+import '../../providers/case_record_provider.dart';
+import '../../providers/complaint_provider.dart';
 import '../../providers/prescription_provider.dart';
 import '../add_edit_prescription_dialog.dart';
+import '../prescription_preview_dialog.dart';
 
 class PrescriptionListView extends ConsumerWidget {
   final Patient patient;
@@ -109,6 +114,55 @@ class PrescriptionListView extends ConsumerWidget {
     );
   }
 
+  void _openPdfPreview(
+    BuildContext context,
+    WidgetRef ref,
+    List<Prescription> list,
+  ) {
+    AppHaptics.selection();
+    final activeClinic = ref.read(activeClinicProvider);
+    final fallbackClinic = Clinic(
+      id: 'clinic-default',
+      name: 'Homeopathic Clinic',
+      monthlyRent: 0,
+      defaultConsultationFee: 0,
+      openDays: '1,2,3,4,5,6',
+      colorHex: '#0F5132',
+      isActive: true,
+      isDeleted: false,
+      createdAt: DateTime.now(),
+    );
+    final clinic = activeClinic ?? fallbackClinic;
+    final doctorProfile =
+        ref.read(doctorProfileStreamProvider).value ?? const DoctorProfile();
+    final complaints =
+        ref.read(patientComplaintsProvider(patient.id)).value ?? const [];
+    final caseRecord = ref.read(patientCaseRecordProvider(patient.id)).value;
+
+    final diagnosis =
+        caseRecord?.clinicalAssessment.finalWorkingDiagnosis
+                    .trim()
+                    .isNotEmpty ==
+                true
+            ? caseRecord?.clinicalAssessment.finalWorkingDiagnosis
+            : caseRecord?.clinicalAssessment.provisionalDiagnosis
+                    .trim()
+                    .isNotEmpty ==
+                true
+            ? caseRecord?.clinicalAssessment.provisionalDiagnosis
+            : patient.primaryDisease;
+
+    PrescriptionPreviewDialog.show(
+      context,
+      patient: patient,
+      clinic: clinic,
+      doctorProfile: doctorProfile,
+      prescriptions: list,
+      complaints: complaints,
+      diagnosis: diagnosis,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prescriptionsAsync =
@@ -155,6 +209,14 @@ class PrescriptionListView extends ConsumerWidget {
                   ),
                 ),
               ),
+              IconButton(
+                icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+                tooltip: 'Generate / Print Rx PDF',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => _openPdfPreview(context, ref, prescriptions),
+              ),
+              const SizedBox(width: Spacing.md),
               IconButton(
                 icon: const Icon(Icons.share_outlined, size: 20),
                 tooltip: 'Share Rx via WhatsApp',
