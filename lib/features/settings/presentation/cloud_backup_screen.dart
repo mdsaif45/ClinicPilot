@@ -17,9 +17,11 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_confirm_dialog.dart';
 import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/pro_badge.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import 'restore_preview_dialog.dart';
+import 'widgets/pro_upgrade_sheet.dart';
 
 class CloudBackupScreen extends ConsumerStatefulWidget {
   const CloudBackupScreen({super.key});
@@ -250,10 +252,21 @@ class _CloudBackupScreenState extends ConsumerState<CloudBackupScreen> {
         ),
         children: [
           // ── 1. ACTIVE CONNECTOR STATUS ──────────────────────────
-          SectionHeader(
-            title: 'Cloud Storage Provider',
-            subtitle:
-                'Personal cloud storage for automated offsite practice backups',
+          Row(
+            children: [
+              const Expanded(
+                child: SectionHeader(
+                  title: 'Cloud Storage Provider',
+                  subtitle:
+                      'Personal cloud storage for automated offsite practice backups',
+                  tightTop: true,
+                ),
+              ),
+              ProBadge(
+                label: 'PRO',
+                onTap: () => ProUpgradeSheet.show(context),
+              ),
+            ],
           ),
           const SizedBox(height: Spacing.xs),
           AppCard(
