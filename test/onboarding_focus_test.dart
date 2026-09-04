@@ -47,20 +47,26 @@ void main() {
     expect(find.text('Welcome to ClinicPilot'), findsOneWidget);
   });
 
-  testWidgets('submitting the name field advances to the clinics page', (
-    tester,
-  ) async {
-    await pump(tester);
-    await tester.pump();
+  testWidgets(
+    'submitting the name field advances to details page, then clinics page',
+    (tester) async {
+      await pump(tester);
+      await tester.pump();
 
-    await tester.enterText(find.byType(TextField).first, 'Dr. Sarah');
-    await tester.enterText(find.byType(TextField).at(1), 'Rao');
-    await tester.pump();
-    await tester.tap(find.text('Continue'));
-    await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, 'Dr. Sarah');
+      await tester.enterText(find.byType(TextField).at(1), 'Rao');
+      await tester.pump();
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Where do you practice?'), findsOneWidget);
-  });
+      expect(find.text('Doctor Credentials'), findsOneWidget);
+
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Where do you practice?'), findsOneWidget);
+    },
+  );
 
   testWidgets('arriving on the clinics page focuses the first clinic field', (
     tester,
@@ -71,6 +77,8 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'Dr. Sarah');
     await tester.enterText(find.byType(TextField).at(1), 'Rao');
     await tester.pump();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     // The focus request on arrival is itself scheduled a frame later.
@@ -84,7 +92,7 @@ void main() {
   });
 
   testWidgets(
-    'going Back to the name page and forward again does not steal focus '
+    'going Back to previous page and forward again does not steal focus '
     'from the clinics page a second time',
     (tester) async {
       await pump(tester);
@@ -93,6 +101,8 @@ void main() {
       await tester.enterText(find.byType(TextField).first, 'Dr. Sarah');
       await tester.enterText(find.byType(TextField).at(1), 'Rao');
       await tester.pump();
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
       await tester.pump();
