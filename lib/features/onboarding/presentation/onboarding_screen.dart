@@ -83,6 +83,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   int _page = 0;
   bool _saving = false;
+  bool _hasVisitedDetails = false;
   bool _hasVisitedClinics = false;
 
   @override
@@ -121,6 +122,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           fn.toLowerCase() != 'dr. ';
       final hasLn = ln.isNotEmpty;
       return hasFn && hasLn;
+    }
+    if (_page == 1) {
+      return true;
     }
     return _clinics.any((c) => c.nameController.text.trim().isNotEmpty);
   }
@@ -180,12 +184,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               padding: const EdgeInsets.all(Spacing.lg),
               child: Row(
                 children: [
-                  for (var i = 0; i < 2; i++)
+                  for (var i = 0; i < 3; i++)
                     Expanded(
                       child: Padding(
-                        padding: EdgeInsets.only(
-                          right: i == 0 ? Spacing.sm : 0,
-                        ),
+                        padding: EdgeInsets.only(right: i < 2 ? Spacing.sm : 0),
                         child: AnimatedContainer(
                           duration: Motion.base,
                           height: 4,
@@ -208,7 +210,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (p) {
                   setState(() => _page = p);
-                  if (p == 1 && !_hasVisitedClinics) {
+                  if (p == 1 && !_hasVisitedDetails) {
+                    _hasVisitedDetails = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) _qualificationFocus.requestFocus();
+                    });
+                  } else if (p == 2 && !_hasVisitedClinics) {
                     _hasVisitedClinics = true;
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) _clinicNameFocus.requestFocus();
@@ -216,19 +223,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   }
                 },
                 children: [
-                  _DoctorProfilePage(
+                  _DoctorNamePage(
                     firstNameController: _firstNameController,
                     lastNameController: _lastNameController,
-                    emailController: _emailController,
-                    phoneController: _phoneController,
-                    qualificationController: _qualificationController,
-                    regNumberController: _regNumberController,
                     firstNameFocus: _firstNameFocus,
                     lastNameFocus: _lastNameFocus,
-                    emailFocus: _emailFocus,
-                    phoneFocus: _phoneFocus,
+                    onChanged: _refresh,
+                    onSubmitted: () {
+                      if (_canContinue) {
+                        _pageController.nextPage(
+                          duration: Motion.base,
+                          curve: Motion.curve,
+                        );
+                      }
+                    },
+                  ),
+                  _DoctorDetailsPage(
+                    qualificationController: _qualificationController,
+                    regNumberController: _regNumberController,
+                    phoneController: _phoneController,
+                    emailController: _emailController,
                     qualificationFocus: _qualificationFocus,
                     regNumberFocus: _regNumberFocus,
+                    phoneFocus: _phoneFocus,
+                    emailFocus: _emailFocus,
                     onChanged: _refresh,
                     onSubmitted: () {
                       if (_canContinue) {
@@ -270,13 +288,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                   const Spacer(),
                   AppButton.primary(
-                    label: _page == 0 ? 'Continue' : 'Get started',
+                    label: _page < 2 ? 'Continue' : 'Get started',
                     loading: _saving,
                     onPressed:
                         !_canContinue || _saving
                             ? null
                             : () {
-                              if (_page == 0) {
+                              if (_page < 2) {
                                 _pageController.nextPage(
                                   duration: Motion.base,
                                   curve: Motion.curve,
@@ -298,37 +316,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void _refresh() => setState(() {});
 }
 
-class _DoctorProfilePage extends StatelessWidget {
+class _DoctorNamePage extends StatelessWidget {
   final TextEditingController firstNameController;
   final TextEditingController lastNameController;
-  final TextEditingController emailController;
-  final TextEditingController phoneController;
-  final TextEditingController qualificationController;
-  final TextEditingController regNumberController;
-
   final FocusNode firstNameFocus;
   final FocusNode lastNameFocus;
-  final FocusNode emailFocus;
-  final FocusNode phoneFocus;
-  final FocusNode qualificationFocus;
-  final FocusNode regNumberFocus;
-
   final VoidCallback onChanged;
   final VoidCallback onSubmitted;
 
-  const _DoctorProfilePage({
+  const _DoctorNamePage({
     required this.firstNameController,
     required this.lastNameController,
-    required this.emailController,
-    required this.phoneController,
-    required this.qualificationController,
-    required this.regNumberController,
     required this.firstNameFocus,
     required this.lastNameFocus,
-    required this.emailFocus,
-    required this.phoneFocus,
-    required this.qualificationFocus,
-    required this.regNumberFocus,
     required this.onChanged,
     required this.onSubmitted,
   });
@@ -354,9 +354,9 @@ class _DoctorProfilePage extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
         ),
-        const SizedBox(height: Spacing.lg),
+        const SizedBox(height: Spacing.xl),
         Text(
-          'Set up your Doctor Profile',
+          'What is your name?',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -368,94 +368,137 @@ class _DoctorProfilePage extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: Spacing.lg),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: CustomTextField(
-                controller: firstNameController,
-                label: 'First Name *',
-                prefixIcon: Icons.person_outline,
-                onChanged: (_) => onChanged(),
-                focusNode: firstNameFocus,
-                autofocus: true,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => lastNameFocus.requestFocus(),
-              ),
-            ),
-            const SizedBox(width: Spacing.md),
-            Expanded(
-              child: CustomTextField(
-                controller: lastNameController,
-                label: 'Last Name *',
-                onChanged: (_) => onChanged(),
-                focusNode: lastNameFocus,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => emailFocus.requestFocus(),
-              ),
-            ),
-          ],
+        const SizedBox(height: Spacing.xl),
+        CustomTextField(
+          controller: firstNameController,
+          label: 'First Name *',
+          prefixIcon: Icons.person_outline,
+          onChanged: (_) => onChanged(),
+          focusNode: firstNameFocus,
+          autofocus: true,
+          textInputAction: TextInputAction.next,
+          onFieldSubmitted: (_) => lastNameFocus.requestFocus(),
         ),
         const SizedBox(height: Spacing.md),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: CustomTextField(
-                controller: emailController,
-                label: 'Email Address',
-                prefixIcon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                onChanged: (_) => onChanged(),
-                focusNode: emailFocus,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => phoneFocus.requestFocus(),
-              ),
-            ),
-            const SizedBox(width: Spacing.md),
-            Expanded(
-              child: CustomTextField(
-                controller: phoneController,
-                label: 'Phone Number',
-                prefixIcon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-                onChanged: (_) => onChanged(),
-                focusNode: phoneFocus,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => qualificationFocus.requestFocus(),
-              ),
-            ),
-          ],
+        CustomTextField(
+          controller: lastNameController,
+          label: 'Last Name *',
+          prefixIcon: Icons.person_outline,
+          onChanged: (_) => onChanged(),
+          focusNode: lastNameFocus,
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => onSubmitted(),
+        ),
+      ],
+    );
+  }
+}
+
+class _DoctorDetailsPage extends StatelessWidget {
+  final TextEditingController qualificationController;
+  final TextEditingController regNumberController;
+  final TextEditingController phoneController;
+  final TextEditingController emailController;
+
+  final FocusNode qualificationFocus;
+  final FocusNode regNumberFocus;
+  final FocusNode phoneFocus;
+  final FocusNode emailFocus;
+
+  final VoidCallback onChanged;
+  final VoidCallback onSubmitted;
+
+  const _DoctorDetailsPage({
+    required this.qualificationController,
+    required this.regNumberController,
+    required this.phoneController,
+    required this.emailController,
+    required this.qualificationFocus,
+    required this.regNumberFocus,
+    required this.phoneFocus,
+    required this.emailFocus,
+    required this.onChanged,
+    required this.onSubmitted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.lg,
+        Spacing.md,
+        Spacing.lg,
+        Spacing.xxl,
+      ),
+      children: [
+        const SizedBox(height: Spacing.sm),
+        Text('Doctor Credentials', style: theme.textTheme.headlineMedium),
+        const SizedBox(height: Spacing.xs),
+        Text(
+          'Qualifications & Contact',
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: theme.colorScheme.primary,
+          ),
+        ),
+        const SizedBox(height: Spacing.xl),
+        Text(
+          'Professional Details',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: Spacing.xs),
+        Text(
+          'These details appear on your printed prescriptions and receipts.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: Spacing.xl),
+        CustomTextField(
+          controller: qualificationController,
+          label: 'Qualifications / Degrees',
+          hint: 'e.g. MBBS, MD, BHMS',
+          prefixIcon: Icons.school_outlined,
+          onChanged: (_) => onChanged(),
+          focusNode: qualificationFocus,
+          textInputAction: TextInputAction.next,
+          onFieldSubmitted: (_) => regNumberFocus.requestFocus(),
         ),
         const SizedBox(height: Spacing.md),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: CustomTextField(
-                controller: qualificationController,
-                label: 'Qualifications / Degrees',
-                prefixIcon: Icons.school_outlined,
-                onChanged: (_) => onChanged(),
-                focusNode: qualificationFocus,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => regNumberFocus.requestFocus(),
-              ),
-            ),
-            const SizedBox(width: Spacing.md),
-            Expanded(
-              child: CustomTextField(
-                controller: regNumberController,
-                label: 'Registration No.',
-                prefixIcon: Icons.badge_outlined,
-                onChanged: (_) => onChanged(),
-                focusNode: regNumberFocus,
-                textInputAction: TextInputAction.done,
-                onFieldSubmitted: (_) => onSubmitted(),
-              ),
-            ),
-          ],
+        CustomTextField(
+          controller: regNumberController,
+          label: 'Registration No.',
+          hint: 'e.g. WBMC-12345',
+          prefixIcon: Icons.badge_outlined,
+          onChanged: (_) => onChanged(),
+          focusNode: regNumberFocus,
+          textInputAction: TextInputAction.next,
+          onFieldSubmitted: (_) => phoneFocus.requestFocus(),
+        ),
+        const SizedBox(height: Spacing.md),
+        CustomTextField(
+          controller: phoneController,
+          label: 'Phone Number',
+          prefixIcon: Icons.phone_outlined,
+          keyboardType: TextInputType.phone,
+          onChanged: (_) => onChanged(),
+          focusNode: phoneFocus,
+          textInputAction: TextInputAction.next,
+          onFieldSubmitted: (_) => emailFocus.requestFocus(),
+        ),
+        const SizedBox(height: Spacing.md),
+        CustomTextField(
+          controller: emailController,
+          label: 'Email Address',
+          prefixIcon: Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+          onChanged: (_) => onChanged(),
+          focusNode: emailFocus,
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => onSubmitted(),
         ),
       ],
     );
