@@ -4,6 +4,8 @@ import 'package:printing/printing.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/prescription_pdf_service.dart';
+import '../../../core/widgets/pro_badge.dart';
+import '../../settings/presentation/widgets/pro_upgrade_sheet.dart';
 import '../../settings/providers/doctor_profile_provider.dart';
 
 /// Full-screen dialog displaying an interactive, print-ready preview of a patient's
@@ -86,6 +88,14 @@ class PrescriptionPreviewDialog extends StatelessWidget {
           ],
         ),
         actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: ProBadge(
+              label: 'PRO LETTERHEAD',
+              compact: true,
+              onTap: () => ProUpgradeSheet.show(context),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.close),
             tooltip: 'Close Preview',
