@@ -23,6 +23,13 @@ void main() {
   testWidgets(
     'BackupRestoreScreen renders dual-tier backup and export options',
     (tester) async {
+      tester.view.physicalSize = const Size(1200, 1800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(
         const ProviderScope(child: MaterialApp(home: BackupRestoreScreen())),
       );
@@ -31,6 +38,7 @@ void main() {
       expect(find.text('Create Data Backup (.cpbak)'), findsOneWidget);
       expect(find.text('Restore from Backup'), findsOneWidget);
       expect(find.text('Periodic Backups'), findsOneWidget);
+      expect(find.text('Cloud Backup & Sync'), findsOneWidget);
       expect(find.text('Export to Excel (.xlsx)'), findsOneWidget);
       expect(find.text('Export to CSV (.csv)'), findsOneWidget);
       expect(find.text('Import Patients from Excel'), findsOneWidget);

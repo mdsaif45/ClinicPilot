@@ -15,6 +15,7 @@ import '../../../core/services/sample_data_seeder.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_list_tile.dart';
 import '../../clinics/providers/clinic_provider.dart';
+import 'cloud_backup_screen.dart';
 import 'import_preview_screen.dart';
 import 'periodic_backups_screen.dart';
 import 'restore_preview_dialog.dart';
@@ -325,6 +326,18 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                     () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const PeriodicBackupsScreen(),
+                      ),
+                    ),
+              ),
+              AppListTile(
+                icon: Icons.cloud_sync_outlined,
+                title: 'Cloud Backup & Sync',
+                subtitle: 'Sync backups with Google Drive, OneDrive, or WebDAV',
+                trailing: const Icon(Icons.chevron_right),
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const CloudBackupScreen(),
                       ),
                     ),
               ),
