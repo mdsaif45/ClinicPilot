@@ -37,6 +37,9 @@ import '../../clinical/presentation/add_edit_investigation_dialog.dart';
 import '../../clinical/presentation/widgets/complaint_list_view.dart';
 import '../../clinical/presentation/widgets/prescription_list_view.dart';
 import '../../clinical/presentation/widgets/investigation_list_view.dart';
+import '../../clinical/models/soap_note_model.dart';
+import '../../clinical/presentation/soap_note_screen.dart';
+import '../../clinical/presentation/widgets/vital_signs_card.dart';
 import '../../clinical/providers/case_record_provider.dart';
 import '../../clinical/providers/complaint_provider.dart';
 import '../../clinical/providers/prescription_provider.dart';
@@ -127,11 +130,7 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
           heroTag: 'fab-caserecord',
           onPressed: () {
             AppHaptics.selection();
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => MasterCaseTakingScreen(patient: widget.patient),
-              ),
-            );
+            _showClinicalEntryOptions(context);
           },
           icon: const Icon(Icons.edit_note),
           label: const Text('Case Taking'),
@@ -243,6 +242,116 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
       prescriptions: prescriptions,
       complaints: complaints,
       diagnosis: diagnosis,
+    );
+  }
+
+  void _showClinicalEntryOptions(BuildContext context) {
+    final caseRecord =
+        ref.read(patientCaseRecordProvider(widget.patient.id)).value;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: scheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder:
+          (ctx) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Spacing.lg,
+                vertical: Spacing.md,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Clinical Consultation',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: Spacing.xs),
+                  Text(
+                    'Choose your clinical consultation flow:',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: scheme.primaryContainer,
+                      child: Icon(Icons.speed, color: scheme.primary),
+                    ),
+                    title: const Text('Quick SOAP Note & Vitals'),
+                    subtitle: const Text(
+                      'Rapid general practice note with live BMI & BP logging',
+                    ),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: Radii.smAll,
+                      side: BorderSide(color: scheme.outlineVariant),
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder:
+                              (_) => SoapNoteScreen(
+                                patient: widget.patient,
+                                existingRecord: caseRecord,
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: scheme.secondaryContainer,
+                      child: Icon(
+                        Icons.assignment_outlined,
+                        color: scheme.secondary,
+                      ),
+                    ),
+                    title: const Text('Comprehensive Case Sheet'),
+                    subtitle: const Text(
+                      '10-tab holistic case taking with miasmatic analysis',
+                    ),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: Radii.smAll,
+                      side: BorderSide(color: scheme.outlineVariant),
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder:
+                              (_) => MasterCaseTakingScreen(
+                                patient: widget.patient,
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.md),
+                ],
+              ),
+            ),
+          ),
     );
   }
 
@@ -1237,11 +1346,20 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
     final scheme = theme.colorScheme;
     final record = caseRecordAsync.value;
 
+    final vitals =
+        record != null
+            ? VitalSigns.fromClinicalExam(record.clinicalExam)
+            : null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (vitals != null && vitals.hasVitals) ...[
+            VitalSignsSummaryStrip(vitals: vitals),
+            const SizedBox(height: Spacing.md),
+          ],
           AppCard(
             margin: EdgeInsets.zero,
             child: Column(
@@ -1309,30 +1427,32 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                               : record.clinicalAssessment.provisionalDiagnosis,
                       icon: Icons.medical_services_outlined,
                     ),
-                  InfoRow(
-                    label: 'Dominant Miasm',
-                    value: record.miasmaticAnalysis.dominantMiasm,
-                    icon: Icons.coronavirus_outlined,
-                  ),
-                  InfoRow(
-                    label: 'Thermal State',
-                    value: record.physicalGenerals.thermal,
-                    icon: Icons.thermostat_outlined,
-                  ),
-                  InfoRow(
-                    label: 'Simillimum Remedy',
-                    value:
-                        record.caseTotality.selectedRemedy.isNotEmpty
-                            ? '${record.caseTotality.selectedRemedy} ${record.caseTotality.potency}'
-                                .trim()
-                            : null,
-                    icon: Icons.medication_outlined,
-                  ),
-                  InfoRow(
-                    label: 'Case Outcome',
-                    value: record.displayOutcome,
-                    icon: Icons.flag_outlined,
-                  ),
+                  if (record.miasmaticAnalysis.dominantMiasm.isNotEmpty)
+                    InfoRow(
+                      label: 'Dominant Miasm',
+                      value: record.miasmaticAnalysis.dominantMiasm,
+                      icon: Icons.coronavirus_outlined,
+                    ),
+                  if (record.physicalGenerals.thermal.isNotEmpty)
+                    InfoRow(
+                      label: 'Thermal State',
+                      value: record.physicalGenerals.thermal,
+                      icon: Icons.thermostat_outlined,
+                    ),
+                  if (record.caseTotality.selectedRemedy.isNotEmpty)
+                    InfoRow(
+                      label: 'Simillimum Remedy',
+                      value:
+                          '${record.caseTotality.selectedRemedy} ${record.caseTotality.potency}'
+                              .trim(),
+                      icon: Icons.medication_outlined,
+                    ),
+                  if (record.displayOutcome.isNotEmpty)
+                    InfoRow(
+                      label: 'Case Outcome',
+                      value: record.displayOutcome,
+                      icon: Icons.flag_outlined,
+                    ),
                   if (record.outcomeDetails.degreeOfImprovement.isNotEmpty)
                     InfoRow(
                       label: 'Degree of Improvement',
@@ -1365,8 +1485,21 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                     ),
                   const SizedBox(height: Spacing.sm),
                 ],
-                if (record == null)
+                if (record == null) ...[
                   AppButton.primary(
+                    label: 'Quick SOAP Note & Vitals',
+                    icon: Icons.speed,
+                    fullWidth: true,
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).push(
+                        MaterialPageRoute(
+                          builder: (_) => SoapNoteScreen(patient: patient),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                  AppButton.outlined(
                     label: 'Start Clinical Case Taking',
                     icon: Icons.edit_note,
                     fullWidth: true,
@@ -1378,20 +1511,45 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                         ),
                       );
                     },
-                  )
-                else ...[
-                  AppButton.primary(
-                    label: 'View Full Case Sheet',
-                    icon: Icons.visibility_outlined,
-                    fullWidth: true,
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => ClinicalCaseSheetScreen(patient: patient),
+                  ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppButton.primary(
+                          label: 'SOAP Note',
+                          icon: Icons.speed,
+                          onPressed: () {
+                            Navigator.of(context, rootNavigator: true).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => SoapNoteScreen(
+                                      patient: patient,
+                                      existingRecord: record,
+                                    ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                      const SizedBox(width: Spacing.sm),
+                      Expanded(
+                        child: AppButton.outlined(
+                          label: 'View Full Case Sheet',
+                          icon: Icons.visibility_outlined,
+                          onPressed: () {
+                            Navigator.of(context, rootNavigator: true).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => ClinicalCaseSheetScreen(
+                                      patient: patient,
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],
