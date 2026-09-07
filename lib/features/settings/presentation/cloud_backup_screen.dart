@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/cloud/cloud_storage_connector.dart';
 import '../../../core/cloud/cloud_storage_registry.dart';
 import '../../../core/cloud/connectors/folder_sync_connector.dart';
+import '../../../core/cloud/connectors/google_drive_connector.dart';
 import '../../../core/cloud/connectors/webdav_connector.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/design/tokens.dart';
@@ -217,8 +218,92 @@ class _CloudBackupScreenState extends ConsumerState<CloudBackupScreen> {
       await registry.disconnectActive();
       ref.invalidate(activeCloudConnectorProvider);
       ref.invalidate(cloudConnectionStatusProvider);
+      ref.invalidate(cloudAccountInfoProvider);
       ref.invalidate(remoteBackupsProvider);
     }
+  }
+
+  Widget _buildAccountDetails(
+    BuildContext context,
+    ColorScheme scheme,
+    ThemeData theme,
+    CloudAccountInfo info,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(Spacing.sm),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(Radii.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.account_circle_outlined,
+                size: 16,
+                color: scheme.primary,
+              ),
+              const SizedBox(width: Spacing.xs),
+              Expanded(
+                child: Text(
+                  info.email != null && info.email!.isNotEmpty
+                      ? '${info.accountName} (${info.email})'
+                      : info.accountName,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              CustomBadge(label: 'Zero-Liability', color: scheme.tertiary),
+            ],
+          ),
+          if (info.storageTotalBytes != null &&
+              info.storageTotalBytes! > 0) ...[
+            const SizedBox(height: Spacing.xs),
+            ClipRRect(
+              borderRadius: Radii.pillAll,
+              child: LinearProgressIndicator(
+                value: info.usageFraction ?? 0.0,
+                backgroundColor: scheme.surfaceContainerHighest,
+                color: scheme.primary,
+                minHeight: 6,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${_formatBytes(info.storageUsedBytes ?? 0)} used of ${_formatBytes(info.storageTotalBytes!)}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  '${((info.usageFraction ?? 0.0) * 100).toStringAsFixed(1)}%',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
   @override
@@ -228,6 +313,7 @@ class _CloudBackupScreenState extends ConsumerState<CloudBackupScreen> {
     final activeConnector = ref.watch(activeCloudConnectorProvider);
     final isConnectedAsync = ref.watch(cloudConnectionStatusProvider);
     final isConnected = isConnectedAsync.value ?? false;
+    final accountInfoAsync = ref.watch(cloudAccountInfoProvider);
     final remoteBackupsAsync = ref.watch(remoteBackupsProvider);
 
     return Scaffold(
@@ -240,6 +326,7 @@ class _CloudBackupScreenState extends ConsumerState<CloudBackupScreen> {
             onPressed: () {
               AppHaptics.selection();
               ref.invalidate(cloudConnectionStatusProvider);
+              ref.invalidate(cloudAccountInfoProvider);
               ref.invalidate(remoteBackupsProvider);
             },
           ),
@@ -326,6 +413,15 @@ class _CloudBackupScreenState extends ConsumerState<CloudBackupScreen> {
                       ),
                     ],
                   ),
+                  if (isConnected && accountInfoAsync.value != null) ...[
+                    const SizedBox(height: Spacing.md),
+                    _buildAccountDetails(
+                      context,
+                      scheme,
+                      theme,
+                      accountInfoAsync.value!,
+                    ),
+                  ],
                   const SizedBox(height: Spacing.md),
                   Row(
                     children: [
@@ -547,9 +643,15 @@ class _ConfigureCloudProviderDialog extends ConsumerStatefulWidget {
 
 class _ConfigureCloudProviderDialogState
     extends ConsumerState<_ConfigureCloudProviderDialog> {
-  String _selectedType = 'folder_sync'; // 'folder_sync' or 'webdav'
+  String _selectedType = 'google_drive';
   bool _isLoading = false;
   String? _errorMessage;
+
+  // Google Drive fields
+  final _googleAccessTokenController = TextEditingController();
+  final _googleRefreshTokenController = TextEditingController();
+  final _googleEmailController = TextEditingController();
+  final _googleNameController = TextEditingController();
 
   // Folder sync fields
   final _folderPathController = TextEditingController();
@@ -564,7 +666,13 @@ class _ConfigureCloudProviderDialogState
     super.initState();
     final registry = ref.read(cloudStorageRegistryProvider);
     final active = registry.activeConnector;
-    if (active is WebDavConnector) {
+    if (active is GoogleDriveConnector) {
+      _selectedType = 'google_drive';
+      _googleAccessTokenController.text = active.accessToken ?? '';
+      _googleRefreshTokenController.text = active.refreshToken ?? '';
+      _googleEmailController.text = active.userEmail ?? '';
+      _googleNameController.text = active.userName ?? '';
+    } else if (active is WebDavConnector) {
       _selectedType = 'webdav';
       _webdavUrlController.text = active.serverUrl ?? '';
       _webdavUserController.text = active.username ?? '';
@@ -576,6 +684,10 @@ class _ConfigureCloudProviderDialogState
 
   @override
   void dispose() {
+    _googleAccessTokenController.dispose();
+    _googleRefreshTokenController.dispose();
+    _googleEmailController.dispose();
+    _googleNameController.dispose();
     _folderPathController.dispose();
     _webdavUrlController.dispose();
     _webdavUserController.dispose();
@@ -600,7 +712,21 @@ class _ConfigureCloudProviderDialogState
 
     final registry = ref.read(cloudStorageRegistryProvider);
     try {
-      if (_selectedType == 'folder_sync') {
+      if (_selectedType == 'google_drive') {
+        final token = _googleAccessTokenController.text.trim();
+        if (token.isEmpty) {
+          throw ArgumentError('Please enter a Google OAuth Access Token.');
+        }
+        await registry.configureAndConnect('google_drive', {
+          'accessToken': token,
+          if (_googleRefreshTokenController.text.trim().isNotEmpty)
+            'refreshToken': _googleRefreshTokenController.text.trim(),
+          if (_googleEmailController.text.trim().isNotEmpty)
+            'userEmail': _googleEmailController.text.trim(),
+          if (_googleNameController.text.trim().isNotEmpty)
+            'userName': _googleNameController.text.trim(),
+        });
+      } else if (_selectedType == 'folder_sync') {
         final path = _folderPathController.text.trim();
         if (path.isEmpty) {
           throw ArgumentError('Please select or enter a synced folder path.');
@@ -623,6 +749,7 @@ class _ConfigureCloudProviderDialogState
 
       ref.invalidate(activeCloudConnectorProvider);
       ref.invalidate(cloudConnectionStatusProvider);
+      ref.invalidate(cloudAccountInfoProvider);
       ref.invalidate(remoteBackupsProvider);
 
       if (mounted) {
@@ -661,6 +788,22 @@ class _ConfigureCloudProviderDialogState
               ),
               const SizedBox(height: Spacing.xs),
               RadioListTile<String>(
+                value: 'google_drive',
+                groupValue: _selectedType,
+                title: Row(
+                  children: [
+                    const Text('Google Drive'),
+                    const SizedBox(width: Spacing.xs),
+                    CustomBadge(label: 'Zero-Cost', color: scheme.primary),
+                  ],
+                ),
+                subtitle: const Text(
+                  'Encrypted backup to your personal Google Drive (appDataFolder)',
+                ),
+                contentPadding: EdgeInsets.zero,
+                onChanged: (v) => setState(() => _selectedType = v!),
+              ),
+              RadioListTile<String>(
                 value: 'folder_sync',
                 groupValue: _selectedType,
                 title: const Text('Cloud Synced Folder'),
@@ -682,7 +825,83 @@ class _ConfigureCloudProviderDialogState
               ),
               const SizedBox(height: Spacing.md),
 
-              if (_selectedType == 'folder_sync') ...[
+              if (_selectedType == 'google_drive') ...[
+                Container(
+                  padding: const EdgeInsets.all(Spacing.sm),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest.withValues(
+                      alpha: 0.5,
+                    ),
+                    borderRadius: BorderRadius.circular(Radii.sm),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.shield_outlined,
+                        size: 18,
+                        color: scheme.primary,
+                      ),
+                      const SizedBox(width: Spacing.xs),
+                      Expanded(
+                        child: Text(
+                          'Direct OAuth2 connection to your personal Google Drive. Encrypted archives (.cpbak) are stored in the private appDataFolder, invisible to third-party apps.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: Spacing.sm),
+                TextField(
+                  controller: _googleAccessTokenController,
+                  decoration: const InputDecoration(
+                    labelText: 'Google OAuth Access Token *',
+                    hintText: 'ya29.a0AfH6SM...',
+                  ),
+                ),
+                const SizedBox(height: Spacing.sm),
+                TextField(
+                  controller: _googleRefreshTokenController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Refresh Token (Optional)',
+                    hintText: '1//0g...',
+                  ),
+                ),
+                const SizedBox(height: Spacing.sm),
+                TextField(
+                  controller: _googleEmailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Google Account Email (Optional)',
+                    hintText: 'doctor@gmail.com',
+                  ),
+                ),
+                const SizedBox(height: Spacing.xs),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.bolt_outlined, size: 16),
+                    label: const Text(
+                      'Use Sandbox / Demo Token',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _googleAccessTokenController.text =
+                            'demo_google_access_token_${DateTime.now().millisecondsSinceEpoch}';
+                        _googleRefreshTokenController.text =
+                            'demo_refresh_token';
+                        _googleEmailController.text =
+                            'doctor.practice@gmail.com';
+                        _googleNameController.text = 'Dr. Demo Practitioner';
+                      });
+                    },
+                  ),
+                ),
+              ] else if (_selectedType == 'folder_sync') ...[
                 TextField(
                   controller: _folderPathController,
                   decoration: InputDecoration(
