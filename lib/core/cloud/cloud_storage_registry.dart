@@ -7,6 +7,7 @@ import '../database/app_database.dart';
 import '../services/backup_container_service.dart';
 import 'cloud_storage_connector.dart';
 import 'connectors/folder_sync_connector.dart';
+import 'connectors/google_drive_connector.dart';
 import 'connectors/webdav_connector.dart';
 
 const kCloudActiveProviderKey = 'cloud_active_provider_id';
@@ -14,6 +15,11 @@ const kCloudWebDavUrlKey = 'cloud_webdav_url';
 const kCloudWebDavUserKey = 'cloud_webdav_username';
 const kCloudWebDavPassKey = 'cloud_webdav_password';
 const kCloudFolderSyncPathKey = 'cloud_folder_sync_path';
+const kCloudGoogleDriveAccessTokenKey = 'cloud_gdrive_access_token';
+const kCloudGoogleDriveRefreshTokenKey = 'cloud_gdrive_refresh_token';
+const kCloudGoogleDriveTokenExpiryKey = 'cloud_gdrive_token_expiry';
+const kCloudGoogleDriveEmailKey = 'cloud_gdrive_email';
+const kCloudGoogleDriveNameKey = 'cloud_gdrive_name';
 const kCloudLastBackupTimeKey = 'cloud_last_backup_time';
 const kCloudLastBackupFileKey = 'cloud_last_backup_file';
 
@@ -33,6 +39,46 @@ class CloudStorageRegistry {
         _connectors[c.id] = c;
       }
     } else {
+      registerConnector(
+        GoogleDriveConnector(
+          onTokensChanged: ({
+            required String accessToken,
+            String? refreshToken,
+            DateTime? expiresAt,
+            String? userEmail,
+            String? userName,
+          }) async {
+            await _secureStorage.write(
+              key: kCloudGoogleDriveAccessTokenKey,
+              value: accessToken,
+            );
+            if (refreshToken != null) {
+              await _secureStorage.write(
+                key: kCloudGoogleDriveRefreshTokenKey,
+                value: refreshToken,
+              );
+            }
+            if (expiresAt != null) {
+              await _secureStorage.write(
+                key: kCloudGoogleDriveTokenExpiryKey,
+                value: expiresAt.toIso8601String(),
+              );
+            }
+            if (userEmail != null) {
+              await _secureStorage.write(
+                key: kCloudGoogleDriveEmailKey,
+                value: userEmail,
+              );
+            }
+            if (userName != null) {
+              await _secureStorage.write(
+                key: kCloudGoogleDriveNameKey,
+                value: userName,
+              );
+            }
+          },
+        ),
+      );
       registerConnector(FolderSyncConnector());
       registerConnector(WebDavConnector());
     }
@@ -55,6 +101,33 @@ class CloudStorageRegistry {
     _activeConnectorId = await _secureStorage.read(
       key: kCloudActiveProviderKey,
     );
+
+    // Initialize Google Drive connector if tokens are saved
+    final gdriveToken = await _secureStorage.read(
+      key: kCloudGoogleDriveAccessTokenKey,
+    );
+    if (gdriveToken != null && gdriveToken.isNotEmpty) {
+      final gdriveConnector = _connectors['google_drive'];
+      if (gdriveConnector != null) {
+        final refresh = await _secureStorage.read(
+          key: kCloudGoogleDriveRefreshTokenKey,
+        );
+        final expiry = await _secureStorage.read(
+          key: kCloudGoogleDriveTokenExpiryKey,
+        );
+        final email = await _secureStorage.read(key: kCloudGoogleDriveEmailKey);
+        final name = await _secureStorage.read(key: kCloudGoogleDriveNameKey);
+        try {
+          await gdriveConnector.connect({
+            'accessToken': gdriveToken,
+            if (refresh != null) 'refreshToken': refresh,
+            if (expiry != null) 'expiresAt': expiry,
+            if (email != null) 'userEmail': email,
+            if (name != null) 'userName': name,
+          });
+        } catch (_) {}
+      }
+    }
 
     // Initialize FolderSync connector if path is saved
     final folderPath = await _secureStorage.read(key: kCloudFolderSyncPathKey);
@@ -103,7 +176,36 @@ class CloudStorageRegistry {
       value: connectorId,
     );
 
-    if (connectorId == 'folder_sync') {
+    if (connectorId == 'google_drive') {
+      await _secureStorage.write(
+        key: kCloudGoogleDriveAccessTokenKey,
+        value: credentials['accessToken'] ?? '',
+      );
+      if (credentials['refreshToken'] != null) {
+        await _secureStorage.write(
+          key: kCloudGoogleDriveRefreshTokenKey,
+          value: credentials['refreshToken']!,
+        );
+      }
+      if (credentials['expiresAt'] != null) {
+        await _secureStorage.write(
+          key: kCloudGoogleDriveTokenExpiryKey,
+          value: credentials['expiresAt']!,
+        );
+      }
+      if (credentials['userEmail'] != null) {
+        await _secureStorage.write(
+          key: kCloudGoogleDriveEmailKey,
+          value: credentials['userEmail']!,
+        );
+      }
+      if (credentials['userName'] != null) {
+        await _secureStorage.write(
+          key: kCloudGoogleDriveNameKey,
+          value: credentials['userName']!,
+        );
+      }
+    } else if (connectorId == 'folder_sync') {
       await _secureStorage.write(
         key: kCloudFolderSyncPathKey,
         value: credentials['path'] ?? '',
@@ -130,7 +232,13 @@ class CloudStorageRegistry {
     if (active != null) {
       await active.disconnect();
     }
-    if (_activeConnectorId == 'folder_sync') {
+    if (_activeConnectorId == 'google_drive') {
+      await _secureStorage.delete(key: kCloudGoogleDriveAccessTokenKey);
+      await _secureStorage.delete(key: kCloudGoogleDriveRefreshTokenKey);
+      await _secureStorage.delete(key: kCloudGoogleDriveTokenExpiryKey);
+      await _secureStorage.delete(key: kCloudGoogleDriveEmailKey);
+      await _secureStorage.delete(key: kCloudGoogleDriveNameKey);
+    } else if (_activeConnectorId == 'folder_sync') {
       await _secureStorage.delete(key: kCloudFolderSyncPathKey);
     } else if (_activeConnectorId == 'webdav') {
       await _secureStorage.delete(key: kCloudWebDavUrlKey);
@@ -246,4 +354,16 @@ final remoteBackupsProvider = FutureProvider<List<RemoteBackupItem>>((
   final isConnected = await connector.isConnected();
   if (!isConnected) return [];
   return connector.listBackups();
+});
+
+final cloudAccountInfoProvider = FutureProvider<CloudAccountInfo?>((ref) async {
+  final connector = ref.watch(activeCloudConnectorProvider);
+  if (connector == null) return null;
+  final isConnected = await connector.isConnected();
+  if (!isConnected) return null;
+  try {
+    return await connector.getAccountInfo();
+  } catch (_) {
+    return null;
+  }
 });
