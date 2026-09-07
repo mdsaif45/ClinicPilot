@@ -12,11 +12,14 @@ import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
 import '../../../core/services/app_haptics.dart';
+import '../../clinical/providers/prescription_provider.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../../inventory/providers/inventory_provider.dart';
 import '../../patients/presentation/patient_picker.dart';
 import '../providers/cash_memo_provider.dart';
+import '../services/prescription_dispense_matcher.dart';
 import 'widgets/dispense_medicine_picker_sheet.dart';
+import 'widgets/prescription_dispense_review_sheet.dart';
 
 class NewCashMemoDialog extends ConsumerStatefulWidget {
   final Patient? initialPatient;
@@ -98,6 +101,17 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     });
   }
 
+  /// Rewrites the medicine fee from the current dispensed line items.
+  ///
+  /// Call inside a [setState]; it mutates the fee controller only.
+  void _syncMedicineFeeFromDispensed() {
+    final totalMedFee = _dispensedItems.fold(
+      0.0,
+      (sum, item) => sum + item.totalPrice,
+    );
+    _medicineController.text = totalMedFee.toStringAsFixed(0);
+  }
+
   Future<void> _openDispensePicker() async {
     AppHaptics.selection();
     final selected = await DispenseMedicinePickerSheet.show(
@@ -110,15 +124,109 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
           ..clear()
           ..addAll(selected);
         if (_dispensedItems.isNotEmpty) {
-          final totalMedFee = _dispensedItems.fold(
-            0.0,
-            (sum, item) => sum + item.totalPrice,
-          );
-          _medicineController.text = totalMedFee.toStringAsFixed(0);
+          _syncMedicineFeeFromDispensed();
           _onFeeChanged();
         }
       });
     }
+  }
+
+  /// Pulls the patient's most recent prescription into the dispense list,
+  /// auto-matched against clinic inventory.
+  ///
+  /// Matches are reviewed and confirmed before anything is billed, since
+  /// confirming decrements real stock.
+  Future<void> _dispenseFromActivePrescription() async {
+    final patient = _selectedPatient;
+    if (patient == null) return;
+
+    AppHaptics.selection();
+
+    // Await the first emission rather than reading the cached value: these
+    // streams may not have produced one yet, and treating that as "empty"
+    // would wrongly report stocked remedies as unavailable.
+    final prescriptions = await ref.read(
+      patientPrescriptionsOnceProvider(patient.id).future,
+    );
+    final active = PrescriptionDispenseMatcher.activePrescription(
+      prescriptions,
+    );
+
+    if (!mounted) return;
+    if (active.isEmpty) {
+      _showSnack('No active prescription found for ${patient.name}.');
+      return;
+    }
+
+    final inventory = await ref.read(inventoryStreamProvider.future);
+    final matches = PrescriptionDispenseMatcher.match(
+      prescriptions: active,
+      inventory: inventory,
+    );
+
+    if (!mounted) return;
+    final items = await PrescriptionDispenseReviewSheet.show(
+      context,
+      matches: matches,
+      prescriptionDate: active.first.prescriptionDate,
+    );
+
+    if (items == null || items.isEmpty || !mounted) return;
+
+    setState(() {
+      // Merge rather than replace: the doctor may have already added
+      // over-the-counter items by hand before pulling the prescription.
+      for (final item in items) {
+        final existing = _dispensedItems.indexWhere(
+          (d) => d.medicine.id == item.medicine.id,
+        );
+        if (existing >= 0) {
+          _dispensedItems[existing] = item;
+        } else {
+          _dispensedItems.add(item);
+        }
+      }
+      _syncMedicineFeeFromDispensed();
+      _onFeeChanged();
+    });
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// One-tap shortcut shown only when the selected patient actually has a
+  /// prescription on file, so the cash memo stays uncluttered otherwise.
+  Widget _buildPrescriptionShortcut() {
+    final patient = _selectedPatient;
+    if (patient == null) return const SizedBox.shrink();
+
+    final prescriptions =
+        ref.watch(patientPrescriptionsOnceProvider(patient.id)).value ??
+        const [];
+    final active = PrescriptionDispenseMatcher.activePrescription(
+      prescriptions,
+    );
+    if (active.isEmpty) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        icon: const Icon(Icons.receipt_long_outlined, size: 16),
+        label: Text(
+          'Dispense from Active Prescription (${active.length})',
+          style: const TextStyle(fontSize: 12),
+        ),
+        style: TextButton.styleFrom(
+          foregroundColor: theme.colorScheme.secondary,
+        ),
+        onPressed: _dispenseFromActivePrescription,
+      ),
+    );
   }
 
   @override
@@ -278,12 +386,15 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                     onPressed: () {
                       setState(() {
                         _dispensedItems.clear();
+                        _syncMedicineFeeFromDispensed();
+                        _onFeeChanged();
                       });
                     },
                     child: const Text('Clear', style: TextStyle(fontSize: 12)),
                   ),
               ],
             ),
+            _buildPrescriptionShortcut(),
             if (_dispensedItems.isNotEmpty) ...[
               Wrap(
                 spacing: Spacing.xs,
@@ -299,12 +410,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                       onDeleted: () {
                         setState(() {
                           _dispensedItems.remove(item);
-                          final totalMedFee = _dispensedItems.fold(
-                            0.0,
-                            (sum, i) => sum + i.totalPrice,
-                          );
-                          _medicineController.text = totalMedFee
-                              .toStringAsFixed(0);
+                          _syncMedicineFeeFromDispensed();
                           _onFeeChanged();
                         });
                       },
