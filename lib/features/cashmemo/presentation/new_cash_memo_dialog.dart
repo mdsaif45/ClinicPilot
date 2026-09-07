@@ -11,9 +11,12 @@ import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/picker_field.dart';
+import '../../../core/services/app_haptics.dart';
 import '../../clinics/providers/clinic_provider.dart';
+import '../../inventory/providers/inventory_provider.dart';
 import '../../patients/presentation/patient_picker.dart';
 import '../providers/cash_memo_provider.dart';
+import 'widgets/dispense_medicine_picker_sheet.dart';
 
 class NewCashMemoDialog extends ConsumerStatefulWidget {
   final Patient? initialPatient;
@@ -37,6 +40,8 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
   final _otherController = TextEditingController(text: '0');
   final _discountController = TextEditingController(text: '0');
   final _paidAmountController = TextEditingController();
+
+  final List<DispensedMedicineItem> _dispensedItems = [];
 
   String _paymentMethod = 'Cash';
   DateTime _memoDate = DateTime.now();
@@ -91,6 +96,29 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
         _paidAmountController.text = _total.toStringAsFixed(0);
       }
     });
+  }
+
+  Future<void> _openDispensePicker() async {
+    AppHaptics.selection();
+    final selected = await DispenseMedicinePickerSheet.show(
+      context,
+      currentSelection: _dispensedItems,
+    );
+    if (selected != null) {
+      setState(() {
+        _dispensedItems
+          ..clear()
+          ..addAll(selected);
+        if (_dispensedItems.isNotEmpty) {
+          final totalMedFee = _dispensedItems.fold(
+            0.0,
+            (sum, item) => sum + item.totalPrice,
+          );
+          _medicineController.text = totalMedFee.toStringAsFixed(0);
+          _onFeeChanged();
+        }
+      });
+    }
   }
 
   @override
@@ -231,7 +259,61 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
               keyboardType: TextInputType.number,
               onChanged: (_) => _onFeeChanged(),
             ),
-            const SizedBox(height: Spacing.md),
+            const SizedBox(height: Spacing.xs),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton.icon(
+                  icon: const Icon(Icons.medication_liquid_outlined, size: 16),
+                  label: Text(
+                    _dispensedItems.isEmpty
+                        ? 'Dispense from Inventory'
+                        : '${_dispensedItems.length} ${_dispensedItems.length == 1 ? 'remedy' : 'remedies'} selected',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  onPressed: _openDispensePicker,
+                ),
+                if (_dispensedItems.isNotEmpty)
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _dispensedItems.clear();
+                      });
+                    },
+                    child: const Text('Clear', style: TextStyle(fontSize: 12)),
+                  ),
+              ],
+            ),
+            if (_dispensedItems.isNotEmpty) ...[
+              Wrap(
+                spacing: Spacing.xs,
+                runSpacing: Spacing.xs,
+                children: [
+                  for (final item in _dispensedItems)
+                    Chip(
+                      label: Text(
+                        '${item.medicine.name}${item.medicine.potency != null && item.medicine.potency!.isNotEmpty ? ' ${item.medicine.potency}' : ''} × ${item.quantity.toStringAsFixed(0)} (₹${item.totalPrice.toStringAsFixed(0)})',
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      onDeleted: () {
+                        setState(() {
+                          _dispensedItems.remove(item);
+                          final totalMedFee = _dispensedItems.fold(
+                            0.0,
+                            (sum, i) => sum + i.totalPrice,
+                          );
+                          _medicineController.text = totalMedFee
+                              .toStringAsFixed(0);
+                          _onFeeChanged();
+                        });
+                      },
+                    ),
+                ],
+              ),
+              const SizedBox(height: Spacing.xs),
+            ],
+            const SizedBox(height: Spacing.sm),
             CustomTextField(
               controller: _otherController,
               label: 'Other Charges (Rs)',
@@ -349,8 +431,9 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
       _clinicError = _selectedClinicId == null ? 'Select a clinic' : null;
     });
 
-    if (!formOk || _selectedPatient == null || _selectedClinicId == null)
+    if (!formOk || _selectedPatient == null || _selectedClinicId == null) {
       return;
+    }
 
     setState(() => _submitting = true);
 
@@ -359,6 +442,24 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     final other = double.tryParse(_otherController.text) ?? 0.0;
     final disc = double.tryParse(_discountController.text) ?? 0.0;
     final paid = double.tryParse(_paidAmountController.text) ?? _total;
+
+    String? memoNotes;
+    if (_dispensedItems.isNotEmpty) {
+      final summary = _dispensedItems
+          .map((i) {
+            final potency =
+                i.medicine.potency != null && i.medicine.potency!.isNotEmpty
+                    ? ' ${i.medicine.potency}'
+                    : '';
+            final qty =
+                i.quantity % 1 == 0
+                    ? i.quantity.toInt().toString()
+                    : i.quantity.toStringAsFixed(1);
+            return '${i.medicine.name}$potency ($qty ${i.medicine.unit})';
+          })
+          .join(', ');
+      memoNotes = 'Dispensed: $summary';
+    }
 
     try {
       await ref
@@ -373,13 +474,21 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
             paidAmount: paid,
             paymentMethod: _paymentMethod,
             memoDate: _memoDate,
+            notes: memoNotes,
           );
+
+      if (_dispensedItems.isNotEmpty) {
+        final inventory = ref.read(inventoryControllerProvider);
+        for (final item in _dispensedItems) {
+          await inventory.adjustStock(item.medicine.id, -item.quantity);
+        }
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Could not create memo: \$e')));
+        ).showSnackBar(SnackBar(content: Text('Could not create memo: $e')));
       }
       return;
     }
