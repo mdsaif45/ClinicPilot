@@ -923,6 +923,7 @@ class ClinicalExamVitals {
   final String skinExamination;
   final String entOralExamination;
   final String otherExaminationFindings;
+  final String dentalChartJson;
 
   const ClinicalExamVitals({
     this.generalAppearance = '',
@@ -949,6 +950,7 @@ class ClinicalExamVitals {
     this.skinExamination = '',
     this.entOralExamination = '',
     this.otherExaminationFindings = '',
+    this.dentalChartJson = '',
   });
 
   String get bp => bloodPressure;
@@ -963,6 +965,65 @@ class ClinicalExamVitals {
   String get tongueExam => entOralExamination;
   String get entOralExam => entOralExamination;
   String get systemicFindings => otherExaminationFindings;
+
+  ClinicalExamVitals copyWith({
+    String? generalAppearance,
+    String? buildNutrition,
+    String? pallor,
+    String? icterus,
+    String? cyanosis,
+    String? clubbing,
+    String? lymphadenopathy,
+    String? oedema,
+    String? temperature,
+    String? pulse,
+    String? bloodPressure,
+    String? respiratoryRate,
+    String? spo2,
+    String? weightKg,
+    String? heightCm,
+    String? bmi,
+    String? cvsExamination,
+    String? respiratoryExamination,
+    String? abdominalExamination,
+    String? cnsExamination,
+    String? musculoskeletalExamination,
+    String? skinExamination,
+    String? entOralExamination,
+    String? otherExaminationFindings,
+    String? dentalChartJson,
+  }) {
+    return ClinicalExamVitals(
+      generalAppearance: generalAppearance ?? this.generalAppearance,
+      buildNutrition: buildNutrition ?? this.buildNutrition,
+      pallor: pallor ?? this.pallor,
+      icterus: icterus ?? this.icterus,
+      cyanosis: cyanosis ?? this.cyanosis,
+      clubbing: clubbing ?? this.clubbing,
+      lymphadenopathy: lymphadenopathy ?? this.lymphadenopathy,
+      oedema: oedema ?? this.oedema,
+      temperature: temperature ?? this.temperature,
+      pulse: pulse ?? this.pulse,
+      bloodPressure: bloodPressure ?? this.bloodPressure,
+      respiratoryRate: respiratoryRate ?? this.respiratoryRate,
+      spo2: spo2 ?? this.spo2,
+      weightKg: weightKg ?? this.weightKg,
+      heightCm: heightCm ?? this.heightCm,
+      bmi: bmi ?? this.bmi,
+      cvsExamination: cvsExamination ?? this.cvsExamination,
+      respiratoryExamination:
+          respiratoryExamination ?? this.respiratoryExamination,
+      abdominalExamination: abdominalExamination ?? this.abdominalExamination,
+      cnsExamination: cnsExamination ?? this.cnsExamination,
+      musculoskeletalExamination:
+          musculoskeletalExamination ?? this.musculoskeletalExamination,
+      skinExamination: skinExamination ?? this.skinExamination,
+      entOralExamination: entOralExamination ?? this.entOralExamination,
+      otherExaminationFindings:
+          otherExaminationFindings ?? this.otherExaminationFindings,
+      dentalChartJson: dentalChartJson ?? this.dentalChartJson,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'generalAppearance': generalAppearance,
@@ -989,6 +1050,7 @@ class ClinicalExamVitals {
     'skinExamination': skinExamination,
     'entOralExamination': entOralExamination,
     'otherExaminationFindings': otherExaminationFindings,
+    'dentalChartJson': dentalChartJson,
   };
 
   factory ClinicalExamVitals.fromJson(Map<String, dynamic> json) =>
@@ -1025,6 +1087,7 @@ class ClinicalExamVitals {
             json['otherExaminationFindings'] as String? ??
             json['systemicFindings'] as String? ??
             '',
+        dentalChartJson: json['dentalChartJson'] as String? ?? '',
       );
 
   factory ClinicalExamVitals.fromString(String? raw) {
@@ -1224,6 +1287,26 @@ class ClinicalAssessmentDetails {
     this.redFlagsReferrals = '',
     this.clinicalRemarks = '',
   });
+
+  ClinicalAssessmentDetails copyWith({
+    String? provisionalDiagnosis,
+    String? finalWorkingDiagnosis,
+    String? differentialDiagnosis,
+    String? comorbidities,
+    String? redFlagsReferrals,
+    String? clinicalRemarks,
+  }) {
+    return ClinicalAssessmentDetails(
+      provisionalDiagnosis: provisionalDiagnosis ?? this.provisionalDiagnosis,
+      finalWorkingDiagnosis:
+          finalWorkingDiagnosis ?? this.finalWorkingDiagnosis,
+      differentialDiagnosis:
+          differentialDiagnosis ?? this.differentialDiagnosis,
+      comorbidities: comorbidities ?? this.comorbidities,
+      redFlagsReferrals: redFlagsReferrals ?? this.redFlagsReferrals,
+      clinicalRemarks: clinicalRemarks ?? this.clinicalRemarks,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'provisionalDiagnosis': provisionalDiagnosis,
@@ -1677,6 +1760,7 @@ class MasterCaseRecordData {
   String get mentalGeneralsJson => jsonEncode(mentalGenerals.toJson());
   String get lifestyleJson => jsonEncode(lifestyleHabits.toJson());
   String get clinicalExamJson => jsonEncode(clinicalExam.toJson());
+  String get dentalChartJson => clinicalExam.dentalChartJson;
   String get miasmaticAnalysisJson => jsonEncode(miasmaticAnalysis.toJson());
   String get caseTotalityPackedJson => jsonEncode({
     'caseTotality': caseTotality.toJson(),
