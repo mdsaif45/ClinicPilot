@@ -15,10 +15,11 @@ import 'tables/complaints.dart';
 import 'tables/prescriptions.dart';
 import 'tables/investigations.dart';
 import 'tables/referral_contacts.dart';
+import 'tables/medicines.dart';
 
 part 'app_database.g.dart';
 
-// Type-safe database powered by Drift ORM (Schema Version 15)
+// Type-safe database powered by Drift ORM (Schema Version 16)
 @DriftDatabase(
   tables: [
     Clinics,
@@ -35,13 +36,14 @@ part 'app_database.g.dart';
     Prescriptions,
     Investigations,
     ReferralContacts,
+    Medicines,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -279,6 +281,10 @@ class AppDatabase extends _$AppDatabase {
           investigations.reportAttachments,
         );
       }
+
+      if (from < 16) {
+        await m.createTable(medicines);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -431,6 +437,7 @@ class AppDatabase extends _$AppDatabase {
   /// Completely resets all practice tables, patients, clinics, and settings for a clean restart.
   Future<void> clearAllPracticeData() async {
     await transaction(() async {
+      await delete(medicines).go();
       await delete(prescriptions).go();
       await delete(investigations).go();
       await delete(complaints).go();

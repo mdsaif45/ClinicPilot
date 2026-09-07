@@ -98,16 +98,16 @@ class BackupCorruptedException implements Exception {
 
 /// Industrial-standard service for creating, inspecting, and restoring
 /// 100% loss-free, atomic ClinicPilot practice backups (`.cpbak`)
-/// including all 14 database tables and physical patient media (images & PDF reports).
+/// including all 15 database tables and physical patient media (images & PDF reports).
 class BackupContainerService {
   final AppDatabase _db;
   static const int currentFormatVersion = 2;
   static const String currentAppVersion = '0.8.8';
-  static const int currentSchemaVersion = 15;
+  static const int currentSchemaVersion = 16;
 
   const BackupContainerService(this._db);
 
-  /// Dumps all 14 database tables and physical media into a unified `.cpbak` archive.
+  /// Dumps all 15 database tables and physical media into a unified `.cpbak` archive.
   Future<List<int>> buildBackupBytes({bool includeMedia = true}) async {
     // 1. Fetch all tables from Drift
     final clinicsList = await _db.select(_db.clinics).get();
@@ -124,6 +124,7 @@ class BackupContainerService {
     final referralContactsList = await _db.select(_db.referralContacts).get();
     final reviewRequestsList = await _db.select(_db.reviewRequests).get();
     final settingsList = await _db.select(_db.settings).get();
+    final medicinesList = await _db.select(_db.medicines).get();
 
     // 2. Build exact record counts
     final counts = <String, int>{
@@ -141,6 +142,7 @@ class BackupContainerService {
       'referralContacts': referralContactsList.length,
       'reviewRequests': reviewRequestsList.length,
       'settings': settingsList.length,
+      'medicines': medicinesList.length,
     };
 
     // 3. Serialize all rows to full JSON payload
@@ -159,6 +161,7 @@ class BackupContainerService {
       'referralContacts': referralContactsList.map((e) => e.toJson()).toList(),
       'reviewRequests': reviewRequestsList.map((e) => e.toJson()).toList(),
       'settings': settingsList.map((e) => e.toJson()).toList(),
+      'medicines': medicinesList.map((e) => e.toJson()).toList(),
     };
 
     final rawJsonString = jsonEncode(payloadMap);
@@ -535,6 +538,17 @@ class BackupContainerService {
             .into(_db.settings)
             .insert(
               Setting.fromJson(item as Map<String, dynamic>),
+              mode: InsertMode.insertOrReplace,
+            );
+      }
+
+      // 15. Medicines
+      final medicines = payloadMap['medicines'] as List<dynamic>? ?? [];
+      for (final item in medicines) {
+        await _db
+            .into(_db.medicines)
+            .insert(
+              Medicine.fromJson(item as Map<String, dynamic>),
               mode: InsertMode.insertOrReplace,
             );
       }
