@@ -72,7 +72,8 @@ class _DentalChartScreenState extends ConsumerState<DentalChartScreen> {
       context: context,
       tooth: tooth,
       notation: _chartData.notation,
-      onAddProcedure: () => _showAddProcedureDialog(defaultTooth: tooth.fdiNumber),
+      onAddProcedure:
+          () => _showAddProcedureDialog(defaultTooth: tooth.fdiNumber),
     );
 
     if (updated != null && mounted) {
@@ -137,7 +138,10 @@ class _DentalChartScreenState extends ConsumerState<DentalChartScreen> {
                       children:
                           presets.take(4).map((p) {
                             return ActionChip(
-                              label: Text(p, style: const TextStyle(fontSize: 11)),
+                              label: Text(
+                                p,
+                                style: const TextStyle(fontSize: 11),
+                              ),
                               backgroundColor: scheme.surfaceContainerHighest,
                               side: BorderSide(color: scheme.outlineVariant),
                               onPressed: () {
@@ -214,7 +218,8 @@ class _DentalChartScreenState extends ConsumerState<DentalChartScreen> {
                     CustomTextField(
                       controller: notesController,
                       label: 'Procedure Clinical Notes',
-                      hint: 'e.g. Under local anesthesia, single sitting planned...',
+                      hint:
+                          'e.g. Under local anesthesia, single sitting planned...',
                       prefixIcon: Icons.notes,
                       maxLines: 2,
                     ),
@@ -231,12 +236,14 @@ class _DentalChartScreenState extends ConsumerState<DentalChartScreen> {
                     final title = titleController.text.trim();
                     if (title.isEmpty) return;
 
-                    final fee = double.tryParse(feeController.text.trim()) ?? 0.0;
-                    final teethParts = teethController.text
-                        .split(RegExp(r'[, ]+'))
-                        .map((s) => int.tryParse(s.trim()))
-                        .whereType<int>()
-                        .toList();
+                    final fee =
+                        double.tryParse(feeController.text.trim()) ?? 0.0;
+                    final teethParts =
+                        teethController.text
+                            .split(RegExp(r'[, ]+'))
+                            .map((s) => int.tryParse(s.trim()))
+                            .whereType<int>()
+                            .toList();
 
                     final newProc = DentalProcedure(
                       id: IdGenerator.generate(),
@@ -293,7 +300,8 @@ class _DentalChartScreenState extends ConsumerState<DentalChartScreen> {
       if (widget.patient.primaryDisease == null ||
           widget.patient.primaryDisease!.isEmpty) {
         final db = ref.read(databaseProvider);
-        await (db.update(db.patients)..where((t) => t.id.equals(widget.patient.id))).write(
+        await (db.update(db.patients)
+          ..where((t) => t.id.equals(widget.patient.id))).write(
           PatientsCompanion(
             primaryDisease: drift.Value(
               masterRecord.clinicalAssessment.provisionalDiagnosis,
@@ -610,7 +618,10 @@ class _DentalChartScreenState extends ConsumerState<DentalChartScreen> {
               FilledButton.tonalIcon(
                 onPressed: () => _showAddProcedureDialog(),
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add Procedure', style: TextStyle(fontSize: 12)),
+                label: const Text(
+                  'Add Procedure',
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
             ],
           ),
@@ -670,8 +681,7 @@ class _DentalChartScreenState extends ConsumerState<DentalChartScreen> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: procs.length,
               separatorBuilder:
-                  (_, __) =>
-                      Divider(height: 1, color: scheme.outlineVariant),
+                  (_, __) => Divider(height: 1, color: scheme.outlineVariant),
               itemBuilder: (context, index) {
                 final p = procs[index];
                 return _ProcedureTile(
@@ -827,11 +837,7 @@ class _ProcedureTile extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: Icon(
-              Icons.delete_outline,
-              size: 18,
-              color: scheme.error,
-            ),
+            icon: Icon(Icons.delete_outline, size: 18, color: scheme.error),
             onPressed: onDelete,
             tooltip: 'Remove procedure',
           ),

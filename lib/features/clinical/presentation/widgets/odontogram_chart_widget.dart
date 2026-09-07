@@ -39,11 +39,7 @@ class OdontogramChartWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.grid_view_rounded,
-                  size: 18,
-                  color: scheme.primary,
-                ),
+                Icon(Icons.grid_view_rounded, size: 18, color: scheme.primary),
                 const SizedBox(width: Spacing.xs),
                 Text(
                   '32-TOOTH ODONTOGRAM',
@@ -550,7 +546,10 @@ class _OdontogramLegend extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   item.$2,
-                  style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             );

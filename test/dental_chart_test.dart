@@ -65,10 +65,7 @@ void main() {
         DentalNotationUtils.getToothName(11),
         equals('Upper Right Central Incisor'),
       );
-      expect(
-        DentalNotationUtils.getToothName(23),
-        equals('Upper Left Canine'),
-      );
+      expect(DentalNotationUtils.getToothName(23), equals('Upper Left Canine'));
       expect(
         DentalNotationUtils.getToothName(36),
         equals('Lower Left First Molar'),
@@ -317,40 +314,46 @@ void main() {
       expect(reconstructed.totalPlannedFees, equals(1500.0));
     });
 
-    test('Integration with MasterCaseRecordData saves and restores without loss', () {
-      var dental = DentalChartData(generalNotes: 'Dentition stable');
-      dental = dental.withUpdatedTooth(
-        const ToothData(
-          fdiNumber: 16,
-          condition: ToothCondition.caries,
-          affectedSurfaces: {ToothSurface.occlusal},
-        ),
-      );
-      dental = dental.withAddedProcedure(
-        const DentalProcedure(
-          id: 'd-1',
-          title: 'Extraction',
-          toothNumbers: [18],
-          estimatedFee: 1200.0,
-        ),
-      );
+    test(
+      'Integration with MasterCaseRecordData saves and restores without loss',
+      () {
+        var dental = DentalChartData(generalNotes: 'Dentition stable');
+        dental = dental.withUpdatedTooth(
+          const ToothData(
+            fdiNumber: 16,
+            condition: ToothCondition.caries,
+            affectedSurfaces: {ToothSurface.occlusal},
+          ),
+        );
+        dental = dental.withAddedProcedure(
+          const DentalProcedure(
+            id: 'd-1',
+            title: 'Extraction',
+            toothNumbers: [18],
+            estimatedFee: 1200.0,
+          ),
+        );
 
-      // Convert to MasterCaseRecordData
-      final record = dental.toMasterCaseRecord(patientId: 'patient-42');
+        // Convert to MasterCaseRecordData
+        final record = dental.toMasterCaseRecord(patientId: 'patient-42');
 
-      expect(record.patientId, equals('patient-42'));
-      expect(record.clinicalExam.dentalChartJson, isNotEmpty);
-      expect(record.clinicalExam.entOralExamination, contains('DENTAL ODONTOGRAM'));
+        expect(record.patientId, equals('patient-42'));
+        expect(record.clinicalExam.dentalChartJson, isNotEmpty);
+        expect(
+          record.clinicalExam.entOralExamination,
+          contains('DENTAL ODONTOGRAM'),
+        );
 
-      // Reconstruct back from MasterCaseRecordData
-      final restored = DentalChartData.fromMasterCaseRecord(record);
+        // Reconstruct back from MasterCaseRecordData
+        final restored = DentalChartData.fromMasterCaseRecord(record);
 
-      expect(restored.cariesCount, equals(1));
-      expect(restored.teeth[16]?.hasCaries, isTrue);
-      expect(restored.teeth[16]?.surfacesSummary, equals('O'));
-      expect(restored.procedures.length, equals(1));
-      expect(restored.procedures.first.title, equals('Extraction'));
-      expect(restored.totalPlannedFees, equals(1200.0));
-    });
+        expect(restored.cariesCount, equals(1));
+        expect(restored.teeth[16]?.hasCaries, isTrue);
+        expect(restored.teeth[16]?.surfacesSummary, equals('O'));
+        expect(restored.procedures.length, equals(1));
+        expect(restored.procedures.first.title, equals('Extraction'));
+        expect(restored.totalPlannedFees, equals(1200.0));
+      },
+    );
   });
 }

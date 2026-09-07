@@ -245,10 +245,7 @@ class _ToothConditionSheetState extends State<ToothConditionSheet> {
                         fontSize: 12,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.normal,
-                        color:
-                            isSelected
-                                ? scheme.onPrimary
-                                : scheme.onSurface,
+                        color: isSelected ? scheme.onPrimary : scheme.onSurface,
                       ),
                       selectedColor: scheme.primary,
                       backgroundColor: scheme.surfaceContainerHighest,
