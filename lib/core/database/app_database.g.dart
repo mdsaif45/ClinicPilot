@@ -12144,6 +12144,981 @@ class ReferralContactsCompanion extends UpdateCompanion<ReferralContact> {
   }
 }
 
+class $MedicinesTable extends Medicines
+    with TableInfo<$MedicinesTable, Medicine> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MedicinesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _potencyMeta = const VerificationMeta(
+    'potency',
+  );
+  @override
+  late final GeneratedColumn<String> potency = GeneratedColumn<String>(
+    'potency',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _formMeta = const VerificationMeta('form');
+  @override
+  late final GeneratedColumn<String> form = GeneratedColumn<String>(
+    'form',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currentStockMeta = const VerificationMeta(
+    'currentStock',
+  );
+  @override
+  late final GeneratedColumn<double> currentStock = GeneratedColumn<double>(
+    'current_stock',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reorderLevelMeta = const VerificationMeta(
+    'reorderLevel',
+  );
+  @override
+  late final GeneratedColumn<double> reorderLevel = GeneratedColumn<double>(
+    'reorder_level',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3.0),
+  );
+  static const VerificationMeta _costPriceMeta = const VerificationMeta(
+    'costPrice',
+  );
+  @override
+  late final GeneratedColumn<double> costPrice = GeneratedColumn<double>(
+    'cost_price',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sellingPriceMeta = const VerificationMeta(
+    'sellingPrice',
+  );
+  @override
+  late final GeneratedColumn<double> sellingPrice = GeneratedColumn<double>(
+    'selling_price',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _batchNumberMeta = const VerificationMeta(
+    'batchNumber',
+  );
+  @override
+  late final GeneratedColumn<String> batchNumber = GeneratedColumn<String>(
+    'batch_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _expiryDateMeta = const VerificationMeta(
+    'expiryDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> expiryDate = GeneratedColumn<DateTime>(
+    'expiry_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _clinicIdMeta = const VerificationMeta(
+    'clinicId',
+  );
+  @override
+  late final GeneratedColumn<String> clinicId = GeneratedColumn<String>(
+    'clinic_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES clinics (id)',
+    ),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    category,
+    potency,
+    form,
+    currentStock,
+    unit,
+    reorderLevel,
+    costPrice,
+    sellingPrice,
+    batchNumber,
+    expiryDate,
+    clinicId,
+    notes,
+    isDeleted,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'medicines';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Medicine> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('potency')) {
+      context.handle(
+        _potencyMeta,
+        potency.isAcceptableOrUnknown(data['potency']!, _potencyMeta),
+      );
+    }
+    if (data.containsKey('form')) {
+      context.handle(
+        _formMeta,
+        form.isAcceptableOrUnknown(data['form']!, _formMeta),
+      );
+    }
+    if (data.containsKey('current_stock')) {
+      context.handle(
+        _currentStockMeta,
+        currentStock.isAcceptableOrUnknown(
+          data['current_stock']!,
+          _currentStockMeta,
+        ),
+      );
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unitMeta);
+    }
+    if (data.containsKey('reorder_level')) {
+      context.handle(
+        _reorderLevelMeta,
+        reorderLevel.isAcceptableOrUnknown(
+          data['reorder_level']!,
+          _reorderLevelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cost_price')) {
+      context.handle(
+        _costPriceMeta,
+        costPrice.isAcceptableOrUnknown(data['cost_price']!, _costPriceMeta),
+      );
+    }
+    if (data.containsKey('selling_price')) {
+      context.handle(
+        _sellingPriceMeta,
+        sellingPrice.isAcceptableOrUnknown(
+          data['selling_price']!,
+          _sellingPriceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('batch_number')) {
+      context.handle(
+        _batchNumberMeta,
+        batchNumber.isAcceptableOrUnknown(
+          data['batch_number']!,
+          _batchNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('expiry_date')) {
+      context.handle(
+        _expiryDateMeta,
+        expiryDate.isAcceptableOrUnknown(data['expiry_date']!, _expiryDateMeta),
+      );
+    }
+    if (data.containsKey('clinic_id')) {
+      context.handle(
+        _clinicIdMeta,
+        clinicId.isAcceptableOrUnknown(data['clinic_id']!, _clinicIdMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Medicine map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Medicine(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      category:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}category'],
+          )!,
+      potency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}potency'],
+      ),
+      form: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}form'],
+      ),
+      currentStock:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.double,
+            data['${effectivePrefix}current_stock'],
+          )!,
+      unit:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}unit'],
+          )!,
+      reorderLevel:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.double,
+            data['${effectivePrefix}reorder_level'],
+          )!,
+      costPrice: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cost_price'],
+      ),
+      sellingPrice: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}selling_price'],
+      ),
+      batchNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}batch_number'],
+      ),
+      expiryDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}expiry_date'],
+      ),
+      clinicId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}clinic_id'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $MedicinesTable createAlias(String alias) {
+    return $MedicinesTable(attachedDatabase, alias);
+  }
+}
+
+class Medicine extends DataClass implements Insertable<Medicine> {
+  final String id;
+  final String name;
+  final String category;
+  final String? potency;
+  final String? form;
+  final double currentStock;
+  final String unit;
+  final double reorderLevel;
+  final double? costPrice;
+  final double? sellingPrice;
+  final String? batchNumber;
+  final DateTime? expiryDate;
+  final String? clinicId;
+  final String? notes;
+  final bool isDeleted;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Medicine({
+    required this.id,
+    required this.name,
+    required this.category,
+    this.potency,
+    this.form,
+    required this.currentStock,
+    required this.unit,
+    required this.reorderLevel,
+    this.costPrice,
+    this.sellingPrice,
+    this.batchNumber,
+    this.expiryDate,
+    this.clinicId,
+    this.notes,
+    required this.isDeleted,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['category'] = Variable<String>(category);
+    if (!nullToAbsent || potency != null) {
+      map['potency'] = Variable<String>(potency);
+    }
+    if (!nullToAbsent || form != null) {
+      map['form'] = Variable<String>(form);
+    }
+    map['current_stock'] = Variable<double>(currentStock);
+    map['unit'] = Variable<String>(unit);
+    map['reorder_level'] = Variable<double>(reorderLevel);
+    if (!nullToAbsent || costPrice != null) {
+      map['cost_price'] = Variable<double>(costPrice);
+    }
+    if (!nullToAbsent || sellingPrice != null) {
+      map['selling_price'] = Variable<double>(sellingPrice);
+    }
+    if (!nullToAbsent || batchNumber != null) {
+      map['batch_number'] = Variable<String>(batchNumber);
+    }
+    if (!nullToAbsent || expiryDate != null) {
+      map['expiry_date'] = Variable<DateTime>(expiryDate);
+    }
+    if (!nullToAbsent || clinicId != null) {
+      map['clinic_id'] = Variable<String>(clinicId);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  MedicinesCompanion toCompanion(bool nullToAbsent) {
+    return MedicinesCompanion(
+      id: Value(id),
+      name: Value(name),
+      category: Value(category),
+      potency:
+          potency == null && nullToAbsent
+              ? const Value.absent()
+              : Value(potency),
+      form: form == null && nullToAbsent ? const Value.absent() : Value(form),
+      currentStock: Value(currentStock),
+      unit: Value(unit),
+      reorderLevel: Value(reorderLevel),
+      costPrice:
+          costPrice == null && nullToAbsent
+              ? const Value.absent()
+              : Value(costPrice),
+      sellingPrice:
+          sellingPrice == null && nullToAbsent
+              ? const Value.absent()
+              : Value(sellingPrice),
+      batchNumber:
+          batchNumber == null && nullToAbsent
+              ? const Value.absent()
+              : Value(batchNumber),
+      expiryDate:
+          expiryDate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(expiryDate),
+      clinicId:
+          clinicId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(clinicId),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      isDeleted: Value(isDeleted),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Medicine.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Medicine(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      category: serializer.fromJson<String>(json['category']),
+      potency: serializer.fromJson<String?>(json['potency']),
+      form: serializer.fromJson<String?>(json['form']),
+      currentStock: serializer.fromJson<double>(json['currentStock']),
+      unit: serializer.fromJson<String>(json['unit']),
+      reorderLevel: serializer.fromJson<double>(json['reorderLevel']),
+      costPrice: serializer.fromJson<double?>(json['costPrice']),
+      sellingPrice: serializer.fromJson<double?>(json['sellingPrice']),
+      batchNumber: serializer.fromJson<String?>(json['batchNumber']),
+      expiryDate: serializer.fromJson<DateTime?>(json['expiryDate']),
+      clinicId: serializer.fromJson<String?>(json['clinicId']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'category': serializer.toJson<String>(category),
+      'potency': serializer.toJson<String?>(potency),
+      'form': serializer.toJson<String?>(form),
+      'currentStock': serializer.toJson<double>(currentStock),
+      'unit': serializer.toJson<String>(unit),
+      'reorderLevel': serializer.toJson<double>(reorderLevel),
+      'costPrice': serializer.toJson<double?>(costPrice),
+      'sellingPrice': serializer.toJson<double?>(sellingPrice),
+      'batchNumber': serializer.toJson<String?>(batchNumber),
+      'expiryDate': serializer.toJson<DateTime?>(expiryDate),
+      'clinicId': serializer.toJson<String?>(clinicId),
+      'notes': serializer.toJson<String?>(notes),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Medicine copyWith({
+    String? id,
+    String? name,
+    String? category,
+    Value<String?> potency = const Value.absent(),
+    Value<String?> form = const Value.absent(),
+    double? currentStock,
+    String? unit,
+    double? reorderLevel,
+    Value<double?> costPrice = const Value.absent(),
+    Value<double?> sellingPrice = const Value.absent(),
+    Value<String?> batchNumber = const Value.absent(),
+    Value<DateTime?> expiryDate = const Value.absent(),
+    Value<String?> clinicId = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    bool? isDeleted,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => Medicine(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    category: category ?? this.category,
+    potency: potency.present ? potency.value : this.potency,
+    form: form.present ? form.value : this.form,
+    currentStock: currentStock ?? this.currentStock,
+    unit: unit ?? this.unit,
+    reorderLevel: reorderLevel ?? this.reorderLevel,
+    costPrice: costPrice.present ? costPrice.value : this.costPrice,
+    sellingPrice: sellingPrice.present ? sellingPrice.value : this.sellingPrice,
+    batchNumber: batchNumber.present ? batchNumber.value : this.batchNumber,
+    expiryDate: expiryDate.present ? expiryDate.value : this.expiryDate,
+    clinicId: clinicId.present ? clinicId.value : this.clinicId,
+    notes: notes.present ? notes.value : this.notes,
+    isDeleted: isDeleted ?? this.isDeleted,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Medicine copyWithCompanion(MedicinesCompanion data) {
+    return Medicine(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      category: data.category.present ? data.category.value : this.category,
+      potency: data.potency.present ? data.potency.value : this.potency,
+      form: data.form.present ? data.form.value : this.form,
+      currentStock:
+          data.currentStock.present
+              ? data.currentStock.value
+              : this.currentStock,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      reorderLevel:
+          data.reorderLevel.present
+              ? data.reorderLevel.value
+              : this.reorderLevel,
+      costPrice: data.costPrice.present ? data.costPrice.value : this.costPrice,
+      sellingPrice:
+          data.sellingPrice.present
+              ? data.sellingPrice.value
+              : this.sellingPrice,
+      batchNumber:
+          data.batchNumber.present ? data.batchNumber.value : this.batchNumber,
+      expiryDate:
+          data.expiryDate.present ? data.expiryDate.value : this.expiryDate,
+      clinicId: data.clinicId.present ? data.clinicId.value : this.clinicId,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Medicine(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('category: $category, ')
+          ..write('potency: $potency, ')
+          ..write('form: $form, ')
+          ..write('currentStock: $currentStock, ')
+          ..write('unit: $unit, ')
+          ..write('reorderLevel: $reorderLevel, ')
+          ..write('costPrice: $costPrice, ')
+          ..write('sellingPrice: $sellingPrice, ')
+          ..write('batchNumber: $batchNumber, ')
+          ..write('expiryDate: $expiryDate, ')
+          ..write('clinicId: $clinicId, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    category,
+    potency,
+    form,
+    currentStock,
+    unit,
+    reorderLevel,
+    costPrice,
+    sellingPrice,
+    batchNumber,
+    expiryDate,
+    clinicId,
+    notes,
+    isDeleted,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Medicine &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.category == this.category &&
+          other.potency == this.potency &&
+          other.form == this.form &&
+          other.currentStock == this.currentStock &&
+          other.unit == this.unit &&
+          other.reorderLevel == this.reorderLevel &&
+          other.costPrice == this.costPrice &&
+          other.sellingPrice == this.sellingPrice &&
+          other.batchNumber == this.batchNumber &&
+          other.expiryDate == this.expiryDate &&
+          other.clinicId == this.clinicId &&
+          other.notes == this.notes &&
+          other.isDeleted == this.isDeleted &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class MedicinesCompanion extends UpdateCompanion<Medicine> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> category;
+  final Value<String?> potency;
+  final Value<String?> form;
+  final Value<double> currentStock;
+  final Value<String> unit;
+  final Value<double> reorderLevel;
+  final Value<double?> costPrice;
+  final Value<double?> sellingPrice;
+  final Value<String?> batchNumber;
+  final Value<DateTime?> expiryDate;
+  final Value<String?> clinicId;
+  final Value<String?> notes;
+  final Value<bool> isDeleted;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const MedicinesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.category = const Value.absent(),
+    this.potency = const Value.absent(),
+    this.form = const Value.absent(),
+    this.currentStock = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.reorderLevel = const Value.absent(),
+    this.costPrice = const Value.absent(),
+    this.sellingPrice = const Value.absent(),
+    this.batchNumber = const Value.absent(),
+    this.expiryDate = const Value.absent(),
+    this.clinicId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MedicinesCompanion.insert({
+    required String id,
+    required String name,
+    required String category,
+    this.potency = const Value.absent(),
+    this.form = const Value.absent(),
+    this.currentStock = const Value.absent(),
+    required String unit,
+    this.reorderLevel = const Value.absent(),
+    this.costPrice = const Value.absent(),
+    this.sellingPrice = const Value.absent(),
+    this.batchNumber = const Value.absent(),
+    this.expiryDate = const Value.absent(),
+    this.clinicId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       category = Value(category),
+       unit = Value(unit);
+  static Insertable<Medicine> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? category,
+    Expression<String>? potency,
+    Expression<String>? form,
+    Expression<double>? currentStock,
+    Expression<String>? unit,
+    Expression<double>? reorderLevel,
+    Expression<double>? costPrice,
+    Expression<double>? sellingPrice,
+    Expression<String>? batchNumber,
+    Expression<DateTime>? expiryDate,
+    Expression<String>? clinicId,
+    Expression<String>? notes,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (category != null) 'category': category,
+      if (potency != null) 'potency': potency,
+      if (form != null) 'form': form,
+      if (currentStock != null) 'current_stock': currentStock,
+      if (unit != null) 'unit': unit,
+      if (reorderLevel != null) 'reorder_level': reorderLevel,
+      if (costPrice != null) 'cost_price': costPrice,
+      if (sellingPrice != null) 'selling_price': sellingPrice,
+      if (batchNumber != null) 'batch_number': batchNumber,
+      if (expiryDate != null) 'expiry_date': expiryDate,
+      if (clinicId != null) 'clinic_id': clinicId,
+      if (notes != null) 'notes': notes,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MedicinesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? category,
+    Value<String?>? potency,
+    Value<String?>? form,
+    Value<double>? currentStock,
+    Value<String>? unit,
+    Value<double>? reorderLevel,
+    Value<double?>? costPrice,
+    Value<double?>? sellingPrice,
+    Value<String?>? batchNumber,
+    Value<DateTime?>? expiryDate,
+    Value<String?>? clinicId,
+    Value<String?>? notes,
+    Value<bool>? isDeleted,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return MedicinesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      potency: potency ?? this.potency,
+      form: form ?? this.form,
+      currentStock: currentStock ?? this.currentStock,
+      unit: unit ?? this.unit,
+      reorderLevel: reorderLevel ?? this.reorderLevel,
+      costPrice: costPrice ?? this.costPrice,
+      sellingPrice: sellingPrice ?? this.sellingPrice,
+      batchNumber: batchNumber ?? this.batchNumber,
+      expiryDate: expiryDate ?? this.expiryDate,
+      clinicId: clinicId ?? this.clinicId,
+      notes: notes ?? this.notes,
+      isDeleted: isDeleted ?? this.isDeleted,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (potency.present) {
+      map['potency'] = Variable<String>(potency.value);
+    }
+    if (form.present) {
+      map['form'] = Variable<String>(form.value);
+    }
+    if (currentStock.present) {
+      map['current_stock'] = Variable<double>(currentStock.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (reorderLevel.present) {
+      map['reorder_level'] = Variable<double>(reorderLevel.value);
+    }
+    if (costPrice.present) {
+      map['cost_price'] = Variable<double>(costPrice.value);
+    }
+    if (sellingPrice.present) {
+      map['selling_price'] = Variable<double>(sellingPrice.value);
+    }
+    if (batchNumber.present) {
+      map['batch_number'] = Variable<String>(batchNumber.value);
+    }
+    if (expiryDate.present) {
+      map['expiry_date'] = Variable<DateTime>(expiryDate.value);
+    }
+    if (clinicId.present) {
+      map['clinic_id'] = Variable<String>(clinicId.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MedicinesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('category: $category, ')
+          ..write('potency: $potency, ')
+          ..write('form: $form, ')
+          ..write('currentStock: $currentStock, ')
+          ..write('unit: $unit, ')
+          ..write('reorderLevel: $reorderLevel, ')
+          ..write('costPrice: $costPrice, ')
+          ..write('sellingPrice: $sellingPrice, ')
+          ..write('batchNumber: $batchNumber, ')
+          ..write('expiryDate: $expiryDate, ')
+          ..write('clinicId: $clinicId, ')
+          ..write('notes: $notes, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -12164,6 +13139,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ReferralContactsTable referralContacts = $ReferralContactsTable(
     this,
   );
+  late final $MedicinesTable medicines = $MedicinesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -12183,6 +13159,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     prescriptions,
     investigations,
     referralContacts,
+    medicines,
   ];
 }
 
@@ -12327,6 +13304,24 @@ final class $$ClinicsTableReferences
     ).filter((f) => f.clinicId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_campsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$MedicinesTable, List<Medicine>>
+  _medicinesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.medicines,
+    aliasName: $_aliasNameGenerator(db.clinics.id, db.medicines.clinicId),
+  );
+
+  $$MedicinesTableProcessedTableManager get medicinesRefs {
+    final manager = $$MedicinesTableTableManager(
+      $_db,
+      $_db.medicines,
+    ).filter((f) => f.clinicId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_medicinesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -12538,6 +13533,31 @@ class $$ClinicsTableFilterComposer
           }) => $$CampsTableFilterComposer(
             $db: $db,
             $table: $db.camps,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> medicinesRefs(
+    Expression<bool> Function($$MedicinesTableFilterComposer f) f,
+  ) {
+    final $$MedicinesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.medicines,
+      getReferencedColumn: (t) => t.clinicId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MedicinesTableFilterComposer(
+            $db: $db,
+            $table: $db.medicines,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -12808,6 +13828,31 @@ class $$ClinicsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> medicinesRefs<T extends Object>(
+    Expression<T> Function($$MedicinesTableAnnotationComposer a) f,
+  ) {
+    final $$MedicinesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.medicines,
+      getReferencedColumn: (t) => t.clinicId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MedicinesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.medicines,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ClinicsTableTableManager
@@ -12830,6 +13875,7 @@ class $$ClinicsTableTableManager
             bool reviewRequestsRefs,
             bool footfallsRefs,
             bool campsRefs,
+            bool medicinesRefs,
           })
         > {
   $$ClinicsTableTableManager(_$AppDatabase db, $ClinicsTable table)
@@ -12916,6 +13962,7 @@ class $$ClinicsTableTableManager
             reviewRequestsRefs = false,
             footfallsRefs = false,
             campsRefs = false,
+            medicinesRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -12926,6 +13973,7 @@ class $$ClinicsTableTableManager
                 if (reviewRequestsRefs) db.reviewRequests,
                 if (footfallsRefs) db.footfalls,
                 if (campsRefs) db.camps,
+                if (medicinesRefs) db.medicines,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -13039,6 +14087,24 @@ class $$ClinicsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (medicinesRefs)
+                    await $_getPrefetchedData<Clinic, $ClinicsTable, Medicine>(
+                      currentTable: table,
+                      referencedTable: $$ClinicsTableReferences
+                          ._medicinesRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$ClinicsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).medicinesRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.clinicId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -13066,6 +14132,7 @@ typedef $$ClinicsTableProcessedTableManager =
         bool reviewRequestsRefs,
         bool footfallsRefs,
         bool campsRefs,
+        bool medicinesRefs,
       })
     >;
 typedef $$PatientsTableCreateCompanionBuilder =
@@ -21343,6 +22410,563 @@ typedef $$ReferralContactsTableProcessedTableManager =
       ReferralContact,
       PrefetchHooks Function()
     >;
+typedef $$MedicinesTableCreateCompanionBuilder =
+    MedicinesCompanion Function({
+      required String id,
+      required String name,
+      required String category,
+      Value<String?> potency,
+      Value<String?> form,
+      Value<double> currentStock,
+      required String unit,
+      Value<double> reorderLevel,
+      Value<double?> costPrice,
+      Value<double?> sellingPrice,
+      Value<String?> batchNumber,
+      Value<DateTime?> expiryDate,
+      Value<String?> clinicId,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$MedicinesTableUpdateCompanionBuilder =
+    MedicinesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> category,
+      Value<String?> potency,
+      Value<String?> form,
+      Value<double> currentStock,
+      Value<String> unit,
+      Value<double> reorderLevel,
+      Value<double?> costPrice,
+      Value<double?> sellingPrice,
+      Value<String?> batchNumber,
+      Value<DateTime?> expiryDate,
+      Value<String?> clinicId,
+      Value<String?> notes,
+      Value<bool> isDeleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$MedicinesTableReferences
+    extends BaseReferences<_$AppDatabase, $MedicinesTable, Medicine> {
+  $$MedicinesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ClinicsTable _clinicIdTable(_$AppDatabase db) => db.clinics
+      .createAlias($_aliasNameGenerator(db.medicines.clinicId, db.clinics.id));
+
+  $$ClinicsTableProcessedTableManager? get clinicId {
+    final $_column = $_itemColumn<String>('clinic_id');
+    if ($_column == null) return null;
+    final manager = $$ClinicsTableTableManager(
+      $_db,
+      $_db.clinics,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_clinicIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MedicinesTableFilterComposer
+    extends Composer<_$AppDatabase, $MedicinesTable> {
+  $$MedicinesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get potency => $composableBuilder(
+    column: $table.potency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get form => $composableBuilder(
+    column: $table.form,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get currentStock => $composableBuilder(
+    column: $table.currentStock,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get reorderLevel => $composableBuilder(
+    column: $table.reorderLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get costPrice => $composableBuilder(
+    column: $table.costPrice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get sellingPrice => $composableBuilder(
+    column: $table.sellingPrice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get batchNumber => $composableBuilder(
+    column: $table.batchNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get expiryDate => $composableBuilder(
+    column: $table.expiryDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ClinicsTableFilterComposer get clinicId {
+    final $$ClinicsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableFilterComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MedicinesTableOrderingComposer
+    extends Composer<_$AppDatabase, $MedicinesTable> {
+  $$MedicinesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get potency => $composableBuilder(
+    column: $table.potency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get form => $composableBuilder(
+    column: $table.form,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get currentStock => $composableBuilder(
+    column: $table.currentStock,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get reorderLevel => $composableBuilder(
+    column: $table.reorderLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get costPrice => $composableBuilder(
+    column: $table.costPrice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get sellingPrice => $composableBuilder(
+    column: $table.sellingPrice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get batchNumber => $composableBuilder(
+    column: $table.batchNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get expiryDate => $composableBuilder(
+    column: $table.expiryDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ClinicsTableOrderingComposer get clinicId {
+    final $$ClinicsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableOrderingComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MedicinesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MedicinesTable> {
+  $$MedicinesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get potency =>
+      $composableBuilder(column: $table.potency, builder: (column) => column);
+
+  GeneratedColumn<String> get form =>
+      $composableBuilder(column: $table.form, builder: (column) => column);
+
+  GeneratedColumn<double> get currentStock => $composableBuilder(
+    column: $table.currentStock,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<double> get reorderLevel => $composableBuilder(
+    column: $table.reorderLevel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get costPrice =>
+      $composableBuilder(column: $table.costPrice, builder: (column) => column);
+
+  GeneratedColumn<double> get sellingPrice => $composableBuilder(
+    column: $table.sellingPrice,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get batchNumber => $composableBuilder(
+    column: $table.batchNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get expiryDate => $composableBuilder(
+    column: $table.expiryDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ClinicsTableAnnotationComposer get clinicId {
+    final $$ClinicsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clinicId,
+      referencedTable: $db.clinics,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClinicsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.clinics,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MedicinesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MedicinesTable,
+          Medicine,
+          $$MedicinesTableFilterComposer,
+          $$MedicinesTableOrderingComposer,
+          $$MedicinesTableAnnotationComposer,
+          $$MedicinesTableCreateCompanionBuilder,
+          $$MedicinesTableUpdateCompanionBuilder,
+          (Medicine, $$MedicinesTableReferences),
+          Medicine,
+          PrefetchHooks Function({bool clinicId})
+        > {
+  $$MedicinesTableTableManager(_$AppDatabase db, $MedicinesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$MedicinesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$MedicinesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$MedicinesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String?> potency = const Value.absent(),
+                Value<String?> form = const Value.absent(),
+                Value<double> currentStock = const Value.absent(),
+                Value<String> unit = const Value.absent(),
+                Value<double> reorderLevel = const Value.absent(),
+                Value<double?> costPrice = const Value.absent(),
+                Value<double?> sellingPrice = const Value.absent(),
+                Value<String?> batchNumber = const Value.absent(),
+                Value<DateTime?> expiryDate = const Value.absent(),
+                Value<String?> clinicId = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MedicinesCompanion(
+                id: id,
+                name: name,
+                category: category,
+                potency: potency,
+                form: form,
+                currentStock: currentStock,
+                unit: unit,
+                reorderLevel: reorderLevel,
+                costPrice: costPrice,
+                sellingPrice: sellingPrice,
+                batchNumber: batchNumber,
+                expiryDate: expiryDate,
+                clinicId: clinicId,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String category,
+                Value<String?> potency = const Value.absent(),
+                Value<String?> form = const Value.absent(),
+                Value<double> currentStock = const Value.absent(),
+                required String unit,
+                Value<double> reorderLevel = const Value.absent(),
+                Value<double?> costPrice = const Value.absent(),
+                Value<double?> sellingPrice = const Value.absent(),
+                Value<String?> batchNumber = const Value.absent(),
+                Value<DateTime?> expiryDate = const Value.absent(),
+                Value<String?> clinicId = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MedicinesCompanion.insert(
+                id: id,
+                name: name,
+                category: category,
+                potency: potency,
+                form: form,
+                currentStock: currentStock,
+                unit: unit,
+                reorderLevel: reorderLevel,
+                costPrice: costPrice,
+                sellingPrice: sellingPrice,
+                batchNumber: batchNumber,
+                expiryDate: expiryDate,
+                clinicId: clinicId,
+                notes: notes,
+                isDeleted: isDeleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$MedicinesTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({clinicId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (clinicId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.clinicId,
+                            referencedTable: $$MedicinesTableReferences
+                                ._clinicIdTable(db),
+                            referencedColumn:
+                                $$MedicinesTableReferences
+                                    ._clinicIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MedicinesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MedicinesTable,
+      Medicine,
+      $$MedicinesTableFilterComposer,
+      $$MedicinesTableOrderingComposer,
+      $$MedicinesTableAnnotationComposer,
+      $$MedicinesTableCreateCompanionBuilder,
+      $$MedicinesTableUpdateCompanionBuilder,
+      (Medicine, $$MedicinesTableReferences),
+      Medicine,
+      PrefetchHooks Function({bool clinicId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -21375,4 +22999,6 @@ class $AppDatabaseManager {
       $$InvestigationsTableTableManager(_db, _db.investigations);
   $$ReferralContactsTableTableManager get referralContacts =>
       $$ReferralContactsTableTableManager(_db, _db.referralContacts);
+  $$MedicinesTableTableManager get medicines =>
+      $$MedicinesTableTableManager(_db, _db.medicines);
 }

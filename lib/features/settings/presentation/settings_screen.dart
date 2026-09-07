@@ -9,6 +9,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_list_tile.dart';
 import '../../clinics/presentation/clinics_screen.dart';
 import '../../clinics/providers/clinic_provider.dart';
+import '../../inventory/presentation/inventory_screen.dart';
 import '../../security/presentation/security_settings_card.dart';
 import '../providers/doctor_profile_provider.dart';
 import '../providers/release_provider.dart';
@@ -65,7 +66,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SubscriptionStatusCard(),
           const AppearanceSection(),
           SettingsGroup(
-            title: 'Clinics',
+            title: 'Practice Management',
             children: [
               AppListTile(
                 icon: Icons.local_hospital_outlined,
@@ -78,6 +79,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onTap:
                     () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const ClinicsScreen()),
+                    ),
+              ),
+              AppListTile(
+                icon: Icons.medication_outlined,
+                title: 'Medicine Inventory & Dispensing',
+                subtitle: 'Stock on-hand, batch tracking & valuation',
+                trailing: const Icon(Icons.chevron_right),
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const InventoryScreen(),
+                      ),
                     ),
               ),
             ],

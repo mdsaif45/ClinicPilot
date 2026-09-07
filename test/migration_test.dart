@@ -600,6 +600,33 @@ void main() {
         await db.close();
       },
     );
+
+    test('v15 -> v16 migration creates medicines table successfully', () async {
+      final db = AppDatabase(NativeDatabase.memory());
+      final migrator = db.createMigrator();
+      await migrator.createAll();
+
+      final allMedicines = await db.select(db.medicines).get();
+      expect(allMedicines, isEmpty);
+
+      await db
+          .into(db.medicines)
+          .insert(
+            MedicinesCompanion.insert(
+              id: 'med_test_1',
+              name: 'Pulsatilla Nigricans',
+              category: 'Dilution',
+              currentStock: const Value(5.0),
+              unit: 'Bottles (30ml)',
+            ),
+          );
+
+      final inserted = await db.select(db.medicines).get();
+      expect(inserted.length, equals(1));
+      expect(inserted.first.name, equals('Pulsatilla Nigricans'));
+
+      await db.close();
+    });
   });
 }
 
