@@ -16,6 +16,7 @@ import '../providers/update_provider.dart';
 import 'appearance_section.dart';
 import 'app_version_screen.dart';
 import 'backup_restore_screen.dart';
+import 'widgets/subscription_status_card.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -61,6 +62,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: const EdgeInsets.fromLTRB(0, Spacing.sm, 0, Spacing.xxl),
         children: [
           const _DoctorProfileHeader(),
+          const SubscriptionStatusCard(),
           const AppearanceSection(),
           SettingsGroup(
             title: 'Clinics',
