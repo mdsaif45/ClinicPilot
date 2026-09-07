@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/design/tokens.dart';
@@ -21,6 +22,19 @@ class DispensedMedicineItem {
   });
 
   double get totalPrice => quantity * unitPrice;
+}
+
+/// True when [medicine] has a batch expiry within the next 30 days.
+///
+/// Matches the "Expiring Soon" threshold already used by the inventory
+/// valuation and filtering (see `inventory_provider.dart`), so a batch
+/// flagged here is not already counted as fully expired.
+bool _isExpiringSoon(Medicine medicine) {
+  final expiry = medicine.expiryDate;
+  if (expiry == null) return false;
+  final now = DateTime.now();
+  if (expiry.isBefore(now)) return false;
+  return expiry.isBefore(now.add(const Duration(days: 30)));
 }
 
 /// Modal bottom sheet allowing the clinician to search clinic inventory,
@@ -248,6 +262,7 @@ class _DispenseMedicinePickerSheetState
                         final isLowStock =
                             !isOutOfStock &&
                             med.currentStock <= med.reorderLevel;
+                        final isExpiringSoon = _isExpiringSoon(med);
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(
@@ -338,7 +353,11 @@ class _DispenseMedicinePickerSheetState
                                                 ],
                                               ),
                                               const SizedBox(height: 2),
-                                              Row(
+                                              Wrap(
+                                                crossAxisAlignment:
+                                                    WrapCrossAlignment.center,
+                                                spacing: Spacing.xs,
+                                                runSpacing: 2,
                                                 children: [
                                                   Text(
                                                     '${med.currentStock.toStringAsFixed(med.currentStock % 1 == 0 ? 0 : 1)} ${med.unit}',
@@ -352,9 +371,6 @@ class _DispenseMedicinePickerSheetState
                                                           fontSize: 11,
                                                         ),
                                                   ),
-                                                  const SizedBox(
-                                                    width: Spacing.xs,
-                                                  ),
                                                   if (isOutOfStock)
                                                     CustomBadge(
                                                       label: 'Out of Stock',
@@ -363,6 +379,15 @@ class _DispenseMedicinePickerSheetState
                                                   else if (isLowStock)
                                                     CustomBadge(
                                                       label: 'Low Stock',
+                                                      color: scheme.tertiary,
+                                                    ),
+                                                  // Independent of stock level — a
+                                                  // well-stocked batch can still be
+                                                  // close to expiry.
+                                                  if (isExpiringSoon)
+                                                    CustomBadge(
+                                                      label:
+                                                          'Expires ${DateFormat('d MMM').format(med.expiryDate!)}',
                                                       color: scheme.tertiary,
                                                     ),
                                                 ],
