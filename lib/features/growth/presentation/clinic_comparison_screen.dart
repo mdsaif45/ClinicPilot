@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/entitlement/entitlement_model.dart';
+import '../../../core/entitlement/entitlement_provider.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/providers/period_provider.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/feature_lock.dart';
 import '../../../core/widgets/period_selector.dart';
+import '../../settings/presentation/widgets/pro_upgrade_sheet.dart';
 import '../providers/clinic_comparison_provider.dart';
 
 class ClinicComparisonScreen extends ConsumerWidget {
@@ -18,8 +22,24 @@ class ClinicComparisonScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final comparisonAsync = ref.watch(clinicComparisonProvider);
+    final unlocked = ref.watch(
+      featureUnlockedProvider(AppFeature.multiClinicComparison),
+    );
     final periodState = ref.watch(periodProvider);
+
+    if (!unlocked) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Clinic Comparison (${periodState.filter.label})'),
+        ),
+        body: FeatureLockedView(
+          feature: AppFeature.multiClinicComparison,
+          onUpgrade: () => ProUpgradeSheet.show(context),
+        ),
+      );
+    }
+
+    final comparisonAsync = ref.watch(clinicComparisonProvider);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
