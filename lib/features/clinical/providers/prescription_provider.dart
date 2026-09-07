@@ -224,3 +224,24 @@ final prescriptionNotifierProvider =
       final db = ref.watch(databaseProvider);
       return PrescriptionNotifier(db);
     });
+
+/// One-shot fetch of a patient's live prescriptions.
+///
+/// Unlike [patientPrescriptionsProvider] this does not hold an open query
+/// stream, so widgets that only need a yes/no answer — such as the cash
+/// memo's "dispense from prescription" shortcut — do not keep a live database
+/// subscription alive for the lifetime of the screen.
+final patientPrescriptionsOnceProvider =
+    FutureProvider.family<List<Prescription>, String>((ref, patientId) {
+      final db = ref.watch(databaseProvider);
+
+      return (db.select(db.prescriptions)
+            ..where(
+              (t) => t.patientId.equals(patientId) & t.isDeleted.equals(false),
+            )
+            ..orderBy([
+              (t) => OrderingTerm.desc(t.prescriptionDate),
+              (t) => OrderingTerm.asc(t.remedyIndex),
+            ]))
+          .get();
+    });
