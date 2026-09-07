@@ -90,43 +90,74 @@ class ExportAction<T> extends StatelessWidget {
       return;
     }
 
-    final format = await pickExportFormat(context);
-    if (format == null || !context.mounted) return;
+    final options = await pickExportOptions(context, hasPatientData: true);
+    if (options == null || !context.mounted) return;
+
+    final format = options.format;
+    final effectiveColumns =
+        options.redactSensitiveData
+            ? ListExportService.redactColumns(columns)
+            : columns;
+    final effectivePdfColumns =
+        options.redactSensitiveData
+            ? ListExportService.redactColumns(pdfColumns ?? columns)
+            : (pdfColumns ?? columns);
 
     final now = DateTime.now();
-    final bytes = switch (format) {
+    final rawBytes = switch (format) {
       ExportFormat.csv => ListExportService.encodeCsv(
-        ListExportService.buildCsv(rows, columns, totals: totals),
+        ListExportService.buildCsv(rows, effectiveColumns, totals: totals),
       ),
       ExportFormat.xlsx =>
-        customXlsxBuilder != null
+        customXlsxBuilder != null && !options.redactSensitiveData
             ? await customXlsxBuilder!()
             : ListExportService.buildXlsx(
               rows,
-              columns,
+              effectiveColumns,
               totals: totals,
               sheetName: screenSlug,
             ),
       ExportFormat.pdf => await ListPdfExportService.buildRowsPdf(
-        title: title,
+        title: options.redactSensitiveData ? '$title (De-Identified)' : title,
         subtitle: subtitle,
         rows: rows,
-        columns: pdfColumns ?? columns,
+        columns: effectivePdfColumns,
         totals: totals,
       ),
     };
-    final extension = format.name;
+
+    final rawFileName = ListExportService.suggestedFileName(
+      screenSlug,
+      now,
+      extension: format.name,
+    );
+
+    List<int> finalBytes = rawBytes;
+    String finalFileName = rawFileName;
+    String finalExtension = format.name;
+
+    if (options.isPasswordProtected &&
+        options.password != null &&
+        options.password!.isNotEmpty) {
+      finalBytes = ListExportService.encryptToZip(
+        fileBytes: rawBytes,
+        fileName: rawFileName,
+        password: options.password!,
+      );
+      finalFileName = ListExportService.suggestedFileName(
+        '$screenSlug-protected',
+        now,
+        extension: 'zip',
+      );
+      finalExtension = 'zip';
+    }
 
     if (!context.mounted) return;
     await saveExportFile(
       context,
-      bytes: bytes,
-      fileName: ListExportService.suggestedFileName(
-        screenSlug,
-        now,
-        extension: extension,
-      ),
-      extension: extension,
+      bytes: finalBytes,
+      fileName: finalFileName,
+      extension: finalExtension,
       rowCount: rows.length,
     );
   }

@@ -275,4 +275,71 @@ class ListExportService {
         '${now.year}${two(now.month)}${two(now.day)}-'
         '${two(now.hour)}${two(now.minute)}.$extension';
   }
+
+  /// Packages and encrypts file bytes into a password-protected ZIP archive.
+  static List<int> encryptToZip({
+    required List<int> fileBytes,
+    required String fileName,
+    required String password,
+  }) {
+    final archive = Archive();
+    archive.addFile(ArchiveFile(fileName, fileBytes.length, fileBytes));
+    final encoded = ZipEncoder(password: password).encode(archive);
+    if (encoded == null) {
+      throw StateError('Failed to encode password-protected ZIP archive.');
+    }
+    return encoded;
+  }
+
+  /// Decrypts files from a password-protected ZIP archive container.
+  static Archive decryptFromZip(
+    List<int> zipBytes, {
+    required String password,
+  }) {
+    return ZipDecoder().decodeBytes(zipBytes, password: password);
+  }
+
+  /// Masks a phone number for privacy guard / de-identified export.
+  /// Example: '9876543210' -> '98765*****'
+  static String maskPhone(String? phone) {
+    if (phone == null || phone.trim().isEmpty) return '';
+    final trimmed = phone.trim();
+    if (trimmed.length <= 5) return '*****';
+    final prefixLength = trimmed.length > 8 ? 5 : 3;
+    final prefix = trimmed.substring(0, prefixLength);
+    return '$prefix*****';
+  }
+
+  /// Redacts sensitive text / confidential notes.
+  static String redactText(String? text) {
+    if (text == null || text.trim().isEmpty) return '';
+    return '[REDACTED]';
+  }
+
+  /// Transforms export columns to mask sensitive patient identifiers (phone, notes, address).
+  static List<ExportColumn<T>> redactColumns<T>(List<ExportColumn<T>> columns) {
+    return columns.map((col) {
+      final h = col.header.toLowerCase();
+      if (h.contains('phone') ||
+          h.contains('mobile') ||
+          h.contains('whatsapp') ||
+          h.contains('contact')) {
+        return ExportColumn<T>(
+          col.header,
+          (row) => maskPhone(col.value(row)?.toString()),
+          pdfFormat:
+              col.pdfFormat != null ? (v) => maskPhone(v?.toString()) : null,
+        );
+      }
+      if (h.contains('note') || h.contains('remark') || h.contains('address')) {
+        return ExportColumn<T>(
+          col.header,
+          (row) => redactText(col.value(row)?.toString()),
+          pdfFormat:
+              col.pdfFormat != null ? (v) => redactText(v?.toString()) : null,
+        );
+      }
+      return col;
+    }).toList();
+  }
 }
