@@ -42,6 +42,8 @@ import '../../clinical/presentation/soap_note_screen.dart';
 import '../../clinical/presentation/widgets/vital_signs_card.dart';
 import '../../clinical/providers/case_record_provider.dart';
 import '../../clinical/providers/complaint_provider.dart';
+import '../../clinical/models/dental_chart_model.dart';
+import '../../clinical/presentation/dental_chart_screen.dart';
 import '../../clinical/providers/prescription_provider.dart';
 import '../../clinical/presentation/prescription_preview_dialog.dart';
 import '../../settings/providers/doctor_profile_provider.dart';
@@ -342,6 +344,41 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
                           builder:
                               (_) => MasterCaseTakingScreen(
                                 patient: widget.patient,
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: scheme.tertiaryContainer,
+                      child: Icon(
+                        Icons.grid_view_rounded,
+                        color: scheme.tertiary,
+                      ),
+                    ),
+                    title: const Text('Dental Odontogram & Treatment Chart'),
+                    subtitle: const Text(
+                      'Interactive 32-tooth chart, caries, RCT, crowns & treatment plan',
+                    ),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: Radii.smAll,
+                      side: BorderSide(color: scheme.outlineVariant),
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder:
+                              (_) => DentalChartScreen(
+                                patient: widget.patient,
+                                existingRecord: caseRecord,
                               ),
                         ),
                       );
@@ -1350,6 +1387,10 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
         record != null
             ? VitalSigns.fromClinicalExam(record.clinicalExam)
             : null;
+    final dentalChart =
+        record != null
+            ? DentalChartData.tryParse(record.clinicalExam.dentalChartJson)
+            : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
@@ -1358,6 +1399,93 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
         children: [
           if (vitals != null && vitals.hasVitals) ...[
             VitalSignsSummaryStrip(vitals: vitals),
+            const SizedBox(height: Spacing.md),
+          ],
+          if (dentalChart != null && dentalChart.hasFindings) ...[
+            AppCard(
+              margin: EdgeInsets.zero,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(Spacing.xs + 2),
+                        decoration: BoxDecoration(
+                          color: scheme.tertiaryContainer,
+                          borderRadius: Radii.smAll,
+                        ),
+                        child: Icon(
+                          Icons.grid_view_rounded,
+                          size: 18,
+                          color: scheme.tertiary,
+                        ),
+                      ),
+                      const SizedBox(width: Spacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Dental Odontogram',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              dentalChart.summaryBadgeText,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 20),
+                        tooltip: 'Edit Dental Odontogram',
+                        onPressed: () {
+                          Navigator.of(context, rootNavigator: true).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => DentalChartScreen(
+                                    patient: patient,
+                                    existingRecord: record,
+                                  ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  if (dentalChart.procedures.isNotEmpty) ...[
+                    const SizedBox(height: Spacing.xs),
+                    Divider(color: scheme.outlineVariant, height: 1),
+                    const SizedBox(height: Spacing.xs),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${dentalChart.procedures.length} Planned Procedure(s)',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          'Est. Total: ₹${dentalChart.totalPlannedFees.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: scheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
             const SizedBox(height: Spacing.md),
           ],
           AppCard(
@@ -1499,6 +1627,19 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                     },
                   ),
                   const SizedBox(height: Spacing.sm),
+                  AppButton.tonal(
+                    label: 'Dental Odontogram & Chart',
+                    icon: Icons.grid_view_rounded,
+                    fullWidth: true,
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).push(
+                        MaterialPageRoute(
+                          builder: (_) => DentalChartScreen(patient: patient),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.sm),
                   AppButton.outlined(
                     label: 'Start Clinical Case Taking',
                     icon: Icons.edit_note,
@@ -1532,7 +1673,25 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                           },
                         ),
                       ),
-                      const SizedBox(width: Spacing.sm),
+                      const SizedBox(width: Spacing.xs),
+                      Expanded(
+                        child: AppButton.tonal(
+                          label: 'Dental',
+                          icon: Icons.grid_view_rounded,
+                          onPressed: () {
+                            Navigator.of(context, rootNavigator: true).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => DentalChartScreen(
+                                      patient: patient,
+                                      existingRecord: record,
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: Spacing.xs),
                       Expanded(
                         child: AppButton.outlined(
                           label: 'View Full Case Sheet',
