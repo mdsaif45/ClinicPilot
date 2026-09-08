@@ -17,6 +17,7 @@ import '../providers/update_provider.dart';
 import 'appearance_section.dart';
 import 'app_version_screen.dart';
 import 'backup_restore_screen.dart';
+import 'letterhead_branding_screen.dart';
 import 'widgets/subscription_status_card.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -79,6 +80,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onTap:
                     () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const ClinicsScreen()),
+                    ),
+              ),
+              AppListTile(
+                icon: Icons.draw_outlined,
+                title: 'Prescription Letterhead',
+                subtitle: 'Clinic logo & doctor signature on printed Rx',
+                trailing: const Icon(Icons.chevron_right),
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const LetterheadBrandingScreen(),
+                      ),
                     ),
               ),
               AppListTile(
