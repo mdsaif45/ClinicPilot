@@ -17,6 +17,7 @@ import '../../clinics/providers/clinic_provider.dart';
 import '../../inventory/providers/inventory_provider.dart';
 import '../../patients/presentation/patient_picker.dart';
 import '../providers/cash_memo_provider.dart';
+import '../services/gst_calculator.dart';
 import '../services/prescription_dispense_matcher.dart';
 import 'widgets/dispense_medicine_picker_sheet.dart';
 import 'widgets/prescription_dispense_review_sheet.dart';
@@ -83,12 +84,35 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     super.dispose();
   }
 
+  /// Clinic whose GSTIN and default slab apply to this memo.
+  Clinic? get _selectedClinic {
+    final id = _selectedClinicId;
+    if (id == null) return null;
+    final clinics = ref.read(clinicsStreamProvider).value ?? const [];
+    for (final c in clinics) {
+      if (c.id == id) return c;
+    }
+    return null;
+  }
+
+  /// CGST/SGST on the dispensed medicines, or empty when the practice is not
+  /// GST registered — an unregistered clinic must not issue a tax invoice.
+  GstBreakdown get _gstBreakdown {
+    final clinic = _selectedClinic;
+    if (!GstCalculator.isGstRegistered(clinic)) return GstBreakdown.empty;
+    if (_dispensedItems.isEmpty) return GstBreakdown.empty;
+    return GstCalculator.forDispensedItems(
+      _dispensedItems,
+      defaultRate: clinic!.defaultGstRate ?? kDefaultGstRate,
+    );
+  }
+
   double get _total {
     final c = double.tryParse(_consultationController.text) ?? 0.0;
     final m = double.tryParse(_medicineController.text) ?? 0.0;
     final o = double.tryParse(_otherController.text) ?? 0.0;
     final d = double.tryParse(_discountController.text) ?? 0.0;
-    return (c + m + o) - d;
+    return (c + m + o) - d + _gstBreakdown.totalTax;
   }
 
   bool _autoSyncPaidAmount = true;
@@ -191,6 +215,30 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     });
   }
 
+  Widget _buildTaxRow(String label, double amount) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: Spacing.xxs),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            Formatters.formatCurrency(amount),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showSnack(String message) {
     ScaffoldMessenger.of(
       context,
@@ -270,6 +318,7 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
       );
     }
 
+    final gstBreakdown = _gstBreakdown;
     final currentTotal = _total;
     if (_paidAmountController.text.isEmpty && _autoSyncPaidAmount) {
       _paidAmountController.text = currentTotal.toStringAsFixed(0);
@@ -487,6 +536,19 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
                 ),
               ),
             ],
+            if (!gstBreakdown.isEmpty) ...[
+              const SizedBox(height: Spacing.md),
+              for (final line in gstBreakdown.lines) ...[
+                _buildTaxRow(
+                  'CGST @ ${(line.rate / 2).toStringAsFixed(line.rate % 2 == 0 ? 0 : 2)}%',
+                  line.cgst,
+                ),
+                _buildTaxRow(
+                  'SGST @ ${(line.rate / 2).toStringAsFixed(line.rate % 2 == 0 ? 0 : 2)}%',
+                  line.sgst,
+                ),
+              ],
+            ],
             const SizedBox(height: Spacing.lg),
             Container(
               padding: const EdgeInsets.all(Spacing.md),
@@ -547,6 +609,9 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
     final med = double.tryParse(_medicineController.text) ?? 0.0;
     final other = double.tryParse(_otherController.text) ?? 0.0;
     final disc = double.tryParse(_discountController.text) ?? 0.0;
+    // Snapshot the tax once so the amount persisted matches the total the
+    // doctor was shown, even if inventory changes while the memo is saving.
+    final gst = _gstBreakdown;
     final paid = double.tryParse(_paidAmountController.text) ?? _total;
 
     String? memoNotes;
@@ -581,6 +646,9 @@ class _NewCashMemoDialogState extends ConsumerState<NewCashMemoDialog> {
             paymentMethod: _paymentMethod,
             memoDate: _memoDate,
             notes: memoNotes,
+            cgstAmount: gst.cgstAmount,
+            sgstAmount: gst.sgstAmount,
+            gstin: gst.isEmpty ? null : _selectedClinic?.gstin,
           );
 
       if (_dispensedItems.isNotEmpty) {

@@ -163,6 +163,7 @@ class InventoryController {
     DateTime? expiryDate,
     String? clinicId,
     String? notes,
+    double? gstRate,
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
@@ -185,6 +186,7 @@ class InventoryController {
             expiryDate: Value(expiryDate),
             clinicId: Value(clinicId),
             notes: Value(notes?.trim()),
+            gstRate: Value(gstRate),
             createdAt: Value(now),
             updatedAt: Value(now),
           ),

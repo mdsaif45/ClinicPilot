@@ -19,6 +19,16 @@ class Clinics extends Table {
   TextColumn get openDays =>
       text().withDefault(const Constant('1,2,3,4,5,6'))();
 
+  // GSTIN printed on tax invoices. Null until the doctor registers, which is
+  // also what decides whether cash memos show a tax breakdown at all — an
+  // unregistered practice must not issue anything resembling a tax invoice.
+  TextColumn get gstin => text().nullable()();
+
+  // Fallback GST slab (percent) for dispensed items whose own rate is unset.
+  // Nullable so existing rows and hand-built Clinic objects need no change;
+  // callers treat null as the 12% default.
+  RealColumn get defaultGstRate => real().nullable()();
+
   TextColumn get colorHex => text().withDefault(const Constant('#0F5132'))();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();

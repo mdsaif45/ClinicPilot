@@ -8,6 +8,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/day_selector_field.dart';
+import '../../cashmemo/services/gst_calculator.dart';
 import '../providers/clinic_provider.dart';
 
 class AddEditClinicDialog extends ConsumerStatefulWidget {
@@ -27,6 +28,8 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
   late TextEditingController _phoneController;
   late TextEditingController _rentController;
   late TextEditingController _feeController;
+  late TextEditingController _gstinController;
+  late TextEditingController _gstRateController;
   late TextEditingController _revGoalController;
   late TextEditingController _patGoalController;
   late String _openDays;
@@ -53,6 +56,12 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
           widget.clinic != null
               ? widget.clinic!.defaultConsultationFee.toStringAsFixed(0)
               : '300',
+    );
+    _gstinController = TextEditingController(text: widget.clinic?.gstin ?? '');
+    _gstRateController = TextEditingController(
+      text: (widget.clinic?.defaultGstRate ?? kDefaultGstRate).toStringAsFixed(
+        0,
+      ),
     );
     _revGoalController = TextEditingController(text: '50000');
     _patGoalController = TextEditingController(text: '15');
@@ -86,6 +95,8 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
     _phoneController.dispose();
     _rentController.dispose();
     _feeController.dispose();
+    _gstinController.dispose();
+    _gstRateController.dispose();
     _revGoalController.dispose();
     _patGoalController.dispose();
     super.dispose();
@@ -174,6 +185,46 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
               ],
             ),
             const SizedBox(height: Spacing.md),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: CustomTextField(
+                    controller: _gstinController,
+                    label: 'GSTIN (optional)',
+                    prefixIcon: Icons.receipt_long_outlined,
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  flex: 2,
+                  child: CustomTextField(
+                    controller: _gstRateController,
+                    label: 'Default GST %',
+                    prefixIcon: Icons.percent,
+                    keyboardType: TextInputType.number,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return null;
+                      final rate = double.tryParse(v.trim());
+                      if (rate == null || rate < 0 || rate > 100) {
+                        return '0-100';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.xs),
+            Text(
+              'Leave GSTIN blank if the practice is not GST registered — cash '
+              'memos will then print without a tax breakdown.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: Spacing.md),
             DaySelectorField(
               label: 'Open Days',
               value: _openDays,
@@ -241,6 +292,8 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
     final revGoal = _revGoalController.text.trim();
     final patGoal = _patGoalController.text.trim();
     final openDays = _openDays;
+    final gstin = _gstinController.text.trim();
+    final gstRate = double.tryParse(_gstRateController.text.trim());
 
     final notifier = ref.read(clinicNotifierProvider.notifier);
     final db = ref.read(databaseProvider);
@@ -257,6 +310,8 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
           defaultConsultationFee: fee,
           openDays: openDays,
           colorHex: _colorHex,
+          gstin: gstin.isEmpty ? null : gstin.toUpperCase(),
+          defaultGstRate: gstRate,
         );
       } else {
         await notifier.addClinic(
@@ -268,6 +323,8 @@ class _AddEditClinicDialogState extends ConsumerState<AddEditClinicDialog> {
           defaultConsultationFee: fee,
           openDays: openDays,
           colorHex: _colorHex,
+          gstin: gstin.isEmpty ? null : gstin.toUpperCase(),
+          defaultGstRate: gstRate,
         );
       }
 
