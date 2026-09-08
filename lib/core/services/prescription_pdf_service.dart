@@ -5,6 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import '../database/app_database.dart';
 import '../../features/settings/providers/doctor_profile_provider.dart';
+import '../../features/settings/services/letterhead_branding.dart';
 
 /// Service responsible for compiling clinical data, doctor profile,
 /// clinic letterhead, complaints, and remedies into a professional,
@@ -33,6 +34,7 @@ class PrescriptionPdfService {
     DateTime? prescriptionDate,
     String? additionalAdvice,
     DateTime? nextFollowUpDate,
+    LetterheadBranding branding = LetterheadBranding.none,
   }) async {
     final pdf = pw.Document();
     final date = prescriptionDate ?? DateTime.now();
@@ -44,7 +46,7 @@ class PrescriptionPdfService {
         margin: const pw.EdgeInsets.symmetric(horizontal: 32, vertical: 28),
         header:
             (pw.Context context) =>
-                _buildLetterheadHeader(clinic, doctorProfile),
+                _buildLetterheadHeader(clinic, doctorProfile, branding),
         footer:
             (pw.Context context) =>
                 _buildFooter(context, doctorProfile, clinic),
@@ -75,7 +77,7 @@ class PrescriptionPdfService {
             pw.SizedBox(height: 24),
 
             // Signature Block
-            _buildSignatureBlock(doctorProfile),
+            _buildSignatureBlock(doctorProfile, branding),
           ];
         },
       ),
@@ -85,7 +87,11 @@ class PrescriptionPdfService {
   }
 
   /// Top clinic and doctor letterhead
-  static pw.Widget _buildLetterheadHeader(Clinic clinic, DoctorProfile doctor) {
+  static pw.Widget _buildLetterheadHeader(
+    Clinic clinic,
+    DoctorProfile doctor,
+    LetterheadBranding branding,
+  ) {
     final doctorName =
         doctor.displayName.startsWith('Dr')
             ? doctor.displayName
@@ -98,6 +104,18 @@ class PrescriptionPdfService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
+            // Optional clinic logo, printed left of the doctor block.
+            if (branding.hasLogo) ...[
+              pw.Container(
+                width: 52,
+                height: 52,
+                margin: const pw.EdgeInsets.only(right: 12),
+                child: pw.Image(
+                  pw.MemoryImage(branding.logo!),
+                  fit: pw.BoxFit.contain,
+                ),
+              ),
+            ],
             // Left: Doctor Info
             pw.Expanded(
               flex: 5,
@@ -579,7 +597,10 @@ class PrescriptionPdfService {
   }
 
   /// Signature Block
-  static pw.Widget _buildSignatureBlock(DoctorProfile doctor) {
+  static pw.Widget _buildSignatureBlock(
+    DoctorProfile doctor,
+    LetterheadBranding branding,
+  ) {
     final doctorName =
         doctor.displayName.startsWith('Dr')
             ? doctor.displayName
@@ -591,7 +612,19 @@ class PrescriptionPdfService {
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.center,
           children: [
-            pw.Container(width: 160, height: 36),
+            // The blank space above the rule is where a wet signature would
+            // go; a stored signature image is drawn into it instead.
+            pw.Container(
+              width: 160,
+              height: 36,
+              child:
+                  branding.hasSignature
+                      ? pw.Image(
+                        pw.MemoryImage(branding.signature!),
+                        fit: pw.BoxFit.contain,
+                      )
+                      : null,
+            ),
             pw.Container(width: 180, height: 1, color: _textMuted),
             pw.SizedBox(height: 4),
             pw.Text(

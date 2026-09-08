@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 
@@ -6,11 +7,15 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/prescription_pdf_service.dart';
 import '../../../core/widgets/pro_badge.dart';
 import '../../settings/presentation/widgets/pro_upgrade_sheet.dart';
+import '../../../core/entitlement/entitlement_model.dart';
+import '../../../core/entitlement/entitlement_provider.dart';
 import '../../settings/providers/doctor_profile_provider.dart';
+import '../../settings/providers/letterhead_branding_provider.dart';
+import '../../settings/services/letterhead_branding.dart';
 
 /// Full-screen dialog displaying an interactive, print-ready preview of a patient's
 /// medical prescription (Rx) with sharing, printing, and file export actions.
-class PrescriptionPreviewDialog extends StatelessWidget {
+class PrescriptionPreviewDialog extends ConsumerWidget {
   final Patient patient;
   final Clinic clinic;
   final DoctorProfile doctorProfile;
@@ -62,7 +67,15 @@ class PrescriptionPreviewDialog extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unlocked = ref.watch(
+      featureUnlockedProvider(AppFeature.customLetterheadBranding),
+    );
+    // Printing must never wait on, or fail because of, branding: an
+    // unresolved or errored load simply prints the plain letterhead.
+    final branding =
+        ref.watch(letterheadBrandingProvider).value ?? LetterheadBranding.none;
+
     final sanitizedName = patient.name.trim().replaceAll(RegExp(r'\s+'), '_');
     final dateSuffix = DateFormat('yyyyMMdd').format(DateTime.now());
     final fileName = 'Rx_${sanitizedName}_$dateSuffix.pdf';
@@ -91,7 +104,7 @@ class PrescriptionPreviewDialog extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: ProBadge(
-              label: 'PRO LETTERHEAD',
+              label: unlocked ? 'PRO LETTERHEAD' : 'UPGRADE FOR BRANDING',
               compact: true,
               onTap: () => ProUpgradeSheet.show(context),
             ),
@@ -114,6 +127,7 @@ class PrescriptionPreviewDialog extends StatelessWidget {
               diagnosis: diagnosis,
               additionalAdvice: additionalAdvice,
               nextFollowUpDate: nextFollowUpDate,
+              branding: branding,
             ),
         allowPrinting: true,
         allowSharing: true,
