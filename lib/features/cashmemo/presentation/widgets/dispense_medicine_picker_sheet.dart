@@ -7,7 +7,9 @@ import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
 import '../../../../core/widgets/custom_badge.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../inventory/presentation/widgets/barcode_scanner_sheet.dart';
 import '../../../inventory/providers/inventory_provider.dart';
+import '../../../inventory/services/barcode_matcher.dart';
 
 /// A single medicine line item selected for dispensing.
 class DispensedMedicineItem {
@@ -132,6 +134,46 @@ class _DispenseMedicinePickerSheetState
     });
   }
 
+  /// Scans a pack and adds the matching remedy straight to the selection.
+  ///
+  /// A scan that matches nothing, or matches more than one item, falls back
+  /// to seeding the search box rather than guessing which remedy was meant.
+  Future<void> _scanAndSelect() async {
+    final code = await BarcodeScannerSheet.show(context);
+    if (code == null || !mounted) return;
+
+    final inventory = await ref.read(inventoryStreamProvider.future);
+    if (!mounted) return;
+
+    final result = BarcodeMatcher.lookup(rawCode: code, inventory: inventory);
+    final match = result.single;
+
+    if (match != null) {
+      if (!_selectedMap.containsKey(match.id)) {
+        _toggleMedicine(match);
+      }
+      _searchController.clear();
+      setState(() => _searchQuery = '');
+      return;
+    }
+
+    // Show the code in the search box so the clinician can see what was read
+    // and resolve it by hand.
+    _searchController.text = result.code;
+    setState(() => _searchQuery = result.code.toLowerCase());
+    _showScanSnack(
+      result.status == BarcodeLookupStatus.ambiguous
+          ? 'More than one item uses barcode ${result.code}. Pick one below.'
+          : 'No stocked remedy has barcode ${result.code}.',
+    );
+  }
+
+  void _showScanSnack(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -160,9 +202,19 @@ class _DispenseMedicinePickerSheetState
                         fontSize: 18,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () => Navigator.of(context).pop(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.qr_code_scanner, size: 20),
+                          tooltip: 'Scan barcode',
+                          onPressed: _scanAndSelect,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
                     ),
                   ],
                 ),

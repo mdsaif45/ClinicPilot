@@ -19,7 +19,7 @@ import 'tables/medicines.dart';
 
 part 'app_database.g.dart';
 
-// Type-safe database powered by Drift ORM (Schema Version 16)
+// Type-safe database powered by Drift ORM (Schema Version 18)
 @DriftDatabase(
   tables: [
     Clinics,
@@ -43,7 +43,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -296,6 +296,12 @@ class AppDatabase extends _$AppDatabase {
         await _addColumnIfMissing(m, cashMemos, cashMemos.cgstAmount);
         await _addColumnIfMissing(m, cashMemos, cashMemos.sgstAmount);
         await _addColumnIfMissing(m, cashMemos, cashMemos.gstin);
+      }
+
+      if (from < 18) {
+        // Barcode scanning. Nullable, so stock catalogued before this keeps
+        // working and is simply not findable by scan until a code is added.
+        await _addColumnIfMissing(m, medicines, medicines.barcode);
       }
     },
     beforeOpen: (details) async {

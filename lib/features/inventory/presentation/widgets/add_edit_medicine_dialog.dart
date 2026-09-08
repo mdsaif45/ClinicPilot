@@ -11,6 +11,8 @@ import '../../../../core/widgets/date_field.dart';
 import '../../../../core/widgets/picker_field.dart';
 import '../../../../core/widgets/remedy_autocomplete_field.dart';
 import '../../providers/inventory_provider.dart';
+import '../../services/barcode_matcher.dart';
+import 'barcode_scanner_sheet.dart';
 
 const List<String> kMedicineCategories = [
   'Dilution',
@@ -72,6 +74,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
   late final TextEditingController _sellingPriceController;
   late final TextEditingController _gstRateController;
   late final TextEditingController _batchController;
+  late final TextEditingController _barcodeController;
   late final TextEditingController _notesController;
 
   late String _category;
@@ -104,6 +107,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
       text: m?.gstRate != null ? m!.gstRate!.toStringAsFixed(0) : '',
     );
     _batchController = TextEditingController(text: m?.batchNumber ?? '');
+    _barcodeController = TextEditingController(text: m?.barcode ?? '');
     _notesController = TextEditingController(text: m?.notes ?? '');
 
     _category = m?.category ?? 'Dilution';
@@ -122,8 +126,16 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
     _sellingPriceController.dispose();
     _gstRateController.dispose();
     _batchController.dispose();
+    _barcodeController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanBarcode() async {
+    AppHaptics.selection();
+    final code = await BarcodeScannerSheet.show(context);
+    if (code == null || !mounted) return;
+    setState(() => _barcodeController.text = code);
   }
 
   Future<void> _submit() async {
@@ -140,6 +152,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
     final selling = double.tryParse(_sellingPriceController.text.trim());
     final gstRate = double.tryParse(_gstRateController.text.trim());
     final batch = _batchController.text.trim();
+    final barcode = BarcodeMatcher.normalize(_barcodeController.text);
     final notes = _notesController.text.trim();
 
     setState(() => _submitting = true);
@@ -159,6 +172,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
           sellingPrice: Value(selling),
           gstRate: Value(gstRate),
           batchNumber: Value(batch.isNotEmpty ? batch : null),
+          barcode: Value(barcode.isNotEmpty ? barcode : null),
           expiryDate: Value(_expiryDate),
           notes: Value(notes.isNotEmpty ? notes : null),
         );
@@ -176,6 +190,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
           sellingPrice: selling,
           gstRate: gstRate,
           batchNumber: batch.isNotEmpty ? batch : null,
+          barcode: barcode.isNotEmpty ? barcode : null,
           expiryDate: _expiryDate,
           notes: notes.isNotEmpty ? notes : null,
         );
@@ -410,6 +425,42 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
               controller: _batchController,
               label: 'Batch / Lot Number',
               hint: 'e.g. B-2026-X9',
+            ),
+            const SizedBox(height: Spacing.md),
+
+            // Barcode, scanned off the pack or typed in.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: CustomTextField(
+                    controller: _barcodeController,
+                    label: 'Barcode (optional)',
+                    hint: 'e.g. 8901234567894',
+                    prefixIcon: Icons.qr_code_2_outlined,
+                    validator: (v) {
+                      final code = BarcodeMatcher.normalize(v ?? '');
+                      if (code.isEmpty) return null;
+                      // Only 13-digit codes carry a GS1 check digit; shorter
+                      // in-house labels are accepted as typed.
+                      if (code.length == 13 &&
+                          !BarcodeMatcher.isValidEan13(code)) {
+                        return 'Check digit does not match';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: Spacing.sm),
+                Padding(
+                  padding: const EdgeInsets.only(top: Spacing.xs),
+                  child: IconButton.filledTonal(
+                    icon: const Icon(Icons.qr_code_scanner),
+                    tooltip: 'Scan barcode',
+                    onPressed: _scanBarcode,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: Spacing.md),
 

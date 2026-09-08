@@ -12527,6 +12527,17 @@ class $MedicinesTable extends Medicines
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _barcodeMeta = const VerificationMeta(
+    'barcode',
+  );
+  @override
+  late final GeneratedColumn<String> barcode = GeneratedColumn<String>(
+    'barcode',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _expiryDateMeta = const VerificationMeta(
     'expiryDate',
   );
@@ -12614,6 +12625,7 @@ class $MedicinesTable extends Medicines
     sellingPrice,
     gstRate,
     batchNumber,
+    barcode,
     expiryDate,
     clinicId,
     notes,
@@ -12722,6 +12734,12 @@ class $MedicinesTable extends Medicines
         ),
       );
     }
+    if (data.containsKey('barcode')) {
+      context.handle(
+        _barcodeMeta,
+        barcode.isAcceptableOrUnknown(data['barcode']!, _barcodeMeta),
+      );
+    }
     if (data.containsKey('expiry_date')) {
       context.handle(
         _expiryDateMeta,
@@ -12821,6 +12839,10 @@ class $MedicinesTable extends Medicines
         DriftSqlType.string,
         data['${effectivePrefix}batch_number'],
       ),
+      barcode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}barcode'],
+      ),
       expiryDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}expiry_date'],
@@ -12870,6 +12892,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
   final double? sellingPrice;
   final double? gstRate;
   final String? batchNumber;
+  final String? barcode;
   final DateTime? expiryDate;
   final String? clinicId;
   final String? notes;
@@ -12889,6 +12912,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     this.sellingPrice,
     this.gstRate,
     this.batchNumber,
+    this.barcode,
     this.expiryDate,
     this.clinicId,
     this.notes,
@@ -12922,6 +12946,9 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     }
     if (!nullToAbsent || batchNumber != null) {
       map['batch_number'] = Variable<String>(batchNumber);
+    }
+    if (!nullToAbsent || barcode != null) {
+      map['barcode'] = Variable<String>(barcode);
     }
     if (!nullToAbsent || expiryDate != null) {
       map['expiry_date'] = Variable<DateTime>(expiryDate);
@@ -12967,6 +12994,10 @@ class Medicine extends DataClass implements Insertable<Medicine> {
           batchNumber == null && nullToAbsent
               ? const Value.absent()
               : Value(batchNumber),
+      barcode:
+          barcode == null && nullToAbsent
+              ? const Value.absent()
+              : Value(barcode),
       expiryDate:
           expiryDate == null && nullToAbsent
               ? const Value.absent()
@@ -13001,6 +13032,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
       sellingPrice: serializer.fromJson<double?>(json['sellingPrice']),
       gstRate: serializer.fromJson<double?>(json['gstRate']),
       batchNumber: serializer.fromJson<String?>(json['batchNumber']),
+      barcode: serializer.fromJson<String?>(json['barcode']),
       expiryDate: serializer.fromJson<DateTime?>(json['expiryDate']),
       clinicId: serializer.fromJson<String?>(json['clinicId']),
       notes: serializer.fromJson<String?>(json['notes']),
@@ -13025,6 +13057,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
       'sellingPrice': serializer.toJson<double?>(sellingPrice),
       'gstRate': serializer.toJson<double?>(gstRate),
       'batchNumber': serializer.toJson<String?>(batchNumber),
+      'barcode': serializer.toJson<String?>(barcode),
       'expiryDate': serializer.toJson<DateTime?>(expiryDate),
       'clinicId': serializer.toJson<String?>(clinicId),
       'notes': serializer.toJson<String?>(notes),
@@ -13047,6 +13080,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     Value<double?> sellingPrice = const Value.absent(),
     Value<double?> gstRate = const Value.absent(),
     Value<String?> batchNumber = const Value.absent(),
+    Value<String?> barcode = const Value.absent(),
     Value<DateTime?> expiryDate = const Value.absent(),
     Value<String?> clinicId = const Value.absent(),
     Value<String?> notes = const Value.absent(),
@@ -13066,6 +13100,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     sellingPrice: sellingPrice.present ? sellingPrice.value : this.sellingPrice,
     gstRate: gstRate.present ? gstRate.value : this.gstRate,
     batchNumber: batchNumber.present ? batchNumber.value : this.batchNumber,
+    barcode: barcode.present ? barcode.value : this.barcode,
     expiryDate: expiryDate.present ? expiryDate.value : this.expiryDate,
     clinicId: clinicId.present ? clinicId.value : this.clinicId,
     notes: notes.present ? notes.value : this.notes,
@@ -13097,6 +13132,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
       gstRate: data.gstRate.present ? data.gstRate.value : this.gstRate,
       batchNumber:
           data.batchNumber.present ? data.batchNumber.value : this.batchNumber,
+      barcode: data.barcode.present ? data.barcode.value : this.barcode,
       expiryDate:
           data.expiryDate.present ? data.expiryDate.value : this.expiryDate,
       clinicId: data.clinicId.present ? data.clinicId.value : this.clinicId,
@@ -13122,6 +13158,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
           ..write('sellingPrice: $sellingPrice, ')
           ..write('gstRate: $gstRate, ')
           ..write('batchNumber: $batchNumber, ')
+          ..write('barcode: $barcode, ')
           ..write('expiryDate: $expiryDate, ')
           ..write('clinicId: $clinicId, ')
           ..write('notes: $notes, ')
@@ -13146,6 +13183,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     sellingPrice,
     gstRate,
     batchNumber,
+    barcode,
     expiryDate,
     clinicId,
     notes,
@@ -13169,6 +13207,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
           other.sellingPrice == this.sellingPrice &&
           other.gstRate == this.gstRate &&
           other.batchNumber == this.batchNumber &&
+          other.barcode == this.barcode &&
           other.expiryDate == this.expiryDate &&
           other.clinicId == this.clinicId &&
           other.notes == this.notes &&
@@ -13190,6 +13229,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
   final Value<double?> sellingPrice;
   final Value<double?> gstRate;
   final Value<String?> batchNumber;
+  final Value<String?> barcode;
   final Value<DateTime?> expiryDate;
   final Value<String?> clinicId;
   final Value<String?> notes;
@@ -13210,6 +13250,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     this.sellingPrice = const Value.absent(),
     this.gstRate = const Value.absent(),
     this.batchNumber = const Value.absent(),
+    this.barcode = const Value.absent(),
     this.expiryDate = const Value.absent(),
     this.clinicId = const Value.absent(),
     this.notes = const Value.absent(),
@@ -13231,6 +13272,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     this.sellingPrice = const Value.absent(),
     this.gstRate = const Value.absent(),
     this.batchNumber = const Value.absent(),
+    this.barcode = const Value.absent(),
     this.expiryDate = const Value.absent(),
     this.clinicId = const Value.absent(),
     this.notes = const Value.absent(),
@@ -13255,6 +13297,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     Expression<double>? sellingPrice,
     Expression<double>? gstRate,
     Expression<String>? batchNumber,
+    Expression<String>? barcode,
     Expression<DateTime>? expiryDate,
     Expression<String>? clinicId,
     Expression<String>? notes,
@@ -13276,6 +13319,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
       if (sellingPrice != null) 'selling_price': sellingPrice,
       if (gstRate != null) 'gst_rate': gstRate,
       if (batchNumber != null) 'batch_number': batchNumber,
+      if (barcode != null) 'barcode': barcode,
       if (expiryDate != null) 'expiry_date': expiryDate,
       if (clinicId != null) 'clinic_id': clinicId,
       if (notes != null) 'notes': notes,
@@ -13299,6 +13343,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     Value<double?>? sellingPrice,
     Value<double?>? gstRate,
     Value<String?>? batchNumber,
+    Value<String?>? barcode,
     Value<DateTime?>? expiryDate,
     Value<String?>? clinicId,
     Value<String?>? notes,
@@ -13320,6 +13365,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
       sellingPrice: sellingPrice ?? this.sellingPrice,
       gstRate: gstRate ?? this.gstRate,
       batchNumber: batchNumber ?? this.batchNumber,
+      barcode: barcode ?? this.barcode,
       expiryDate: expiryDate ?? this.expiryDate,
       clinicId: clinicId ?? this.clinicId,
       notes: notes ?? this.notes,
@@ -13369,6 +13415,9 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     if (batchNumber.present) {
       map['batch_number'] = Variable<String>(batchNumber.value);
     }
+    if (barcode.present) {
+      map['barcode'] = Variable<String>(barcode.value);
+    }
     if (expiryDate.present) {
       map['expiry_date'] = Variable<DateTime>(expiryDate.value);
     }
@@ -13408,6 +13457,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
           ..write('sellingPrice: $sellingPrice, ')
           ..write('gstRate: $gstRate, ')
           ..write('batchNumber: $batchNumber, ')
+          ..write('barcode: $barcode, ')
           ..write('expiryDate: $expiryDate, ')
           ..write('clinicId: $clinicId, ')
           ..write('notes: $notes, ')
@@ -22826,6 +22876,7 @@ typedef $$MedicinesTableCreateCompanionBuilder =
       Value<double?> sellingPrice,
       Value<double?> gstRate,
       Value<String?> batchNumber,
+      Value<String?> barcode,
       Value<DateTime?> expiryDate,
       Value<String?> clinicId,
       Value<String?> notes,
@@ -22848,6 +22899,7 @@ typedef $$MedicinesTableUpdateCompanionBuilder =
       Value<double?> sellingPrice,
       Value<double?> gstRate,
       Value<String?> batchNumber,
+      Value<String?> barcode,
       Value<DateTime?> expiryDate,
       Value<String?> clinicId,
       Value<String?> notes,
@@ -22945,6 +22997,11 @@ class $$MedicinesTableFilterComposer
 
   ColumnFilters<String> get batchNumber => $composableBuilder(
     column: $table.batchNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get barcode => $composableBuilder(
+    column: $table.barcode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23066,6 +23123,11 @@ class $$MedicinesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get barcode => $composableBuilder(
+    column: $table.barcode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get expiryDate => $composableBuilder(
     column: $table.expiryDate,
     builder: (column) => ColumnOrderings(column),
@@ -23168,6 +23230,9 @@ class $$MedicinesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get barcode =>
+      $composableBuilder(column: $table.barcode, builder: (column) => column);
+
   GeneratedColumn<DateTime> get expiryDate => $composableBuilder(
     column: $table.expiryDate,
     builder: (column) => column,
@@ -23249,6 +23314,7 @@ class $$MedicinesTableTableManager
                 Value<double?> sellingPrice = const Value.absent(),
                 Value<double?> gstRate = const Value.absent(),
                 Value<String?> batchNumber = const Value.absent(),
+                Value<String?> barcode = const Value.absent(),
                 Value<DateTime?> expiryDate = const Value.absent(),
                 Value<String?> clinicId = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
@@ -23269,6 +23335,7 @@ class $$MedicinesTableTableManager
                 sellingPrice: sellingPrice,
                 gstRate: gstRate,
                 batchNumber: batchNumber,
+                barcode: barcode,
                 expiryDate: expiryDate,
                 clinicId: clinicId,
                 notes: notes,
@@ -23291,6 +23358,7 @@ class $$MedicinesTableTableManager
                 Value<double?> sellingPrice = const Value.absent(),
                 Value<double?> gstRate = const Value.absent(),
                 Value<String?> batchNumber = const Value.absent(),
+                Value<String?> barcode = const Value.absent(),
                 Value<DateTime?> expiryDate = const Value.absent(),
                 Value<String?> clinicId = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
@@ -23311,6 +23379,7 @@ class $$MedicinesTableTableManager
                 sellingPrice: sellingPrice,
                 gstRate: gstRate,
                 batchNumber: batchNumber,
+                barcode: barcode,
                 expiryDate: expiryDate,
                 clinicId: clinicId,
                 notes: notes,
