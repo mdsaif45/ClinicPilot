@@ -164,6 +164,7 @@ class InventoryController {
     String? clinicId,
     String? notes,
     double? gstRate,
+    String? barcode,
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
@@ -187,6 +188,7 @@ class InventoryController {
             clinicId: Value(clinicId),
             notes: Value(notes?.trim()),
             gstRate: Value(gstRate),
+            barcode: Value(barcode),
             createdAt: Value(now),
             updatedAt: Value(now),
           ),

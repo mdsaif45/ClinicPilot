@@ -22,6 +22,11 @@ class Medicines extends Table {
   // inventory keeps billing exactly as it did before GST was introduced.
   RealColumn get gstRate => real().nullable()();
   TextColumn get batchNumber => text().nullable()();
+
+  // GS1/EAN-13 barcode printed on the pack, scanned to find this item at the
+  // counter. Nullable because most homeopathic dispensary stock is decanted
+  // in-house and never carries one.
+  TextColumn get barcode => text().nullable()();
   DateTimeColumn get expiryDate => dateTime().nullable()();
   TextColumn get clinicId => text().nullable().references(Clinics, #id)();
   TextColumn get notes => text().nullable()();

@@ -697,6 +697,41 @@ void main() {
 
       await db.close();
     });
+
+    test('v17 -> v18 migration adds a nullable barcode column', () async {
+      final db = AppDatabase(NativeDatabase.memory());
+      final migrator = db.createMigrator();
+      await migrator.createAll();
+
+      await db
+          .into(db.medicines)
+          .insert(
+            MedicinesCompanion.insert(
+              id: 'm1',
+              name: 'Arnica Montana',
+              category: 'Dilution',
+              currentStock: const Value(5.0),
+              unit: 'Bottles',
+            ),
+          );
+
+      final med =
+          await (db.select(db.medicines)
+            ..where((t) => t.id.equals('m1'))).getSingle();
+      // Stock catalogued before barcodes existed stays usable; it is simply
+      // not findable by scan until a code is added.
+      expect(med.barcode, isNull);
+
+      await (db.update(db.medicines)..where(
+        (t) => t.id.equals('m1'),
+      )).write(const MedicinesCompanion(barcode: Value('8901234567890')));
+      final scanned =
+          await (db.select(db.medicines)
+            ..where((t) => t.id.equals('m1'))).getSingle();
+      expect(scanned.barcode, equals('8901234567890'));
+
+      await db.close();
+    });
   });
 }
 
