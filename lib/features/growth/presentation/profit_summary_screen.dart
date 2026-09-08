@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/entitlement/entitlement_model.dart';
+import '../../../core/entitlement/entitlement_provider.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/feature_lock.dart';
 import '../../../core/widgets/period_selector.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../settings/presentation/widgets/pro_upgrade_sheet.dart';
 import '../providers/profit_provider.dart';
 
 class ProfitSummaryScreen extends ConsumerWidget {
@@ -15,6 +19,20 @@ class ProfitSummaryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final unlocked = ref.watch(
+      featureUnlockedProvider(AppFeature.taxAnalytics),
+    );
+
+    if (!unlocked) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Profit Summary')),
+        body: FeatureLockedView(
+          feature: AppFeature.taxAnalytics,
+          onUpgrade: () => ProUpgradeSheet.show(context),
+        ),
+      );
+    }
+
     final summaryAsync = ref.watch(profitSummaryProvider);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;

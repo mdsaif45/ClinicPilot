@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database_provider.dart';
+import 'entitlement_dev_override.dart';
 import 'entitlement_model.dart';
 import 'entitlement_service.dart';
 
@@ -21,9 +22,28 @@ final entitlementStreamProvider = StreamProvider<EntitlementState>((ref) {
 });
 
 /// Quick boolean selector returning true if current user has active Pro privileges.
+///
+/// Every Pro gate in the app should read this (directly, or via
+/// [EntitlementState.isFeatureUnlocked]) rather than re-deriving `isPro`
+/// itself, so [forceProInDebug] reliably covers every gate at once.
 final isProProvider = Provider<bool>((ref) {
+  if (forceProInDebug) return true;
   final state = ref.watch(entitlementStreamProvider).value;
   return state?.isPro ?? false;
+});
+
+/// Whether a specific Pro-only [AppFeature] is unlocked for the current user.
+///
+/// Routes through [isProProvider], so [forceProInDebug] unlocks every
+/// feature at once during local development without touching stored
+/// subscription state.
+final featureUnlockedProvider = Provider.family<bool, AppFeature>((
+  ref,
+  feature,
+) {
+  if (ref.watch(isProProvider)) return true;
+  final state = ref.watch(entitlementStreamProvider).value;
+  return state?.isFeatureUnlocked(feature) ?? false;
 });
 
 /// Controller providing entitlement actions (code redemption, manual upgrades, resets).

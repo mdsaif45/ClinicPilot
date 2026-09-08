@@ -3,12 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/tokens.dart';
+import '../../../core/entitlement/entitlement_model.dart';
+import '../../../core/entitlement/entitlement_provider.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_list_tile.dart';
+import '../../../core/widgets/feature_lock.dart';
 import '../../../core/widgets/period_selector.dart';
+import '../../../core/widgets/pro_badge.dart';
 import '../../dashboard/presentation/widgets/clinic_health_score_card.dart';
+import '../../settings/presentation/widgets/pro_upgrade_sheet.dart';
 import '../providers/growth_provider.dart';
 import '../providers/profit_provider.dart';
 import '../providers/review_provider.dart';
@@ -156,13 +161,29 @@ class GrowthHubScreen extends ConsumerWidget {
                   profit == null
                       ? null
                       : Formatters.formatCurrency(profit.netProfit),
-              onTap: () => context.push('/growth/profit'),
+              locked:
+                  !ref.watch(featureUnlockedProvider(AppFeature.taxAnalytics)),
+              onTap: guardFeature(
+                ref,
+                feature: AppFeature.taxAnalytics,
+                onUnlocked: () => context.push('/growth/profit'),
+                onLocked: () => ProUpgradeSheet.show(context),
+              ),
             ),
             _GrowthHubTile(
               icon: Icons.compare_arrows,
               title: 'Clinic Comparison',
               subtitle: 'Revenue, profit and patients per clinic',
-              onTap: () => context.push('/comparison'),
+              locked:
+                  !ref.watch(
+                    featureUnlockedProvider(AppFeature.multiClinicComparison),
+                  ),
+              onTap: guardFeature(
+                ref,
+                feature: AppFeature.multiClinicComparison,
+                onUnlocked: () => context.push('/comparison'),
+                onLocked: () => ProUpgradeSheet.show(context),
+              ),
             ),
             _GrowthHubTile(
               icon: Icons.insights_outlined,
@@ -286,6 +307,7 @@ class _GrowthHubTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final String? trailing;
+  final bool locked;
   final VoidCallback onTap;
 
   const _GrowthHubTile({
@@ -293,6 +315,7 @@ class _GrowthHubTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.trailing,
+    this.locked = false,
     required this.onTap,
   });
 
@@ -345,7 +368,10 @@ class _GrowthHubTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) ...[
+            if (locked) ...[
+              const SizedBox(width: Spacing.sm),
+              const ProBadge(compact: true),
+            ] else if (trailing != null) ...[
               const SizedBox(width: Spacing.sm),
               Text(
                 trailing!,
