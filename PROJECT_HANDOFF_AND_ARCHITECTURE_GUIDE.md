@@ -3,15 +3,16 @@
 > **Confidential & Comprehensive Engineering Handoff Document**  
 > **Target Audience:** Next Senior AI Coding Agent / Platform Refactoring Team  
 > **Codebase:** `mdsaif45/ClinicPilot`  
-> **Technology Stack:** Flutter (SDK ^3.7.2), Dart, Drift ORM (SQLite / SQLCipher, Schema v16), Flutter Riverpod (v2.5.1), GoRouter (v13.2.0), AES-GCM / PBKDF2 Cryptography.  
-> **Status:** Production-grade MVP / Private Beta, 450+ automated unit & widget tests passing, 0 analyzer warnings, 100% theme compliance.
+> **Technology Stack:** Flutter (SDK ^3.7.2), Dart, Drift ORM (SQLite / SQLCipher, Schema v18), Flutter Riverpod (v2.5.1), GoRouter (v13.2.0), AES-GCM / PBKDF2 Cryptography, `mobile_scanner` (barcode).  
+> **Status:** Production-grade MVP / Private Beta, 548 automated unit & widget tests passing, 0 analyzer errors/warnings, 100% theme compliance.
+> **Last updated:** Milestone 13 (Pro-gated automated cloud sync).
 
 ---
 
 ## Table of Contents
 1. [Platform Mission & Architectural Philosophy](#1-platform-mission--architectural-philosophy)
 2. [Evolutionary Journey, Earlier Mistakes & Course Corrections](#2-evolutionary-journey-earlier-mistakes--course-corrections)
-3. [Milestones Completed to Date (Milestones 1–7)](#3-milestones-completed-to-date-milestones-17)
+3. [Milestones Completed to Date (Milestones 1–13)](#3-milestones-completed-to-date-milestones-113)
 4. [Master File-by-File Inventory](#4-master-file-by-file-inventory)
    - [4.1 Project Root & Configuration](#41-project-root--configuration)
    - [4.2 Core Architecture (`lib/core/`)](#42-core-architecture-libcore)
@@ -40,7 +41,7 @@
      - [Security, PIN & Privacy (`features/security/`)](#security-pin--privacy-featuressecurity)
      - [Settings, Cloud Backup & Upgrades (`features/settings/`)](#settings-cloud-backup--upgrades-featuressettings)
      - [Visits & Follow-Up Scheduling (`features/visits/`)](#visits--follow-up-scheduling-featuresvisits)
-5. [Drift Database Schema & Migration Architecture (v16)](#5-drift-database-schema--migration-architecture-v16)
+5. [Drift Database Schema & Migration Architecture (v18)](#5-drift-database-schema--migration-architecture-v18)
 6. [State Management & Riverpod Data-Flow Rules](#6-state-management--riverpod-data-flow-rules)
 7. [Strict Design System & Zero Hardcoded Color Compliance](#7-strict-design-system--zero-hardcoded-color-compliance)
 8. [Data Privacy, DPDP 2023 & HIPAA Protection Standards](#8-data-privacy-dpdp-2023--hipaa-protection-standards)
@@ -101,9 +102,21 @@ When refactoring or expanding this platform, understanding *why* previous implem
 - **Course Correction**: Strict modular feature-first separation:
   `features/<feature_name>/presentation/`, `presentation/widgets/`, `providers/`, and `models/`.
 
+
+### Mistake 7: A Monetization Model That Gated Nothing
+- **Earlier Approach**: PR #132 shipped a complete entitlement model — `SubscriptionTier`, a 30-day trial, promo codes, `isFeatureUnlocked(AppFeature)`, and a `ProBadge` widget.
+- **Why it failed**: None of it was wired up. `isFeatureUnlocked()` had **zero call sites** anywhere in `lib/`, and `AppFeature` was never referenced outside its own file. `ProBadge` was a decorative tap-to-upsell chip sitting beside fully working buttons. Every doctor — Free, trial, or expired — had unrestricted access to every "Pro" feature. Worse, two of the four `AppFeature` values (`cloudAutoSync`, `customLetterheadBranding`) named features that **did not exist at all**, so the badges advertised vapour.
+- **Course Correction**: Milestone 10 wired the gate into the two features that were real (`taxAnalytics`, `multiClinicComparison`) at two layers — the menu tile *and* the screen itself, since a second nav entry point bypassed the tile. Milestone 13 then built the two missing features so all four slots gate something real.
+- **Lesson for future agents**: A model plus a badge is not a feature gate. When adding an `AppFeature` value, grep for its call sites before assuming it is enforced, and never let an enum value describe a feature that has not been built.
+
+### Mistake 8: `.value` on a Cold StreamProvider
+- **Earlier Approach**: Several gates and handlers read `ref.read(someStreamProvider).value` to make a decision.
+- **Why it failed**: A `StreamProvider` returns `null` from `.value` until its first async emission. With nothing else watching the provider it stays cold, so a fully stocked prescription resolved as entirely unavailable, and a `?? false` fallback made the bug read as a legitimate negative. The same shape appeared three separate times (prescription dispensing, entitlement checks, and their tests) — including one test that **passed for the wrong reason** because `null ?? false == false`.
+- **Course Correction**: Await the first emission (`ref.read(p.future)`) when a one-shot decision is needed, or `ref.watch` when the widget should rebuild. For a yes/no check that does not need live updates, prefer a one-shot `FutureProvider` (see `patientPrescriptionsOnceProvider`) so no long-lived Drift subscription is held.
+- **Lesson for future agents**: `.value` on a provider nothing is watching is `null`, not "empty". Assert on a positive expectation, never only on a falsy one.
 ---
 
-## 3. Milestones Completed to Date (Milestones 1–7)
+## 3. Milestones Completed to Date (Milestones 1–13)
 
 1. **Milestone 1: Multi-Clinic Architecture & Financial Partitioning**:
    Multi-clinic creation, active clinic switching, clinic-filtered transaction history, and comparative clinic profitability analytics.
@@ -117,8 +130,20 @@ When refactoring or expanding this platform, understanding *why* previous implem
    Full in-clinic pharmacy inventory: stock tracking, low/out-of-stock badges, reorder thresholds, batch/expiry tracking, and total inventory valuation metrics.
 6. **Milestone 6: Encrypted Export & DPDP/HIPAA Privacy Guard (Schema v16)**:
    Password-protected encrypted ZIP container export, telephone masking, diagnosis redaction, and compliance warnings.
-7. **Milestone 7: Direct Medicine Dispensing & Stock Deduction in Cash Memos**:
+7. **Milestone 7: Direct Medicine Dispensing & Stock Deduction in Cash Memos** (PR #143):
    In-dialog inventory medicine picker, auto-filling medicine fees, and atomic inventory stock deduction upon cash memo issuance.
+8. **Milestone 8: Prescription-to-Dispense One-Click Pipeline** (PR #144):
+   `PrescriptionDispenseMatcher` resolves a patient's newest prescription against inventory (name/potency normalisation, four match statuses, expiry-aware batch choice); `PrescriptionDispenseReviewSheet` confirms before billing and deducting stock.
+9. **Milestone 9: Batch Expiry Amber Alerts** (PR #145):
+   `DispenseMedicinePickerSheet` shows an amber `Expires d MMM` chip for batches within 30 days, independent of the stock badge.
+10. **Milestone 10: Entitlement Gating Actually Enforced** (PR #146):
+    Wired the dormant `AppFeature` gate into real screens, added `featureUnlockedProvider`, `guardFeature`, `FeatureLockedView`, and a release-safe dev override. See Mistake 7 below.
+11. **Milestone 11: CGST/SGST Tax Invoice Breakdown (Schema v17)** (PR #147):
+    Per-medicine GST slab with clinic fallback, 50/50 intra-state split, per-slab invoice lines, and tax amounts frozen onto the memo at issue time.
+12. **Milestone 12: GS1/EAN Barcode Scanning (Schema v18)** (PR #148):
+    `BarcodeMatcher` (normalisation, check-digit validation, ambiguity refusal) plus a camera sheet that degrades to manual entry on platforms without a scanner.
+13. **Milestone 13: Pro Feature Build-Out** (PRs #150, #151):
+    Built the two Pro features that had been named but never implemented — prescription letterhead branding (clinic logo + doctor signature) and the automated cloud backup schedule.
 
 ---
 
@@ -153,7 +178,7 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 
 | File Path | Purpose & What It Does | Where It Calls | Where It's Called From |
 | :--- | :--- | :--- | :--- |
-| `core/database/app_database.dart` | The central type-safe database definition (Drift). Configures all 15 tables, Schema Version (v16), indices, and migration callbacks (`onUpgrade`). | Drift ORM, all table files in `tables/` | `DatabaseProvider`, all repositories and feature providers. |
+| `core/database/app_database.dart` | The central type-safe database definition (Drift). Configures all 15 tables, Schema Version (v18), indices, and migration callbacks (`onUpgrade`). | Drift ORM, all table files in `tables/` | `DatabaseProvider`, all repositories and feature providers. |
 | `core/database/app_database.g.dart` | Auto-generated Drift boilerplate containing companion classes, table dataclasses, and query parsers. | Generated by `drift_dev` | `AppDatabase`. |
 | `core/database/database_provider.dart` | Riverpod provider exposing the singleton `AppDatabase` instance across the widget tree. | `AppDatabase`, `flutter_riverpod` | Consumed by every feature provider and controller. |
 | `core/database/connection/connection.dart` | Conditional import router dispatching native vs web database connections. | `native.dart`, `web.dart` | `app_database.dart`. |
@@ -189,6 +214,7 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 | :--- | :--- | :--- | :--- |
 | `core/entitlement/entitlement_model.dart` | Data class representing tier entitlements (Free vs Pro: multi-clinic limits, cloud sync, analytics). | Dart core | `EntitlementService`, `EntitlementProvider`. |
 | `core/entitlement/entitlement_provider.dart` | Riverpod provider exposing current subscription/entitlement status. | `EntitlementService` | UI upgrade sheets, feature gates, Pro badges. |
+| `core/entitlement/entitlement_dev_override.dart` | Release-safe local dev switch (`forceProInDebug`) to preview every Pro screen. Compiles away outside debug builds. | `kDebugMode` | `entitlement_provider.dart`. |
 | `core/entitlement/entitlement_service.dart` | Service checking license keys and entitlement verification. | Flutter Secure Storage, SharedPreferences | `EntitlementProvider`. |
 
 #### Core Providers (`core/providers/`)
@@ -223,6 +249,8 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 | `core/services/pdf_service.dart` | Base PDF canvas engine, letterhead layout renderer, and font embedding. | `package:pdf`, `package:printing` | `PrescriptionPdfService`, `ListPdfExportService`. |
 | `core/services/periodic_backup_runner.dart` | Background scheduler that checks daily/weekly backup schedules and triggers automated local/cloud `.cpbak` creation. | `BackupContainerService`, `CloudStorageRegistry` | `main.dart`, App lifecycle resume. |
 | `core/services/prescription_pdf_service.dart` | Generates prescription slips with clinic branding, doctor registration number, Rx symbol, remedies table, and signature block. | `package:pdf`, `package:printing` | `PrescriptionPreviewDialog`. |
+| `core/services/cloud_auto_sync.dart` | Pure scheduler for automated cloud backup. `decide()` returns a *reason* (run / disabled / locked / noConnector / notDue), not a bool. | Dart core | `CloudAutoSyncRunner`, tests. |
+| `core/services/cloud_auto_sync_runner.dart` | Reads schedule state from Hive, applies the decision, and reuses `registry.createAndUploadBackup()`. Never throws — runs during start-up. | `CloudStorageRegistry`, Hive | `main.dart`, `CloudBackupScreen`. |
 | `core/services/sample_data_seeder.dart` | Seeds sample clinic, patients, visits, cash memos, and inventory for testing or new user onboarding. | `AppDatabase`, `demo_data/*` | `OnboardingScreen`, Test harness. |
 | `core/services/security_service.dart` | Manages PIN hashing (SHA-256 + salt), biometric authentication prompts, and auto-lock timeouts. | `package:local_auth`, `flutter_secure_storage` | `SecurityProvider`, `LockScreen`. |
 | `core/services/update_service.dart` | Checks GitHub Releases API for new app versions and presents update notifications. | `package:http`, `package:package_info_plus` | `AppUpdateCard`, `AppVersionScreen`. |
@@ -282,6 +310,7 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 | `core/widgets/period_selector.dart` | Segmented button or dropdown toggling Today, This Week, Month, Year. | Dashboard, Finances, Reports. |
 | `core/widgets/picker_field.dart` | Read-only input field that opens a selection sheet or modal on tap. | Patient picker, clinic picker. |
 | `core/widgets/pro_badge.dart` | Small badge demarcating Pro-tier features. | Settings, analytics features. |
+| `core/widgets/feature_lock.dart` | `guardFeature()` wraps an action so it opens the upgrade sheet when locked; `FeatureLockedView` is the whole-screen equivalent for a route reachable by more than one entry point. | `entitlement_provider.dart`, `EmptyState` |
 | `core/widgets/remedy_autocomplete_field.dart` | Autocomplete input searching remedies and potencies. | Prescription dialog, inventory dialog. |
 | `core/widgets/section_header.dart` | Standardized section header with title, icon, and optional trailing action. | Settings, patient profile sections. |
 | `core/widgets/section_switch.dart` | Settings switch tile with icon, title, description, and toggle. | Appearance, security settings. |
@@ -319,6 +348,9 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 | `presentation/edit_cash_memo_dialog.dart` | Dialog for modifying an existing cash memo (adjusting fees, discount, or payment method). | `CashMemoProvider` | `CashMemoScreen`. |
 | `presentation/receipt_preview_dialog.dart` | Formatted receipt preview with print and PDF sharing capabilities. | `PdfService`, `printing` | `CashMemoScreen`. |
 | `presentation/widgets/dispense_medicine_picker_sheet.dart` | Bottom sheet modal allowing clinicians to search inventory, select remedies, adjust quantities, and return dispensed items. | `InventoryProvider`, `tokens.dart` | `NewCashMemoDialog`. |
+| `presentation/widgets/prescription_dispense_review_sheet.dart` | Confirmation sheet listing each prescribed remedy against what stock can supply. Unavailable rows are shown but cannot be selected. | `PrescriptionDispenseMatcher` | `NewCashMemoDialog`. |
+| `services/prescription_dispense_matcher.dart` | Pure matcher: normalises remedy names/potencies, picks the newest prescription batch, classifies each remedy, prefers the soonest-expiring covering batch. No Riverpod/Flutter. | `AppDatabase` models | `NewCashMemoDialog`, tests. |
+| `services/gst_calculator.dart` | Pure CGST/SGST engine. Taxes dispensed goods only (consultation is exempt), one line per slab, SGST floored so CGST absorbs odd paise and the halves always re-add. | `AppDatabase` models | `NewCashMemoDialog`, tests. |
 | `providers/cash_memo_provider.dart` | Riverpod `CashMemoNotifier` and streams for creating, updating, soft-deleting, and querying cash memos. Generates sequential IDs (`CM-YYYY-NNNNN`). | `AppDatabase`, `DatabaseProvider` | Cash memo presentation layer. |
 
 #### Clinical Case Sheets, Odontogram & SOAP (`features/clinical/`)
@@ -427,6 +459,8 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 | `presentation/inventory_screen.dart` | Primary pharmacy inventory management screen: search, category chips, stock badges, valuation metrics strip, and add/edit dialogs. | `InventoryProvider`, `AddEditMedicineDialog`, `ExportAction` | Settings > Practice Management, App router (`/inventory`). |
 | `presentation/widgets/add_edit_medicine_dialog.dart` | Dialog to add a new remedy or edit stock, batch, expiry, unit, cost, and selling price. | `InventoryProvider`, `RemedyAutocompleteField` | `InventoryScreen`. |
 | `providers/inventory_provider.dart` | Riverpod `InventoryController` (CRUD, `adjustStock()`) and streams (`inventoryStreamProvider`, `filteredInventoryProvider`, `inventoryValuationProvider`). | `AppDatabase`, `DatabaseProvider` | Inventory presentation, `NewCashMemoDialog`, `DispenseMedicinePickerSheet`. |
+| `services/barcode_matcher.dart` | Pure barcode normalisation (strips scanner carriage returns, pack spacing), EAN-13 check-digit validation, and inventory lookup. Refuses to auto-pick an ambiguous duplicate. Also exposes `isBarcodeScanningSupported`. | `AppDatabase` models | `AddEditMedicineDialog`, `DispenseMedicinePickerSheet`, tests. |
+| `presentation/widgets/barcode_scanner_sheet.dart` | Camera scanning sheet. Falls back to a keyboard-entry dialog on platforms `mobile_scanner` does not support (notably Windows), so one call site works everywhere. | `mobile_scanner`, `BarcodeMatcher` | `AddEditMedicineDialog`, `DispenseMedicinePickerSheet`. |
 
 #### Onboarding & Setup (`features/onboarding/`)
 
@@ -469,7 +503,8 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 | `presentation/appearance_section.dart` | Theme selection (System, Light, Dark) and brand accent configuration. | `ThemeProvider` | `SettingsScreen`. |
 | `presentation/doctor_profile_screen.dart` | Manages doctor credentials (Name, Degrees, Reg No, Letterhead header/footer, Signature image). | `DoctorProfileProvider` | `SettingsScreen`. |
 | `presentation/backup_restore_screen.dart` | Sovereign backup hub: create local `.cpbak`, restore from file, inspect manifest, and view history. | `BackupContainerService`, `RestorePreviewDialog` | `SettingsScreen`. |
-| `presentation/cloud_backup_screen.dart` | Google Drive / WebDAV cloud sync configuration and status. | `CloudStorageRegistry`, `BackupContainerService` | `SettingsScreen`. |
+| `presentation/cloud_backup_screen.dart` | Google Drive / WebDAV cloud sync configuration, manual backup (free), and the Pro-gated Automated Cloud Sync card. | `CloudStorageRegistry`, `BackupContainerService`, `CloudAutoSyncRunner` | `SettingsScreen`. |
+| `presentation/letterhead_branding_screen.dart` | Add / replace / remove the clinic logo and doctor signature. Editable on Free; only the printing is gated. | `LetterheadBrandingStore` | `SettingsScreen`. |
 | `presentation/periodic_backups_screen.dart` | Configure automated daily/weekly backup schedules and retention rules. | `PeriodicBackupRunner` | `SettingsScreen`. |
 | `presentation/restore_preview_dialog.dart` | Pre-restore inspection modal showing backup date, database size, and record counts before overwriting. | `BackupContainerService` | `BackupRestoreScreen`. |
 | `presentation/import_preview_screen.dart` | Staging screen for reviewing Excel/CSV patient imports before database commit. | `ImportService`, `ImportTemplateService` | `SettingsScreen`. |
@@ -478,6 +513,8 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 | `presentation/widgets/pro_upgrade_sheet.dart` | Modal highlighting Pro-tier capabilities with payment/activation CTA. | `EntitlementProvider` | Feature gates. |
 | `presentation/widgets/subscription_status_card.dart` | Card showing current active license tier and expiration. | `EntitlementProvider` | `SettingsScreen`. |
 | `providers/doctor_profile_provider.dart` | Riverpod notifier managing doctor profile settings in the database. | `AppDatabase`, `DatabaseProvider` | `DoctorProfileScreen`. |
+| `providers/letterhead_branding_provider.dart` | `LetterheadBrandingStore` (pick/copy into app documents, timestamped filenames, delete-on-replace) plus `storedLetterheadBrandingProvider` (raw) and `letterheadBrandingProvider` (after the Pro gate). | `image_picker`, `path_provider`, `AppDatabase` | `LetterheadBrandingScreen`, `PrescriptionPreviewDialog`. |
+| `services/letterhead_branding.dart` | Pure `LetterheadBranding` model and `effective(stored, unlocked)` resolver — the Pro gate for printed branding. | Dart core | PDF service, tests. |
 | `providers/theme_provider.dart` | StateNotifier managing ThemeMode (System, Light, Dark) persisted in settings. | `AppDatabase`, `DatabaseProvider` | `main.dart`, `AppearanceSection`. |
 | `providers/update_provider.dart` | Checks for newer app versions via GitHub API. | `UpdateService` | Update cards and screens. |
 | `providers/release_provider.dart` | Fetches release notes and changelogs. | `UpdateService` | `AppVersionScreen`. |
@@ -492,13 +529,13 @@ Every single file in `lib/` and the project root is cataloged below with its rol
 
 ---
 
-## 5. Drift Database Schema & Migration Architecture (v16)
+## 5. Drift Database Schema & Migration Architecture (v18)
 
 The persistent database is powered by **Drift ORM** (formerly Moor) targeting SQLite (with native SQLCipher encryption capability).
 
 ```
    +-------------------------------------------------------------+
-   |                     AppDatabase (v16)                       |
+   |                     AppDatabase (v18)                       |
    +-------------------------------------------------------------+
           |                  |                   |
           v                  v                   v
@@ -537,7 +574,7 @@ The persistent database is powered by **Drift ORM** (formerly Moor) targeting SQ
 - **v5**: Walk-in visitor footfall logging (`Footfalls`).
 - **v6**: Community outreach medical camps (`Camps`).
 - **v7**: Referral partner directory (`ReferralContacts`).
-- **v8**: Doctor letterhead branding and signature storage.
+- **v8**: Doctor profile fields (name, qualification, registration number) used on the printed letterhead. *(Note: this entry previously claimed logo/signature storage — that was never built at v8. Actual image branding arrived in Milestone 13 and is settings-key backed, not a schema change.)*
 - **v9**: Teleconsultation / online clinic flags.
 - **v10**: Deterministic sequential patient codes (`P-YYYY-NNNNN`) and memo numbering (`CM-YYYY-NNNNN`).
 - **v11**: Lab investigation templates and file attachment paths.
@@ -546,6 +583,11 @@ The persistent database is powered by **Drift ORM** (formerly Moor) targeting SQ
 - **v14**: Cloud backup connector configurations and sync timestamps.
 - **v15**: In-clinic pharmacy inventory management (`Medicines` table: stock, batch, expiry, unit, cost, selling price).
 - **v16**: DPDP/HIPAA encrypted export metadata and Cash Memo dispensed remedies notes summary.
+- **v17**: GST / tax invoice support — `clinics.gstin`, `clinics.defaultGstRate`, `medicines.gstRate`, `cash_memos.cgstAmount`, `cash_memos.sgstAmount`, `cash_memos.gstin`. All nullable (see note below).
+- **v18**: `medicines.barcode` (nullable) for GS1/EAN scanning.
+
+> **Why the v17/v18 columns are nullable rather than defaulted:**  
+> Drift's generated row classes require a value for every non-nullable field in their constructor. Adding these as `withDefault(...)` broke **39 call sites across 12 files** — every hand-built `Clinic(...)` / `CashMemo(...)` in app code and tests stopped compiling. Making them nullable fixed all 39 at the schema level, and models the domain better: `null` means "not set", which is distinct from "zero-rated" or "12%". Prefer nullable columns when adding fields to tables whose rows are constructed by hand anywhere.
 
 > **CRITICAL RULE FOR FUTURE AGENTS:**  
 > When modifying or adding tables, **NEVER** edit existing migration blocks in `app_database.dart`. Increment `schemaVersion` by 1, add an `if (from < N)` block in `migration.onUpgrade`, run `dart run build_runner build --delete-conflicting-outputs`, and write a migration test in `test/migration_test.dart`.
@@ -606,7 +648,7 @@ The platform handles Protected Health Information (PHI). Every export and backup
 
 ## 9. Testing Pipeline & Verification Matrix
 
-The repository includes **75 test suites** and over **450 automated tests**.
+The repository includes **84 test suites** and **548 automated tests**, all passing.
 
 ```bash
 # 1. Check Dart Code Formatting
@@ -624,13 +666,23 @@ flutter test
 
 ### Key Test Categories
 - `test/theme_compliance_test.dart`: Enforces zero hardcoded colors across the codebase.
-- `test/migration_test.dart`: Verifies sequential migrations from v1 through v16 without data corruption.
+- `test/migration_test.dart`: Verifies sequential migrations from v1 through v18 without data corruption.
 - `test/database_encryption_test.dart`: Verifies SQLCipher encryption keys and access rejection with invalid keys.
 - `test/backup_container_service_test.dart`: Tests AES-GCM encryption, container packaging, and restore integrity.
 - `test/encrypted_export_test.dart`: Tests phone masking, diagnosis redaction, and encrypted ZIP creation.
 - `test/dispense_cash_memo_test.dart`: Tests end-to-end dispensing: UI selection, fee populating, memo notes, and atomic inventory stock deduction.
 - `test/dental_chart_test.dart`: Tests 32-tooth odontogram state management and condition serialization.
 - `test/soap_note_test.dart`: Tests SOAP note storage and vital signs recording.
+- `test/prescription_dispense_test.dart`: Tests prescription-to-inventory matching (all four statuses, expiry-aware batch choice) and the end-to-end dispense pipeline.
+- `test/dispense_expiry_alert_test.dart`: Tests the 30-day amber expiry chip, including the boundary and already-expired cases.
+- `test/feature_gating_test.dart`: Tests the Pro gate on real screens and asserts the dev override ships off.
+- `test/gst_calculator_test.dart`: Tests slab grouping and the CGST+SGST-re-adds-exactly invariant on odd paise.
+- `test/cash_memo_gst_test.dart`: Tests the tax breakdown end-to-end, registered vs unregistered clinic.
+- `test/barcode_matcher_test.dart`: Tests scanner-artefact normalisation, EAN-13 check digits, and ambiguous-duplicate refusal.
+- `test/letterhead_branding_test.dart`: Tests the branding Pro gate and asserts a gated PDF is byte-size identical to the plain one.
+- `test/cloud_auto_sync_test.dart`: Tests the cloud sync scheduler — precondition precedence, interval boundaries, clock-moved-backwards.
+
+> **Note on what the tests do *not* cover:** camera scanning, live cloud uploads against a real Drive/WebDAV account, and the visual placement of letterhead images on a printed page. All three need a physical-device pass before release.
 
 ---
 
@@ -638,24 +690,51 @@ flutter test
 
 To the incoming coding agent: Here are your operational boundaries, open targets, and recommended enhancements:
 
+### Status: the previous roadmap is complete
+
+All five enhancements listed in the earlier revision of this guide have shipped:
+
+| Was | Shipped as |
+| :--- | :--- |
+| Prescription-to-Dispense pipeline | Milestone 8 (PR #144) |
+| Barcode / QR inventory scanning | Milestone 12 (PR #148) |
+| Batch expiry warnings in dispense sheet | Milestone 9 (PR #145) |
+| GST / tax invoice generation | Milestone 11 (PR #147) |
+| Multi-currency localization | **Still open** — see below |
+
 ### High-Priority Open Enhancements
-1. **Prescription-to-Dispense Direct Pipeline**:
-   - When a patient has an active prescription written in `ClinicalCaseSheetScreen`, provide a "Dispense from Prescription" shortcut in `NewCashMemoDialog` to populate prescribed remedies into the dispensing list with one tap.
-2. **Barcode / QR Code Inventory Scanning**:
-   - Integrate camera barcode scanning into `AddEditMedicineDialog` and `DispenseMedicinePickerSheet` to scan GS1/EAN barcodes on medicine packages for faster checkout.
-3. **Batch-Specific Expiry Warnings in Dispense Sheet**:
-   - Enhance `DispenseMedicinePickerSheet` to display an amber alert chip when a batch is within 30 days of expiry.
-4. **GST / Tax Invoice Generation**:
-   - Add optional GST percentage breakdown (CGST + SGST) for Indian medical retail compliance on cash memos.
-5. **Multi-Currency & International Localization**:
-   - Abstract the `₹` symbol into a user-configurable currency provider (`currencySymbolProvider`) loaded from settings for international deployments (USD, EUR, GBP, AED).
+1. **Multi-Currency & International Localization**:
+   - Abstract the `₹` symbol into a user-configurable currency provider (`currencySymbolProvider`) loaded from settings for international deployments (USD, EUR, GBP, AED). Note that `GstCalculator` is India-specific and would need an equivalent abstraction, or to be disabled outside India.
+2. **Physical-Device Verification Pass**:
+   - Three shipped features have logic covered by tests but no device verification: camera barcode scanning, live cloud upload to Drive/WebDAV, and letterhead image placement on a printed page. Do this before any public release.
+3. **Real Payment Integration**:
+   - `ProUpgradeSheet._handleSimulatedPurchase()` activates a subscription locally with no payment taken. Google Play Billing or Razorpay is required before charging anyone. Promo codes in `kValidPromoCodes` are hardcoded in the client and trivially extractable — acceptable for a private beta, not for GA.
+4. **Inter-State GST (IGST)**:
+   - The tax engine assumes intra-state supply and always splits 50/50 CGST/SGST. A clinic billing out-of-state patients needs a single IGST line instead.
+5. **Barcode Scanning on Windows**:
+   - `mobile_scanner` has no Windows implementation, so the desktop build falls back to manual entry. If desktop scanning matters, a USB wedge scanner already works today (it types the code, and `BarcodeMatcher.normalize` strips the trailing carriage return) — document this rather than adding a dependency.
+
+### Monetization Status
+
+All four `AppFeature` values now gate a real, built feature. Verify this stays true when adding a fifth:
+
+| AppFeature | Gated surface | Enforced in |
+| :--- | :--- | :--- |
+| `taxAnalytics` | `ProfitSummaryScreen` + Growth Hub tile | PR #146 |
+| `multiClinicComparison` | `ClinicComparisonScreen` + Growth Hub tile | PR #146 |
+| `customLetterheadBranding` | Logo/signature on prescription PDF | PR #150 |
+| `cloudAutoSync` | Automated cloud backup schedule | PR #151 |
+
+Gating philosophy in force: **clinical output is never blocked.** A locked or expired practice always keeps unlimited patients, visits, prescriptions and manual backups; only convenience and intelligence features soft-lock to an upgrade prompt. A lapsed subscription must never strand data the doctor already entered.
+
+For local development, `lib/core/entitlement/entitlement_dev_override.dart` exposes `forceProInDebug = kDebugMode && _forceProSwitch`. Flip `_forceProSwitch` to `true` to preview every gated screen, then flip it back before committing — `kDebugMode` makes it compile away in release regardless, and `test/feature_gating_test.dart` fails if it is left on.
 
 ### Architectural Invariants (Never Break These)
 - **Never bypass Drift migrations**: Always use `schemaVersion` and `onUpgrade`.
 - **Never add hardcoded colors in widgets**: Always use `Theme.of(context).colorScheme`.
 - **Never store plaintext passphrases**: Always use `SecurityService` / PBKDF2 / Keystore.
 - **Never commit generated files manually**: Always run `dart run build_runner build --delete-conflicting-outputs`.
-- **Maintain 100% test pass rate**: Always run `flutter test` and ensure all 75+ test suites pass before submitting PRs.
+- **Maintain 100% test pass rate**: Always run `flutter test` and ensure all 84+ test suites pass before submitting PRs.
 
 ---
 *End of ClinicPilot Master Project Handoff & Architecture Guide.*
