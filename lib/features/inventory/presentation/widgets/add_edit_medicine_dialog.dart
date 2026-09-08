@@ -70,6 +70,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
   late final TextEditingController _reorderController;
   late final TextEditingController _costPriceController;
   late final TextEditingController _sellingPriceController;
+  late final TextEditingController _gstRateController;
   late final TextEditingController _batchController;
   late final TextEditingController _notesController;
 
@@ -99,6 +100,9 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
     _sellingPriceController = TextEditingController(
       text: m?.sellingPrice != null ? m!.sellingPrice!.toStringAsFixed(0) : '',
     );
+    _gstRateController = TextEditingController(
+      text: m?.gstRate != null ? m!.gstRate!.toStringAsFixed(0) : '',
+    );
     _batchController = TextEditingController(text: m?.batchNumber ?? '');
     _notesController = TextEditingController(text: m?.notes ?? '');
 
@@ -116,6 +120,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
     _reorderController.dispose();
     _costPriceController.dispose();
     _sellingPriceController.dispose();
+    _gstRateController.dispose();
     _batchController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -133,6 +138,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
     final reorder = double.tryParse(_reorderController.text.trim()) ?? 3.0;
     final cost = double.tryParse(_costPriceController.text.trim());
     final selling = double.tryParse(_sellingPriceController.text.trim());
+    final gstRate = double.tryParse(_gstRateController.text.trim());
     final batch = _batchController.text.trim();
     final notes = _notesController.text.trim();
 
@@ -151,6 +157,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
           reorderLevel: reorder,
           costPrice: Value(cost),
           sellingPrice: Value(selling),
+          gstRate: Value(gstRate),
           batchNumber: Value(batch.isNotEmpty ? batch : null),
           expiryDate: Value(_expiryDate),
           notes: Value(notes.isNotEmpty ? notes : null),
@@ -167,6 +174,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
           reorderLevel: reorder,
           costPrice: cost,
           sellingPrice: selling,
+          gstRate: gstRate,
           batchNumber: batch.isNotEmpty ? batch : null,
           expiryDate: _expiryDate,
           notes: notes.isNotEmpty ? notes : null,
@@ -373,6 +381,27 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: Spacing.md),
+
+            // GST slab for this item. Blank inherits the clinic default
+            // rather than zero-rating, so untouched stock keeps billing as-is.
+            CustomTextField(
+              controller: _gstRateController,
+              label: 'GST Rate (%)',
+              hint: 'Leave blank to use the clinic default',
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              prefixIcon: Icons.percent,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return null;
+                final rate = double.tryParse(v.trim());
+                if (rate == null || rate < 0 || rate > 100) {
+                  return 'Enter a rate between 0 and 100';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: Spacing.md),
 

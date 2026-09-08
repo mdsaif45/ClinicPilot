@@ -69,10 +69,20 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
     required String paymentMethod,
     String? notes,
     DateTime? memoDate,
+    double cgstAmount = 0.0,
+    double sgstAmount = 0.0,
+    String? gstin,
   }) async {
     state = const AsyncLoading();
 
-    final total = (consultationFee + medicineFee + otherFee) - discount;
+    // GST is charged on top of the discounted subtotal, so a discount reduces
+    // the taxable value rather than the tax being levied on the pre-discount
+    // amount.
+    final total =
+        (consultationFee + medicineFee + otherFee) -
+        discount +
+        cgstAmount +
+        sgstAmount;
 
     final date = memoDate ?? DateTime.now();
 
@@ -94,6 +104,9 @@ class CashMemoNotifier extends StateNotifier<AsyncValue<void>> {
       medicineFee: Value(medicineFee),
       otherFee: Value(otherFee),
       discount: Value(discount),
+      cgstAmount: Value(cgstAmount),
+      sgstAmount: Value(sgstAmount),
+      gstin: Value(gstin),
       total: total,
       paidAmount: Value(paidAmount),
       paymentMethod: paymentMethod,

@@ -98,6 +98,8 @@ class ClinicNotifier extends StateNotifier<AsyncValue<void>> {
     required double defaultConsultationFee,
     required String openDays,
     required String colorHex,
+    String? gstin,
+    double? defaultGstRate,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -111,6 +113,8 @@ class ClinicNotifier extends StateNotifier<AsyncValue<void>> {
               phone: Value(phone),
               monthlyRent: Value(monthlyRent),
               defaultConsultationFee: Value(defaultConsultationFee),
+              gstin: Value(gstin),
+              defaultGstRate: Value(defaultGstRate),
               openDays: Value(openDays),
               colorHex: Value(colorHex),
             ),
@@ -127,6 +131,8 @@ class ClinicNotifier extends StateNotifier<AsyncValue<void>> {
     required double defaultConsultationFee,
     required String openDays,
     required String colorHex,
+    String? gstin,
+    double? defaultGstRate,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -137,6 +143,11 @@ class ClinicNotifier extends StateNotifier<AsyncValue<void>> {
           phone: Value(phone),
           monthlyRent: Value(monthlyRent),
           defaultConsultationFee: Value(defaultConsultationFee),
+          gstin: Value(gstin),
+          defaultGstRate:
+              defaultGstRate == null
+                  ? const Value.absent()
+                  : Value(defaultGstRate),
           openDays: Value(openDays),
           colorHex: Value(colorHex),
         ),

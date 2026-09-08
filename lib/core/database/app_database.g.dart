@@ -82,6 +82,26 @@ class $ClinicsTable extends Clinics with TableInfo<$ClinicsTable, Clinic> {
     requiredDuringInsert: false,
     defaultValue: const Constant('1,2,3,4,5,6'),
   );
+  static const VerificationMeta _gstinMeta = const VerificationMeta('gstin');
+  @override
+  late final GeneratedColumn<String> gstin = GeneratedColumn<String>(
+    'gstin',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _defaultGstRateMeta = const VerificationMeta(
+    'defaultGstRate',
+  );
+  @override
+  late final GeneratedColumn<double> defaultGstRate = GeneratedColumn<double>(
+    'default_gst_rate',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _colorHexMeta = const VerificationMeta(
     'colorHex',
   );
@@ -145,6 +165,8 @@ class $ClinicsTable extends Clinics with TableInfo<$ClinicsTable, Clinic> {
     monthlyRent,
     defaultConsultationFee,
     openDays,
+    gstin,
+    defaultGstRate,
     colorHex,
     isActive,
     isDeleted,
@@ -209,6 +231,21 @@ class $ClinicsTable extends Clinics with TableInfo<$ClinicsTable, Clinic> {
       context.handle(
         _openDaysMeta,
         openDays.isAcceptableOrUnknown(data['open_days']!, _openDaysMeta),
+      );
+    }
+    if (data.containsKey('gstin')) {
+      context.handle(
+        _gstinMeta,
+        gstin.isAcceptableOrUnknown(data['gstin']!, _gstinMeta),
+      );
+    }
+    if (data.containsKey('default_gst_rate')) {
+      context.handle(
+        _defaultGstRateMeta,
+        defaultGstRate.isAcceptableOrUnknown(
+          data['default_gst_rate']!,
+          _defaultGstRateMeta,
+        ),
       );
     }
     if (data.containsKey('color_hex')) {
@@ -277,6 +314,14 @@ class $ClinicsTable extends Clinics with TableInfo<$ClinicsTable, Clinic> {
             DriftSqlType.string,
             data['${effectivePrefix}open_days'],
           )!,
+      gstin: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gstin'],
+      ),
+      defaultGstRate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}default_gst_rate'],
+      ),
       colorHex:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -314,6 +359,8 @@ class Clinic extends DataClass implements Insertable<Clinic> {
   final double monthlyRent;
   final double defaultConsultationFee;
   final String openDays;
+  final String? gstin;
+  final double? defaultGstRate;
   final String colorHex;
   final bool isActive;
   final bool isDeleted;
@@ -326,6 +373,8 @@ class Clinic extends DataClass implements Insertable<Clinic> {
     required this.monthlyRent,
     required this.defaultConsultationFee,
     required this.openDays,
+    this.gstin,
+    this.defaultGstRate,
     required this.colorHex,
     required this.isActive,
     required this.isDeleted,
@@ -345,6 +394,12 @@ class Clinic extends DataClass implements Insertable<Clinic> {
     map['monthly_rent'] = Variable<double>(monthlyRent);
     map['default_consultation_fee'] = Variable<double>(defaultConsultationFee);
     map['open_days'] = Variable<String>(openDays);
+    if (!nullToAbsent || gstin != null) {
+      map['gstin'] = Variable<String>(gstin);
+    }
+    if (!nullToAbsent || defaultGstRate != null) {
+      map['default_gst_rate'] = Variable<double>(defaultGstRate);
+    }
     map['color_hex'] = Variable<String>(colorHex);
     map['is_active'] = Variable<bool>(isActive);
     map['is_deleted'] = Variable<bool>(isDeleted);
@@ -365,6 +420,12 @@ class Clinic extends DataClass implements Insertable<Clinic> {
       monthlyRent: Value(monthlyRent),
       defaultConsultationFee: Value(defaultConsultationFee),
       openDays: Value(openDays),
+      gstin:
+          gstin == null && nullToAbsent ? const Value.absent() : Value(gstin),
+      defaultGstRate:
+          defaultGstRate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(defaultGstRate),
       colorHex: Value(colorHex),
       isActive: Value(isActive),
       isDeleted: Value(isDeleted),
@@ -387,6 +448,8 @@ class Clinic extends DataClass implements Insertable<Clinic> {
         json['defaultConsultationFee'],
       ),
       openDays: serializer.fromJson<String>(json['openDays']),
+      gstin: serializer.fromJson<String?>(json['gstin']),
+      defaultGstRate: serializer.fromJson<double?>(json['defaultGstRate']),
       colorHex: serializer.fromJson<String>(json['colorHex']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
@@ -406,6 +469,8 @@ class Clinic extends DataClass implements Insertable<Clinic> {
         defaultConsultationFee,
       ),
       'openDays': serializer.toJson<String>(openDays),
+      'gstin': serializer.toJson<String?>(gstin),
+      'defaultGstRate': serializer.toJson<double?>(defaultGstRate),
       'colorHex': serializer.toJson<String>(colorHex),
       'isActive': serializer.toJson<bool>(isActive),
       'isDeleted': serializer.toJson<bool>(isDeleted),
@@ -421,6 +486,8 @@ class Clinic extends DataClass implements Insertable<Clinic> {
     double? monthlyRent,
     double? defaultConsultationFee,
     String? openDays,
+    Value<String?> gstin = const Value.absent(),
+    Value<double?> defaultGstRate = const Value.absent(),
     String? colorHex,
     bool? isActive,
     bool? isDeleted,
@@ -434,6 +501,9 @@ class Clinic extends DataClass implements Insertable<Clinic> {
     defaultConsultationFee:
         defaultConsultationFee ?? this.defaultConsultationFee,
     openDays: openDays ?? this.openDays,
+    gstin: gstin.present ? gstin.value : this.gstin,
+    defaultGstRate:
+        defaultGstRate.present ? defaultGstRate.value : this.defaultGstRate,
     colorHex: colorHex ?? this.colorHex,
     isActive: isActive ?? this.isActive,
     isDeleted: isDeleted ?? this.isDeleted,
@@ -452,6 +522,11 @@ class Clinic extends DataClass implements Insertable<Clinic> {
               ? data.defaultConsultationFee.value
               : this.defaultConsultationFee,
       openDays: data.openDays.present ? data.openDays.value : this.openDays,
+      gstin: data.gstin.present ? data.gstin.value : this.gstin,
+      defaultGstRate:
+          data.defaultGstRate.present
+              ? data.defaultGstRate.value
+              : this.defaultGstRate,
       colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
@@ -469,6 +544,8 @@ class Clinic extends DataClass implements Insertable<Clinic> {
           ..write('monthlyRent: $monthlyRent, ')
           ..write('defaultConsultationFee: $defaultConsultationFee, ')
           ..write('openDays: $openDays, ')
+          ..write('gstin: $gstin, ')
+          ..write('defaultGstRate: $defaultGstRate, ')
           ..write('colorHex: $colorHex, ')
           ..write('isActive: $isActive, ')
           ..write('isDeleted: $isDeleted, ')
@@ -486,6 +563,8 @@ class Clinic extends DataClass implements Insertable<Clinic> {
     monthlyRent,
     defaultConsultationFee,
     openDays,
+    gstin,
+    defaultGstRate,
     colorHex,
     isActive,
     isDeleted,
@@ -502,6 +581,8 @@ class Clinic extends DataClass implements Insertable<Clinic> {
           other.monthlyRent == this.monthlyRent &&
           other.defaultConsultationFee == this.defaultConsultationFee &&
           other.openDays == this.openDays &&
+          other.gstin == this.gstin &&
+          other.defaultGstRate == this.defaultGstRate &&
           other.colorHex == this.colorHex &&
           other.isActive == this.isActive &&
           other.isDeleted == this.isDeleted &&
@@ -516,6 +597,8 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
   final Value<double> monthlyRent;
   final Value<double> defaultConsultationFee;
   final Value<String> openDays;
+  final Value<String?> gstin;
+  final Value<double?> defaultGstRate;
   final Value<String> colorHex;
   final Value<bool> isActive;
   final Value<bool> isDeleted;
@@ -529,6 +612,8 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
     this.monthlyRent = const Value.absent(),
     this.defaultConsultationFee = const Value.absent(),
     this.openDays = const Value.absent(),
+    this.gstin = const Value.absent(),
+    this.defaultGstRate = const Value.absent(),
     this.colorHex = const Value.absent(),
     this.isActive = const Value.absent(),
     this.isDeleted = const Value.absent(),
@@ -543,6 +628,8 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
     this.monthlyRent = const Value.absent(),
     this.defaultConsultationFee = const Value.absent(),
     this.openDays = const Value.absent(),
+    this.gstin = const Value.absent(),
+    this.defaultGstRate = const Value.absent(),
     this.colorHex = const Value.absent(),
     this.isActive = const Value.absent(),
     this.isDeleted = const Value.absent(),
@@ -558,6 +645,8 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
     Expression<double>? monthlyRent,
     Expression<double>? defaultConsultationFee,
     Expression<String>? openDays,
+    Expression<String>? gstin,
+    Expression<double>? defaultGstRate,
     Expression<String>? colorHex,
     Expression<bool>? isActive,
     Expression<bool>? isDeleted,
@@ -573,6 +662,8 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
       if (defaultConsultationFee != null)
         'default_consultation_fee': defaultConsultationFee,
       if (openDays != null) 'open_days': openDays,
+      if (gstin != null) 'gstin': gstin,
+      if (defaultGstRate != null) 'default_gst_rate': defaultGstRate,
       if (colorHex != null) 'color_hex': colorHex,
       if (isActive != null) 'is_active': isActive,
       if (isDeleted != null) 'is_deleted': isDeleted,
@@ -589,6 +680,8 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
     Value<double>? monthlyRent,
     Value<double>? defaultConsultationFee,
     Value<String>? openDays,
+    Value<String?>? gstin,
+    Value<double?>? defaultGstRate,
     Value<String>? colorHex,
     Value<bool>? isActive,
     Value<bool>? isDeleted,
@@ -604,6 +697,8 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
       defaultConsultationFee:
           defaultConsultationFee ?? this.defaultConsultationFee,
       openDays: openDays ?? this.openDays,
+      gstin: gstin ?? this.gstin,
+      defaultGstRate: defaultGstRate ?? this.defaultGstRate,
       colorHex: colorHex ?? this.colorHex,
       isActive: isActive ?? this.isActive,
       isDeleted: isDeleted ?? this.isDeleted,
@@ -638,6 +733,12 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
     if (openDays.present) {
       map['open_days'] = Variable<String>(openDays.value);
     }
+    if (gstin.present) {
+      map['gstin'] = Variable<String>(gstin.value);
+    }
+    if (defaultGstRate.present) {
+      map['default_gst_rate'] = Variable<double>(defaultGstRate.value);
+    }
     if (colorHex.present) {
       map['color_hex'] = Variable<String>(colorHex.value);
     }
@@ -666,6 +767,8 @@ class ClinicsCompanion extends UpdateCompanion<Clinic> {
           ..write('monthlyRent: $monthlyRent, ')
           ..write('defaultConsultationFee: $defaultConsultationFee, ')
           ..write('openDays: $openDays, ')
+          ..write('gstin: $gstin, ')
+          ..write('defaultGstRate: $defaultGstRate, ')
           ..write('colorHex: $colorHex, ')
           ..write('isActive: $isActive, ')
           ..write('isDeleted: $isDeleted, ')
@@ -2822,6 +2925,37 @@ class $CashMemosTable extends CashMemos
     requiredDuringInsert: false,
     defaultValue: const Constant(0.0),
   );
+  static const VerificationMeta _cgstAmountMeta = const VerificationMeta(
+    'cgstAmount',
+  );
+  @override
+  late final GeneratedColumn<double> cgstAmount = GeneratedColumn<double>(
+    'cgst_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sgstAmountMeta = const VerificationMeta(
+    'sgstAmount',
+  );
+  @override
+  late final GeneratedColumn<double> sgstAmount = GeneratedColumn<double>(
+    'sgst_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _gstinMeta = const VerificationMeta('gstin');
+  @override
+  late final GeneratedColumn<String> gstin = GeneratedColumn<String>(
+    'gstin',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _totalMeta = const VerificationMeta('total');
   @override
   late final GeneratedColumn<double> total = GeneratedColumn<double>(
@@ -2913,6 +3047,9 @@ class $CashMemosTable extends CashMemos
     medicineFee,
     otherFee,
     discount,
+    cgstAmount,
+    sgstAmount,
+    gstin,
     total,
     paidAmount,
     paymentMethod,
@@ -2994,6 +3131,24 @@ class $CashMemosTable extends CashMemos
       context.handle(
         _discountMeta,
         discount.isAcceptableOrUnknown(data['discount']!, _discountMeta),
+      );
+    }
+    if (data.containsKey('cgst_amount')) {
+      context.handle(
+        _cgstAmountMeta,
+        cgstAmount.isAcceptableOrUnknown(data['cgst_amount']!, _cgstAmountMeta),
+      );
+    }
+    if (data.containsKey('sgst_amount')) {
+      context.handle(
+        _sgstAmountMeta,
+        sgstAmount.isAcceptableOrUnknown(data['sgst_amount']!, _sgstAmountMeta),
+      );
+    }
+    if (data.containsKey('gstin')) {
+      context.handle(
+        _gstinMeta,
+        gstin.isAcceptableOrUnknown(data['gstin']!, _gstinMeta),
       );
     }
     if (data.containsKey('total')) {
@@ -3098,6 +3253,18 @@ class $CashMemosTable extends CashMemos
             DriftSqlType.double,
             data['${effectivePrefix}discount'],
           )!,
+      cgstAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cgst_amount'],
+      ),
+      sgstAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}sgst_amount'],
+      ),
+      gstin: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gstin'],
+      ),
       total:
           attachedDatabase.typeMapping.read(
             DriftSqlType.double,
@@ -3151,6 +3318,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
   final double medicineFee;
   final double otherFee;
   final double discount;
+  final double? cgstAmount;
+  final double? sgstAmount;
+  final String? gstin;
   final double total;
   final double paidAmount;
   final String paymentMethod;
@@ -3168,6 +3338,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     required this.medicineFee,
     required this.otherFee,
     required this.discount,
+    this.cgstAmount,
+    this.sgstAmount,
+    this.gstin,
     required this.total,
     required this.paidAmount,
     required this.paymentMethod,
@@ -3190,6 +3363,15 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     map['medicine_fee'] = Variable<double>(medicineFee);
     map['other_fee'] = Variable<double>(otherFee);
     map['discount'] = Variable<double>(discount);
+    if (!nullToAbsent || cgstAmount != null) {
+      map['cgst_amount'] = Variable<double>(cgstAmount);
+    }
+    if (!nullToAbsent || sgstAmount != null) {
+      map['sgst_amount'] = Variable<double>(sgstAmount);
+    }
+    if (!nullToAbsent || gstin != null) {
+      map['gstin'] = Variable<String>(gstin);
+    }
     map['total'] = Variable<double>(total);
     map['paid_amount'] = Variable<double>(paidAmount);
     map['payment_method'] = Variable<String>(paymentMethod);
@@ -3216,6 +3398,16 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
       medicineFee: Value(medicineFee),
       otherFee: Value(otherFee),
       discount: Value(discount),
+      cgstAmount:
+          cgstAmount == null && nullToAbsent
+              ? const Value.absent()
+              : Value(cgstAmount),
+      sgstAmount:
+          sgstAmount == null && nullToAbsent
+              ? const Value.absent()
+              : Value(sgstAmount),
+      gstin:
+          gstin == null && nullToAbsent ? const Value.absent() : Value(gstin),
       total: Value(total),
       paidAmount: Value(paidAmount),
       paymentMethod: Value(paymentMethod),
@@ -3242,6 +3434,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
       medicineFee: serializer.fromJson<double>(json['medicineFee']),
       otherFee: serializer.fromJson<double>(json['otherFee']),
       discount: serializer.fromJson<double>(json['discount']),
+      cgstAmount: serializer.fromJson<double?>(json['cgstAmount']),
+      sgstAmount: serializer.fromJson<double?>(json['sgstAmount']),
+      gstin: serializer.fromJson<String?>(json['gstin']),
       total: serializer.fromJson<double>(json['total']),
       paidAmount: serializer.fromJson<double>(json['paidAmount']),
       paymentMethod: serializer.fromJson<String>(json['paymentMethod']),
@@ -3264,6 +3459,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
       'medicineFee': serializer.toJson<double>(medicineFee),
       'otherFee': serializer.toJson<double>(otherFee),
       'discount': serializer.toJson<double>(discount),
+      'cgstAmount': serializer.toJson<double?>(cgstAmount),
+      'sgstAmount': serializer.toJson<double?>(sgstAmount),
+      'gstin': serializer.toJson<String?>(gstin),
       'total': serializer.toJson<double>(total),
       'paidAmount': serializer.toJson<double>(paidAmount),
       'paymentMethod': serializer.toJson<String>(paymentMethod),
@@ -3284,6 +3482,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     double? medicineFee,
     double? otherFee,
     double? discount,
+    Value<double?> cgstAmount = const Value.absent(),
+    Value<double?> sgstAmount = const Value.absent(),
+    Value<String?> gstin = const Value.absent(),
     double? total,
     double? paidAmount,
     String? paymentMethod,
@@ -3301,6 +3502,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     medicineFee: medicineFee ?? this.medicineFee,
     otherFee: otherFee ?? this.otherFee,
     discount: discount ?? this.discount,
+    cgstAmount: cgstAmount.present ? cgstAmount.value : this.cgstAmount,
+    sgstAmount: sgstAmount.present ? sgstAmount.value : this.sgstAmount,
+    gstin: gstin.present ? gstin.value : this.gstin,
     total: total ?? this.total,
     paidAmount: paidAmount ?? this.paidAmount,
     paymentMethod: paymentMethod ?? this.paymentMethod,
@@ -3325,6 +3529,11 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
           data.medicineFee.present ? data.medicineFee.value : this.medicineFee,
       otherFee: data.otherFee.present ? data.otherFee.value : this.otherFee,
       discount: data.discount.present ? data.discount.value : this.discount,
+      cgstAmount:
+          data.cgstAmount.present ? data.cgstAmount.value : this.cgstAmount,
+      sgstAmount:
+          data.sgstAmount.present ? data.sgstAmount.value : this.sgstAmount,
+      gstin: data.gstin.present ? data.gstin.value : this.gstin,
       total: data.total.present ? data.total.value : this.total,
       paidAmount:
           data.paidAmount.present ? data.paidAmount.value : this.paidAmount,
@@ -3351,6 +3560,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
           ..write('medicineFee: $medicineFee, ')
           ..write('otherFee: $otherFee, ')
           ..write('discount: $discount, ')
+          ..write('cgstAmount: $cgstAmount, ')
+          ..write('sgstAmount: $sgstAmount, ')
+          ..write('gstin: $gstin, ')
           ..write('total: $total, ')
           ..write('paidAmount: $paidAmount, ')
           ..write('paymentMethod: $paymentMethod, ')
@@ -3373,6 +3585,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
     medicineFee,
     otherFee,
     discount,
+    cgstAmount,
+    sgstAmount,
+    gstin,
     total,
     paidAmount,
     paymentMethod,
@@ -3394,6 +3609,9 @@ class CashMemo extends DataClass implements Insertable<CashMemo> {
           other.medicineFee == this.medicineFee &&
           other.otherFee == this.otherFee &&
           other.discount == this.discount &&
+          other.cgstAmount == this.cgstAmount &&
+          other.sgstAmount == this.sgstAmount &&
+          other.gstin == this.gstin &&
           other.total == this.total &&
           other.paidAmount == this.paidAmount &&
           other.paymentMethod == this.paymentMethod &&
@@ -3413,6 +3631,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
   final Value<double> medicineFee;
   final Value<double> otherFee;
   final Value<double> discount;
+  final Value<double?> cgstAmount;
+  final Value<double?> sgstAmount;
+  final Value<String?> gstin;
   final Value<double> total;
   final Value<double> paidAmount;
   final Value<String> paymentMethod;
@@ -3431,6 +3652,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     this.medicineFee = const Value.absent(),
     this.otherFee = const Value.absent(),
     this.discount = const Value.absent(),
+    this.cgstAmount = const Value.absent(),
+    this.sgstAmount = const Value.absent(),
+    this.gstin = const Value.absent(),
     this.total = const Value.absent(),
     this.paidAmount = const Value.absent(),
     this.paymentMethod = const Value.absent(),
@@ -3450,6 +3674,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     this.medicineFee = const Value.absent(),
     this.otherFee = const Value.absent(),
     this.discount = const Value.absent(),
+    this.cgstAmount = const Value.absent(),
+    this.sgstAmount = const Value.absent(),
+    this.gstin = const Value.absent(),
     required double total,
     this.paidAmount = const Value.absent(),
     required String paymentMethod,
@@ -3473,6 +3700,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     Expression<double>? medicineFee,
     Expression<double>? otherFee,
     Expression<double>? discount,
+    Expression<double>? cgstAmount,
+    Expression<double>? sgstAmount,
+    Expression<String>? gstin,
     Expression<double>? total,
     Expression<double>? paidAmount,
     Expression<String>? paymentMethod,
@@ -3492,6 +3722,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
       if (medicineFee != null) 'medicine_fee': medicineFee,
       if (otherFee != null) 'other_fee': otherFee,
       if (discount != null) 'discount': discount,
+      if (cgstAmount != null) 'cgst_amount': cgstAmount,
+      if (sgstAmount != null) 'sgst_amount': sgstAmount,
+      if (gstin != null) 'gstin': gstin,
       if (total != null) 'total': total,
       if (paidAmount != null) 'paid_amount': paidAmount,
       if (paymentMethod != null) 'payment_method': paymentMethod,
@@ -3513,6 +3746,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     Value<double>? medicineFee,
     Value<double>? otherFee,
     Value<double>? discount,
+    Value<double?>? cgstAmount,
+    Value<double?>? sgstAmount,
+    Value<String?>? gstin,
     Value<double>? total,
     Value<double>? paidAmount,
     Value<String>? paymentMethod,
@@ -3532,6 +3768,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
       medicineFee: medicineFee ?? this.medicineFee,
       otherFee: otherFee ?? this.otherFee,
       discount: discount ?? this.discount,
+      cgstAmount: cgstAmount ?? this.cgstAmount,
+      sgstAmount: sgstAmount ?? this.sgstAmount,
+      gstin: gstin ?? this.gstin,
       total: total ?? this.total,
       paidAmount: paidAmount ?? this.paidAmount,
       paymentMethod: paymentMethod ?? this.paymentMethod,
@@ -3573,6 +3812,15 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
     if (discount.present) {
       map['discount'] = Variable<double>(discount.value);
     }
+    if (cgstAmount.present) {
+      map['cgst_amount'] = Variable<double>(cgstAmount.value);
+    }
+    if (sgstAmount.present) {
+      map['sgst_amount'] = Variable<double>(sgstAmount.value);
+    }
+    if (gstin.present) {
+      map['gstin'] = Variable<String>(gstin.value);
+    }
     if (total.present) {
       map['total'] = Variable<double>(total.value);
     }
@@ -3612,6 +3860,9 @@ class CashMemosCompanion extends UpdateCompanion<CashMemo> {
           ..write('medicineFee: $medicineFee, ')
           ..write('otherFee: $otherFee, ')
           ..write('discount: $discount, ')
+          ..write('cgstAmount: $cgstAmount, ')
+          ..write('sgstAmount: $sgstAmount, ')
+          ..write('gstin: $gstin, ')
           ..write('total: $total, ')
           ..write('paidAmount: $paidAmount, ')
           ..write('paymentMethod: $paymentMethod, ')
@@ -12254,6 +12505,17 @@ class $MedicinesTable extends Medicines
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _gstRateMeta = const VerificationMeta(
+    'gstRate',
+  );
+  @override
+  late final GeneratedColumn<double> gstRate = GeneratedColumn<double>(
+    'gst_rate',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _batchNumberMeta = const VerificationMeta(
     'batchNumber',
   );
@@ -12350,6 +12612,7 @@ class $MedicinesTable extends Medicines
     reorderLevel,
     costPrice,
     sellingPrice,
+    gstRate,
     batchNumber,
     expiryDate,
     clinicId,
@@ -12442,6 +12705,12 @@ class $MedicinesTable extends Medicines
           data['selling_price']!,
           _sellingPriceMeta,
         ),
+      );
+    }
+    if (data.containsKey('gst_rate')) {
+      context.handle(
+        _gstRateMeta,
+        gstRate.isAcceptableOrUnknown(data['gst_rate']!, _gstRateMeta),
       );
     }
     if (data.containsKey('batch_number')) {
@@ -12544,6 +12813,10 @@ class $MedicinesTable extends Medicines
         DriftSqlType.double,
         data['${effectivePrefix}selling_price'],
       ),
+      gstRate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}gst_rate'],
+      ),
       batchNumber: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}batch_number'],
@@ -12595,6 +12868,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
   final double reorderLevel;
   final double? costPrice;
   final double? sellingPrice;
+  final double? gstRate;
   final String? batchNumber;
   final DateTime? expiryDate;
   final String? clinicId;
@@ -12613,6 +12887,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     required this.reorderLevel,
     this.costPrice,
     this.sellingPrice,
+    this.gstRate,
     this.batchNumber,
     this.expiryDate,
     this.clinicId,
@@ -12641,6 +12916,9 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     }
     if (!nullToAbsent || sellingPrice != null) {
       map['selling_price'] = Variable<double>(sellingPrice);
+    }
+    if (!nullToAbsent || gstRate != null) {
+      map['gst_rate'] = Variable<double>(gstRate);
     }
     if (!nullToAbsent || batchNumber != null) {
       map['batch_number'] = Variable<String>(batchNumber);
@@ -12681,6 +12959,10 @@ class Medicine extends DataClass implements Insertable<Medicine> {
           sellingPrice == null && nullToAbsent
               ? const Value.absent()
               : Value(sellingPrice),
+      gstRate:
+          gstRate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(gstRate),
       batchNumber:
           batchNumber == null && nullToAbsent
               ? const Value.absent()
@@ -12717,6 +12999,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
       reorderLevel: serializer.fromJson<double>(json['reorderLevel']),
       costPrice: serializer.fromJson<double?>(json['costPrice']),
       sellingPrice: serializer.fromJson<double?>(json['sellingPrice']),
+      gstRate: serializer.fromJson<double?>(json['gstRate']),
       batchNumber: serializer.fromJson<String?>(json['batchNumber']),
       expiryDate: serializer.fromJson<DateTime?>(json['expiryDate']),
       clinicId: serializer.fromJson<String?>(json['clinicId']),
@@ -12740,6 +13023,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
       'reorderLevel': serializer.toJson<double>(reorderLevel),
       'costPrice': serializer.toJson<double?>(costPrice),
       'sellingPrice': serializer.toJson<double?>(sellingPrice),
+      'gstRate': serializer.toJson<double?>(gstRate),
       'batchNumber': serializer.toJson<String?>(batchNumber),
       'expiryDate': serializer.toJson<DateTime?>(expiryDate),
       'clinicId': serializer.toJson<String?>(clinicId),
@@ -12761,6 +13045,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     double? reorderLevel,
     Value<double?> costPrice = const Value.absent(),
     Value<double?> sellingPrice = const Value.absent(),
+    Value<double?> gstRate = const Value.absent(),
     Value<String?> batchNumber = const Value.absent(),
     Value<DateTime?> expiryDate = const Value.absent(),
     Value<String?> clinicId = const Value.absent(),
@@ -12779,6 +13064,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     reorderLevel: reorderLevel ?? this.reorderLevel,
     costPrice: costPrice.present ? costPrice.value : this.costPrice,
     sellingPrice: sellingPrice.present ? sellingPrice.value : this.sellingPrice,
+    gstRate: gstRate.present ? gstRate.value : this.gstRate,
     batchNumber: batchNumber.present ? batchNumber.value : this.batchNumber,
     expiryDate: expiryDate.present ? expiryDate.value : this.expiryDate,
     clinicId: clinicId.present ? clinicId.value : this.clinicId,
@@ -12808,6 +13094,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
           data.sellingPrice.present
               ? data.sellingPrice.value
               : this.sellingPrice,
+      gstRate: data.gstRate.present ? data.gstRate.value : this.gstRate,
       batchNumber:
           data.batchNumber.present ? data.batchNumber.value : this.batchNumber,
       expiryDate:
@@ -12833,6 +13120,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
           ..write('reorderLevel: $reorderLevel, ')
           ..write('costPrice: $costPrice, ')
           ..write('sellingPrice: $sellingPrice, ')
+          ..write('gstRate: $gstRate, ')
           ..write('batchNumber: $batchNumber, ')
           ..write('expiryDate: $expiryDate, ')
           ..write('clinicId: $clinicId, ')
@@ -12856,6 +13144,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
     reorderLevel,
     costPrice,
     sellingPrice,
+    gstRate,
     batchNumber,
     expiryDate,
     clinicId,
@@ -12878,6 +13167,7 @@ class Medicine extends DataClass implements Insertable<Medicine> {
           other.reorderLevel == this.reorderLevel &&
           other.costPrice == this.costPrice &&
           other.sellingPrice == this.sellingPrice &&
+          other.gstRate == this.gstRate &&
           other.batchNumber == this.batchNumber &&
           other.expiryDate == this.expiryDate &&
           other.clinicId == this.clinicId &&
@@ -12898,6 +13188,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
   final Value<double> reorderLevel;
   final Value<double?> costPrice;
   final Value<double?> sellingPrice;
+  final Value<double?> gstRate;
   final Value<String?> batchNumber;
   final Value<DateTime?> expiryDate;
   final Value<String?> clinicId;
@@ -12917,6 +13208,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     this.reorderLevel = const Value.absent(),
     this.costPrice = const Value.absent(),
     this.sellingPrice = const Value.absent(),
+    this.gstRate = const Value.absent(),
     this.batchNumber = const Value.absent(),
     this.expiryDate = const Value.absent(),
     this.clinicId = const Value.absent(),
@@ -12937,6 +13229,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     this.reorderLevel = const Value.absent(),
     this.costPrice = const Value.absent(),
     this.sellingPrice = const Value.absent(),
+    this.gstRate = const Value.absent(),
     this.batchNumber = const Value.absent(),
     this.expiryDate = const Value.absent(),
     this.clinicId = const Value.absent(),
@@ -12960,6 +13253,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     Expression<double>? reorderLevel,
     Expression<double>? costPrice,
     Expression<double>? sellingPrice,
+    Expression<double>? gstRate,
     Expression<String>? batchNumber,
     Expression<DateTime>? expiryDate,
     Expression<String>? clinicId,
@@ -12980,6 +13274,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
       if (reorderLevel != null) 'reorder_level': reorderLevel,
       if (costPrice != null) 'cost_price': costPrice,
       if (sellingPrice != null) 'selling_price': sellingPrice,
+      if (gstRate != null) 'gst_rate': gstRate,
       if (batchNumber != null) 'batch_number': batchNumber,
       if (expiryDate != null) 'expiry_date': expiryDate,
       if (clinicId != null) 'clinic_id': clinicId,
@@ -13002,6 +13297,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     Value<double>? reorderLevel,
     Value<double?>? costPrice,
     Value<double?>? sellingPrice,
+    Value<double?>? gstRate,
     Value<String?>? batchNumber,
     Value<DateTime?>? expiryDate,
     Value<String?>? clinicId,
@@ -13022,6 +13318,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
       reorderLevel: reorderLevel ?? this.reorderLevel,
       costPrice: costPrice ?? this.costPrice,
       sellingPrice: sellingPrice ?? this.sellingPrice,
+      gstRate: gstRate ?? this.gstRate,
       batchNumber: batchNumber ?? this.batchNumber,
       expiryDate: expiryDate ?? this.expiryDate,
       clinicId: clinicId ?? this.clinicId,
@@ -13066,6 +13363,9 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
     if (sellingPrice.present) {
       map['selling_price'] = Variable<double>(sellingPrice.value);
     }
+    if (gstRate.present) {
+      map['gst_rate'] = Variable<double>(gstRate.value);
+    }
     if (batchNumber.present) {
       map['batch_number'] = Variable<String>(batchNumber.value);
     }
@@ -13106,6 +13406,7 @@ class MedicinesCompanion extends UpdateCompanion<Medicine> {
           ..write('reorderLevel: $reorderLevel, ')
           ..write('costPrice: $costPrice, ')
           ..write('sellingPrice: $sellingPrice, ')
+          ..write('gstRate: $gstRate, ')
           ..write('batchNumber: $batchNumber, ')
           ..write('expiryDate: $expiryDate, ')
           ..write('clinicId: $clinicId, ')
@@ -13172,6 +13473,8 @@ typedef $$ClinicsTableCreateCompanionBuilder =
       Value<double> monthlyRent,
       Value<double> defaultConsultationFee,
       Value<String> openDays,
+      Value<String?> gstin,
+      Value<double?> defaultGstRate,
       Value<String> colorHex,
       Value<bool> isActive,
       Value<bool> isDeleted,
@@ -13187,6 +13490,8 @@ typedef $$ClinicsTableUpdateCompanionBuilder =
       Value<double> monthlyRent,
       Value<double> defaultConsultationFee,
       Value<String> openDays,
+      Value<String?> gstin,
+      Value<double?> defaultGstRate,
       Value<String> colorHex,
       Value<bool> isActive,
       Value<bool> isDeleted,
@@ -13369,6 +13674,16 @@ class $$ClinicsTableFilterComposer
 
   ColumnFilters<String> get openDays => $composableBuilder(
     column: $table.openDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gstin => $composableBuilder(
+    column: $table.gstin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get defaultGstRate => $composableBuilder(
+    column: $table.defaultGstRate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -13612,6 +13927,16 @@ class $$ClinicsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get gstin => $composableBuilder(
+    column: $table.gstin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get defaultGstRate => $composableBuilder(
+    column: $table.defaultGstRate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get colorHex => $composableBuilder(
     column: $table.colorHex,
     builder: (column) => ColumnOrderings(column),
@@ -13666,6 +13991,14 @@ class $$ClinicsTableAnnotationComposer
 
   GeneratedColumn<String> get openDays =>
       $composableBuilder(column: $table.openDays, builder: (column) => column);
+
+  GeneratedColumn<String> get gstin =>
+      $composableBuilder(column: $table.gstin, builder: (column) => column);
+
+  GeneratedColumn<double> get defaultGstRate => $composableBuilder(
+    column: $table.defaultGstRate,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get colorHex =>
       $composableBuilder(column: $table.colorHex, builder: (column) => column);
@@ -13898,6 +14231,8 @@ class $$ClinicsTableTableManager
                 Value<double> monthlyRent = const Value.absent(),
                 Value<double> defaultConsultationFee = const Value.absent(),
                 Value<String> openDays = const Value.absent(),
+                Value<String?> gstin = const Value.absent(),
+                Value<double?> defaultGstRate = const Value.absent(),
                 Value<String> colorHex = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
@@ -13911,6 +14246,8 @@ class $$ClinicsTableTableManager
                 monthlyRent: monthlyRent,
                 defaultConsultationFee: defaultConsultationFee,
                 openDays: openDays,
+                gstin: gstin,
+                defaultGstRate: defaultGstRate,
                 colorHex: colorHex,
                 isActive: isActive,
                 isDeleted: isDeleted,
@@ -13926,6 +14263,8 @@ class $$ClinicsTableTableManager
                 Value<double> monthlyRent = const Value.absent(),
                 Value<double> defaultConsultationFee = const Value.absent(),
                 Value<String> openDays = const Value.absent(),
+                Value<String?> gstin = const Value.absent(),
+                Value<double?> defaultGstRate = const Value.absent(),
                 Value<String> colorHex = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
@@ -13939,6 +14278,8 @@ class $$ClinicsTableTableManager
                 monthlyRent: monthlyRent,
                 defaultConsultationFee: defaultConsultationFee,
                 openDays: openDays,
+                gstin: gstin,
+                defaultGstRate: defaultGstRate,
                 colorHex: colorHex,
                 isActive: isActive,
                 isDeleted: isDeleted,
@@ -16408,6 +16749,9 @@ typedef $$CashMemosTableCreateCompanionBuilder =
       Value<double> medicineFee,
       Value<double> otherFee,
       Value<double> discount,
+      Value<double?> cgstAmount,
+      Value<double?> sgstAmount,
+      Value<String?> gstin,
       required double total,
       Value<double> paidAmount,
       required String paymentMethod,
@@ -16428,6 +16772,9 @@ typedef $$CashMemosTableUpdateCompanionBuilder =
       Value<double> medicineFee,
       Value<double> otherFee,
       Value<double> discount,
+      Value<double?> cgstAmount,
+      Value<double?> sgstAmount,
+      Value<String?> gstin,
       Value<double> total,
       Value<double> paidAmount,
       Value<String> paymentMethod,
@@ -16533,6 +16880,21 @@ class $$CashMemosTableFilterComposer
 
   ColumnFilters<double> get discount => $composableBuilder(
     column: $table.discount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cgstAmount => $composableBuilder(
+    column: $table.cgstAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get sgstAmount => $composableBuilder(
+    column: $table.sgstAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gstin => $composableBuilder(
+    column: $table.gstin,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -16680,6 +17042,21 @@ class $$CashMemosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get cgstAmount => $composableBuilder(
+    column: $table.cgstAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get sgstAmount => $composableBuilder(
+    column: $table.sgstAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gstin => $composableBuilder(
+    column: $table.gstin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get total => $composableBuilder(
     column: $table.total,
     builder: (column) => ColumnOrderings(column),
@@ -16818,6 +17195,19 @@ class $$CashMemosTableAnnotationComposer
   GeneratedColumn<double> get discount =>
       $composableBuilder(column: $table.discount, builder: (column) => column);
 
+  GeneratedColumn<double> get cgstAmount => $composableBuilder(
+    column: $table.cgstAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get sgstAmount => $composableBuilder(
+    column: $table.sgstAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get gstin =>
+      $composableBuilder(column: $table.gstin, builder: (column) => column);
+
   GeneratedColumn<double> get total =>
       $composableBuilder(column: $table.total, builder: (column) => column);
 
@@ -16950,6 +17340,9 @@ class $$CashMemosTableTableManager
                 Value<double> medicineFee = const Value.absent(),
                 Value<double> otherFee = const Value.absent(),
                 Value<double> discount = const Value.absent(),
+                Value<double?> cgstAmount = const Value.absent(),
+                Value<double?> sgstAmount = const Value.absent(),
+                Value<String?> gstin = const Value.absent(),
                 Value<double> total = const Value.absent(),
                 Value<double> paidAmount = const Value.absent(),
                 Value<String> paymentMethod = const Value.absent(),
@@ -16968,6 +17361,9 @@ class $$CashMemosTableTableManager
                 medicineFee: medicineFee,
                 otherFee: otherFee,
                 discount: discount,
+                cgstAmount: cgstAmount,
+                sgstAmount: sgstAmount,
+                gstin: gstin,
                 total: total,
                 paidAmount: paidAmount,
                 paymentMethod: paymentMethod,
@@ -16988,6 +17384,9 @@ class $$CashMemosTableTableManager
                 Value<double> medicineFee = const Value.absent(),
                 Value<double> otherFee = const Value.absent(),
                 Value<double> discount = const Value.absent(),
+                Value<double?> cgstAmount = const Value.absent(),
+                Value<double?> sgstAmount = const Value.absent(),
+                Value<String?> gstin = const Value.absent(),
                 required double total,
                 Value<double> paidAmount = const Value.absent(),
                 required String paymentMethod,
@@ -17006,6 +17405,9 @@ class $$CashMemosTableTableManager
                 medicineFee: medicineFee,
                 otherFee: otherFee,
                 discount: discount,
+                cgstAmount: cgstAmount,
+                sgstAmount: sgstAmount,
+                gstin: gstin,
                 total: total,
                 paidAmount: paidAmount,
                 paymentMethod: paymentMethod,
@@ -22422,6 +22824,7 @@ typedef $$MedicinesTableCreateCompanionBuilder =
       Value<double> reorderLevel,
       Value<double?> costPrice,
       Value<double?> sellingPrice,
+      Value<double?> gstRate,
       Value<String?> batchNumber,
       Value<DateTime?> expiryDate,
       Value<String?> clinicId,
@@ -22443,6 +22846,7 @@ typedef $$MedicinesTableUpdateCompanionBuilder =
       Value<double> reorderLevel,
       Value<double?> costPrice,
       Value<double?> sellingPrice,
+      Value<double?> gstRate,
       Value<String?> batchNumber,
       Value<DateTime?> expiryDate,
       Value<String?> clinicId,
@@ -22531,6 +22935,11 @@ class $$MedicinesTableFilterComposer
 
   ColumnFilters<double> get sellingPrice => $composableBuilder(
     column: $table.sellingPrice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get gstRate => $composableBuilder(
+    column: $table.gstRate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -22647,6 +23056,11 @@ class $$MedicinesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get gstRate => $composableBuilder(
+    column: $table.gstRate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get batchNumber => $composableBuilder(
     column: $table.batchNumber,
     builder: (column) => ColumnOrderings(column),
@@ -22746,6 +23160,9 @@ class $$MedicinesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<double> get gstRate =>
+      $composableBuilder(column: $table.gstRate, builder: (column) => column);
+
   GeneratedColumn<String> get batchNumber => $composableBuilder(
     column: $table.batchNumber,
     builder: (column) => column,
@@ -22830,6 +23247,7 @@ class $$MedicinesTableTableManager
                 Value<double> reorderLevel = const Value.absent(),
                 Value<double?> costPrice = const Value.absent(),
                 Value<double?> sellingPrice = const Value.absent(),
+                Value<double?> gstRate = const Value.absent(),
                 Value<String?> batchNumber = const Value.absent(),
                 Value<DateTime?> expiryDate = const Value.absent(),
                 Value<String?> clinicId = const Value.absent(),
@@ -22849,6 +23267,7 @@ class $$MedicinesTableTableManager
                 reorderLevel: reorderLevel,
                 costPrice: costPrice,
                 sellingPrice: sellingPrice,
+                gstRate: gstRate,
                 batchNumber: batchNumber,
                 expiryDate: expiryDate,
                 clinicId: clinicId,
@@ -22870,6 +23289,7 @@ class $$MedicinesTableTableManager
                 Value<double> reorderLevel = const Value.absent(),
                 Value<double?> costPrice = const Value.absent(),
                 Value<double?> sellingPrice = const Value.absent(),
+                Value<double?> gstRate = const Value.absent(),
                 Value<String?> batchNumber = const Value.absent(),
                 Value<DateTime?> expiryDate = const Value.absent(),
                 Value<String?> clinicId = const Value.absent(),
@@ -22889,6 +23309,7 @@ class $$MedicinesTableTableManager
                 reorderLevel: reorderLevel,
                 costPrice: costPrice,
                 sellingPrice: sellingPrice,
+                gstRate: gstRate,
                 batchNumber: batchNumber,
                 expiryDate: expiryDate,
                 clinicId: clinicId,

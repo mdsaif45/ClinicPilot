@@ -23,7 +23,22 @@ class CashMemos extends Table {
   RealColumn get otherFee => real().withDefault(const Constant(0.0))();
   RealColumn get discount => real().withDefault(const Constant(0.0))();
 
-  RealColumn get total => real()(); // (consult+med+other) - discount
+  // GST actually charged on this memo, split into the two intra-state halves.
+  //
+  // Stored as computed amounts rather than a rate, because a tax invoice is a
+  // legal record: re-deriving it later from the medicine's current gstRate
+  // would silently restate past invoices whenever a slab or price is edited.
+  // Nullable rather than defaulted so a pre-GST memo reads as "no tax
+  // recorded" instead of "taxed at zero", and so existing CashMemo objects
+  // constructed in code keep compiling unchanged.
+  RealColumn get cgstAmount => real().nullable()();
+  RealColumn get sgstAmount => real().nullable()();
+
+  // The GSTIN in force when this memo was issued, for the same reason.
+  TextColumn get gstin => text().nullable()();
+
+  RealColumn get total =>
+      real()(); // (consult+med+other) - discount + cgst + sgst
 
   // Partial payment support. Set to `total` for a fully-paid memo;
   // pending = total - paidAmount.

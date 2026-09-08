@@ -627,6 +627,76 @@ void main() {
 
       await db.close();
     });
+
+    test('v16 -> v17 migration adds GST columns with safe defaults', () async {
+      final db = AppDatabase(NativeDatabase.memory());
+      final migrator = db.createMigrator();
+      await migrator.createAll();
+
+      // A practice that has not registered for GST must keep billing exactly
+      // as before: no GSTIN, and tax columns that default to zero.
+      await db
+          .into(db.clinics)
+          .insert(ClinicsCompanion.insert(id: 'c1', name: 'Homeo Care'));
+      final clinic =
+          await (db.select(db.clinics)
+            ..where((t) => t.id.equals('c1'))).getSingle();
+      expect(clinic.gstin, isNull);
+      // Null means "use the app default", set explicitly only when the
+      // doctor edits it.
+      expect(clinic.defaultGstRate, isNull);
+
+      await db
+          .into(db.medicines)
+          .insert(
+            MedicinesCompanion.insert(
+              id: 'm1',
+              name: 'Arnica Montana',
+              category: 'Dilution',
+              currentStock: const Value(5.0),
+              unit: 'Bottles',
+            ),
+          );
+      final med =
+          await (db.select(db.medicines)
+            ..where((t) => t.id.equals('m1'))).getSingle();
+      // Null means "inherit the clinic default", not "zero-rated".
+      expect(med.gstRate, isNull);
+
+      await db
+          .into(db.patients)
+          .insert(
+            PatientsCompanion.insert(
+              id: 'p1',
+              name: 'Rahul Sharma',
+              phone: '9876543210',
+              gender: 'Male',
+              age: 34,
+              primaryClinicId: const Value('c1'),
+            ),
+          );
+      await db
+          .into(db.cashMemos)
+          .insert(
+            CashMemosCompanion.insert(
+              id: 'cm1',
+              memoNumber: 'CM-2026-00001',
+              patientId: 'p1',
+              clinicId: const Value('c1'),
+              total: 300.0,
+              paymentMethod: 'Cash',
+            ),
+          );
+      final memo =
+          await (db.select(db.cashMemos)
+            ..where((t) => t.id.equals('cm1'))).getSingle();
+      // A pre-GST memo records no tax at all, rather than tax of zero.
+      expect(memo.cgstAmount, isNull);
+      expect(memo.sgstAmount, isNull);
+      expect(memo.gstin, isNull);
+
+      await db.close();
+    });
   });
 }
 

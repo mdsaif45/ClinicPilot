@@ -43,7 +43,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -284,6 +284,18 @@ class AppDatabase extends _$AppDatabase {
 
       if (from < 16) {
         await m.createTable(medicines);
+      }
+
+      if (from < 17) {
+        // GST / tax invoice support. Every column is nullable or carries a
+        // default, so an existing practice keeps billing unchanged until a
+        // GSTIN is entered.
+        await _addColumnIfMissing(m, clinics, clinics.gstin);
+        await _addColumnIfMissing(m, clinics, clinics.defaultGstRate);
+        await _addColumnIfMissing(m, medicines, medicines.gstRate);
+        await _addColumnIfMissing(m, cashMemos, cashMemos.cgstAmount);
+        await _addColumnIfMissing(m, cashMemos, cashMemos.sgstAmount);
+        await _addColumnIfMissing(m, cashMemos, cashMemos.gstin);
       }
     },
     beforeOpen: (details) async {

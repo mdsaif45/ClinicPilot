@@ -16,6 +16,11 @@ class Medicines extends Table {
   RealColumn get reorderLevel => real().withDefault(const Constant(3.0))();
   RealColumn get costPrice => real().nullable()();
   RealColumn get sellingPrice => real().nullable()();
+
+  // GST slab for this item as a percentage (5.0, 12.0, 18.0...). Null means
+  // "use the clinic default" rather than "zero-rated", so an untouched
+  // inventory keeps billing exactly as it did before GST was introduced.
+  RealColumn get gstRate => real().nullable()();
   TextColumn get batchNumber => text().nullable()();
   DateTimeColumn get expiryDate => dateTime().nullable()();
   TextColumn get clinicId => text().nullable().references(Clinics, #id)();
