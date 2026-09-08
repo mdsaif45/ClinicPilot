@@ -18,6 +18,11 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_confirm_dialog.dart';
 import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/entitlement/entitlement_model.dart';
+import '../../../core/entitlement/entitlement_provider.dart';
+import '../../../core/services/cloud_auto_sync.dart';
+import '../../../core/services/cloud_auto_sync_runner.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../../../core/widgets/pro_badge.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../clinics/providers/clinic_provider.dart';
@@ -34,6 +39,102 @@ class CloudBackupScreen extends ConsumerStatefulWidget {
 class _CloudBackupScreenState extends ConsumerState<CloudBackupScreen> {
   bool _isBackingUp = false;
   bool _isRestoring = false;
+
+  /// Automated cloud sync: the Pro-gated half of cloud backup.
+  ///
+  /// Connecting a provider and backing up by hand stay free; only the
+  /// unattended schedule is gated, which is what AppFeature.cloudAutoSync
+  /// has always described.
+  Widget _buildAutoSyncCard(
+    BuildContext context,
+    ColorScheme scheme,
+    ThemeData theme,
+  ) {
+    final unlocked = ref.watch(
+      featureUnlockedProvider(AppFeature.cloudAutoSync),
+    );
+    final enabled = CloudAutoSyncRunner.isEnabled;
+    final lastRun = CloudAutoSyncRunner.lastRun;
+    final lastResult = CloudAutoSyncRunner.lastResult;
+
+    return AppCard(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(Spacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Automated Cloud Sync',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                ProBadge(
+                  label: unlocked ? 'PRO' : 'UPGRADE',
+                  onTap: () => ProUpgradeSheet.show(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              unlocked
+                  ? 'Uploads an encrypted .cpbak to your connected cloud on a '
+                      'schedule, checked each time the app opens.'
+                  : 'Upgrade to back up automatically. Connecting a provider '
+                      'and backing up by hand stay free.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: Spacing.sm),
+            SwitchListTile(
+              value: enabled && unlocked,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: const Text('Back up automatically'),
+              onChanged:
+                  unlocked
+                      ? (v) async {
+                        AppHaptics.selection();
+                        await CloudAutoSyncRunner.setEnabled(v);
+                        if (mounted) setState(() {});
+                      }
+                      : null,
+            ),
+            if (unlocked && enabled) ...[
+              PickerField<String>(
+                label: 'Frequency',
+                value: CloudAutoSyncRunner.frequency,
+                options: [
+                  for (final f in CloudAutoSyncSchedule.frequencies)
+                    PickerOption(value: f, label: f),
+                ],
+                onChanged: (v) async {
+                  await CloudAutoSyncRunner.setFrequency(v);
+                  if (mounted) setState(() {});
+                },
+              ),
+              const SizedBox(height: Spacing.sm),
+              Text(
+                lastRun == null
+                    ? 'Not run yet — the first backup happens next launch.'
+                    : 'Last run ${Formatters.formatDate(lastRun)}'
+                        '${lastResult == null ? '' : ' · $lastResult'}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _triggerCloudBackup() async {
     AppHaptics.selection();
@@ -345,13 +446,9 @@ class _CloudBackupScreenState extends ConsumerState<CloudBackupScreen> {
                 child: SectionHeader(
                   title: 'Cloud Storage Provider',
                   subtitle:
-                      'Personal cloud storage for automated offsite practice backups',
+                      'Personal cloud storage for offsite practice backups',
                   tightTop: true,
                 ),
-              ),
-              ProBadge(
-                label: 'PRO',
-                onTap: () => ProUpgradeSheet.show(context),
               ),
             ],
           ),
@@ -494,6 +591,10 @@ class _CloudBackupScreenState extends ConsumerState<CloudBackupScreen> {
             ),
             const SizedBox(height: Spacing.lg),
           ],
+
+          // ── 2b. AUTOMATED SYNC (PRO) ──────────────────────────
+          _buildAutoSyncCard(context, scheme, theme),
+          const SizedBox(height: Spacing.lg),
 
           // ── 3. REMOTE BACKUPS CATALOG ─────────────────────────
           SectionHeader(

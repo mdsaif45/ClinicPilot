@@ -7,6 +7,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'core/database/database_provider.dart';
 import 'core/providers/security_provider.dart';
 import 'core/router/app_router.dart';
+import 'core/cloud/cloud_storage_registry.dart';
+import 'core/entitlement/entitlement_model.dart';
+import 'core/entitlement/entitlement_provider.dart';
+import 'core/services/cloud_auto_sync_runner.dart';
 import 'core/services/periodic_backup_runner.dart';
 import 'core/theme/app_theme.dart';
 import 'features/security/presentation/lock_screen.dart';
@@ -52,6 +56,7 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPeriodicBackup();
+      _checkCloudAutoSync();
     });
   }
 
@@ -59,6 +64,25 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
     try {
       final db = ref.read(databaseProvider);
       PeriodicBackupRunner.checkAndRunPeriodicBackup(db);
+    } catch (_) {}
+  }
+
+  /// Pro-gated automated cloud backup, checked once per launch.
+  ///
+  /// Deliberately fire-and-forget: a slow or failing upload must not delay
+  /// the first frame or block the doctor reaching their patient list.
+  void _checkCloudAutoSync() {
+    try {
+      final db = ref.read(databaseProvider);
+      final registry = ref.read(cloudStorageRegistryProvider);
+      final unlocked = ref.read(
+        featureUnlockedProvider(AppFeature.cloudAutoSync),
+      );
+      CloudAutoSyncRunner.checkAndRun(
+        db: db,
+        registry: registry,
+        unlocked: unlocked,
+      );
     } catch (_) {}
   }
 
