@@ -386,6 +386,7 @@ Future<ExportOptions?> pickExportOptions(
 }) {
   return showModalBottomSheet<ExportOptions>(
     context: context,
+    useRootNavigator: true,
     showDragHandle: true,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(

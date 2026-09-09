@@ -18,6 +18,7 @@ class PatientPicker extends ConsumerStatefulWidget {
   static Future<Patient?> show(BuildContext context) {
     return showModalBottomSheet<Patient>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (_) => const PatientPicker(),

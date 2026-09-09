@@ -18,6 +18,7 @@ class JournalItemDetailSheet extends StatelessWidget {
     AppHaptics.medium();
     return showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,

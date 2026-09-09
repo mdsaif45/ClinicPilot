@@ -85,6 +85,7 @@ class ClinicSwitcher extends ConsumerWidget {
 
     final chosen = await showModalBottomSheet<String>(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       builder:
           (ctx) => SafeArea(

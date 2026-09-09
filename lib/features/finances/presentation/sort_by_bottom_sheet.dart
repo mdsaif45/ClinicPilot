@@ -10,6 +10,7 @@ Future<FinanceSortOption?> showSortByBottomSheet(
 ) {
   return showModalBottomSheet<FinanceSortOption>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
