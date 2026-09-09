@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io' show File;
 
 import 'package:file_picker/file_picker.dart';
@@ -9,14 +8,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/backup_container_service.dart';
-import '../../../core/services/export_service.dart';
 import '../../../core/services/file_saver/file_saver.dart';
 import '../../../core/services/sample_data_seeder.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_list_tile.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import 'cloud_backup_screen.dart';
-import 'import_preview_screen.dart';
 import 'periodic_backups_screen.dart';
 import 'restore_preview_dialog.dart';
 
@@ -30,8 +27,6 @@ class BackupRestoreScreen extends ConsumerStatefulWidget {
 
 class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
   bool _isCreatingBackup = false;
-  bool _isExportingExcel = false;
-  bool _isExportingCsv = false;
   bool _isSeedingDemo = false;
 
   /// Creates a 100% loss-free, compressed & verified `.cpbak` practice backup.
@@ -67,16 +62,15 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
     }
   }
 
-  /// Restores from a `.cpbak` file with pre-restore inspection modal, or legacy `.xlsx`.
+  /// Restores from a `.cpbak` file with pre-restore inspection modal.
   Future<void> _restoreBackup() async {
     final messenger = ScaffoldMessenger.of(context);
-    final nav = Navigator.of(context);
     final db = ref.read(databaseProvider);
 
     try {
       final res = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['cpbak', 'xlsx', 'json'],
+        allowedExtensions: ['cpbak', 'json'],
         withData: true,
       );
       if (res == null || res.files.isEmpty) return;
@@ -88,7 +82,7 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
 
       final extension = picked.extension?.toLowerCase() ?? '';
 
-      // 1. Full .cpbak Container Restore Flow
+      // Full .cpbak Container Restore Flow
       if (extension == 'cpbak' || extension == 'json') {
         try {
           final metadata = BackupContainerService.inspectBackup(fileBytes);
@@ -133,150 +127,9 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
         }
         return;
       }
-
-      // 2. Legacy Excel (.xlsx) Import Flow
-      if (extension == 'xlsx') {
-        final clinicList = ref.read(clinicsStreamProvider).value ?? [];
-        final clinicIdsByName = {for (final c in clinicList) c.name: c.id};
-
-        if (!mounted) return;
-        final imported = await nav.push<bool>(
-          MaterialPageRoute(
-            builder:
-                (_) => ImportPreviewScreen(
-                  bytes: fileBytes,
-                  clinicIdsByName: clinicIdsByName,
-                ),
-          ),
-        );
-
-        if (imported == true) {
-          ref.invalidate(clinicsStreamProvider);
-          messenger.showSnackBar(
-            const SnackBar(
-              content: Text('Spreadsheet data imported successfully.'),
-            ),
-          );
-        }
-      }
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(content: Text('Failed to read backup file: $e')),
-      );
-    }
-  }
-
-  /// Exports all data to a multi-sheet Excel spreadsheet for accounting and human reading.
-  Future<void> _exportExcel() async {
-    setState(() => _isExportingExcel = true);
-    final messenger = ScaffoldMessenger.of(context);
-    final db = ref.read(databaseProvider);
-
-    try {
-      final bytes = await ExportService(db).buildXlsx();
-      final date = Formatters.formatDate(DateTime.now()).replaceAll(' ', '_');
-      final fileName = 'ClinicPilot_Export_$date.xlsx';
-
-      if (!mounted) return;
-      final savedPath = await FileSaverService.save(
-        context: context,
-        bytes: bytes,
-        fileName: fileName,
-        mimeType:
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      );
-
-      if (savedPath != null) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('Excel workbook saved: $fileName')),
-        );
-      }
-    } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Failed to export Excel: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isExportingExcel = false);
-    }
-  }
-
-  /// Exports all tables to CSV format.
-  Future<void> _exportCsv() async {
-    setState(() => _isExportingCsv = true);
-    final messenger = ScaffoldMessenger.of(context);
-    final db = ref.read(databaseProvider);
-
-    try {
-      final csvString = await ExportService(db).buildCsv();
-      final bytes = utf8.encode(csvString);
-      final date = Formatters.formatDate(DateTime.now()).replaceAll(' ', '_');
-      final fileName = 'ClinicPilot_FullExport_$date.csv';
-
-      if (!mounted) return;
-      final savedPath = await FileSaverService.save(
-        context: context,
-        bytes: bytes,
-        fileName: fileName,
-        mimeType: 'text/csv',
-      );
-
-      if (savedPath != null) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('CSV archive saved: $fileName')),
-        );
-      }
-    } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Failed to export CSV: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isExportingCsv = false);
-    }
-  }
-
-  /// Imports patients from an Excel contact list.
-  Future<void> _importPatientsFromExcel() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final nav = Navigator.of(context);
-
-    try {
-      final res = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx'],
-        withData: true,
-      );
-      if (res == null || res.files.isEmpty) return;
-      final picked = res.files.first;
-      final fileBytes =
-          picked.bytes ??
-          (picked.path != null ? await File(picked.path!).readAsBytes() : null);
-      if (fileBytes == null) return;
-
-      final clinicList = ref.read(clinicsStreamProvider).value ?? [];
-      final clinicIdsByName = {for (final c in clinicList) c.name: c.id};
-
-      if (!mounted) return;
-      final imported = await nav.push<bool>(
-        MaterialPageRoute(
-          builder:
-              (_) => ImportPreviewScreen(
-                bytes: fileBytes,
-                clinicIdsByName: clinicIdsByName,
-              ),
-        ),
-      );
-
-      if (imported == true) {
-        ref.invalidate(clinicsStreamProvider);
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Patient roster imported successfully.'),
-          ),
-        );
-      }
-    } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Failed to import Excel: $e')),
       );
     }
   }
@@ -344,57 +197,7 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
             ],
           ),
 
-          // ── TIER 2: SPREADSHEET EXPORTS & REPORTS ────────────────
-          SettingsGroup(
-            title: 'Spreadsheet Reports & Accounting',
-            children: [
-              AppListTile(
-                icon: Icons.table_chart_outlined,
-                title: 'Export to Excel (.xlsx)',
-                subtitle:
-                    'Multi-sheet workbook for accounting, tax audit, and viewing',
-                trailing:
-                    _isExportingExcel
-                        ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                        : null,
-                onTap: _isExportingExcel ? null : _exportExcel,
-              ),
-              AppListTile(
-                icon: Icons.description_outlined,
-                title: 'Export to CSV (.csv)',
-                subtitle: 'Raw CSV export for external spreadsheets',
-                trailing:
-                    _isExportingCsv
-                        ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                        : null,
-                onTap: _isExportingCsv ? null : _exportCsv,
-              ),
-            ],
-          ),
-
-          // ── TIER 3: PATIENT ROSTER IMPORT ────────────────────────
-          SettingsGroup(
-            title: 'Patient Roster Import',
-            children: [
-              AppListTile(
-                icon: Icons.file_download_outlined,
-                title: 'Import Patients from Excel',
-                subtitle:
-                    'Import patient contacts and past history from spreadsheet',
-                onTap: _importPatientsFromExcel,
-              ),
-            ],
-          ),
-
-          // ── TIER 4: TESTING & RESET ──────────────────────────────
+          // ── TIER 2: TESTING & RESET ──────────────────────────────
           SettingsGroup(
             title: 'Testing & Reset',
             children: [

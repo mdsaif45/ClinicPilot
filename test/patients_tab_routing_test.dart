@@ -38,4 +38,20 @@ void main() {
       expect(find.text('Follow-ups'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'PatientsTabScreen renders both Import and Export actions on Directory tab',
+    (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(body: PatientsTabScreen(initialIndex: 0)),
+          ),
+        ),
+      );
+
+      expect(find.byTooltip('Import Patients (.xlsx)'), findsOneWidget);
+      expect(find.byTooltip('Export'), findsOneWidget);
+    },
+  );
 }
