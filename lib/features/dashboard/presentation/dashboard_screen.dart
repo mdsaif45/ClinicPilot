@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/design/tokens.dart';
@@ -17,6 +18,7 @@ import '../../settings/providers/doctor_profile_provider.dart';
 import '../providers/dashboard_provider.dart';
 import 'widgets/daily_insight_card.dart';
 import 'widgets/goal_tracker_card.dart';
+import 'widgets/medicine_inventory_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -150,7 +152,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ],
                   ),
 
-                  // 7. Quick Actions at bottom
+                  // 7. Medicine Inventory
+                  const SectionHeader(title: 'Medicine Inventory'),
+                  const MedicineInventoryCard(),
+
+                  // 8. Quick Actions at bottom
                   const SectionHeader(title: 'Quick Actions'),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
@@ -190,17 +196,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ],
                         ),
                         const SizedBox(height: Spacing.md),
-                        AppButton.outlined(
-                          label: 'Log Expense',
-                          icon: Icons.money_off_outlined,
-                          fullWidth: true,
-                          onPressed: () {
-                            AppHaptics.selection();
-                            showDialog(
-                              context: context,
-                              builder: (_) => const AddExpenseDialog(),
-                            );
-                          },
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppButton.outlined(
+                                label: 'Log Expense',
+                                icon: Icons.money_off_outlined,
+                                fullWidth: true,
+                                onPressed: () {
+                                  AppHaptics.selection();
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => const AddExpenseDialog(),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: Spacing.md),
+                            Expanded(
+                              child: AppButton.outlined(
+                                label: 'Inventory',
+                                icon: Icons.medication_outlined,
+                                fullWidth: true,
+                                onPressed: () {
+                                  AppHaptics.selection();
+                                  context.push('/inventory');
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
