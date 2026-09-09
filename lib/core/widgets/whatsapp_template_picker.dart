@@ -27,6 +27,7 @@ class WhatsAppTemplatePickerSheet extends StatefulWidget {
     AppHaptics.light();
     return showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
       builder:

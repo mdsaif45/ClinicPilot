@@ -29,6 +29,7 @@ class PrescriptionDispenseReviewSheet extends ConsumerStatefulWidget {
   }) {
     return showModalBottomSheet<List<DispensedMedicineItem>>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(

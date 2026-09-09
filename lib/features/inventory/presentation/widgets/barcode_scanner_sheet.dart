@@ -22,6 +22,7 @@ class BarcodeScannerSheet extends StatefulWidget {
     }
     return showModalBottomSheet<String>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(

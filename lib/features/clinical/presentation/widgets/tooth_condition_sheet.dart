@@ -27,6 +27,7 @@ class ToothConditionSheet extends StatefulWidget {
   }) {
     return showModalBottomSheet<ToothData>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder:

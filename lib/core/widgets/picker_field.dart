@@ -126,6 +126,7 @@ class PickerField<T> extends StatelessWidget {
 
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       builder: (ctx) {
         return SafeArea(

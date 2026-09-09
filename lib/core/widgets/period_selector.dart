@@ -134,6 +134,7 @@ class PeriodSelector extends ConsumerWidget {
 
     final chosen = await showModalBottomSheet<dynamic>(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       isScrollControlled: true,
       builder:

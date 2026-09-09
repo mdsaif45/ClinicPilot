@@ -526,6 +526,7 @@ class _ClinicalCaseSheetScreenState
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       backgroundColor: scheme.surface,
       shape: const RoundedRectangleBorder(
