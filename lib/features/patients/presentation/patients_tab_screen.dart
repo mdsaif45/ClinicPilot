@@ -1,3 +1,6 @@
+import 'dart:io' show File;
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +11,8 @@ import '../../../core/services/patient_export_service.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/export_action.dart';
 import '../../../core/widgets/swipeable_sections.dart';
+import '../../clinics/providers/clinic_provider.dart';
+import '../../settings/presentation/import_preview_screen.dart';
 import '../providers/footfall_provider.dart';
 import '../providers/patient_provider.dart';
 import '../providers/recall_provider.dart';
@@ -32,7 +37,12 @@ class PatientsTabScreen extends StatelessWidget {
         FootfallsScreen(),
       ],
       trailingBuilder: (index) {
-        if (index == 0) return const _PatientsExportAction();
+        if (index == 0) {
+          return const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [_PatientsImportAction(), _PatientsExportAction()],
+          );
+        }
         if (index == 1) return const _FollowUpsExportAction();
         if (index == 2) return const _FootfallsExportAction();
         return null;
@@ -77,6 +87,66 @@ List<ExportColumn<Patient>> patientsExportColumns(
   ];
 }
 
+class _PatientsImportAction extends ConsumerWidget {
+  const _PatientsImportAction();
+
+  Future<void> _handleImport(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
+
+    try {
+      final res = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
+        withData: true,
+      );
+      if (res == null || res.files.isEmpty) return;
+      final picked = res.files.first;
+      final fileBytes =
+          picked.bytes ??
+          (picked.path != null ? await File(picked.path!).readAsBytes() : null);
+      if (fileBytes == null) return;
+
+      final clinicList = ref.read(clinicsStreamProvider).value ?? [];
+      final clinicIdsByName = {for (final c in clinicList) c.name: c.id};
+
+      if (!context.mounted) return;
+      final imported = await nav.push<bool>(
+        MaterialPageRoute(
+          builder:
+              (_) => ImportPreviewScreen(
+                bytes: fileBytes,
+                clinicIdsByName: clinicIdsByName,
+              ),
+        ),
+      );
+
+      if (imported == true) {
+        ref.invalidate(clinicsStreamProvider);
+        ref.invalidate(patientsStreamProvider);
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Patient roster imported successfully.'),
+          ),
+        );
+      }
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Failed to import Excel: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return IconButton(
+      tooltip: 'Import Patients (.xlsx)',
+      icon: const Icon(Icons.file_upload_outlined),
+      onPressed: () => _handleImport(context, ref),
+    );
+  }
+}
+
 class _PatientsExportAction extends ConsumerWidget {
   const _PatientsExportAction();
 
@@ -118,11 +188,15 @@ List<ExportColumn<RecallEntry>> followUpsExportColumns() {
               : 'Not scheduled',
     ),
     ExportColumn('Status', (e) {
-      if (e.isOverdue)
+      if (e.isOverdue) {
         return 'Overdue by ${e.daysOverdue} day${e.daysOverdue == 1 ? '' : 's'}';
-      if (e.isDueToday) return 'Due Today';
-      if (e.daysOverdue < 0)
+      }
+      if (e.isDueToday) {
+        return 'Due Today';
+      }
+      if (e.daysOverdue < 0) {
         return 'Upcoming in ${-e.daysOverdue} day${-e.daysOverdue == 1 ? '' : 's'}';
+      }
       return 'Lapsed';
     }),
     ExportColumn('Last Visit Outcome', (e) => e.visit.outcome ?? ''),

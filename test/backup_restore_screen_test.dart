@@ -21,7 +21,7 @@ void main() {
   });
 
   testWidgets(
-    'BackupRestoreScreen renders dual-tier backup and export options',
+    'BackupRestoreScreen renders disaster recovery backup and maintenance options without spreadsheets',
     (tester) async {
       tester.view.physicalSize = const Size(1200, 1800);
       tester.view.devicePixelRatio = 1.0;
@@ -39,9 +39,15 @@ void main() {
       expect(find.text('Restore from Backup'), findsOneWidget);
       expect(find.text('Periodic Backups'), findsOneWidget);
       expect(find.text('Cloud Backup & Sync'), findsOneWidget);
-      expect(find.text('Export to Excel (.xlsx)'), findsOneWidget);
-      expect(find.text('Export to CSV (.csv)'), findsOneWidget);
-      expect(find.text('Import Patients from Excel'), findsOneWidget);
+      expect(find.text('Load Demo Practice Data'), findsOneWidget);
+      expect(find.text('Clear All Practice Data'), findsOneWidget);
+
+      // Clean separation: spreadsheet reports and patient import should NOT be here
+      expect(find.text('Export to Excel (.xlsx)'), findsNothing);
+      expect(find.text('Export to CSV (.csv)'), findsNothing);
+      expect(find.text('Import Patients from Excel'), findsNothing);
+      expect(find.text('Spreadsheet Reports & Accounting'), findsNothing);
+      expect(find.text('Patient Roster Import'), findsNothing);
     },
   );
 
