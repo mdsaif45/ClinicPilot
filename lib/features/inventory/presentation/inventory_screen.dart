@@ -11,8 +11,11 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_confirm_dialog.dart';
 import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../clinics/providers/clinic_provider.dart';
+import '../providers/inventory_clinic_filter_provider.dart';
 import '../providers/inventory_provider.dart';
 import 'widgets/add_edit_medicine_dialog.dart';
+import 'widgets/inventory_clinic_filter_pill.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
@@ -33,7 +36,12 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
 
   void _openAddMedicine() {
     AppHaptics.selection();
-    AddEditMedicineDialog.show(context);
+    final filterClinicId = ref.read(inventoryClinicFilterProvider);
+    final activeClinicId = ref.read(activeClinicIdProvider);
+    AddEditMedicineDialog.show(
+      context,
+      initialClinicId: filterClinicId ?? activeClinicId,
+    );
   }
 
   void _openEditMedicine(Medicine item) {
@@ -168,11 +176,19 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     final asyncFiltered = ref.watch(filteredInventoryProvider);
     final valuation = ref.watch(inventoryValuationProvider);
     final selectedCategory = ref.watch(inventoryCategoryFilterProvider);
+    final clinicsAsync = ref.watch(clinicsStreamProvider);
+    final clinics = clinicsAsync.value ?? [];
+    final clinicFilter = ref.watch(inventoryClinicFilterProvider);
+    final selectedClinic =
+        clinicFilter != null
+            ? clinics.where((c) => c.id == clinicFilter).firstOrNull
+            : null;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Medicine Inventory'),
         actions: [
+          const InventoryClinicFilterPill(),
           IconButton(
             icon: Icon(_showSearch ? Icons.search_off : Icons.search),
             tooltip: _showSearch ? 'Hide search' : 'Search inventory',
@@ -238,7 +254,13 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 horizontal: Spacing.lg,
                 vertical: Spacing.sm,
               ),
-              child: _buildValuationBanner(context, scheme, theme, valuation),
+              child: _buildValuationBanner(
+                context,
+                scheme,
+                theme,
+                valuation,
+                selectedClinic,
+              ),
             ),
           ),
 
@@ -334,7 +356,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final item = medicines[index];
-                    return _buildMedicineCard(context, scheme, theme, item);
+                    return _buildMedicineCard(
+                      context,
+                      scheme,
+                      theme,
+                      item,
+                      clinics,
+                      clinicFilter,
+                    );
                   }, childCount: medicines.length),
                 ),
               );
@@ -357,7 +386,18 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     ColorScheme scheme,
     ThemeData theme,
     InventoryValuation val,
+    Clinic? selectedClinic,
   ) {
+    final title =
+        selectedClinic != null
+            ? '${selectedClinic.name} Stock Valuation'
+            : 'Practice Stock Valuation';
+    final subtitle =
+        selectedClinic != null
+            ? '${val.totalItems} remedies • ${val.totalUnits.toStringAsFixed(0)} units on hand (incl. shared)'
+            : '${val.totalItems} distinct remedies • ${val.totalUnits.toStringAsFixed(0)} total units on hand';
+    final valueLabel = selectedClinic != null ? 'Branch Value' : 'Stock Value';
+
     return AppCard(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -372,14 +412,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Pharmacy Inventory',
+                      title,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${val.totalItems} distinct remedies • ${val.totalUnits.toStringAsFixed(0)} total units on hand',
+                      subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
@@ -398,7 +438,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                         ),
                       ),
                       Text(
-                        'Stock Value',
+                        valueLabel,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: scheme.onSurfaceVariant,
                         ),
@@ -446,6 +486,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     ColorScheme scheme,
     ThemeData theme,
     Medicine item,
+    List<Clinic> clinics,
+    String? clinicFilter,
   ) {
     final isOutOfStock = item.currentStock <= 0;
     final isLowStock = !isOutOfStock && item.currentStock <= item.reorderLevel;
@@ -513,6 +555,36 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                           color: scheme.onSurfaceVariant,
                         ),
                       ),
+                      if (clinics.length >= 2) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(
+                              item.clinicId == null
+                                  ? Icons.public_rounded
+                                  : Icons.domain_rounded,
+                              size: 12,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                item.clinicId == null
+                                    ? 'Shared Practice Stock'
+                                    : (clinics
+                                            .where((c) => c.id == item.clinicId)
+                                            .firstOrNull
+                                            ?.name ??
+                                        'Branch Stock'),
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
