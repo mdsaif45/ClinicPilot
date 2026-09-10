@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/database/database_provider.dart';
+import 'package:clinic_pilot/features/clinics/providers/clinic_provider.dart';
 import 'package:clinic_pilot/features/inventory/presentation/inventory_screen.dart';
 import 'package:clinic_pilot/features/inventory/presentation/widgets/add_edit_medicine_dialog.dart';
 import 'package:clinic_pilot/features/inventory/providers/inventory_provider.dart';
@@ -340,6 +341,9 @@ void main() {
             inventoryStreamProvider.overrideWith(
               (ref) => Stream.value(<Medicine>[]),
             ),
+            clinicsStreamProvider.overrideWith(
+              (ref) => Stream.value(<Clinic>[]),
+            ),
             databaseProvider.overrideWithValue(db),
           ],
           child: const MaterialApp(home: InventoryScreen()),
@@ -378,6 +382,9 @@ void main() {
             inventoryStreamProvider.overrideWith(
               (ref) => Stream.value([sampleMed]),
             ),
+            clinicsStreamProvider.overrideWith(
+              (ref) => Stream.value(<Clinic>[]),
+            ),
             databaseProvider.overrideWithValue(db),
           ],
           child: const MaterialApp(home: InventoryScreen()),
@@ -399,7 +406,12 @@ void main() {
     ) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [databaseProvider.overrideWithValue(db)],
+          overrides: [
+            clinicsStreamProvider.overrideWith(
+              (ref) => Stream.value(<Clinic>[]),
+            ),
+            databaseProvider.overrideWithValue(db),
+          ],
           child: const MaterialApp(
             home: Scaffold(body: AddEditMedicineDialog()),
           ),

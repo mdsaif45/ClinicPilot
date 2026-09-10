@@ -6,6 +6,8 @@ import '../../../../core/design/tokens.dart';
 import '../../../../core/services/app_haptics.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../clinics/providers/clinic_provider.dart';
+import '../../../inventory/providers/inventory_clinic_filter_provider.dart';
 import '../../../inventory/providers/inventory_provider.dart';
 
 class MedicineInventoryCard extends ConsumerWidget {
@@ -13,13 +15,33 @@ class MedicineInventoryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final valuation = ref.watch(inventoryValuationProvider);
+    final activeClinic = ref.watch(activeClinicProvider);
+    final activeClinicId = ref.watch(activeClinicIdProvider);
+    final valuation = ref.watch(
+      scopedInventoryValuationProvider(activeClinicId),
+    );
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
     final hasMedicines = valuation.totalItems > 0;
     final hasAlerts =
         valuation.lowStockCount > 0 || valuation.outOfStockCount > 0;
+
+    final String subtitle;
+    if (!hasMedicines) {
+      subtitle =
+          activeClinic != null
+              ? 'No medicines cataloged for ${activeClinic.name}'
+              : 'No medicines cataloged yet';
+    } else {
+      final remediesCount =
+          '${valuation.totalItems} ${valuation.totalItems == 1 ? 'remedy' : 'remedies'}';
+      final unitsCount = '${valuation.totalUnits.toStringAsFixed(0)} units';
+      subtitle =
+          activeClinic != null
+              ? '${activeClinic.name} • $remediesCount • $unitsCount'
+              : '$remediesCount cataloged • $unitsCount';
+    }
 
     return AppCard(
       margin: const EdgeInsets.symmetric(
@@ -28,6 +50,10 @@ class MedicineInventoryCard extends ConsumerWidget {
       ),
       onTap: () {
         AppHaptics.selection();
+        if (activeClinicId != null) {
+          ref.read(inventoryClinicFilterProvider.notifier).state =
+              activeClinicId;
+        }
         context.push('/inventory');
       },
       child: Column(
@@ -61,9 +87,7 @@ class MedicineInventoryCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      hasMedicines
-                          ? '${valuation.totalItems} ${valuation.totalItems == 1 ? 'remedy' : 'remedies'} cataloged • ${valuation.totalUnits.toStringAsFixed(0)} units'
-                          : 'No medicines cataloged yet',
+                      subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),

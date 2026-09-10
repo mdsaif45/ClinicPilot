@@ -10,6 +10,7 @@ import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/date_field.dart';
 import '../../../../core/widgets/picker_field.dart';
 import '../../../../core/widgets/remedy_autocomplete_field.dart';
+import '../../../clinics/providers/clinic_provider.dart';
 import '../../providers/inventory_provider.dart';
 import '../../services/barcode_matcher.dart';
 import 'barcode_scanner_sheet.dart';
@@ -48,14 +49,27 @@ const List<String> kCommonForms = [
 
 class AddEditMedicineDialog extends ConsumerStatefulWidget {
   final Medicine? existingMedicine;
+  final String? initialClinicId;
 
-  const AddEditMedicineDialog({super.key, this.existingMedicine});
+  const AddEditMedicineDialog({
+    super.key,
+    this.existingMedicine,
+    this.initialClinicId,
+  });
 
-  static Future<void> show(BuildContext context, {Medicine? existingMedicine}) {
+  static Future<void> show(
+    BuildContext context, {
+    Medicine? existingMedicine,
+    String? initialClinicId,
+  }) {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AddEditMedicineDialog(existingMedicine: existingMedicine),
+      builder:
+          (_) => AddEditMedicineDialog(
+            existingMedicine: existingMedicine,
+            initialClinicId: initialClinicId,
+          ),
     );
   }
 
@@ -80,6 +94,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
   late String _category;
   late String _form;
   late String _unit;
+  String? _selectedClinicId;
   DateTime? _expiryDate;
   bool _submitting = false;
 
@@ -113,6 +128,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
     _category = m?.category ?? 'Dilution';
     _form = m?.form ?? 'Liquid Dilution';
     _unit = m?.unit ?? 'Bottles (30ml)';
+    _selectedClinicId = m?.clinicId ?? widget.initialClinicId;
     _expiryDate = m?.expiryDate;
   }
 
@@ -174,6 +190,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
           batchNumber: Value(batch.isNotEmpty ? batch : null),
           barcode: Value(barcode.isNotEmpty ? barcode : null),
           expiryDate: Value(_expiryDate),
+          clinicId: Value(_selectedClinicId),
           notes: Value(notes.isNotEmpty ? notes : null),
         );
         await controller.updateMedicine(updated);
@@ -192,6 +209,7 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
           batchNumber: batch.isNotEmpty ? batch : null,
           barcode: barcode.isNotEmpty ? barcode : null,
           expiryDate: _expiryDate,
+          clinicId: _selectedClinicId,
           notes: notes.isNotEmpty ? notes : null,
         );
       }
@@ -215,6 +233,9 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final clinicsAsync = ref.watch(clinicsStreamProvider);
+    final clinics = clinicsAsync.value ?? [];
+
     return AppFormDialog(
       title: isEditing ? 'Edit Medicine Stock' : 'Add Medicine to Inventory',
       actions: [
@@ -244,6 +265,45 @@ class _AddEditMedicineDialogState extends ConsumerState<AddEditMedicineDialog> {
                           : null,
             ),
             const SizedBox(height: Spacing.md),
+
+            // Clinic Scope Selector (when multi-clinic practice)
+            if (clinics.length >= 2) ...[
+              PickerField<String?>(
+                label: 'Clinic / Branch Location',
+                value: _selectedClinicId,
+                prefixIcon: Icons.domain_rounded,
+                options: [
+                  const PickerOption<String?>(
+                    value: null,
+                    label: 'All Clinics (Shared Practice Stock)',
+                    subtitle:
+                        'Carried in mobile kit or available practice-wide',
+                    icon: Icons.public_rounded,
+                  ),
+                  for (final c in clinics)
+                    PickerOption<String?>(
+                      value: c.id,
+                      label: c.name,
+                      subtitle:
+                          c.address != null && c.address!.isNotEmpty
+                              ? c.address
+                              : null,
+                      icon: Icons.domain_rounded,
+                    ),
+                  if (_selectedClinicId != null &&
+                      !clinics.any((c) => c.id == _selectedClinicId))
+                    PickerOption<String?>(
+                      value: _selectedClinicId,
+                      label: 'Assigned Clinic ($_selectedClinicId)',
+                      icon: Icons.domain_rounded,
+                    ),
+                ],
+                onChanged: (val) {
+                  setState(() => _selectedClinicId = val);
+                },
+              ),
+              const SizedBox(height: Spacing.md),
+            ],
 
             // Category & Form Pickers
             Row(

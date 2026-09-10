@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
+import 'inventory_clinic_filter_provider.dart';
 
 /// Summary metrics for in-clinic pharmacy inventory.
 class InventoryValuation {
@@ -51,14 +52,23 @@ final inventoryCategoryFilterProvider = StateProvider<String>((ref) => 'All');
 /// Search query provider for filtering inventory.
 final inventorySearchQueryProvider = StateProvider<String>((ref) => '');
 
-/// Filtered inventory stream combining category filter and search query.
+/// Filtered inventory stream combining category filter, search query, and clinic scope.
 final filteredInventoryProvider = Provider<AsyncValue<List<Medicine>>>((ref) {
   final asyncMedicines = ref.watch(inventoryStreamProvider);
   final category = ref.watch(inventoryCategoryFilterProvider);
   final query = ref.watch(inventorySearchQueryProvider).trim().toLowerCase();
+  final clinicFilter = ref.watch(inventoryClinicFilterProvider);
 
   return asyncMedicines.whenData((medicines) {
     return medicines.where((med) {
+      // 0. Clinic Scope Filter
+      // When a clinic is selected, show medicines attributed to that clinic as well as shared stock (clinicId == null).
+      if (clinicFilter != null &&
+          med.clinicId != null &&
+          med.clinicId != clinicFilter) {
+        return false;
+      }
+
       // 1. Text Search query
       if (query.isNotEmpty) {
         final matchesName = med.name.toLowerCase().contains(query);
@@ -93,12 +103,24 @@ final filteredInventoryProvider = Provider<AsyncValue<List<Medicine>>>((ref) {
   });
 });
 
-/// Computes inventory valuation and alerts from active inventory.
-final inventoryValuationProvider = Provider<InventoryValuation>((ref) {
+/// Computes inventory valuation and alerts scoped to a specific clinic ID.
+/// If [clinicId] is null, calculates practice-wide consolidated valuation.
+/// When [clinicId] is specified, includes items specific to that clinic as well as shared stock (clinicId == null).
+final scopedInventoryValuationProvider = Provider.family<
+  InventoryValuation,
+  String?
+>((ref, clinicId) {
   final asyncMedicines = ref.watch(inventoryStreamProvider);
   return asyncMedicines.maybeWhen(
     data: (medicines) {
-      if (medicines.isEmpty) return InventoryValuation.empty();
+      final scoped =
+          clinicId == null
+              ? medicines
+              : medicines
+                  .where((m) => m.clinicId == null || m.clinicId == clinicId)
+                  .toList();
+
+      if (scoped.isEmpty) return InventoryValuation.empty();
 
       int lowStock = 0;
       int outOfStock = 0;
@@ -108,7 +130,7 @@ final inventoryValuationProvider = Provider<InventoryValuation>((ref) {
       double totalSelling = 0.0;
       final thirtyDaysFromNow = DateTime.now().add(const Duration(days: 30));
 
-      for (final med in medicines) {
+      for (final med in scoped) {
         totalUnits += med.currentStock;
         if (med.costPrice != null && med.costPrice! > 0) {
           totalCost += med.currentStock * med.costPrice!;
@@ -128,7 +150,7 @@ final inventoryValuationProvider = Provider<InventoryValuation>((ref) {
       }
 
       return InventoryValuation(
-        totalItems: medicines.length,
+        totalItems: scoped.length,
         totalUnits: totalUnits,
         totalCostValue: totalCost,
         totalSellingValue: totalSelling,
@@ -139,6 +161,12 @@ final inventoryValuationProvider = Provider<InventoryValuation>((ref) {
     },
     orElse: () => InventoryValuation.empty(),
   );
+});
+
+/// Computes inventory valuation and alerts based on the active inventory clinic filter.
+final inventoryValuationProvider = Provider<InventoryValuation>((ref) {
+  final clinicFilter = ref.watch(inventoryClinicFilterProvider);
+  return ref.watch(scopedInventoryValuationProvider(clinicFilter));
 });
 
 /// Controller/Notifier for Inventory CRUD operations.
