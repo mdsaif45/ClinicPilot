@@ -200,7 +200,43 @@ class HpiDetails {
 }
 
 // 5. PAST HISTORY
+class PastDiseaseEntry {
+  final String disease;
+  final String years;
+  final String treatment;
+  final String outcome;
+
+  const PastDiseaseEntry({
+    this.disease = '',
+    this.years = '',
+    this.treatment = '',
+    this.outcome = '',
+  });
+
+  bool get isNotEmpty =>
+      disease.isNotEmpty ||
+      years.isNotEmpty ||
+      treatment.isNotEmpty ||
+      outcome.isNotEmpty;
+
+  Map<String, dynamic> toJson() => {
+    'disease': disease,
+    'years': years,
+    'treatment': treatment,
+    'outcome': outcome,
+  };
+
+  factory PastDiseaseEntry.fromJson(Map<String, dynamic> json) =>
+      PastDiseaseEntry(
+        disease: json['disease'] as String? ?? '',
+        years: json['years'] as String? ?? '',
+        treatment: json['treatment'] as String? ?? '',
+        outcome: json['outcome'] as String? ?? '',
+      );
+}
+
 class PastHistoryDetails {
+  final List<PastDiseaseEntry> entries;
   final String childhoodIllnesses;
   final String majorIllnesses;
   final String chronicDiseases;
@@ -214,6 +250,7 @@ class PastHistoryDetails {
   final String otherPastHistory;
 
   const PastHistoryDetails({
+    this.entries = const [],
     this.childhoodIllnesses = '',
     this.majorIllnesses = '',
     this.chronicDiseases = '',
@@ -230,6 +267,7 @@ class PastHistoryDetails {
   String get previousTreatments => previousHomeopathicTreatment;
 
   Map<String, dynamic> toJson() => {
+    'entries': entries.map((e) => e.toJson()).toList(),
     'childhoodIllnesses': childhoodIllnesses,
     'majorIllnesses': majorIllnesses,
     'chronicDiseases': chronicDiseases,
@@ -243,37 +281,107 @@ class PastHistoryDetails {
     'otherPastHistory': otherPastHistory,
   };
 
-  factory PastHistoryDetails.fromJson(Map<String, dynamic> json) =>
-      PastHistoryDetails(
-        childhoodIllnesses: json['childhoodIllnesses'] as String? ?? '',
-        majorIllnesses: json['majorIllnesses'] as String? ?? '',
-        chronicDiseases: json['chronicDiseases'] as String? ?? '',
-        surgeries: json['surgeries'] as String? ?? '',
-        injuriesTrauma: json['injuriesTrauma'] as String? ?? '',
-        hospitalisations: json['hospitalisations'] as String? ?? '',
-        infections: json['infections'] as String? ?? '',
-        allergies: json['allergies'] as String? ?? '',
-        previousMedications: json['previousMedications'] as String? ?? '',
-        previousHomeopathicTreatment:
-            json['previousHomeopathicTreatment'] as String? ??
-            json['previousTreatments'] as String? ??
-            '',
-        otherPastHistory: json['otherPastHistory'] as String? ?? '',
-      );
+  factory PastHistoryDetails.fromJson(Map<String, dynamic> json) {
+    final rawEntries = json['entries'];
+    List<PastDiseaseEntry> entriesList = [];
+    if (rawEntries is List) {
+      entriesList =
+          rawEntries
+              .whereType<Map<String, dynamic>>()
+              .map((e) => PastDiseaseEntry.fromJson(e))
+              .toList();
+    }
+
+    final childhood = json['childhoodIllnesses'] as String? ?? '';
+    final major = json['majorIllnesses'] as String? ?? '';
+    final chronic = json['chronicDiseases'] as String? ?? '';
+    final surg =
+        json['surgeries'] as String? ?? json['majorSurgeries'] as String? ?? '';
+    final inj =
+        json['injuriesTrauma'] as String? ??
+        json['injuriesAccidents'] as String? ??
+        '';
+    final hosp =
+        json['hospitalisations'] as String? ??
+        json['hospitalizations'] as String? ??
+        '';
+    final inf = json['infections'] as String? ?? '';
+    final allg = json['allergies'] as String? ?? '';
+    final prevMed = json['previousMedications'] as String? ?? '';
+    final prevHomeo =
+        json['previousHomeopathicTreatment'] as String? ??
+        json['previousTreatments'] as String? ??
+        '';
+    final other = json['otherPastHistory'] as String? ?? '';
+
+    // If entries are empty but legacy fields exist, migrate into structured entries
+    if (entriesList.isEmpty) {
+      final legacy = <PastDiseaseEntry>[];
+      if (chronic.isNotEmpty) legacy.add(PastDiseaseEntry(disease: chronic));
+      if (major.isNotEmpty) legacy.add(PastDiseaseEntry(disease: major));
+      if (childhood.isNotEmpty)
+        legacy.add(PastDiseaseEntry(disease: childhood));
+      if (surg.isNotEmpty) {
+        legacy.add(PastDiseaseEntry(disease: surg, treatment: 'Surgery'));
+      }
+      if (hosp.isNotEmpty) {
+        legacy.add(
+          PastDiseaseEntry(disease: hosp, treatment: 'Hospitalisation'),
+        );
+      }
+      if (inj.isNotEmpty) legacy.add(PastDiseaseEntry(disease: inj));
+      if (inf.isNotEmpty) legacy.add(PastDiseaseEntry(disease: inf));
+      if (prevMed.isNotEmpty) {
+        legacy.add(
+          PastDiseaseEntry(disease: 'Prior Medications', treatment: prevMed),
+        );
+      }
+      if (prevHomeo.isNotEmpty) {
+        legacy.add(
+          PastDiseaseEntry(disease: 'Prior Homeopathy', treatment: prevHomeo),
+        );
+      }
+      if (other.isNotEmpty) legacy.add(PastDiseaseEntry(disease: other));
+      if (legacy.isNotEmpty) entriesList = legacy;
+    }
+
+    return PastHistoryDetails(
+      entries: entriesList,
+      childhoodIllnesses: childhood,
+      majorIllnesses: major,
+      chronicDiseases: chronic,
+      surgeries: surg,
+      injuriesTrauma: inj,
+      hospitalisations: hosp,
+      infections: inf,
+      allergies: allg,
+      previousMedications: prevMed,
+      previousHomeopathicTreatment: prevHomeo,
+      otherPastHistory: other,
+    );
+  }
 
   factory PastHistoryDetails.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const PastHistoryDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>)
+      if (decoded is Map<String, dynamic>) {
         return PastHistoryDetails.fromJson(decoded);
+      }
     } catch (_) {}
-    return PastHistoryDetails(chronicDiseases: raw);
+    return PastHistoryDetails(
+      entries: [PastDiseaseEntry(disease: raw)],
+      chronicDiseases: raw,
+    );
   }
 }
 
 // 6. FAMILY HISTORY
 class FamilyHistoryDetails {
+  final String paternalHistory;
+  final String maternalHistory;
+  final String ownFamilyHistory;
+
   final String father;
   final String mother;
   final String siblings;
@@ -286,6 +394,9 @@ class FamilyHistoryDetails {
   final String otherFamilyHistory;
 
   const FamilyHistoryDetails({
+    this.paternalHistory = '',
+    this.maternalHistory = '',
+    this.ownFamilyHistory = '',
     this.father = '',
     this.mother = '',
     this.siblings = '',
@@ -301,6 +412,9 @@ class FamilyHistoryDetails {
   String get siblingsChildren => '$siblings $children'.trim();
 
   Map<String, dynamic> toJson() => {
+    'paternalHistory': paternalHistory,
+    'maternalHistory': maternalHistory,
+    'ownFamilyHistory': ownFamilyHistory,
     'father': father,
     'mother': mother,
     'siblings': siblings,
@@ -313,31 +427,84 @@ class FamilyHistoryDetails {
     'otherFamilyHistory': otherFamilyHistory,
   };
 
-  factory FamilyHistoryDetails.fromJson(Map<String, dynamic> json) =>
-      FamilyHistoryDetails(
-        father: json['father'] as String? ?? '',
-        mother: json['mother'] as String? ?? '',
-        siblings:
-            json['siblings'] as String? ??
-            json['siblingsChildren'] as String? ??
-            '',
-        spouse: json['spouse'] as String? ?? '',
-        children: json['children'] as String? ?? '',
-        grandparentsRelatives: json['grandparentsRelatives'] as String? ?? '',
-        hereditaryDiseases: json['hereditaryDiseases'] as String? ?? '',
-        majorFamilialDiseases: json['majorFamilialDiseases'] as String? ?? '',
-        psychiatricHistory: json['psychiatricHistory'] as String? ?? '',
-        otherFamilyHistory: json['otherFamilyHistory'] as String? ?? '',
-      );
+  factory FamilyHistoryDetails.fromJson(Map<String, dynamic> json) {
+    final father = json['father'] as String? ?? '';
+    final mother = json['mother'] as String? ?? '';
+    final siblings =
+        json['siblings'] as String? ??
+        json['siblingsChildren'] as String? ??
+        '';
+    final spouse = json['spouse'] as String? ?? '';
+    final children = json['children'] as String? ?? '';
+    final grandparents =
+        json['grandparentsRelatives'] as String? ??
+        json['paternalGrandparents'] as String? ??
+        '';
+    final maternalGrandparents = json['maternalGrandparents'] as String? ?? '';
+    final hereditary = json['hereditaryDiseases'] as String? ?? '';
+    final familial = json['majorFamilialDiseases'] as String? ?? '';
+    final psych = json['psychiatricHistory'] as String? ?? '';
+    final other = json['otherFamilyHistory'] as String? ?? '';
+
+    String paternal = json['paternalHistory'] as String? ?? '';
+    if (paternal.isEmpty) {
+      final parts = <String>[];
+      if (father.isNotEmpty) parts.add('Father: $father');
+      if (grandparents.isNotEmpty) {
+        parts.add('Paternal Grandparents: $grandparents');
+      }
+      if (hereditary.isNotEmpty) parts.add('Hereditary: $hereditary');
+      if (parts.isNotEmpty) paternal = parts.join('; ');
+    }
+
+    String maternal = json['maternalHistory'] as String? ?? '';
+    if (maternal.isEmpty) {
+      final parts = <String>[];
+      if (mother.isNotEmpty) parts.add('Mother: $mother');
+      if (maternalGrandparents.isNotEmpty) {
+        parts.add('Maternal Grandparents: $maternalGrandparents');
+      }
+      if (familial.isNotEmpty) parts.add('Familial: $familial');
+      if (parts.isNotEmpty) maternal = parts.join('; ');
+    }
+
+    String own = json['ownFamilyHistory'] as String? ?? '';
+    if (own.isEmpty) {
+      final parts = <String>[];
+      if (siblings.isNotEmpty) parts.add('Siblings: $siblings');
+      if (spouse.isNotEmpty) parts.add('Spouse: $spouse');
+      if (children.isNotEmpty) parts.add('Children: $children');
+      if (psych.isNotEmpty) parts.add('Psychiatric: $psych');
+      if (other.isNotEmpty) parts.add(other);
+      if (parts.isNotEmpty) own = parts.join('; ');
+    }
+
+    return FamilyHistoryDetails(
+      paternalHistory: paternal,
+      maternalHistory: maternal,
+      ownFamilyHistory: own,
+      father: father,
+      mother: mother,
+      siblings: siblings,
+      spouse: spouse,
+      children: children,
+      grandparentsRelatives: grandparents,
+      hereditaryDiseases: hereditary,
+      majorFamilialDiseases: familial,
+      psychiatricHistory: psych,
+      otherFamilyHistory: other,
+    );
+  }
 
   factory FamilyHistoryDetails.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const FamilyHistoryDetails();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>)
+      if (decoded is Map<String, dynamic>) {
         return FamilyHistoryDetails.fromJson(decoded);
+      }
     } catch (_) {}
-    return FamilyHistoryDetails(hereditaryDiseases: raw);
+    return FamilyHistoryDetails(paternalHistory: raw, hereditaryDiseases: raw);
   }
 }
 
