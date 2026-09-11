@@ -58,8 +58,12 @@ void main() {
     ),
     physicalGenerals: const PhysicalGenerals(
       thermal: 'Chilly',
+      sensitivityToTemperature: 'Worse cold drafts, better warm room',
       appetite: 'Normal, desires warm cooked foods',
       thirst: 'Moderate, 2.5 litres per day',
+      cravings: 'Warm milk, sweets',
+      stool: 'Constipated, hard dry stools every 2 days',
+      urine: 'Normal frequency, pale clear',
       sleep: 'Disturbed past 2 AM',
       dreams: 'Occupational stress dreams',
     ),
@@ -204,6 +208,23 @@ void main() {
         );
 
         expect(find.text('Physical Generals & Modalities'), findsOneWidget);
+        expect(
+          find.text('Temperature & Weather Sensitivities'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Worse cold drafts, better warm room'),
+          findsOneWidget,
+        );
+        expect(find.text('Bowel / Stool Observations'), findsOneWidget);
+        expect(
+          find.text('Constipated, hard dry stools every 2 days'),
+          findsOneWidget,
+        );
+        expect(find.text('Urine Observations'), findsOneWidget);
+        expect(find.text('Normal frequency, pale clear'), findsOneWidget);
+        expect(find.text('Bowel / Stool Habits'), findsNothing);
+        expect(find.text('Urine & Urinary Tract'), findsNothing);
         expect(find.text('Disturbed past 2 AM'), findsOneWidget);
 
         expect(find.text('Baseline Prescription Plan'), findsOneWidget);

@@ -750,53 +750,91 @@ class PhysicalGenerals {
     'otherPhysicalGenerals': otherPhysicalGenerals,
   };
 
-  factory PhysicalGenerals.fromJson(
-    Map<String, dynamic> json,
-  ) => PhysicalGenerals(
-    thermal: json['thermal'] as String? ?? 'Ambithermal',
-    hotChilly: json['hotChilly'] as String? ?? 'Ambithermal',
-    weatherPreference: json['weatherPreference'] as String? ?? '',
-    sensitivityToTemperature: json['sensitivityToTemperature'] as String? ?? '',
-    thirst: json['thirst'] as String? ?? '',
-    thirstFrequency: json['thirstFrequency'] as String? ?? '',
-    thirstTiming: json['thirstTiming'] as String? ?? '',
-    appetite: json['appetite'] as String? ?? '',
-    hungerFasting: json['hungerFasting'] as String? ?? '',
-    cravings: json['cravings'] as String? ?? '',
-    aversions: json['aversions'] as String? ?? '',
-    intolerances: json['intolerances'] as String? ?? '',
-    stool: json['stool'] as String? ?? '',
-    stoolFrequency: json['stoolFrequency'] as String? ?? '',
-    stoolConsistency: json['stoolConsistency'] as String? ?? '',
-    stoolColourOdour: json['stoolColourOdour'] as String? ?? '',
-    stoolDifficultiesModalities:
-        json['stoolDifficultiesModalities'] as String? ?? '',
-    urine: json['urine'] as String? ?? '',
-    urineFrequency: json['urineFrequency'] as String? ?? '',
-    urineQuantity: json['urineQuantity'] as String? ?? '',
-    urineColourOdour: json['urineColourOdour'] as String? ?? '',
-    urinarySymptoms: json['urinarySymptoms'] as String? ?? '',
-    perspiration: json['perspiration'] as String? ?? '',
-    perspirationOdour: json['perspirationOdour'] as String? ?? '',
-    perspirationTimingDistribution:
-        json['perspirationTimingDistribution'] as String? ?? '',
-    sleep: json['sleep'] as String? ?? '',
-    sleepQuantity: json['sleepQuantity'] as String? ?? '',
-    sleepQuality: json['sleepQuality'] as String? ?? '',
-    sleepPosition: json['sleepPosition'] as String? ?? '',
-    sleepOnset: json['sleepOnset'] as String? ?? '',
-    sleepDisturbances: json['sleepDisturbances'] as String? ?? '',
-    dreams: json['dreams'] as String? ?? '',
-    dreamsRecurrentPeculiar: json['dreamsRecurrentPeculiar'] as String? ?? '',
-    energyVitality: json['energyVitality'] as String? ?? '',
-    fatigue: json['fatigue'] as String? ?? '',
-    sexualHistory: json['sexualHistory'] as String? ?? '',
-    menstrualHistory: json['menstrualHistory'] as String? ?? '',
-    obstetricHistory: json['obstetricHistory'] as String? ?? '',
-    skinHairNails: json['skinHairNails'] as String? ?? '',
-    generalDischarges: json['generalDischarges'] as String? ?? '',
-    otherPhysicalGenerals: json['otherPhysicalGenerals'] as String? ?? '',
-  );
+  factory PhysicalGenerals.fromJson(Map<String, dynamic> json) {
+    final rawStool = json['stool'] as String? ?? '';
+    final stoolFreq = json['stoolFrequency'] as String? ?? '';
+    final stoolCons = json['stoolConsistency'] as String? ?? '';
+    final stoolCol = json['stoolColourOdour'] as String? ?? '';
+    final stoolDiff = json['stoolDifficultiesModalities'] as String? ?? '';
+    String stoolVal = rawStool;
+    if (stoolVal.isEmpty) {
+      final parts =
+          [
+            stoolFreq,
+            stoolCons,
+            stoolCol,
+            stoolDiff,
+          ].where((s) => s.isNotEmpty).toList();
+      if (parts.isNotEmpty) {
+        stoolVal = parts.join(', ');
+      }
+    }
+
+    final rawUrine = json['urine'] as String? ?? '';
+    final urineFreq = json['urineFrequency'] as String? ?? '';
+    final urineQty = json['urineQuantity'] as String? ?? '';
+    final urineCol = json['urineColourOdour'] as String? ?? '';
+    final urineSym = json['urinarySymptoms'] as String? ?? '';
+    String urineVal = rawUrine;
+    if (urineVal.isEmpty) {
+      final parts =
+          [
+            urineFreq,
+            urineQty,
+            urineCol,
+            urineSym,
+          ].where((s) => s.isNotEmpty).toList();
+      if (parts.isNotEmpty) {
+        urineVal = parts.join(', ');
+      }
+    }
+
+    return PhysicalGenerals(
+      thermal: json['thermal'] as String? ?? 'Ambithermal',
+      hotChilly: json['hotChilly'] as String? ?? 'Ambithermal',
+      weatherPreference: json['weatherPreference'] as String? ?? '',
+      sensitivityToTemperature:
+          json['sensitivityToTemperature'] as String? ?? '',
+      thirst: json['thirst'] as String? ?? '',
+      thirstFrequency: json['thirstFrequency'] as String? ?? '',
+      thirstTiming: json['thirstTiming'] as String? ?? '',
+      appetite: json['appetite'] as String? ?? '',
+      hungerFasting: json['hungerFasting'] as String? ?? '',
+      cravings: json['cravings'] as String? ?? '',
+      aversions: json['aversions'] as String? ?? '',
+      intolerances: json['intolerances'] as String? ?? '',
+      stool: stoolVal,
+      stoolFrequency: stoolFreq,
+      stoolConsistency: stoolCons,
+      stoolColourOdour: stoolCol,
+      stoolDifficultiesModalities: stoolDiff,
+      urine: urineVal,
+      urineFrequency: urineFreq,
+      urineQuantity: urineQty,
+      urineColourOdour: urineCol,
+      urinarySymptoms: urineSym,
+      perspiration: json['perspiration'] as String? ?? '',
+      perspirationOdour: json['perspirationOdour'] as String? ?? '',
+      perspirationTimingDistribution:
+          json['perspirationTimingDistribution'] as String? ?? '',
+      sleep: json['sleep'] as String? ?? '',
+      sleepQuantity: json['sleepQuantity'] as String? ?? '',
+      sleepQuality: json['sleepQuality'] as String? ?? '',
+      sleepPosition: json['sleepPosition'] as String? ?? '',
+      sleepOnset: json['sleepOnset'] as String? ?? '',
+      sleepDisturbances: json['sleepDisturbances'] as String? ?? '',
+      dreams: json['dreams'] as String? ?? '',
+      dreamsRecurrentPeculiar: json['dreamsRecurrentPeculiar'] as String? ?? '',
+      energyVitality: json['energyVitality'] as String? ?? '',
+      fatigue: json['fatigue'] as String? ?? '',
+      sexualHistory: json['sexualHistory'] as String? ?? '',
+      menstrualHistory: json['menstrualHistory'] as String? ?? '',
+      obstetricHistory: json['obstetricHistory'] as String? ?? '',
+      skinHairNails: json['skinHairNails'] as String? ?? '',
+      generalDischarges: json['generalDischarges'] as String? ?? '',
+      otherPhysicalGenerals: json['otherPhysicalGenerals'] as String? ?? '',
+    );
+  }
 
   factory PhysicalGenerals.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const PhysicalGenerals();
