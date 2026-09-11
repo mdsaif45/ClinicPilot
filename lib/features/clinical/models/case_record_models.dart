@@ -285,19 +285,18 @@ class PastHistoryDetails {
     final rawEntries = json['entries'];
     List<PastDiseaseEntry> entriesList = [];
     if (rawEntries is List) {
-      entriesList = rawEntries
-          .whereType<Map<String, dynamic>>()
-          .map((e) => PastDiseaseEntry.fromJson(e))
-          .toList();
+      entriesList =
+          rawEntries
+              .whereType<Map<String, dynamic>>()
+              .map((e) => PastDiseaseEntry.fromJson(e))
+              .toList();
     }
 
     final childhood = json['childhoodIllnesses'] as String? ?? '';
     final major = json['majorIllnesses'] as String? ?? '';
     final chronic = json['chronicDiseases'] as String? ?? '';
     final surg =
-        json['surgeries'] as String? ??
-        json['majorSurgeries'] as String? ??
-        '';
+        json['surgeries'] as String? ?? json['majorSurgeries'] as String? ?? '';
     final inj =
         json['injuriesTrauma'] as String? ??
         json['injuriesAccidents'] as String? ??
@@ -320,7 +319,8 @@ class PastHistoryDetails {
       final legacy = <PastDiseaseEntry>[];
       if (chronic.isNotEmpty) legacy.add(PastDiseaseEntry(disease: chronic));
       if (major.isNotEmpty) legacy.add(PastDiseaseEntry(disease: major));
-      if (childhood.isNotEmpty) legacy.add(PastDiseaseEntry(disease: childhood));
+      if (childhood.isNotEmpty)
+        legacy.add(PastDiseaseEntry(disease: childhood));
       if (surg.isNotEmpty) {
         legacy.add(PastDiseaseEntry(disease: surg, treatment: 'Surgery'));
       }
@@ -440,8 +440,7 @@ class FamilyHistoryDetails {
         json['grandparentsRelatives'] as String? ??
         json['paternalGrandparents'] as String? ??
         '';
-    final maternalGrandparents =
-        json['maternalGrandparents'] as String? ?? '';
+    final maternalGrandparents = json['maternalGrandparents'] as String? ?? '';
     final hereditary = json['hereditaryDiseases'] as String? ?? '';
     final familial = json['majorFamilialDiseases'] as String? ?? '';
     final psych = json['psychiatricHistory'] as String? ?? '';
@@ -505,10 +504,7 @@ class FamilyHistoryDetails {
         return FamilyHistoryDetails.fromJson(decoded);
       }
     } catch (_) {}
-    return FamilyHistoryDetails(
-      paternalHistory: raw,
-      hereditaryDiseases: raw,
-    );
+    return FamilyHistoryDetails(paternalHistory: raw, hereditaryDiseases: raw);
   }
 }
 

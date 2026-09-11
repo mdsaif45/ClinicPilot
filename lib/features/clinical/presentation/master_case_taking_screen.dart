@@ -58,10 +58,10 @@ class _PastDiseaseEntryController {
     String years = '',
     String treatment = '',
     String outcome = '',
-  })  : disease = TextEditingController(text: disease),
-        years = TextEditingController(text: years),
-        treatment = TextEditingController(text: treatment),
-        outcome = TextEditingController(text: outcome);
+  }) : disease = TextEditingController(text: disease),
+       years = TextEditingController(text: years),
+       treatment = TextEditingController(text: treatment),
+       outcome = TextEditingController(text: outcome);
 
   void dispose() {
     disease.dispose();
@@ -1596,17 +1596,18 @@ class _MasterCaseTakingScreenState
         otherRelevantHistory: _hpiOtherRelevantHistoryController.text.trim(),
       ),
       pastHistory: PastHistoryDetails(
-        entries: _pastDiseases
-            .map(
-              (p) => PastDiseaseEntry(
-                disease: p.disease.text.trim(),
-                years: p.years.text.trim(),
-                treatment: p.treatment.text.trim(),
-                outcome: p.outcome.text.trim(),
-              ),
-            )
-            .where((p) => p.isNotEmpty)
-            .toList(),
+        entries:
+            _pastDiseases
+                .map(
+                  (p) => PastDiseaseEntry(
+                    disease: p.disease.text.trim(),
+                    years: p.years.text.trim(),
+                    treatment: p.treatment.text.trim(),
+                    outcome: p.outcome.text.trim(),
+                  ),
+                )
+                .where((p) => p.isNotEmpty)
+                .toList(),
       ),
       familyHistory: FamilyHistoryDetails(
         paternalHistory: _familyPaternalController.text.trim(),
@@ -2340,9 +2341,7 @@ class _MasterCaseTakingScreenState
           sectionNum: '05',
           title: 'Past Medical History',
           icon: Icons.medical_information_outlined,
-          children: [
-            _buildPastHistoryTable(),
-          ],
+          children: [_buildPastHistoryTable()],
         );
 
       case 5:
@@ -4824,7 +4823,9 @@ class _MasterCaseTakingScreenState
                 label: const Text('Add Past History Entry'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: scheme.primary,
-                  side: BorderSide(color: scheme.primary.withValues(alpha: 0.5)),
+                  side: BorderSide(
+                    color: scheme.primary.withValues(alpha: 0.5),
+                  ),
                   shape: RoundedRectangleBorder(borderRadius: Radii.pillAll),
                 ),
                 onPressed: () => _addPastDiseaseEntry(),

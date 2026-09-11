@@ -1183,7 +1183,10 @@ class _ClinicalCaseSheetScreenState
             ),
           ),
         ] else ...[
-          _ClinicalRow(label: 'Childhood Illnesses', value: p.childhoodIllnesses),
+          _ClinicalRow(
+            label: 'Childhood Illnesses',
+            value: p.childhoodIllnesses,
+          ),
           _ClinicalRow(
             label: 'Major Illnesses / Admissions',
             value: p.majorIllnesses,
@@ -1289,18 +1292,9 @@ class _ClinicalCaseSheetScreenState
           label: 'Maternal Medications',
           value: d.maternalMedications,
         ),
-        _ClinicalRow(
-          label: 'Mode of Delivery',
-          value: d.modeOfDelivery,
-        ),
-        _ClinicalRow(
-          label: 'Neonatal History / Cry',
-          value: d.neonatalHistory,
-        ),
-        _ClinicalRow(
-          label: 'Breastfeeding History',
-          value: d.breastfeeding,
-        ),
+        _ClinicalRow(label: 'Mode of Delivery', value: d.modeOfDelivery),
+        _ClinicalRow(label: 'Neonatal History / Cry', value: d.neonatalHistory),
+        _ClinicalRow(label: 'Breastfeeding History', value: d.breastfeeding),
         _ClinicalRow(
           label: 'Milestones (Teething, Walking, Talking)',
           value: d.developmentalMilestones,

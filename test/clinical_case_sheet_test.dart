@@ -412,7 +412,10 @@ void main() {
         );
 
         // 4. Developmental History Section
-        expect(find.text('Intrauterine & Developmental History'), findsOneWidget);
+        expect(
+          find.text('Intrauterine & Developmental History'),
+          findsOneWidget,
+        );
         expect(find.text('Normal uneventful pregnancy'), findsOneWidget);
         expect(find.text('Full term normal vaginal delivery'), findsOneWidget);
         expect(
