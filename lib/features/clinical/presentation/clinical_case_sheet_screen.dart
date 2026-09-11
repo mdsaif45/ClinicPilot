@@ -1337,21 +1337,27 @@ class _ClinicalCaseSheetScreenState
       onEdit: () => _openEditor(context, sectionIndex: 7),
       children: [
         _ClinicalRow(label: 'Thermal Reaction', value: pg.thermal),
-        _ClinicalRow(label: 'Appetite & Hunger Timing', value: pg.appetite),
-        _ClinicalRow(label: 'Thirst (Quantity & Frequency)', value: pg.thirst),
-        _ClinicalRow(label: 'Food Cravings', value: pg.cravings),
-        _ClinicalRow(
-          label: 'Food Aversions & Intolerances',
-          value: pg.aversions,
-        ),
+        if (pg.sensitivityToTemperature.isNotEmpty)
+          _ClinicalRow(
+            label: 'Temperature & Weather Sensitivities',
+            value: pg.sensitivityToTemperature,
+          ),
+        _ClinicalRow(label: 'Appetite', value: pg.appetite),
+        _ClinicalRow(label: 'Thirst', value: pg.thirst),
+        _ClinicalRow(label: 'Food Cravings & Desires', value: pg.cravings),
+        if (pg.aversions.isNotEmpty)
+          _ClinicalRow(
+            label: 'Food Aversions & Intolerances',
+            value: pg.aversions,
+          ),
+        _ClinicalRow(label: 'Bowel / Stool Observations', value: pg.stool),
+        _ClinicalRow(label: 'Urine Observations', value: pg.urine),
         _ClinicalRow(label: 'Sleep Quality & Pattern', value: pg.sleep),
         _ClinicalRow(label: 'Dreams & Subconscious', value: pg.dreams),
         _ClinicalRow(
           label: 'Perspiration & Distribution',
           value: pg.perspiration,
         ),
-        _ClinicalRow(label: 'Bowel / Stool Habits', value: pg.stool),
-        _ClinicalRow(label: 'Urine & Urinary Tract', value: pg.urine),
       ],
     );
   }

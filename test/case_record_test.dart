@@ -38,9 +38,12 @@ void main() {
       () {
         const physical = PhysicalGenerals(
           thermal: 'Hot',
+          sensitivityToTemperature: 'Cannot tolerate sun or warm rooms',
           thirst: 'Profuse, drinks large quantities',
           appetite: 'Good, cannot tolerate hunger',
           cravings: 'Sweets, fresh fish, tea',
+          stool: 'Soft, offensive, twice daily with urgent waking',
+          urine: 'Clear, profuse, nocturnal frequency',
           perspiration: 'Profuse, offensive on exertion',
           sleep: 'Disturbed due to flatulence',
         );
@@ -49,7 +52,16 @@ void main() {
         final pParsed = PhysicalGenerals.fromJson(pJson);
 
         expect(pParsed.thermal, equals('Hot'));
+        expect(
+          pParsed.sensitivityToTemperature,
+          contains('Cannot tolerate sun'),
+        );
         expect(pParsed.cravings, contains('Sweets'));
+        expect(
+          pParsed.stool,
+          equals('Soft, offensive, twice daily with urgent waking'),
+        );
+        expect(pParsed.urine, equals('Clear, profuse, nocturnal frequency'));
 
         const miasm = MiasmaticAnalysis(
           dominantMiasm: 'Sycotic',
@@ -62,6 +74,38 @@ void main() {
 
         expect(mParsed.dominantMiasm, equals('Sycotic'));
         expect(mParsed.sycoticFeatures, contains('Warts'));
+      },
+    );
+
+    test(
+      'PhysicalGenerals synthesizes stool and urine from legacy granular fields when direct observation notes are empty',
+      () {
+        final legacyJson = {
+          'thermal': 'Chilly',
+          'stoolFrequency': 'Once daily in morning',
+          'stoolConsistency': 'Hard, knotty, dry balls',
+          'stoolColourOdour': 'Dark brown, foul odour',
+          'stoolDifficultiesModalities':
+              'Urging before stool, burning in rectum after',
+          'urineFrequency': '4-5 times during day, once at night',
+          'urineQuantity': 'Copious, 2 litres',
+          'urineColourOdour': 'High-coloured, strong ammoniacal',
+          'urinarySymptoms': 'Burning along urethra during micturition',
+        };
+
+        final parsed = PhysicalGenerals.fromJson(legacyJson);
+        expect(
+          parsed.stool,
+          equals(
+            'Once daily in morning, Hard, knotty, dry balls, Dark brown, foul odour, Urging before stool, burning in rectum after',
+          ),
+        );
+        expect(
+          parsed.urine,
+          equals(
+            '4-5 times during day, once at night, Copious, 2 litres, High-coloured, strong ammoniacal, Burning along urethra during micturition',
+          ),
+        );
       },
     );
 
@@ -734,6 +778,92 @@ void main() {
         expect(find.text('Gestational Age / Term'), findsNothing);
         expect(find.text('Birth Order'), findsNothing);
         expect(find.text('Birth Weight'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'MasterCaseTakingScreen: Section 08 Physical Generals renders single Stool and Urine observation fields and prunes granular fields',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 5000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final db = AppDatabase(NativeDatabase.memory());
+        addTearDown(db.close);
+
+        final patient = Patient(
+          id: 'p_test_section_08',
+          patientCode: 'P-2026-00008',
+          name: 'Section 08 Test Patient',
+          phone: '9876543218',
+          age: 42,
+          gender: 'Male',
+          primaryClinicId: 'clinic_1',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isDeleted: false,
+          serialNo: '008',
+          referralSource: 'Direct / Walk-in',
+          reviewGiven: false,
+        );
+
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: MasterCaseTakingScreen(patient: patient),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Switch to Generals stage tab
+        expect(find.text('Generals'), findsOneWidget);
+        await tester.tap(find.text('Generals'));
+        await tester.pumpAndSettle();
+
+        // Expand Section 08: Physical Generals
+        expect(find.text('Physical Generals'), findsOneWidget);
+        await tester.tap(find.text('Physical Generals'));
+        await tester.pumpAndSettle();
+
+        // Core and simplified fields are present
+        expect(find.text('Thermal State'), findsOneWidget);
+        expect(
+          find.text('Temperature Sensitivities & Weather Notes'),
+          findsOneWidget,
+        );
+        expect(find.text('Appetite'), findsOneWidget);
+        expect(find.text('Thirst'), findsOneWidget);
+        expect(find.text('Cravings, Desires & Aversions'), findsOneWidget);
+        expect(find.text('Stool'), findsOneWidget);
+        expect(find.text('Urine'), findsOneWidget);
+
+        // Granular struck-through fields are pruned
+        expect(find.text('Weather / Season Preference'), findsNothing);
+        expect(find.text('Hunger & Fasting'), findsNothing);
+        expect(find.text('Thirst Frequency'), findsNothing);
+        expect(find.text('Thirst Timing'), findsNothing);
+        expect(find.text('Food Aversions'), findsNothing);
+        expect(find.text('Food Intolerances & Aggravations'), findsNothing);
+
+        // Granular Stool & Urine subfields are pruned
+        expect(find.text('Stool Frequency'), findsNothing);
+        expect(find.text('Stool Consistency'), findsNothing);
+        expect(find.text('Stool Colour / Odour'), findsNothing);
+        expect(find.text('Stool Difficulties & Modalities'), findsNothing);
+        expect(find.text('Urine Frequency'), findsNothing);
+        expect(find.text('Urine Quantity'), findsNothing);
+        expect(find.text('Urine Colour / Odour'), findsNothing);
+        expect(find.text('Urinary Symptoms'), findsNothing);
       },
     );
   });

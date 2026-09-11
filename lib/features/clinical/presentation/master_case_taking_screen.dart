@@ -230,10 +230,12 @@ class _MasterCaseTakingScreenState
   final _pgFoodDesiresController = TextEditingController();
   final _pgFoodAversionsController = TextEditingController();
   final _pgFoodIntolerancesController = TextEditingController();
+  final _pgStoolController = TextEditingController();
   final _pgStoolFrequencyController = TextEditingController();
   final _pgStoolConsistencyController = TextEditingController();
   final _pgStoolColourOdourController = TextEditingController();
   final _pgStoolDifficultiesModalitiesController = TextEditingController();
+  final _pgUrineController = TextEditingController();
   final _pgUrineFrequencyController = TextEditingController();
   final _pgUrineQuantityController = TextEditingController();
   final _pgUrineColourOdourController = TextEditingController();
@@ -543,10 +545,12 @@ class _MasterCaseTakingScreenState
       _pgFoodDesiresController,
       _pgFoodAversionsController,
       _pgFoodIntolerancesController,
+      _pgStoolController,
       _pgStoolFrequencyController,
       _pgStoolConsistencyController,
       _pgStoolColourOdourController,
       _pgStoolDifficultiesModalitiesController,
+      _pgUrineController,
       _pgUrineFrequencyController,
       _pgUrineQuantityController,
       _pgUrineColourOdourController,
@@ -834,10 +838,12 @@ class _MasterCaseTakingScreenState
     _pgFoodDesiresController.dispose();
     _pgFoodAversionsController.dispose();
     _pgFoodIntolerancesController.dispose();
+    _pgStoolController.dispose();
     _pgStoolFrequencyController.dispose();
     _pgStoolConsistencyController.dispose();
     _pgStoolColourOdourController.dispose();
     _pgStoolDifficultiesModalitiesController.dispose();
+    _pgUrineController.dispose();
     _pgUrineFrequencyController.dispose();
     _pgUrineQuantityController.dispose();
     _pgUrineColourOdourController.dispose();
@@ -1158,6 +1164,7 @@ class _MasterCaseTakingScreenState
     _pgFoodDesiresController.text = record.physicalGenerals.cravings;
     _pgFoodAversionsController.text = record.physicalGenerals.aversions;
     _pgFoodIntolerancesController.text = record.physicalGenerals.intolerances;
+    _pgStoolController.text = record.physicalGenerals.stool;
     _pgStoolFrequencyController.text = record.physicalGenerals.stoolFrequency;
     _pgStoolConsistencyController.text =
         record.physicalGenerals.stoolConsistency;
@@ -1167,6 +1174,7 @@ class _MasterCaseTakingScreenState
         record.physicalGenerals.stoolDifficultiesModalities.isNotEmpty
             ? record.physicalGenerals.stoolDifficultiesModalities
             : record.physicalGenerals.stool;
+    _pgUrineController.text = record.physicalGenerals.urine;
     _pgUrineFrequencyController.text =
         record.physicalGenerals.urineFrequency.isNotEmpty
             ? record.physicalGenerals.urineFrequency
@@ -1642,13 +1650,19 @@ class _MasterCaseTakingScreenState
         cravings: _pgFoodDesiresController.text.trim(),
         aversions: _pgFoodAversionsController.text.trim(),
         intolerances: _pgFoodIntolerancesController.text.trim(),
-        stool: _pgStoolDifficultiesModalitiesController.text.trim(),
+        stool:
+            _pgStoolController.text.trim().isNotEmpty
+                ? _pgStoolController.text.trim()
+                : _pgStoolDifficultiesModalitiesController.text.trim(),
         stoolFrequency: _pgStoolFrequencyController.text.trim(),
         stoolConsistency: _pgStoolConsistencyController.text.trim(),
         stoolColourOdour: _pgStoolColourOdourController.text.trim(),
         stoolDifficultiesModalities:
             _pgStoolDifficultiesModalitiesController.text.trim(),
-        urine: _pgUrineFrequencyController.text.trim(),
+        urine:
+            _pgUrineController.text.trim().isNotEmpty
+                ? _pgUrineController.text.trim()
+                : _pgUrineFrequencyController.text.trim(),
         urineFrequency: _pgUrineFrequencyController.text.trim(),
         urineQuantity: _pgUrineQuantityController.text.trim(),
         urineColourOdour: _pgUrineColourOdourController.text.trim(),
@@ -2503,49 +2517,33 @@ class _MasterCaseTakingScreenState
           title: 'Physical Generals',
           icon: Icons.accessibility_new_outlined,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: PickerField<String>(
-                    label: 'Thermal State',
-                    value:
-                        _pgHotChillyController.text.isNotEmpty
-                            ? _pgHotChillyController.text
-                            : 'Ambithermal',
-                    options: const [
-                      PickerOption(
-                        value: 'Chilly',
-                        label: 'Chilly (Sensitive to Cold)',
-                      ),
-                      PickerOption(
-                        value: 'Hot',
-                        label: 'Hot (Sensitive to Heat)',
-                      ),
-                      PickerOption(
-                        value: 'Ambithermal',
-                        label: 'Ambithermal (Equal)',
-                      ),
-                    ],
-                    onChanged:
-                        (v) => setState(() => _pgHotChillyController.text = v),
-                  ),
+            PickerField<String>(
+              label: 'Thermal State',
+              value:
+                  _pgHotChillyController.text.isNotEmpty
+                      ? _pgHotChillyController.text
+                      : 'Ambithermal',
+              options: const [
+                PickerOption(
+                  value: 'Chilly',
+                  label: 'Chilly (Sensitive to Cold)',
                 ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgWeatherSeasonPreferenceController,
-                    'Weather / Season Preference',
-                    Icons.wb_sunny_outlined,
-                  ),
+                PickerOption(value: 'Hot', label: 'Hot (Sensitive to Heat)'),
+                PickerOption(
+                  value: 'Ambithermal',
+                  label: 'Ambithermal (Equal)',
                 ),
               ],
+              onChanged: (v) => setState(() => _pgHotChillyController.text = v),
             ),
             const SizedBox(height: Spacing.md),
             _buildInput(
               _pgSensitivityToTemperatureController,
-              'Temperature Sensitivities',
+              'Temperature Sensitivities & Weather Notes',
               Icons.thermostat_outlined,
+              4,
+              2,
+              'Reactions to heat, cold, weather changes, seasons, sun, drafts, open air, humidity...',
             ),
             const SizedBox(height: Spacing.md),
             Row(
@@ -2560,128 +2558,42 @@ class _MasterCaseTakingScreenState
                 const SizedBox(width: Spacing.md),
                 Expanded(
                   child: _buildInput(
-                    _pgHungerFastingController,
-                    'Hunger & Fasting',
-                    Icons.hourglass_empty,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
                     _pgThirstQuantityController,
-                    'Thirst Quantity',
+                    'Thirst',
                     Icons.local_drink,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgThirstFrequencyController,
-                    'Thirst Frequency',
-                    Icons.timelapse,
+                    1,
+                    1,
+                    'Quantity, frequency, temperature preference...',
                   ),
                 ),
               ],
             ),
             const SizedBox(height: Spacing.md),
             _buildInput(
-              _pgThirstTimingController,
-              'Thirst Timing',
-              Icons.schedule,
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgFoodDesiresController,
-                    'Cravings / Desires',
-                    Icons.favorite,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgFoodAversionsController,
-                    'Food Aversions',
-                    Icons.do_not_disturb,
-                  ),
-                ),
-              ],
+              _pgFoodDesiresController,
+              'Cravings, Desires & Aversions',
+              Icons.favorite_outline,
+              2,
+              1,
+              'Desires (sweets, sour, salty, spicy, warm food), aversions, intolerances...',
             ),
             const SizedBox(height: Spacing.md),
             _buildInput(
-              _pgFoodIntolerancesController,
-              'Food Intolerances & Aggravations',
-              Icons.no_food,
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgStoolFrequencyController,
-                    'Stool Frequency',
-                    Icons.repeat,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgStoolConsistencyController,
-                    'Stool Consistency',
-                    Icons.grain,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _pgStoolColourOdourController,
-              'Stool Colour / Odour',
-              Icons.palette_outlined,
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _pgStoolDifficultiesModalitiesController,
-              'Stool Difficulties & Modalities',
+              _pgStoolController,
+              'Stool',
               Icons.airline_seat_legroom_reduced,
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgUrineFrequencyController,
-                    'Urine Frequency',
-                    Icons.speed,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgUrineQuantityController,
-                    'Urine Quantity',
-                    Icons.opacity,
-                  ),
-                ),
-              ],
+              4,
+              3,
+              'Observations on bowel habits, frequency, consistency, colour, odour, urging, difficulties, before/after modalities...',
             ),
             const SizedBox(height: Spacing.md),
             _buildInput(
-              _pgUrineColourOdourController,
-              'Urine Colour / Odour',
-              Icons.water,
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _pgUrinarySymptomsController,
-              'Urinary Symptoms',
-              Icons.water_drop,
+              _pgUrineController,
+              'Urine',
+              Icons.water_drop_outlined,
+              4,
+              3,
+              'Observations on urination, frequency, quantity, stream, colour, odour, burning, urging, sediment, involuntary loss...',
             ),
             const SizedBox(height: Spacing.md),
             Row(
