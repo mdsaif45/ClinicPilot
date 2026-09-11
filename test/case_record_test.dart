@@ -64,6 +64,151 @@ void main() {
         expect(mParsed.sycoticFeatures, contains('Warts'));
       },
     );
+
+    test('PastDiseaseEntry serializes and deserializes properly', () {
+      const entry = PastDiseaseEntry(
+        disease: 'Typhoid fever',
+        years: '2018 (6 years ago)',
+        treatment: 'Allopathic antibiotics',
+        outcome: 'Full recovery, occasional fatigue',
+      );
+      final json = entry.toJson();
+      final parsed = PastDiseaseEntry.fromJson(json);
+
+      expect(parsed.disease, equals('Typhoid fever'));
+      expect(parsed.years, equals('2018 (6 years ago)'));
+      expect(parsed.treatment, equals('Allopathic antibiotics'));
+      expect(parsed.outcome, equals('Full recovery, occasional fatigue'));
+      expect(parsed.isNotEmpty, isTrue);
+    });
+
+    test(
+      'PastHistoryDetails supports dynamic entries and backward-compatible migration',
+      () {
+        // 1. Modern entries serialization
+        const modern = PastHistoryDetails(
+          allergies: 'Penicillin allergy',
+          entries: [
+            PastDiseaseEntry(
+              disease: 'Pneumonia',
+              years: '2020',
+              treatment: 'Hospital admission',
+              outcome: 'Resolved',
+            ),
+            PastDiseaseEntry(
+              disease: 'Appendectomy',
+              years: '2015',
+              treatment: 'Laparoscopic surgery',
+              outcome: 'Complete recovery',
+            ),
+          ],
+        );
+        final json = modern.toJson();
+        final parsed = PastHistoryDetails.fromJson(json);
+        expect(parsed.allergies, equals('Penicillin allergy'));
+        expect(parsed.entries.length, equals(2));
+        expect(parsed.entries[0].disease, equals('Pneumonia'));
+        expect(parsed.entries[1].treatment, equals('Laparoscopic surgery'));
+
+        // 2. Legacy migration fallback
+        final legacyJson = {
+          'childhoodIllnesses': 'Chickenpox at age 7',
+          'majorSurgeries': 'Tonsillectomy in 2012',
+          'injuriesAccidents': 'Fractured right collarbone in 2016',
+          'bloodTransfusions': 'None',
+          'allergies': 'Dust allergy',
+        };
+        final migrated = PastHistoryDetails.fromJson(legacyJson);
+        expect(migrated.allergies, equals('Dust allergy'));
+        expect(migrated.entries.length, equals(3));
+        expect(
+          migrated.entries.any((e) => e.disease == 'Chickenpox at age 7'),
+          isTrue,
+        );
+        expect(
+          migrated.entries.any((e) => e.disease == 'Tonsillectomy in 2012'),
+          isTrue,
+        );
+        expect(
+          migrated.entries.any(
+            (e) => e.disease == 'Fractured right collarbone in 2016',
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'FamilyHistoryDetails supports 3 lineages and legacy fallback synthesis',
+      () {
+        // 1. Modern 3-lineage serialization
+        const modern = FamilyHistoryDetails(
+          paternalHistory: 'Paternal grandfather had diabetes and hypertension',
+          maternalHistory: 'Mother had hypothyroidism, grandmother had asthma',
+          ownFamilyHistory: 'Brother has mild eczema',
+        );
+        final json = modern.toJson();
+        final parsed = FamilyHistoryDetails.fromJson(json);
+        expect(parsed.paternalHistory, contains('Paternal grandfather'));
+        expect(parsed.maternalHistory, contains('Mother had hypothyroidism'));
+        expect(parsed.ownFamilyHistory, contains('Brother has mild eczema'));
+
+        // 2. Legacy fallback synthesis
+        final legacyJson = {
+          'father': 'Hypertension',
+          'mother': 'Diabetes Mellitus',
+          'siblings': 'Elder brother healthy',
+          'paternalGrandparents': 'Heart disease',
+          'maternalGrandparents': 'Bronchial asthma',
+        };
+        final fallback = FamilyHistoryDetails.fromJson(legacyJson);
+        expect(fallback.paternalHistory, contains('Father: Hypertension'));
+        expect(
+          fallback.paternalHistory,
+          contains('Paternal Grandparents: Heart disease'),
+        );
+        expect(fallback.maternalHistory, contains('Mother: Diabetes Mellitus'));
+        expect(
+          fallback.maternalHistory,
+          contains('Maternal Grandparents: Bronchial asthma'),
+        );
+        expect(
+          fallback.ownFamilyHistory,
+          contains('Siblings: Elder brother healthy'),
+        );
+      },
+    );
+
+    test(
+      'DevelopmentalHistoryDetails retains core fields and gracefully handles JSON',
+      () {
+        const dev = DevelopmentalHistoryDetails(
+          maternalHealth: 'Good general health during pregnancy',
+          pregnancyComplications: 'Mild nausea in first trimester',
+          maternalMedications: 'Folic acid supplements',
+          modeOfDelivery: 'Normal vaginal delivery',
+          neonatalHistory: 'Cried immediately at birth',
+          breastfeeding: 'Exclusive breastfeeding for 6 months',
+          developmentalMilestones:
+              'Walked at 11 months, spoke words at 12 months',
+          childhoodDevelopment: 'Normal physical and cognitive growth',
+          otherBirthDevelopmentalHistory:
+              'Complete vaccination as per schedule',
+        );
+        final json = dev.toJson();
+        final parsed = DevelopmentalHistoryDetails.fromJson(json);
+        expect(
+          parsed.maternalHealth,
+          equals('Good general health during pregnancy'),
+        );
+        expect(parsed.modeOfDelivery, equals('Normal vaginal delivery'));
+        expect(parsed.developmentalMilestones, contains('Walked at 11 months'));
+        expect(
+          parsed.otherBirthDevelopmentalHistory,
+          contains('Complete vaccination'),
+        );
+      },
+    );
   });
 
   group('MasterCaseTakingScreen Widget Tests', () {
@@ -461,6 +606,134 @@ void main() {
         expect(find.textContaining('{"finalStatus"'), findsNothing);
         expect(find.textContaining('"degreeOfImprovement"'), findsNothing);
         expect(find.textContaining('""}'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'MasterCaseTakingScreen: Section 02, 05, 06, and 07 enhancements render properly',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 5000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final db = AppDatabase(NativeDatabase.memory());
+        addTearDown(db.close);
+
+        final patient = Patient(
+          id: 'p_test_enhancements',
+          patientCode: 'P-2026-00006',
+          name: 'Enhancement Test Patient',
+          phone: '9876543215',
+          age: 35,
+          gender: 'Female',
+          primaryClinicId: 'clinic_1',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isDeleted: false,
+          serialNo: '006',
+          referralSource: 'Direct / Walk-in',
+          reviewGiven: false,
+        );
+
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: MasterCaseTakingScreen(patient: patient),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. Section 02 - Chief Complaints sequence
+        expect(find.text('Chief Complaints (1)'), findsOneWidget);
+        await tester.tap(find.text('Chief Complaints (1)'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Complaint'), findsOneWidget);
+        expect(find.text('Onset'), findsOneWidget);
+        expect(find.text('Duration'), findsOneWidget);
+        expect(find.text('Causation / Origin'), findsOneWidget);
+        expect(find.text('Severity'), findsOneWidget);
+        expect(find.text('Location'), findsOneWidget);
+        expect(find.text('Radiation / Extension'), findsOneWidget);
+        expect(find.text('Sensation / Character'), findsOneWidget);
+        expect(find.text('Aggravation (< Modality)'), findsOneWidget);
+        expect(find.text('Amelioration (> Modality)'), findsOneWidget);
+        expect(find.text('Time Modality'), findsOneWidget);
+        expect(find.text('Periodicity'), findsOneWidget);
+        expect(find.text('Concomitants'), findsOneWidget);
+        expect(find.text('Associated Symptoms'), findsOneWidget);
+
+        // 2. Section 05 - Past Medical History structured table and dynamic add/remove
+        expect(find.text('Past Medical History'), findsOneWidget);
+        await tester.tap(find.text('Past Medical History'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Disease / Condition'), findsWidgets);
+        expect(find.text('Years / Duration'), findsWidgets);
+        expect(find.text('Treatment'), findsWidgets);
+        expect(find.text('Outcome'), findsWidgets);
+        expect(find.text('Add Past History Entry'), findsOneWidget);
+
+        // Tap Add Past History Entry
+        await tester.tap(find.text('Add Past History Entry'));
+        await tester.pumpAndSettle();
+        // Now there should be 2 rows of disease entries
+        expect(find.byIcon(Icons.coronavirus_outlined), findsNWidgets(2));
+
+        // Delete one entry
+        final deleteButtons = find.byIcon(Icons.delete_outline);
+        expect(deleteButtons, findsWidgets);
+        await tester.tap(deleteButtons.first);
+        await tester.pumpAndSettle();
+        expect(find.byIcon(Icons.coronavirus_outlined), findsOneWidget);
+
+        // 3. Section 06 - Family History 3 Lineages
+        expect(find.text('Family History'), findsOneWidget);
+        await tester.tap(find.text('Family History'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Paternal Family History'), findsOneWidget);
+        expect(find.text('Maternal Family History'), findsOneWidget);
+        expect(find.text('Own Family History'), findsOneWidget);
+
+        // 4. Section 07 - Intrauterine & Developmental History
+        expect(
+          find.text('Intrauterine & Developmental History'),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('Intrauterine & Developmental History'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Maternal Health in Pregnancy'), findsOneWidget);
+        expect(find.text('Pregnancy Complications'), findsOneWidget);
+        expect(find.text('Maternal Medications'), findsOneWidget);
+        expect(find.text('Mode of Delivery'), findsOneWidget);
+        expect(find.text('Neonatal History / Cry'), findsOneWidget);
+        expect(find.text('Breastfeeding History'), findsOneWidget);
+        expect(
+          find.text('Milestones (Teething, Walking, Talking)'),
+          findsOneWidget,
+        );
+        expect(find.text('Childhood Development'), findsOneWidget);
+        expect(find.text('Other Developmental Notes'), findsOneWidget);
+
+        // Verify the 6 pruned fields are NOT present
+        expect(find.text('Maternal Infections'), findsNothing);
+        expect(find.text('Antenatal Care'), findsNothing);
+        expect(find.text('Maternal Nutrition'), findsNothing);
+        expect(find.text('Gestational Age / Term'), findsNothing);
+        expect(find.text('Birth Order'), findsNothing);
+        expect(find.text('Birth Weight'), findsNothing);
       },
     );
   });

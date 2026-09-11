@@ -284,5 +284,146 @@ void main() {
         expect(parsed.modalitiesAmel, 'Dark quiet room, hard pressure');
       },
     );
+
+    testWidgets(
+      'renders structured Past Medical History table, 3-lineage Family History, and Developmental section',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        final testRecordWithEnhancements = MasterCaseRecordData(
+          id: 'cr_test_enhancements',
+          patientId: testPatient.id,
+          recordDate: DateTime(2026, 8, 10),
+          chiefComplaints: const [
+            ChiefComplaintDetail(
+              complaint: 'Chronic Eczema',
+              onset: 'Gradual after change of residence',
+              duration: '1.5 years',
+              causation: 'Hard water exposure and mental stress',
+              severity: 'Moderate',
+              location: 'Flexor surfaces of elbows and knees',
+              extensionRadiation: 'Spreading to wrists',
+              sensation: 'Intense itching, dry cracked skin',
+              modalitiesAgg: 'Night, winter, hot showers',
+              modalitiesAmel: 'Coconut oil application, open air',
+              concomitants: 'Restlessness at night, anxiety',
+              associatedSymptoms: 'Dry scalp with dandruff',
+            ),
+          ],
+          pastHistory: const PastHistoryDetails(
+            allergies: 'Severe allergy to sulfa drugs',
+            entries: [
+              PastDiseaseEntry(
+                disease: 'Bronchial Asthma',
+                years: '2015 - 2018',
+                treatment: 'Inhalers (Salbutamol)',
+                outcome: 'Quiescent since 2019',
+              ),
+              PastDiseaseEntry(
+                disease: 'Acute Appendicitis',
+                years: '2021',
+                treatment: 'Appendectomy',
+                outcome: 'Fully recovered without complications',
+              ),
+            ],
+          ),
+          familyHistory: const FamilyHistoryDetails(
+            paternalHistory:
+                'Father: Type 2 Diabetes, Paternal Uncle: Hypertension',
+            maternalHistory:
+                'Mother: Bronchial Asthma, Maternal Grandfather: Stroke',
+            ownFamilyHistory:
+                'Elder sister has allergic rhinitis, younger brother healthy',
+          ),
+          developmentalHistory: const DevelopmentalHistoryDetails(
+            maternalHealth: 'Normal uneventful pregnancy',
+            pregnancyComplications: 'None reported',
+            maternalMedications: 'Prenatal iron and calcium',
+            modeOfDelivery: 'Full term normal vaginal delivery',
+            neonatalHistory: 'Normal birth cry, no jaundice',
+            breastfeeding: 'Exclusively breastfed for 6 months',
+            developmentalMilestones: 'All motor milestones reached on time',
+            childhoodDevelopment: 'Active child, average milestones',
+            otherBirthDevelopmentalHistory:
+                'Up to date with primary immunization schedule',
+          ),
+        );
+
+        await tester.pumpWidget(
+          createWidgetUnderTest(record: testRecordWithEnhancements),
+        );
+        await tester.pumpAndSettle();
+
+        // 1. Chief Complaints order
+        expect(find.text('Chronic Eczema'), findsWidgets);
+        expect(
+          find.textContaining('Gradual after change of residence'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Hard water exposure and mental stress'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Flexor surfaces of elbows and knees'),
+          findsOneWidget,
+        );
+        expect(find.text('Intense itching, dry cracked skin'), findsOneWidget);
+
+        // 2. Structured Past Medical History table
+        expect(find.text('Past Medical History & Allergies'), findsOneWidget);
+        expect(find.text('Severe allergy to sulfa drugs'), findsOneWidget);
+        expect(find.text('Disease'), findsWidgets);
+        expect(find.text('Bronchial Asthma'), findsOneWidget);
+        expect(find.text('2015 - 2018'), findsOneWidget);
+        expect(find.text('Inhalers (Salbutamol)'), findsOneWidget);
+        expect(find.text('Quiescent since 2019'), findsOneWidget);
+        expect(find.text('Acute Appendicitis'), findsOneWidget);
+
+        // 3. Family History 3 Lineages
+        expect(find.text('Family Medical History'), findsOneWidget);
+        expect(
+          find.text('Paternal Lineage (Father & Grandparents)'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Father: Type 2 Diabetes, Paternal Uncle: Hypertension'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Maternal Lineage (Mother & Grandparents)'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Mother: Bronchial Asthma, Maternal Grandfather: Stroke'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Own Family (Siblings, Spouse, Children)'),
+          findsOneWidget,
+        );
+        expect(
+          find.text(
+            'Elder sister has allergic rhinitis, younger brother healthy',
+          ),
+          findsOneWidget,
+        );
+
+        // 4. Developmental History Section
+        expect(find.text('Intrauterine & Developmental History'), findsOneWidget);
+        expect(find.text('Normal uneventful pregnancy'), findsOneWidget);
+        expect(find.text('Full term normal vaginal delivery'), findsOneWidget);
+        expect(
+          find.text('All motor milestones reached on time'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Up to date with primary immunization schedule'),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }

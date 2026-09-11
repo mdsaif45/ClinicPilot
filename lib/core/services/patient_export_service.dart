@@ -96,6 +96,20 @@ class PatientExportService {
   }
 
   static String _formatPastHistory(PastHistoryDetails p) {
+    if (p.entries.isNotEmpty) {
+      final items = <String>[];
+      if (p.allergies.isNotEmpty) items.add('Allergies: ${p.allergies}');
+      for (final e in p.entries) {
+        final details = <String>[];
+        if (e.years.isNotEmpty) details.add(e.years);
+        if (e.treatment.isNotEmpty) details.add('Tx: ${e.treatment}');
+        if (e.outcome.isNotEmpty) details.add('Outcome: ${e.outcome}');
+        final detailStr = details.isNotEmpty ? ' (${details.join(', ')})' : '';
+        items.add('${e.disease}$detailStr');
+      }
+      return items.join('; ');
+    }
+
     final parts = <String>[];
     if (p.majorIllnesses.isNotEmpty)
       parts.add('Illnesses: ${p.majorIllnesses}');
@@ -109,6 +123,24 @@ class PatientExportService {
   }
 
   static String _formatFamilyHistory(FamilyHistoryDetails f) {
+    final hasNew =
+        f.paternalHistory.isNotEmpty ||
+        f.maternalHistory.isNotEmpty ||
+        f.ownFamilyHistory.isNotEmpty;
+    if (hasNew) {
+      final parts = <String>[];
+      if (f.paternalHistory.isNotEmpty) {
+        parts.add('Paternal: ${f.paternalHistory}');
+      }
+      if (f.maternalHistory.isNotEmpty) {
+        parts.add('Maternal: ${f.maternalHistory}');
+      }
+      if (f.ownFamilyHistory.isNotEmpty) {
+        parts.add('Own Family: ${f.ownFamilyHistory}');
+      }
+      return parts.join('; ');
+    }
+
     final parts = <String>[];
     if (f.father.isNotEmpty) parts.add('Father: ${f.father}');
     if (f.mother.isNotEmpty) parts.add('Mother: ${f.mother}');

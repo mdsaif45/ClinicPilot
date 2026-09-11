@@ -47,6 +47,30 @@ class _ComplaintEntry {
   }
 }
 
+class _PastDiseaseEntryController {
+  final TextEditingController disease;
+  final TextEditingController years;
+  final TextEditingController treatment;
+  final TextEditingController outcome;
+
+  _PastDiseaseEntryController({
+    String disease = '',
+    String years = '',
+    String treatment = '',
+    String outcome = '',
+  })  : disease = TextEditingController(text: disease),
+        years = TextEditingController(text: years),
+        treatment = TextEditingController(text: treatment),
+        outcome = TextEditingController(text: outcome);
+
+  void dispose() {
+    disease.dispose();
+    years.dispose();
+    treatment.dispose();
+    outcome.dispose();
+  }
+}
+
 class _StageConfig {
   final String title;
   final IconData icon;
@@ -175,42 +199,19 @@ class _MasterCaseTakingScreenState
   final _hpiPrecipitatingFactorsController = TextEditingController();
   final _hpiOtherRelevantHistoryController = TextEditingController();
 
-  // 5. Past History (11 fields)
-  final _pastChildhoodIllnessesController = TextEditingController();
-  final _pastMajorIllnessesController = TextEditingController();
-  final _pastChronicDiseasesController = TextEditingController();
-  final _pastSurgeriesController = TextEditingController();
-  final _pastInjuriesTraumaController = TextEditingController();
-  final _pastHospitalisationsController = TextEditingController();
-  final _pastInfectionsController = TextEditingController();
-  final _pastAllergiesController = TextEditingController();
-  final _pastPreviousMedicationsController = TextEditingController();
-  final _pastPrevHomeopathicTreatmentController = TextEditingController();
-  final _pastOtherPastHistoryController = TextEditingController();
+  // 5. Past History (Dynamic structured entry table)
+  final List<_PastDiseaseEntryController> _pastDiseases = [];
 
-  // 6. Family History (10 fields)
-  final _familyFatherController = TextEditingController();
-  final _familyMotherController = TextEditingController();
-  final _familySiblingsController = TextEditingController();
-  final _familySpouseController = TextEditingController();
-  final _familyChildrenController = TextEditingController();
-  final _familyGrandparentsRelativesController = TextEditingController();
-  final _familyHereditaryDiseasesController = TextEditingController();
-  final _familyMajorFamilialDiseasesController = TextEditingController();
-  final _familyPsychiatricHistoryController = TextEditingController();
-  final _familyOtherFamilyHistoryController = TextEditingController();
+  // 6. Family History (3 Lineage Categories)
+  final _familyPaternalController = TextEditingController();
+  final _familyMaternalController = TextEditingController();
+  final _familyOwnController = TextEditingController();
 
-  // 7. Intrauterine & Developmental History (15 fields)
+  // 7. Intrauterine & Developmental History (8 core fields + enlarged notes)
   final _devMaternalHealthController = TextEditingController();
   final _devPregnancyComplicationsController = TextEditingController();
-  final _devMaternalInfectionsController = TextEditingController();
   final _devMaternalMedicationsController = TextEditingController();
-  final _devAntenatalCareController = TextEditingController();
-  final _devNutritionDuringPregnancyController = TextEditingController();
-  final _devGestationalAgeController = TextEditingController();
-  final _devBirthOrderController = TextEditingController();
   final _devModeOfDeliveryController = TextEditingController();
-  final _devBirthWeightController = TextEditingController();
   final _devNeonatalHistoryController = TextEditingController();
   final _devBreastfeedingController = TextEditingController();
   final _devDevelopmentalMilestonesController = TextEditingController();
@@ -455,6 +456,50 @@ class _MasterCaseTakingScreenState
     entry.associatedSymptoms.addListener(_markDirty);
   }
 
+  void _attachPastDiseaseListeners(_PastDiseaseEntryController entry) {
+    entry.disease.addListener(_markDirty);
+    entry.years.addListener(_markDirty);
+    entry.treatment.addListener(_markDirty);
+    entry.outcome.addListener(_markDirty);
+  }
+
+  void _addPastDiseaseEntry({
+    String disease = '',
+    String years = '',
+    String treatment = '',
+    String outcome = '',
+  }) {
+    final entry = _PastDiseaseEntryController(
+      disease: disease,
+      years: years,
+      treatment: treatment,
+      outcome: outcome,
+    );
+    _attachPastDiseaseListeners(entry);
+    setState(() {
+      _pastDiseases.add(entry);
+      _isDirty = true;
+    });
+    AppHaptics.light();
+  }
+
+  void _removePastDiseaseEntry(int index) {
+    if (_pastDiseases.length <= 1) {
+      _pastDiseases[0].disease.clear();
+      _pastDiseases[0].years.clear();
+      _pastDiseases[0].treatment.clear();
+      _pastDiseases[0].outcome.clear();
+      setState(() => _isDirty = true);
+      return;
+    }
+    setState(() {
+      final removed = _pastDiseases.removeAt(index);
+      removed.dispose();
+      _isDirty = true;
+    });
+    AppHaptics.selection();
+  }
+
   List<TextEditingController> _getAllControllers() {
     return [
       _regNoController,
@@ -475,37 +520,13 @@ class _MasterCaseTakingScreenState
       _hpiResponseToTreatmentController,
       _hpiPrecipitatingFactorsController,
       _hpiOtherRelevantHistoryController,
-      _pastChildhoodIllnessesController,
-      _pastMajorIllnessesController,
-      _pastChronicDiseasesController,
-      _pastSurgeriesController,
-      _pastInjuriesTraumaController,
-      _pastHospitalisationsController,
-      _pastInfectionsController,
-      _pastAllergiesController,
-      _pastPreviousMedicationsController,
-      _pastPrevHomeopathicTreatmentController,
-      _pastOtherPastHistoryController,
-      _familyFatherController,
-      _familyMotherController,
-      _familySiblingsController,
-      _familySpouseController,
-      _familyChildrenController,
-      _familyGrandparentsRelativesController,
-      _familyHereditaryDiseasesController,
-      _familyMajorFamilialDiseasesController,
-      _familyPsychiatricHistoryController,
-      _familyOtherFamilyHistoryController,
+      _familyPaternalController,
+      _familyMaternalController,
+      _familyOwnController,
       _devMaternalHealthController,
       _devPregnancyComplicationsController,
-      _devMaternalInfectionsController,
       _devMaternalMedicationsController,
-      _devAntenatalCareController,
-      _devNutritionDuringPregnancyController,
-      _devGestationalAgeController,
-      _devBirthOrderController,
       _devModeOfDeliveryController,
-      _devBirthWeightController,
       _devNeonatalHistoryController,
       _devBreastfeedingController,
       _devDevelopmentalMilestonesController,
@@ -721,6 +742,11 @@ class _MasterCaseTakingScreenState
     for (final entry in _complaints) {
       _attachComplaintListeners(entry);
     }
+    if (_pastDiseases.isEmpty) {
+      final initial = _PastDiseaseEntryController();
+      _attachPastDiseaseListeners(initial);
+      _pastDiseases.add(initial);
+    }
     _isPopulating = false;
 
     if (widget.initialSectionIndex != null && widget.initialSectionIndex! > 0) {
@@ -779,39 +805,18 @@ class _MasterCaseTakingScreenState
     _hpiPrecipitatingFactorsController.dispose();
     _hpiOtherRelevantHistoryController.dispose();
 
-    _pastChildhoodIllnessesController.dispose();
-    _pastMajorIllnessesController.dispose();
-    _pastChronicDiseasesController.dispose();
-    _pastSurgeriesController.dispose();
-    _pastInjuriesTraumaController.dispose();
-    _pastHospitalisationsController.dispose();
-    _pastInfectionsController.dispose();
-    _pastAllergiesController.dispose();
-    _pastPreviousMedicationsController.dispose();
-    _pastPrevHomeopathicTreatmentController.dispose();
-    _pastOtherPastHistoryController.dispose();
+    for (final p in _pastDiseases) {
+      p.dispose();
+    }
 
-    _familyFatherController.dispose();
-    _familyMotherController.dispose();
-    _familySiblingsController.dispose();
-    _familySpouseController.dispose();
-    _familyChildrenController.dispose();
-    _familyGrandparentsRelativesController.dispose();
-    _familyHereditaryDiseasesController.dispose();
-    _familyMajorFamilialDiseasesController.dispose();
-    _familyPsychiatricHistoryController.dispose();
-    _familyOtherFamilyHistoryController.dispose();
+    _familyPaternalController.dispose();
+    _familyMaternalController.dispose();
+    _familyOwnController.dispose();
 
     _devMaternalHealthController.dispose();
     _devPregnancyComplicationsController.dispose();
-    _devMaternalInfectionsController.dispose();
     _devMaternalMedicationsController.dispose();
-    _devAntenatalCareController.dispose();
-    _devNutritionDuringPregnancyController.dispose();
-    _devGestationalAgeController.dispose();
-    _devBirthOrderController.dispose();
     _devModeOfDeliveryController.dispose();
-    _devBirthWeightController.dispose();
     _devNeonatalHistoryController.dispose();
     _devBreastfeedingController.dispose();
     _devDevelopmentalMilestonesController.dispose();
@@ -1088,57 +1093,42 @@ class _MasterCaseTakingScreenState
     _hpiOtherRelevantHistoryController.text = record.hpi.otherRelevantHistory;
 
     // 5. Past History
-    _pastChildhoodIllnessesController.text =
-        record.pastHistory.childhoodIllnesses;
-    _pastMajorIllnessesController.text = record.pastHistory.majorIllnesses;
-    _pastChronicDiseasesController.text = record.pastHistory.chronicDiseases;
-    _pastSurgeriesController.text = record.pastHistory.surgeries;
-    _pastInjuriesTraumaController.text = record.pastHistory.injuriesTrauma;
-    _pastHospitalisationsController.text = record.pastHistory.hospitalisations;
-    _pastInfectionsController.text = record.pastHistory.infections;
-    _pastAllergiesController.text = record.pastHistory.allergies;
-    _pastPreviousMedicationsController.text =
-        record.pastHistory.previousMedications;
-    _pastPrevHomeopathicTreatmentController.text =
-        record.pastHistory.previousHomeopathicTreatment;
-    _pastOtherPastHistoryController.text = record.pastHistory.otherPastHistory;
+    for (final p in _pastDiseases) {
+      p.dispose();
+    }
+    _pastDiseases.clear();
+    if (record.pastHistory.entries.isNotEmpty) {
+      for (final e in record.pastHistory.entries) {
+        final ctrl = _PastDiseaseEntryController(
+          disease: e.disease,
+          years: e.years,
+          treatment: e.treatment,
+          outcome: e.outcome,
+        );
+        _attachPastDiseaseListeners(ctrl);
+        _pastDiseases.add(ctrl);
+      }
+    }
+    if (_pastDiseases.isEmpty) {
+      final ctrl = _PastDiseaseEntryController();
+      _attachPastDiseaseListeners(ctrl);
+      _pastDiseases.add(ctrl);
+    }
 
     // 6. Family History
-    _familyFatherController.text = record.familyHistory.father;
-    _familyMotherController.text = record.familyHistory.mother;
-    _familySiblingsController.text = record.familyHistory.siblings;
-    _familySpouseController.text = record.familyHistory.spouse;
-    _familyChildrenController.text = record.familyHistory.children;
-    _familyGrandparentsRelativesController.text =
-        record.familyHistory.grandparentsRelatives;
-    _familyHereditaryDiseasesController.text =
-        record.familyHistory.hereditaryDiseases;
-    _familyMajorFamilialDiseasesController.text =
-        record.familyHistory.majorFamilialDiseases;
-    _familyPsychiatricHistoryController.text =
-        record.familyHistory.psychiatricHistory;
-    _familyOtherFamilyHistoryController.text =
-        record.familyHistory.otherFamilyHistory;
+    _familyPaternalController.text = record.familyHistory.paternalHistory;
+    _familyMaternalController.text = record.familyHistory.maternalHistory;
+    _familyOwnController.text = record.familyHistory.ownFamilyHistory;
 
     // 7. Developmental History
     _devMaternalHealthController.text =
         record.developmentalHistory.maternalHealth;
     _devPregnancyComplicationsController.text =
         record.developmentalHistory.pregnancyComplications;
-    _devMaternalInfectionsController.text =
-        record.developmentalHistory.maternalInfections;
     _devMaternalMedicationsController.text =
         record.developmentalHistory.maternalMedications;
-    _devAntenatalCareController.text =
-        record.developmentalHistory.antenatalCare;
-    _devNutritionDuringPregnancyController.text =
-        record.developmentalHistory.nutritionDuringPregnancy;
-    _devGestationalAgeController.text =
-        record.developmentalHistory.gestationalAge;
-    _devBirthOrderController.text = record.developmentalHistory.birthOrder;
     _devModeOfDeliveryController.text =
         record.developmentalHistory.modeOfDelivery;
-    _devBirthWeightController.text = record.developmentalHistory.birthWeight;
     _devNeonatalHistoryController.text =
         record.developmentalHistory.neonatalHistory;
     _devBreastfeedingController.text =
@@ -1606,46 +1596,29 @@ class _MasterCaseTakingScreenState
         otherRelevantHistory: _hpiOtherRelevantHistoryController.text.trim(),
       ),
       pastHistory: PastHistoryDetails(
-        childhoodIllnesses: _pastChildhoodIllnessesController.text.trim(),
-        majorIllnesses: _pastMajorIllnessesController.text.trim(),
-        chronicDiseases: _pastChronicDiseasesController.text.trim(),
-        surgeries: _pastSurgeriesController.text.trim(),
-        injuriesTrauma: _pastInjuriesTraumaController.text.trim(),
-        hospitalisations: _pastHospitalisationsController.text.trim(),
-        infections: _pastInfectionsController.text.trim(),
-        allergies: _pastAllergiesController.text.trim(),
-        previousMedications: _pastPreviousMedicationsController.text.trim(),
-        previousHomeopathicTreatment:
-            _pastPrevHomeopathicTreatmentController.text.trim(),
-        otherPastHistory: _pastOtherPastHistoryController.text.trim(),
+        entries: _pastDiseases
+            .map(
+              (p) => PastDiseaseEntry(
+                disease: p.disease.text.trim(),
+                years: p.years.text.trim(),
+                treatment: p.treatment.text.trim(),
+                outcome: p.outcome.text.trim(),
+              ),
+            )
+            .where((p) => p.isNotEmpty)
+            .toList(),
       ),
       familyHistory: FamilyHistoryDetails(
-        father: _familyFatherController.text.trim(),
-        mother: _familyMotherController.text.trim(),
-        siblings: _familySiblingsController.text.trim(),
-        spouse: _familySpouseController.text.trim(),
-        children: _familyChildrenController.text.trim(),
-        grandparentsRelatives:
-            _familyGrandparentsRelativesController.text.trim(),
-        hereditaryDiseases: _familyHereditaryDiseasesController.text.trim(),
-        majorFamilialDiseases:
-            _familyMajorFamilialDiseasesController.text.trim(),
-        psychiatricHistory: _familyPsychiatricHistoryController.text.trim(),
-        otherFamilyHistory: _familyOtherFamilyHistoryController.text.trim(),
+        paternalHistory: _familyPaternalController.text.trim(),
+        maternalHistory: _familyMaternalController.text.trim(),
+        ownFamilyHistory: _familyOwnController.text.trim(),
       ),
       developmentalHistory: DevelopmentalHistoryDetails(
         maternalHealth: _devMaternalHealthController.text.trim(),
         pregnancyComplications:
             _devPregnancyComplicationsController.text.trim(),
-        maternalInfections: _devMaternalInfectionsController.text.trim(),
         maternalMedications: _devMaternalMedicationsController.text.trim(),
-        antenatalCare: _devAntenatalCareController.text.trim(),
-        nutritionDuringPregnancy:
-            _devNutritionDuringPregnancyController.text.trim(),
-        gestationalAge: _devGestationalAgeController.text.trim(),
-        birthOrder: _devBirthOrderController.text.trim(),
         modeOfDelivery: _devModeOfDeliveryController.text.trim(),
-        birthWeight: _devBirthWeightController.text.trim(),
         neonatalHistory: _devNeonatalHistoryController.text.trim(),
         breastfeeding: _devBreastfeedingController.text.trim(),
         developmentalMilestones:
@@ -2368,111 +2341,7 @@ class _MasterCaseTakingScreenState
           title: 'Past Medical History',
           icon: Icons.medical_information_outlined,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pastChildhoodIllnessesController,
-                    'Childhood Illnesses',
-                    Icons.child_care,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pastMajorIllnessesController,
-                    'Major Illnesses',
-                    Icons.coronavirus_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pastChronicDiseasesController,
-                    'Chronic Diseases',
-                    Icons.health_and_safety_outlined,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pastSurgeriesController,
-                    'Operations / Surgeries',
-                    Icons.local_hospital_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pastInjuriesTraumaController,
-                    'Injuries / Trauma',
-                    Icons.personal_injury_outlined,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pastHospitalisationsController,
-                    'Hospitalisations',
-                    Icons.hotel_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pastInfectionsController,
-                    'Infections',
-                    Icons.pest_control_outlined,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pastAllergiesController,
-                    'Allergies',
-                    Icons.warning_amber_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pastPreviousMedicationsController,
-                    'Previous Medications',
-                    Icons.medication,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pastPrevHomeopathicTreatmentController,
-                    'Previous Homeopathy',
-                    Icons.science_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _pastOtherPastHistoryController,
-              'Other Past History',
-              Icons.description_outlined,
-            ),
+            _buildPastHistoryTable(),
           ],
         );
 
@@ -2483,96 +2352,57 @@ class _MasterCaseTakingScreenState
           title: 'Family History',
           icon: Icons.groups_outlined,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _familyFatherController,
-                    'Father',
-                    Icons.person,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _familyMotherController,
-                    'Mother',
-                    Icons.person_2,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _familySiblingsController,
-                    'Siblings',
-                    Icons.group,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _familySpouseController,
-                    'Spouse',
-                    Icons.favorite_border,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _familyChildrenController,
-                    'Children',
-                    Icons.family_restroom,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _familyGrandparentsRelativesController,
-                    'Grandparents & Other Relatives',
-                    Icons.elderly_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _familyHereditaryDiseasesController,
-                    'Hereditary Diseases',
-                    Icons.biotech_outlined,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _familyMajorFamilialDiseasesController,
-                    'Familial Diseases (HTN, DM, TB)',
-                    Icons.analytics_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _familyPsychiatricHistoryController,
-              'Psychiatric Family History',
-              Icons.psychology_alt_outlined,
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _familyOtherFamilyHistoryController,
-              'Other Family History',
-              Icons.notes,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 768;
+                final paternal = _buildInput(
+                  _familyPaternalController,
+                  'Paternal Family History',
+                  Icons.male_outlined,
+                  5,
+                  3,
+                  'Father, paternal grandparents, relatives, hereditary illnesses...',
+                );
+                final maternal = _buildInput(
+                  _familyMaternalController,
+                  'Maternal Family History',
+                  Icons.female_outlined,
+                  5,
+                  3,
+                  'Mother, maternal grandparents, relatives, familial illnesses...',
+                );
+                final own = _buildInput(
+                  _familyOwnController,
+                  'Own Family History',
+                  Icons.people_outline,
+                  5,
+                  3,
+                  'Siblings, spouse, children, immediate family conditions...',
+                );
+
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: paternal),
+                      const SizedBox(width: Spacing.md),
+                      Expanded(child: maternal),
+                      const SizedBox(width: Spacing.md),
+                      Expanded(child: own),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    paternal,
+                    const SizedBox(height: Spacing.md),
+                    maternal,
+                    const SizedBox(height: Spacing.md),
+                    own,
+                  ],
+                );
+              },
             ),
           ],
         );
@@ -2608,77 +2438,17 @@ class _MasterCaseTakingScreenState
               children: [
                 Expanded(
                   child: _buildInput(
-                    _devMaternalInfectionsController,
-                    'Maternal Infections',
-                    Icons.bug_report_outlined,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
                     _devMaternalMedicationsController,
                     'Maternal Medications',
                     Icons.medication_liquid,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _devAntenatalCareController,
-                    'Antenatal Care',
-                    Icons.medical_services_outlined,
-                  ),
-                ),
                 const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _devNutritionDuringPregnancyController,
-                    'Maternal Nutrition',
-                    Icons.restaurant,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _devGestationalAgeController,
-                    'Gestational Age / Term',
-                    Icons.access_time,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _devBirthOrderController,
-                    'Birth Order',
-                    Icons.format_list_numbered,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
                 Expanded(
                   child: _buildInput(
                     _devModeOfDeliveryController,
                     'Mode of Delivery',
                     Icons.local_hospital,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _devBirthWeightController,
-                    'Birth Weight',
-                    Icons.monitor_weight_outlined,
                   ),
                 ),
               ],
@@ -2710,24 +2480,19 @@ class _MasterCaseTakingScreenState
               Icons.emoji_events_outlined,
             ),
             const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _devChildhoodDevelopmentController,
-                    'Childhood Development',
-                    Icons.school_outlined,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _devOtherBirthDevelopmentalHistoryController,
-                    'Other Developmental Notes',
-                    Icons.more_horiz,
-                  ),
-                ),
-              ],
+            _buildInput(
+              _devChildhoodDevelopmentController,
+              'Childhood Development',
+              Icons.school_outlined,
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(
+              _devOtherBirthDevelopmentalHistoryController,
+              'Other Developmental Notes',
+              Icons.notes,
+              6,
+              3,
+              'Expanded developmental notes, milestones, childhood peculiarities, vaccinations, growth...',
             ),
           ],
         );
@@ -4697,28 +4462,11 @@ class _MasterCaseTakingScreenState
             ],
           ),
           const SizedBox(height: Spacing.sm),
+          // 1. Complaint
           _buildInput(entry.complaint, 'Complaint', Icons.healing),
           const SizedBox(height: Spacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: _buildInput(
-                  entry.location,
-                  'Location',
-                  Icons.place_outlined,
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: _buildInput(
-                  entry.sensation,
-                  'Sensation / Character',
-                  Icons.touch_app_outlined,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: Spacing.md),
+
+          // 2. Onset: Onset & Duration
           Row(
             children: [
               Expanded(
@@ -4739,6 +4487,71 @@ class _MasterCaseTakingScreenState
             ],
           ),
           const SizedBox(height: Spacing.md),
+
+          // 3. Causation: Causation / Origin & Severity
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildInput(
+                  entry.causation,
+                  'Causation / Origin',
+                  Icons.psychology_outlined,
+                ),
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: PickerField<String>(
+                  label: 'Severity',
+                  prefixIcon: Icons.speed,
+                  value: entry.severity,
+                  options: const [
+                    PickerOption(value: 'Mild', label: 'Mild (1 - 3)'),
+                    PickerOption(value: 'Moderate', label: 'Moderate (4 - 6)'),
+                    PickerOption(value: 'Severe', label: 'Severe (7 - 9)'),
+                    PickerOption(
+                      value: 'Intolerable',
+                      label: 'Intolerable (10/10)',
+                    ),
+                  ],
+                  onChanged: (v) => setState(() => entry.severity = v),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.md),
+
+          // 4. Location: Location & Radiation / Extension
+          Row(
+            children: [
+              Expanded(
+                child: _buildInput(
+                  entry.location,
+                  'Location',
+                  Icons.place_outlined,
+                ),
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: _buildInput(
+                  entry.extensionRadiation,
+                  'Radiation / Extension',
+                  Icons.alt_route_outlined,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.md),
+
+          // 5. Sensation: Sensation / Character
+          _buildInput(
+            entry.sensation,
+            'Sensation / Character',
+            Icons.touch_app_outlined,
+          ),
+          const SizedBox(height: Spacing.md),
+
+          // 6. Modality: Aggravation & Amelioration, Time & Periodicity
           Row(
             children: [
               Expanded(
@@ -4763,29 +4576,9 @@ class _MasterCaseTakingScreenState
             children: [
               Expanded(
                 child: _buildInput(
-                  entry.extensionRadiation,
-                  'Radiation / Extension',
-                  Icons.alt_route_outlined,
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: _buildInput(
-                  entry.concomitant,
-                  'Concomitants',
-                  Icons.link,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: Spacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: _buildInput(
-                  entry.causation,
-                  'Causation / Origin',
-                  Icons.psychology_outlined,
+                  entry.time,
+                  'Time Modality',
+                  Icons.alarm_outlined,
                 ),
               ),
               const SizedBox(width: Spacing.md),
@@ -4799,44 +4592,247 @@ class _MasterCaseTakingScreenState
             ],
           ),
           const SizedBox(height: Spacing.md),
+
+          // 7. Concomitant: Concomitants & Associated Symptoms
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: _buildInput(
-                  entry.time,
-                  'Time Modality',
-                  Icons.alarm_outlined,
+                  entry.concomitant,
+                  'Concomitants',
+                  Icons.link,
                 ),
               ),
               const SizedBox(width: Spacing.md),
               Expanded(
-                child: PickerField<String>(
-                  label: 'Severity',
-                  prefixIcon: Icons.speed,
-                  value: entry.severity,
-                  options: const [
-                    PickerOption(value: 'Mild', label: 'Mild (1 - 3)'),
-                    PickerOption(value: 'Moderate', label: 'Moderate (4 - 6)'),
-                    PickerOption(value: 'Severe', label: 'Severe (7 - 9)'),
-                    PickerOption(
-                      value: 'Intolerable',
-                      label: 'Intolerable (10/10)',
-                    ),
-                  ],
-                  onChanged: (v) => setState(() => entry.severity = v),
+                child: _buildInput(
+                  entry.associatedSymptoms,
+                  'Associated Symptoms',
+                  Icons.summarize_outlined,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: Spacing.md),
-          _buildInput(
-            entry.associatedSymptoms,
-            'Associated Symptoms',
-            Icons.summarize_outlined,
-          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPastHistoryTable() {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 650;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (!isNarrow) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Spacing.sm,
+                  vertical: Spacing.xs + 2,
+                ),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: Radii.smAll,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Disease / Condition',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Years / Duration',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Treatment',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Outcome',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 40),
+                  ],
+                ),
+              ),
+              const SizedBox(height: Spacing.xs),
+            ],
+            ...List.generate(_pastDiseases.length, (i) {
+              final entry = _pastDiseases[i];
+              if (isNarrow) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: Spacing.sm),
+                  padding: const EdgeInsets.all(Spacing.sm),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerLow,
+                    borderRadius: Radii.smAll,
+                    border: Border.all(color: scheme.outlineVariant),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Entry #${i + 1}',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: scheme.primary,
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                            color: scheme.error,
+                            onPressed: () => _removePastDiseaseEntry(i),
+                            tooltip:
+                                _pastDiseases.length > 1 ? 'Remove' : 'Clear',
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Spacing.xs),
+                      _buildInput(
+                        entry.disease,
+                        'Disease / Condition',
+                        Icons.coronavirus_outlined,
+                      ),
+                      const SizedBox(height: Spacing.xs),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildInput(
+                              entry.years,
+                              'Years / Duration',
+                              Icons.access_time,
+                            ),
+                          ),
+                          const SizedBox(width: Spacing.sm),
+                          Expanded(
+                            child: _buildInput(
+                              entry.treatment,
+                              'Treatment',
+                              Icons.medication_outlined,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Spacing.xs),
+                      _buildInput(
+                        entry.outcome,
+                        'Outcome',
+                        Icons.check_circle_outline,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: Spacing.xs),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: _buildInput(
+                        entry.disease,
+                        'Disease / Condition',
+                        Icons.coronavirus_outlined,
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      flex: 2,
+                      child: _buildInput(
+                        entry.years,
+                        'Years / Duration',
+                        Icons.access_time,
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      flex: 3,
+                      child: _buildInput(
+                        entry.treatment,
+                        'Treatment',
+                        Icons.medication_outlined,
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.sm),
+                    Expanded(
+                      flex: 2,
+                      child: _buildInput(
+                        entry.outcome,
+                        'Outcome',
+                        Icons.check_circle_outline,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      color:
+                          _pastDiseases.length > 1
+                              ? scheme.error
+                              : scheme.onSurfaceVariant.withValues(alpha: 0.3),
+                      tooltip:
+                          _pastDiseases.length > 1
+                              ? 'Remove entry'
+                              : 'Clear entry',
+                      onPressed: () => _removePastDiseaseEntry(i),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: Spacing.xs),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add Past History Entry'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: scheme.primary,
+                  side: BorderSide(color: scheme.primary.withValues(alpha: 0.5)),
+                  shape: RoundedRectangleBorder(borderRadius: Radii.pillAll),
+                ),
+                onPressed: () => _addPastDiseaseEntry(),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

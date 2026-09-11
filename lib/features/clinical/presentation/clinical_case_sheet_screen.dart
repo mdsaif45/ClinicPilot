@@ -42,6 +42,7 @@ class _ClinicalCaseSheetScreenState
     'HPI',
     'Past History',
     'Family',
+    'Developmental',
     'Physical Generals',
     'Mental Generals',
     'Lifestyle',
@@ -242,6 +243,13 @@ class _ClinicalCaseSheetScreenState
                                   // 5. Family History
                                   if (_isSectionVisible('Family'))
                                     _buildFamilyHistorySection(context, record),
+
+                                  // 5b. Developmental History
+                                  if (_isSectionVisible('Developmental'))
+                                    _buildDevelopmentalHistorySection(
+                                      context,
+                                      record,
+                                    ),
 
                                   // 6. Physical Generals
                                   if (_isSectionVisible('Physical Generals'))
@@ -887,9 +895,23 @@ class _ClinicalCaseSheetScreenState
                 ],
               ),
             ),
+            _ClinicalRow(
+              label: 'Onset & Duration',
+              value:
+                  c.onset.isNotEmpty
+                      ? (c.duration.isNotEmpty
+                          ? '${c.onset} (${c.duration})'
+                          : c.onset)
+                      : c.duration,
+            ),
+            _ClinicalRow(label: 'Causation / Origin', value: c.causation),
             _ClinicalRow(label: 'Location / Organ', value: c.location),
+            if (c.extensionRadiation.isNotEmpty)
+              _ClinicalRow(
+                label: 'Radiation / Extension',
+                value: c.extensionRadiation,
+              ),
             _ClinicalRow(label: 'Sensation / Character', value: c.sensation),
-            _ClinicalRow(label: 'Duration / Chronicity', value: c.duration),
             if (c.modalitiesAgg.isNotEmpty)
               _ModalityRow(
                 isAggravation: true,
@@ -902,8 +924,16 @@ class _ClinicalCaseSheetScreenState
                 label: 'Amelioration (>)',
                 value: c.modalitiesAmel,
               ),
+            if (c.time.isNotEmpty)
+              _ClinicalRow(label: 'Time Modality', value: c.time),
+            if (c.periodicity.isNotEmpty)
+              _ClinicalRow(label: 'Periodicity', value: c.periodicity),
             _ClinicalRow(label: 'Concomitants', value: c.concomitants),
-            _ClinicalRow(label: 'Aetiology / Cause', value: c.causation),
+            if (c.associatedSymptoms.isNotEmpty)
+              _ClinicalRow(
+                label: 'Associated Symptoms',
+                value: c.associatedSymptoms,
+              ),
           ],
         ],
         if (record.additionalComplaints.isNotEmpty)
@@ -969,7 +999,8 @@ class _ClinicalCaseSheetScreenState
     MasterCaseRecordData record,
   ) {
     final p = record.pastHistory;
-    final hasData =
+    final hasEntries = p.entries.isNotEmpty;
+    final hasLegacy =
         p.allergies.isNotEmpty ||
         p.childhoodIllnesses.isNotEmpty ||
         p.majorIllnesses.isNotEmpty ||
@@ -977,7 +1008,7 @@ class _ClinicalCaseSheetScreenState
         p.surgeries.isNotEmpty ||
         p.previousHomeopathicTreatment.isNotEmpty;
 
-    if (!hasData) return const SizedBox.shrink();
+    if (!hasEntries && !hasLegacy) return const SizedBox.shrink();
 
     final scheme = Theme.of(context).colorScheme;
 
@@ -1031,17 +1062,139 @@ class _ClinicalCaseSheetScreenState
               ],
             ),
           ),
-        _ClinicalRow(label: 'Childhood Illnesses', value: p.childhoodIllnesses),
-        _ClinicalRow(
-          label: 'Major Illnesses / Admissions',
-          value: p.majorIllnesses,
-        ),
-        _ClinicalRow(label: 'Chronic Diseases', value: p.chronicDiseases),
-        _ClinicalRow(label: 'Surgeries / Trauma', value: p.surgeries),
-        _ClinicalRow(
-          label: 'Prior Homeopathy Experience',
-          value: p.previousHomeopathicTreatment,
-        ),
+        if (hasEntries) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.sm,
+              vertical: Spacing.xs + 2,
+            ),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: Radii.smAll,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    'Disease',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: Spacing.sm),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Years',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: Spacing.sm),
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    'Treatment',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: Spacing.sm),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Outcome',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: Spacing.xs),
+          ...p.entries.map(
+            (e) => Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: Spacing.xs,
+                horizontal: Spacing.sm,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      e.disease.isNotEmpty ? e.disease : '—',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      e.years.isNotEmpty ? e.years : '—',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      e.treatment.isNotEmpty ? e.treatment : '—',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      e.outcome.isNotEmpty ? e.outcome : '—',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ] else ...[
+          _ClinicalRow(label: 'Childhood Illnesses', value: p.childhoodIllnesses),
+          _ClinicalRow(
+            label: 'Major Illnesses / Admissions',
+            value: p.majorIllnesses,
+          ),
+          _ClinicalRow(label: 'Chronic Diseases', value: p.chronicDiseases),
+          _ClinicalRow(label: 'Surgeries / Trauma', value: p.surgeries),
+          _ClinicalRow(
+            label: 'Prior Homeopathy Experience',
+            value: p.previousHomeopathicTreatment,
+          ),
+        ],
       ],
     );
   }
@@ -1052,30 +1205,113 @@ class _ClinicalCaseSheetScreenState
     MasterCaseRecordData record,
   ) {
     final f = record.familyHistory;
-    final hasData =
+    final hasNew =
+        f.paternalHistory.isNotEmpty ||
+        f.maternalHistory.isNotEmpty ||
+        f.ownFamilyHistory.isNotEmpty;
+    final hasLegacy =
         f.father.isNotEmpty ||
         f.mother.isNotEmpty ||
         f.siblings.isNotEmpty ||
         f.majorFamilialDiseases.isNotEmpty ||
         f.hereditaryDiseases.isNotEmpty;
 
-    if (!hasData) return const SizedBox.shrink();
+    if (!hasNew && !hasLegacy) return const SizedBox.shrink();
 
     return _SectionCard(
       title: 'Family Medical History',
       icon: Icons.family_restroom_outlined,
       onEdit: () => _openEditor(context, sectionIndex: 5),
       children: [
-        _ClinicalRow(label: 'Father Health & Diseases', value: f.father),
-        _ClinicalRow(label: 'Mother Health & Diseases', value: f.mother),
-        _ClinicalRow(label: 'Siblings / Children', value: f.siblings),
+        if (hasNew) ...[
+          _ClinicalRow(
+            label: 'Paternal Lineage (Father & Grandparents)',
+            value: f.paternalHistory,
+          ),
+          _ClinicalRow(
+            label: 'Maternal Lineage (Mother & Grandparents)',
+            value: f.maternalHistory,
+          ),
+          _ClinicalRow(
+            label: 'Own Family (Siblings, Spouse, Children)',
+            value: f.ownFamilyHistory,
+          ),
+        ] else ...[
+          _ClinicalRow(label: 'Father Health & Diseases', value: f.father),
+          _ClinicalRow(label: 'Mother Health & Diseases', value: f.mother),
+          _ClinicalRow(label: 'Siblings / Children', value: f.siblings),
+          _ClinicalRow(
+            label: 'Familial Chronic Diseases',
+            value: f.majorFamilialDiseases,
+          ),
+          _ClinicalRow(
+            label: 'Hereditary Tendencies / Miasm',
+            value: f.hereditaryDiseases,
+          ),
+        ],
+      ],
+    );
+  }
+
+  // --- 4b. Developmental History ---
+  Widget _buildDevelopmentalHistorySection(
+    BuildContext context,
+    MasterCaseRecordData record,
+  ) {
+    final d = record.developmentalHistory;
+    final hasData =
+        d.maternalHealth.isNotEmpty ||
+        d.pregnancyComplications.isNotEmpty ||
+        d.maternalMedications.isNotEmpty ||
+        d.modeOfDelivery.isNotEmpty ||
+        d.neonatalHistory.isNotEmpty ||
+        d.breastfeeding.isNotEmpty ||
+        d.developmentalMilestones.isNotEmpty ||
+        d.childhoodDevelopment.isNotEmpty ||
+        d.otherBirthDevelopmentalHistory.isNotEmpty;
+
+    if (!hasData) return const SizedBox.shrink();
+
+    return _SectionCard(
+      title: 'Intrauterine & Developmental History',
+      icon: Icons.child_friendly_outlined,
+      onEdit: () => _openEditor(context, sectionIndex: 6),
+      children: [
         _ClinicalRow(
-          label: 'Familial Chronic Diseases',
-          value: f.majorFamilialDiseases,
+          label: 'Maternal Health in Pregnancy',
+          value: d.maternalHealth,
         ),
         _ClinicalRow(
-          label: 'Hereditary Tendencies / Miasm',
-          value: f.hereditaryDiseases,
+          label: 'Pregnancy Complications',
+          value: d.pregnancyComplications,
+        ),
+        _ClinicalRow(
+          label: 'Maternal Medications',
+          value: d.maternalMedications,
+        ),
+        _ClinicalRow(
+          label: 'Mode of Delivery',
+          value: d.modeOfDelivery,
+        ),
+        _ClinicalRow(
+          label: 'Neonatal History / Cry',
+          value: d.neonatalHistory,
+        ),
+        _ClinicalRow(
+          label: 'Breastfeeding History',
+          value: d.breastfeeding,
+        ),
+        _ClinicalRow(
+          label: 'Milestones (Teething, Walking, Talking)',
+          value: d.developmentalMilestones,
+        ),
+        _ClinicalRow(
+          label: 'Childhood Development',
+          value: d.childhoodDevelopment,
+        ),
+        _ClinicalRow(
+          label: 'Other Developmental Notes',
+          value: d.otherBirthDevelopmentalHistory,
         ),
       ],
     );
