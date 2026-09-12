@@ -128,14 +128,27 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
           label: const Text('Add Investigation'),
         );
       case 5: // Case Record
+        final fabDoctorProfile =
+            ref.watch(doctorProfileStreamProvider).value ??
+            const DoctorProfile();
         return FloatingActionButton.extended(
           heroTag: 'fab-caserecord',
           onPressed: () {
             AppHaptics.selection();
             _showClinicalEntryOptions(context);
           },
-          icon: const Icon(Icons.edit_note),
-          label: const Text('Case Taking'),
+          icon: Icon(
+            fabDoctorProfile.isDental
+                ? Icons.grid_view_rounded
+                : Icons.edit_note,
+          ),
+          label: Text(
+            fabDoctorProfile.isDental
+                ? 'Dental Chart'
+                : (fabDoctorProfile.isGeneralPractice
+                    ? 'Clinical Note'
+                    : 'Case Taking'),
+          ),
         );
       case 6: // Payments
         return FloatingActionButton.extended(
@@ -250,6 +263,8 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
   void _showClinicalEntryOptions(BuildContext context) {
     final caseRecord =
         ref.read(patientCaseRecordProvider(widget.patient.id)).value;
+    final doctorProfile =
+        ref.read(doctorProfileStreamProvider).value ?? const DoctorProfile();
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
@@ -260,136 +275,159 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder:
-          (ctx) => SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Spacing.lg,
-                vertical: Spacing.md,
+      builder: (ctx) {
+        final soapTile = ListTile(
+          leading: CircleAvatar(
+            backgroundColor: scheme.primaryContainer,
+            child: Icon(Icons.speed, color: scheme.primary),
+          ),
+          title: const Text('Quick SOAP Note & Vitals'),
+          subtitle: const Text(
+            'Rapid general practice note with live BMI & BP logging',
+          ),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 14,
+            color: scheme.onSurfaceVariant,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: Radii.smAll,
+            side: BorderSide(color: scheme.outlineVariant),
+          ),
+          onTap: () {
+            Navigator.pop(ctx);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder:
+                    (_) => SoapNoteScreen(
+                      patient: widget.patient,
+                      existingRecord: caseRecord,
+                    ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Clinical Consultation',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: Spacing.xs),
-                  Text(
-                    'Choose your clinical consultation flow:',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: Spacing.md),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: scheme.primaryContainer,
-                      child: Icon(Icons.speed, color: scheme.primary),
-                    ),
-                    title: const Text('Quick SOAP Note & Vitals'),
-                    subtitle: const Text(
-                      'Rapid general practice note with live BMI & BP logging',
-                    ),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 14,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: Radii.smAll,
-                      side: BorderSide(color: scheme.outlineVariant),
-                    ),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => SoapNoteScreen(
-                                patient: widget.patient,
-                                existingRecord: caseRecord,
-                              ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: scheme.secondaryContainer,
-                      child: Icon(
-                        Icons.assignment_outlined,
-                        color: scheme.secondary,
-                      ),
-                    ),
-                    title: const Text('Comprehensive Case Sheet'),
-                    subtitle: const Text(
-                      '10-tab holistic case taking with miasmatic analysis',
-                    ),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 14,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: Radii.smAll,
-                      side: BorderSide(color: scheme.outlineVariant),
-                    ),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => MasterCaseTakingScreen(
-                                patient: widget.patient,
-                              ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: scheme.tertiaryContainer,
-                      child: Icon(
-                        Icons.grid_view_rounded,
-                        color: scheme.tertiary,
-                      ),
-                    ),
-                    title: const Text('Dental Odontogram & Treatment Chart'),
-                    subtitle: const Text(
-                      'Interactive 32-tooth chart, caries, RCT, crowns & treatment plan',
-                    ),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 14,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: Radii.smAll,
-                      side: BorderSide(color: scheme.outlineVariant),
-                    ),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => DentalChartScreen(
-                                patient: widget.patient,
-                                existingRecord: caseRecord,
-                              ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: Spacing.md),
-                ],
+            );
+          },
+        );
+
+        final caseSheetTile = ListTile(
+          leading: CircleAvatar(
+            backgroundColor: scheme.secondaryContainer,
+            child: Icon(Icons.assignment_outlined, color: scheme.secondary),
+          ),
+          title: const Text('Comprehensive Case Sheet'),
+          subtitle: const Text(
+            'Holistic clinical case taking with systemic analysis',
+          ),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 14,
+            color: scheme.onSurfaceVariant,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: Radii.smAll,
+            side: BorderSide(color: scheme.outlineVariant),
+          ),
+          onTap: () {
+            Navigator.pop(ctx);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MasterCaseTakingScreen(patient: widget.patient),
               ),
+            );
+          },
+        );
+
+        final dentalTile = ListTile(
+          leading: CircleAvatar(
+            backgroundColor: scheme.tertiaryContainer,
+            child: Icon(Icons.grid_view_rounded, color: scheme.tertiary),
+          ),
+          title: const Text('Dental Odontogram & Treatment Chart'),
+          subtitle: const Text(
+            'Interactive 32-tooth chart, caries, RCT, crowns & treatment plan',
+          ),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 14,
+            color: scheme.onSurfaceVariant,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: Radii.smAll,
+            side: BorderSide(color: scheme.outlineVariant),
+          ),
+          onTap: () {
+            Navigator.pop(ctx);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder:
+                    (_) => DentalChartScreen(
+                      patient: widget.patient,
+                      existingRecord: caseRecord,
+                    ),
+              ),
+            );
+          },
+        );
+
+        final List<Widget> optionTiles = [];
+        if (doctorProfile.isDental) {
+          optionTiles.add(dentalTile);
+          optionTiles.add(const SizedBox(height: Spacing.sm));
+          optionTiles.add(soapTile);
+        } else if (doctorProfile.isGeneralPractice) {
+          optionTiles.add(soapTile);
+          optionTiles.add(const SizedBox(height: Spacing.sm));
+          optionTiles.add(caseSheetTile);
+        } else if (doctorProfile.isHomeopathy || doctorProfile.isAyurveda) {
+          optionTiles.add(caseSheetTile);
+          optionTiles.add(const SizedBox(height: Spacing.sm));
+          optionTiles.add(soapTile);
+          if (caseRecord != null &&
+              DentalChartData.tryParse(
+                    caseRecord.clinicalExam.dentalChartJson,
+                  )?.hasFindings ==
+                  true) {
+            optionTiles.add(const SizedBox(height: Spacing.sm));
+            optionTiles.add(dentalTile);
+          }
+        } else {
+          optionTiles.add(soapTile);
+          optionTiles.add(const SizedBox(height: Spacing.sm));
+          optionTiles.add(caseSheetTile);
+          optionTiles.add(const SizedBox(height: Spacing.sm));
+          optionTiles.add(dentalTile);
+        }
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.lg,
+              vertical: Spacing.md,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Clinical Consultation',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: Spacing.xs),
+                Text(
+                  'Choose your clinical consultation flow:',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: Spacing.md),
+                ...optionTiles,
+                const SizedBox(height: Spacing.md),
+              ],
             ),
           ),
+        );
+      },
     );
   }
 
@@ -1383,6 +1421,8 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final record = caseRecordAsync.value;
+    final doctorProfile =
+        ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
 
     final vitals =
         record != null
@@ -1615,102 +1655,326 @@ class _ClinicalCaseRecordTab extends ConsumerWidget {
                   const SizedBox(height: Spacing.sm),
                 ],
                 if (record == null) ...[
-                  AppButton.primary(
-                    label: 'Quick SOAP Note & Vitals',
-                    icon: Icons.speed,
-                    fullWidth: true,
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).push(
-                        MaterialPageRoute(
-                          builder: (_) => SoapNoteScreen(patient: patient),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  AppButton.tonal(
-                    label: 'Dental Odontogram & Chart',
-                    icon: Icons.grid_view_rounded,
-                    fullWidth: true,
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).push(
-                        MaterialPageRoute(
-                          builder: (_) => DentalChartScreen(patient: patient),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: Spacing.sm),
-                  AppButton.outlined(
-                    label: 'Start Clinical Case Taking',
-                    icon: Icons.edit_note,
-                    fullWidth: true,
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => MasterCaseTakingScreen(patient: patient),
-                        ),
-                      );
-                    },
-                  ),
+                  if (doctorProfile.isDental) ...[
+                    AppButton.primary(
+                      label: 'Dental Odontogram & Chart',
+                      icon: Icons.grid_view_rounded,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => DentalChartScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: Spacing.sm),
+                    AppButton.tonal(
+                      label: 'Quick SOAP Note & Vitals',
+                      icon: Icons.speed,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => SoapNoteScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                  ] else if (doctorProfile.isGeneralPractice) ...[
+                    AppButton.primary(
+                      label: 'Quick SOAP Note & Vitals',
+                      icon: Icons.speed,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => SoapNoteScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: Spacing.sm),
+                    AppButton.tonal(
+                      label: 'Start Clinical Case Taking',
+                      icon: Icons.edit_note,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder:
+                                (_) => MasterCaseTakingScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                  ] else if (doctorProfile.isHomeopathy ||
+                      doctorProfile.isAyurveda) ...[
+                    AppButton.primary(
+                      label: 'Start Clinical Case Taking',
+                      icon: Icons.edit_note,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder:
+                                (_) => MasterCaseTakingScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: Spacing.sm),
+                    AppButton.tonal(
+                      label: 'Quick SOAP Note & Vitals',
+                      icon: Icons.speed,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => SoapNoteScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                  ] else ...[
+                    AppButton.primary(
+                      label: 'Quick SOAP Note & Vitals',
+                      icon: Icons.speed,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => SoapNoteScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: Spacing.sm),
+                    AppButton.tonal(
+                      label: 'Dental Odontogram & Chart',
+                      icon: Icons.grid_view_rounded,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => DentalChartScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: Spacing.sm),
+                    AppButton.outlined(
+                      label: 'Start Clinical Case Taking',
+                      icon: Icons.edit_note,
+                      fullWidth: true,
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder:
+                                (_) => MasterCaseTakingScreen(patient: patient),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ] else ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppButton.primary(
-                          label: 'SOAP Note',
-                          icon: Icons.speed,
-                          onPressed: () {
-                            Navigator.of(context, rootNavigator: true).push(
-                              MaterialPageRoute(
-                                builder:
-                                    (_) => SoapNoteScreen(
-                                      patient: patient,
-                                      existingRecord: record,
-                                    ),
-                              ),
-                            );
-                          },
+                  if (doctorProfile.isDental) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton.primary(
+                            label: 'Dental Chart',
+                            icon: Icons.grid_view_rounded,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => DentalChartScreen(
+                                        patient: patient,
+                                        existingRecord: record,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: Spacing.xs),
-                      Expanded(
-                        child: AppButton.tonal(
-                          label: 'Dental',
-                          icon: Icons.grid_view_rounded,
-                          onPressed: () {
-                            Navigator.of(context, rootNavigator: true).push(
-                              MaterialPageRoute(
-                                builder:
-                                    (_) => DentalChartScreen(
-                                      patient: patient,
-                                      existingRecord: record,
-                                    ),
-                              ),
-                            );
-                          },
+                        const SizedBox(width: Spacing.xs),
+                        Expanded(
+                          child: AppButton.tonal(
+                            label: 'SOAP Note',
+                            icon: Icons.speed,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => SoapNoteScreen(
+                                        patient: patient,
+                                        existingRecord: record,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: Spacing.xs),
-                      Expanded(
-                        child: AppButton.outlined(
-                          label: 'View Full Case Sheet',
-                          icon: Icons.visibility_outlined,
-                          onPressed: () {
-                            Navigator.of(context, rootNavigator: true).push(
-                              MaterialPageRoute(
-                                builder:
-                                    (_) => ClinicalCaseSheetScreen(
-                                      patient: patient,
-                                    ),
-                              ),
-                            );
-                          },
+                      ],
+                    ),
+                  ] else if (doctorProfile.isHomeopathy ||
+                      doctorProfile.isAyurveda) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton.primary(
+                            label: 'View Full Case Sheet',
+                            icon: Icons.visibility_outlined,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => ClinicalCaseSheetScreen(
+                                        patient: patient,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: Spacing.xs),
+                        Expanded(
+                          child: AppButton.tonal(
+                            label: 'SOAP Note',
+                            icon: Icons.speed,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => SoapNoteScreen(
+                                        patient: patient,
+                                        existingRecord: record,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        if (dentalChart != null && dentalChart.hasFindings) ...[
+                          const SizedBox(width: Spacing.xs),
+                          Expanded(
+                            child: AppButton.outlined(
+                              label: 'Dental',
+                              icon: Icons.grid_view_rounded,
+                              onPressed: () {
+                                Navigator.of(context, rootNavigator: true).push(
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => DentalChartScreen(
+                                          patient: patient,
+                                          existingRecord: record,
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ] else if (doctorProfile.isGeneralPractice) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton.primary(
+                            label: 'SOAP Note',
+                            icon: Icons.speed,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => SoapNoteScreen(
+                                        patient: patient,
+                                        existingRecord: record,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: Spacing.xs),
+                        Expanded(
+                          child: AppButton.tonal(
+                            label: 'View Case Sheet',
+                            icon: Icons.visibility_outlined,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => ClinicalCaseSheetScreen(
+                                        patient: patient,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton.primary(
+                            label: 'SOAP Note',
+                            icon: Icons.speed,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => SoapNoteScreen(
+                                        patient: patient,
+                                        existingRecord: record,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: Spacing.xs),
+                        Expanded(
+                          child: AppButton.tonal(
+                            label: 'Dental',
+                            icon: Icons.grid_view_rounded,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => DentalChartScreen(
+                                        patient: patient,
+                                        existingRecord: record,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: Spacing.xs),
+                        Expanded(
+                          child: AppButton.outlined(
+                            label: 'View Full Case Sheet',
+                            icon: Icons.visibility_outlined,
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => ClinicalCaseSheetScreen(
+                                        patient: patient,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ],
             ),

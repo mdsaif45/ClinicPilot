@@ -106,6 +106,92 @@ void main() {
       expect(profile.phone, '9876543210');
       expect(profile.qualification, 'MD, BHMS');
       expect(profile.regNumber, 'REG-12345');
+      expect(profile.specialty, ClinicalSpecialty.homeopathy);
+    });
+
+    test(
+      'ClinicalSpecialty auto-infers from qualification and parses fromId',
+      () {
+        expect(
+          ClinicalSpecialty.fromId('homeopathy'),
+          ClinicalSpecialty.homeopathy,
+        );
+        expect(ClinicalSpecialty.fromId('dental'), ClinicalSpecialty.dental);
+        expect(
+          ClinicalSpecialty.fromId('general_practice'),
+          ClinicalSpecialty.generalPractice,
+        );
+        expect(
+          ClinicalSpecialty.fromId('ayurveda'),
+          ClinicalSpecialty.ayurveda,
+        );
+        expect(
+          ClinicalSpecialty.fromId('multi_specialty'),
+          ClinicalSpecialty.multiSpecialty,
+        );
+
+        // Inferred from qualifications
+        expect(
+          ClinicalSpecialty.fromId(
+            null,
+            qualificationFallback: 'BHMS, MD (Hom.)',
+          ),
+          ClinicalSpecialty.homeopathy,
+        );
+        expect(
+          ClinicalSpecialty.fromId('', qualificationFallback: 'BDS, MDS'),
+          ClinicalSpecialty.dental,
+        );
+        expect(
+          ClinicalSpecialty.fromId(
+            null,
+            qualificationFallback: 'MBBS, MD (Medicine)',
+          ),
+          ClinicalSpecialty.generalPractice,
+        );
+        expect(
+          ClinicalSpecialty.fromId(
+            null,
+            qualificationFallback: 'BAMS, MD (Ayu)',
+          ),
+          ClinicalSpecialty.ayurveda,
+        );
+        expect(
+          ClinicalSpecialty.fromId(
+            null,
+            qualificationFallback: 'Certified Therapist',
+          ),
+          ClinicalSpecialty.multiSpecialty,
+        );
+      },
+    );
+
+    test('saves and updates practice specialty', () async {
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+
+      final notifier = container.read(doctorProfileNotifierProvider.notifier);
+
+      await notifier.updateProfile(
+        name: 'Dr. A. K. Sharma',
+        qualification: 'BDS',
+        specialty: ClinicalSpecialty.dental,
+      );
+
+      final profile = await container.read(doctorProfileStreamProvider.future);
+      expect(profile.specialty, ClinicalSpecialty.dental);
+      expect(profile.isDental, isTrue);
+      expect(profile.isHomeopathy, isFalse);
+
+      await notifier.updateProfile(
+        name: 'Dr. A. K. Sharma',
+        specialty: ClinicalSpecialty.generalPractice,
+      );
+
+      final updated = await container.read(doctorProfileStreamProvider.future);
+      expect(updated.specialty, ClinicalSpecialty.generalPractice);
+      expect(updated.isGeneralPractice, isTrue);
     });
   });
 
@@ -145,6 +231,7 @@ void main() {
       expect(find.text('9876500000'), findsOneWidget);
       expect(find.text('BHMS, MD'), findsWidgets);
       expect(find.text('Reg: MC-1010'), findsOneWidget);
+      expect(find.text('Practice Specialty'), findsOneWidget);
 
       // Tap Edit Profile icon in AppBar
       await t.tap(find.byIcon(Icons.edit_outlined));
