@@ -109,6 +109,41 @@ void main() {
       },
     );
 
+    test(
+      'MentalGenerals synthesizes generalMentalState from legacy subfields when generalMentalState is empty',
+      () {
+        final legacyJson = {
+          'disposition': 'Gentle, yielding, easily weeping',
+          'anxiety': 'Anxiety about health and future in the evening',
+          'fears': 'Fear of dark and being alone',
+          'anger': 'Quick-tempered but easily calmed',
+          'consolationReaction': 'Consolation ameliorates symptoms',
+        };
+
+        final parsed = MentalGenerals.fromJson(legacyJson);
+        expect(
+          parsed.generalMentalState,
+          contains('Disposition: Gentle, yielding, easily weeping'),
+        );
+        expect(
+          parsed.generalMentalState,
+          contains('Anxiety: Anxiety about health and future in the evening'),
+        );
+        expect(
+          parsed.generalMentalState,
+          contains('Fears: Fear of dark and being alone'),
+        );
+        expect(
+          parsed.generalMentalState,
+          contains('Anger & Temper: Quick-tempered but easily calmed'),
+        );
+        expect(
+          parsed.generalMentalState,
+          contains('Consolation Response: Consolation ameliorates symptoms'),
+        );
+      },
+    );
+
     test('PastDiseaseEntry serializes and deserializes properly', () {
       const entry = PastDiseaseEntry(
         disease: 'Typhoid fever',
@@ -864,6 +899,93 @@ void main() {
         expect(find.text('Urine Quantity'), findsNothing);
         expect(find.text('Urine Colour / Odour'), findsNothing);
         expect(find.text('Urinary Symptoms'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'MasterCaseTakingScreen: Section 09 Mental & Emotional Generals renders single observation field and prunes 26 granular fields',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 5000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final db = AppDatabase(NativeDatabase.memory());
+        addTearDown(db.close);
+
+        final patient = Patient(
+          id: 'p_test_section_09',
+          patientCode: 'P-2026-00009',
+          name: 'Section 09 Test Patient',
+          phone: '9876543219',
+          age: 38,
+          gender: 'Female',
+          primaryClinicId: 'clinic_1',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isDeleted: false,
+          serialNo: '009',
+          referralSource: 'Direct / Walk-in',
+          reviewGiven: false,
+        );
+
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: MasterCaseTakingScreen(patient: patient),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Switch to Generals stage tab
+        expect(find.text('Generals'), findsOneWidget);
+        await tester.tap(find.text('Generals'));
+        await tester.pumpAndSettle();
+
+        // Expand Section 09: Mental & Emotional Generals
+        expect(find.text('Mental & Emotional Generals'), findsOneWidget);
+        await tester.tap(find.text('Mental & Emotional Generals'));
+        await tester.pumpAndSettle();
+
+        // Single comprehensive observation notes field is present
+        expect(find.text('General Mental & Emotional State'), findsOneWidget);
+
+        // 26 granular subfields are pruned from UI
+        expect(find.text('Disposition / Nature'), findsNothing);
+        expect(find.text('Irritability'), findsNothing);
+        expect(find.text('Anger & Temper'), findsNothing);
+        expect(find.text('Anxiety'), findsNothing);
+        expect(find.text('Fears'), findsNothing);
+        expect(find.text('Specific Fears & Phobias'), findsNothing);
+        expect(find.text('Sadness & Grief'), findsNothing);
+        expect(find.text('Depression'), findsNothing);
+        expect(find.text('Jealousy & Envy'), findsNothing);
+        expect(find.text('Suspicion'), findsNothing);
+        expect(find.text('Company (Desire/Aversion)'), findsNothing);
+        expect(find.text('Desire for Solitude'), findsNothing);
+        expect(find.text('Consolation Response'), findsNothing);
+        expect(find.text('Loquacity / Quietness'), findsNothing);
+        expect(find.text('Confidence / Self-Esteem'), findsNothing);
+        expect(find.text('Will & Determination'), findsNothing);
+        expect(find.text('Indecision & Doubt'), findsNothing);
+        expect(find.text('Memory & Recall'), findsNothing);
+        expect(find.text('Concentration & Focus'), findsNothing);
+        expect(find.text('Work / Study Response'), findsNothing);
+        expect(find.text('Restlessness'), findsNothing);
+        expect(find.text('Stress Handling'), findsNothing);
+        expect(find.text('Reaction to Contradiction'), findsNothing);
+        expect(find.text('Reaction to Reprimand'), findsNothing);
+        expect(find.text('Obsessions / Compulsions'), findsNothing);
+        expect(find.text('Other Characteristic Mentals'), findsNothing);
       },
     );
   });
