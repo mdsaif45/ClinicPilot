@@ -1582,10 +1582,14 @@ class _ClinicalCaseSheetScreenState
     MasterCaseRecordData record,
   ) {
     final a = record.clinicalAssessment;
+    final primaryDiag =
+        a.provisionalDiagnosis.isNotEmpty
+            ? a.provisionalDiagnosis
+            : a.finalWorkingDiagnosis;
     final hasData =
-        a.finalWorkingDiagnosis.isNotEmpty ||
-        a.provisionalDiagnosis.isNotEmpty ||
+        primaryDiag.isNotEmpty ||
         a.differentialDiagnosis.isNotEmpty ||
+        a.comorbidities.isNotEmpty ||
         a.clinicalRemarks.isNotEmpty;
 
     if (!hasData) return const SizedBox.shrink();
@@ -1596,21 +1600,21 @@ class _ClinicalCaseSheetScreenState
       onEdit: () => _openEditor(context, sectionIndex: 13),
       children: [
         _ClinicalRow(
-          label: 'Final Working Diagnosis',
-          value:
-              a.finalWorkingDiagnosis.isNotEmpty
-                  ? a.finalWorkingDiagnosis
-                  : a.provisionalDiagnosis,
+          label: 'Diagnosis',
+          value: primaryDiag,
           valueColor: Theme.of(context).colorScheme.primary,
         ),
-        _ClinicalRow(
-          label: 'Provisional Diagnosis',
-          value: a.provisionalDiagnosis,
-        ),
+        if (a.finalWorkingDiagnosis.isNotEmpty &&
+            a.finalWorkingDiagnosis != primaryDiag)
+          _ClinicalRow(
+            label: 'Final Working Diagnosis',
+            value: a.finalWorkingDiagnosis,
+          ),
         _ClinicalRow(
           label: 'Differential Diagnosis',
           value: a.differentialDiagnosis,
         ),
+        _ClinicalRow(label: 'Comorbidities', value: a.comorbidities),
         _ClinicalRow(
           label: 'Clinical Remarks & Notes',
           value: a.clinicalRemarks,
@@ -1752,6 +1756,9 @@ class _ClinicalCaseSheetScreenState
     final hasData =
         record.displayOutcome.isNotEmpty ||
         fu.overallResponse.isNotEmpty ||
+        fu.generalSymptomsChange.isNotEmpty ||
+        fu.mentalSymptomsChange.isNotEmpty ||
+        fu.adverseNewSymptoms.isNotEmpty ||
         out.degreeOfImprovement.isNotEmpty ||
         out.treatmentDuration.isNotEmpty ||
         remarks.isNotEmpty ||
@@ -1782,6 +1789,9 @@ class _ClinicalCaseSheetScreenState
           label: 'Chief Complaint Changes',
           value: fu.chiefComplaintChanges,
         ),
+        _ClinicalRow(label: 'Generals Change', value: fu.generalSymptomsChange),
+        _ClinicalRow(label: 'Mentals Change', value: fu.mentalSymptomsChange),
+        _ClinicalRow(label: 'Adverse Symptoms', value: fu.adverseNewSymptoms),
         _ClinicalRow(label: 'Next Follow-Up Target', value: fu.nextFollowUp),
         _ClinicalRow(label: 'Case Notes & Observations', value: remarks),
       ],

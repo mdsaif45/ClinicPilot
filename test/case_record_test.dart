@@ -988,5 +988,190 @@ void main() {
         expect(find.text('Other Characteristic Mentals'), findsNothing);
       },
     );
+
+    test(
+      'ClinicalAssessmentDetails.fromJson backward compatibility fallback',
+      () {
+        // 1. Only provisionalDiagnosis provided
+        final cad1 = ClinicalAssessmentDetails.fromJson({
+          'provisionalDiagnosis': 'Allergic Rhinitis',
+        });
+        expect(cad1.provisionalDiagnosis, 'Allergic Rhinitis');
+        expect(cad1.finalWorkingDiagnosis, 'Allergic Rhinitis');
+
+        // 2. Only finalWorkingDiagnosis provided
+        final cad2 = ClinicalAssessmentDetails.fromJson({
+          'finalWorkingDiagnosis': 'Bronchial Asthma',
+        });
+        expect(cad2.provisionalDiagnosis, 'Bronchial Asthma');
+        expect(cad2.finalWorkingDiagnosis, 'Bronchial Asthma');
+
+        // 3. Both provided with different values
+        final cad3 = ClinicalAssessmentDetails.fromJson({
+          'provisionalDiagnosis': 'Suspected Asthma',
+          'finalWorkingDiagnosis': 'Confirmed Bronchial Asthma',
+        });
+        expect(cad3.provisionalDiagnosis, 'Suspected Asthma');
+        expect(cad3.finalWorkingDiagnosis, 'Confirmed Bronchial Asthma');
+      },
+    );
+
+    test(
+      'FollowUpDetails.fromJson synthesizes legacy granular fields when generals is empty',
+      () {
+        final fu = FollowUpDetails.fromJson({
+          'sleepChange': 'Improved, uninterrupted 7 hrs',
+          'appetiteThirstChange': 'Appetite increased',
+          'stoolUrineChange': 'Regular soft stool daily',
+          'perspirationChange': 'Less sweating on palms',
+          'energyChange': 'Significantly more active',
+        });
+
+        expect(
+          fu.generalSymptomsChange,
+          'Sleep: Improved, uninterrupted 7 hrs, Appetite/Thirst: Appetite increased, Bowels/Urine: Regular soft stool daily, Sweat: Less sweating on palms, Energy: Significantly more active',
+        );
+        expect(fu.sleepChange, 'Improved, uninterrupted 7 hrs');
+        expect(fu.appetiteThirstChange, 'Appetite increased');
+        expect(fu.stoolUrineChange, 'Regular soft stool daily');
+        expect(fu.perspirationChange, 'Less sweating on palms');
+        expect(fu.energyChange, 'Significantly more active');
+      },
+    );
+
+    testWidgets(
+      'Section 14: Clinical Assessment & Diagnosis renders consolidated diagnosis field and prunes redundant fields',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 5000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final db = AppDatabase(NativeDatabase.memory());
+        addTearDown(db.close);
+
+        final patient = Patient(
+          id: 'test_p14',
+          patientCode: 'P-2026-00014',
+          serialNo: '014',
+          name: 'Diagnosis Test',
+          phone: '9876543210',
+          age: 38,
+          gender: 'Female',
+          primaryClinicId: 'clinic_1',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isDeleted: false,
+          referralSource: 'Direct / Walk-in',
+          reviewGiven: false,
+        );
+
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: MasterCaseTakingScreen(patient: patient),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Switch to Analysis stage tab
+        expect(find.text('Analysis'), findsOneWidget);
+        await tester.tap(find.text('Analysis'));
+        await tester.pumpAndSettle();
+
+        // Expand Section 14: Clinical Assessment & Diagnosis
+        expect(find.text('Clinical Assessment & Diagnosis'), findsOneWidget);
+        await tester.tap(find.text('Clinical Assessment & Diagnosis'));
+        await tester.pumpAndSettle();
+
+        // Consolidated field is present
+        expect(find.text('Diagnosis / Provisional Diagnosis'), findsOneWidget);
+        expect(find.text('Differential Diagnosis'), findsOneWidget);
+        expect(find.text('Comorbidities'), findsOneWidget);
+        expect(find.text('Clinical Remarks & Observations'), findsOneWidget);
+
+        // Pruned fields are absent
+        expect(find.text('Final Working Diagnosis'), findsNothing);
+        expect(find.text('Red Flags & Referral Indications'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Section 17: Follow-Up Details renders Generals/Mentals change and adverse symptoms, pruning redundant subfields',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 5000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final db = AppDatabase(NativeDatabase.memory());
+        addTearDown(db.close);
+
+        final patient = Patient(
+          id: 'test_p17',
+          patientCode: 'P-2026-00017',
+          serialNo: '017',
+          name: 'FollowUp Test',
+          phone: '9876543210',
+          age: 42,
+          gender: 'Male',
+          primaryClinicId: 'clinic_1',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isDeleted: false,
+          referralSource: 'Direct / Walk-in',
+          reviewGiven: false,
+        );
+
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: MasterCaseTakingScreen(patient: patient),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Switch to Prescription stage tab
+        expect(find.text('Prescription'), findsOneWidget);
+        await tester.tap(find.text('Prescription'));
+        await tester.pumpAndSettle();
+
+        // Expand Section 17: Follow-Up Details
+        expect(find.text('Follow-Up Details'), findsOneWidget);
+        await tester.tap(find.text('Follow-Up Details'));
+        await tester.pumpAndSettle();
+
+        // Retained fields are present
+        expect(find.text('Generals Change'), findsOneWidget);
+        expect(find.text('Mentals Change'), findsOneWidget);
+        expect(find.text('Adverse / Unwanted Symptoms'), findsOneWidget);
+        expect(find.text('Follow-Up Remedy'), findsOneWidget);
+
+        // Pruned redundant subfields are absent
+        expect(find.text('Sleep Change'), findsNothing);
+        expect(find.text('Appetite & Thirst Change'), findsNothing);
+        expect(find.text('Bowels & Urine Change'), findsNothing);
+        expect(find.text('Perspiration Change'), findsNothing);
+        expect(find.text('Energy Change'), findsNothing);
+      },
+    );
   });
 }

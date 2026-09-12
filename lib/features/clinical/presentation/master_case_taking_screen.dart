@@ -1353,7 +1353,9 @@ class _MasterCaseTakingScreenState
 
     // 14. Diagnosis
     _diagProvisionalDiagnosisController.text =
-        record.clinicalAssessment.provisionalDiagnosis;
+        record.clinicalAssessment.provisionalDiagnosis.isNotEmpty
+            ? record.clinicalAssessment.provisionalDiagnosis
+            : record.clinicalAssessment.finalWorkingDiagnosis;
     _diagFinalWorkingDiagnosisController.text =
         record.clinicalAssessment.finalWorkingDiagnosis;
     _diagDifferentialDiagnosisController.text =
@@ -1803,7 +1805,10 @@ class _MasterCaseTakingScreenState
       ),
       clinicalAssessment: ClinicalAssessmentDetails(
         provisionalDiagnosis: _diagProvisionalDiagnosisController.text.trim(),
-        finalWorkingDiagnosis: _diagFinalWorkingDiagnosisController.text.trim(),
+        finalWorkingDiagnosis:
+            _diagFinalWorkingDiagnosisController.text.trim().isNotEmpty
+                ? _diagFinalWorkingDiagnosisController.text.trim()
+                : _diagProvisionalDiagnosisController.text.trim(),
         differentialDiagnosis: _diagDifferentialDiagnosisController.text.trim(),
         comorbidities: _diagComorbiditiesController.text.trim(),
         redFlagsReferrals:
@@ -3435,24 +3440,10 @@ class _MasterCaseTakingScreenState
           title: 'Clinical Assessment & Diagnosis',
           icon: Icons.fact_check_outlined,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _diagProvisionalDiagnosisController,
-                    'Provisional Diagnosis',
-                    Icons.assignment_outlined,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _diagFinalWorkingDiagnosisController,
-                    'Final Working Diagnosis',
-                    Icons.check_box_outlined,
-                  ),
-                ),
-              ],
+            _buildInput(
+              _diagProvisionalDiagnosisController,
+              'Diagnosis / Provisional Diagnosis',
+              Icons.assignment_outlined,
             ),
             const SizedBox(height: Spacing.md),
             Row(
@@ -3473,12 +3464,6 @@ class _MasterCaseTakingScreenState
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _diagRedFlagsReferralIndicationsController,
-              'Red Flags & Referral Indications',
-              Icons.warning_amber_rounded,
             ),
             const SizedBox(height: Spacing.md),
             _buildInput(
@@ -3774,64 +3759,10 @@ class _MasterCaseTakingScreenState
               ],
             ),
             const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _fuSleepChangeController,
-                    'Sleep Change',
-                    Icons.bedtime,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _fuAppetiteThirstChangeController,
-                    'Appetite & Thirst Change',
-                    Icons.restaurant,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _fuStoolUrineChangeController,
-                    'Bowels & Urine Change',
-                    Icons.water_drop,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _fuPerspirationChangeController,
-                    'Perspiration Change',
-                    Icons.dew_point,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _fuEnergyChangeController,
-                    'Energy Change',
-                    Icons.bolt,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _fuAdverseNewSymptomsController,
-                    'Adverse / Unwanted Symptoms',
-                    Icons.warning_amber,
-                  ),
-                ),
-              ],
+            _buildInput(
+              _fuAdverseNewSymptomsController,
+              'Adverse / Unwanted Symptoms',
+              Icons.warning_amber,
             ),
             const SizedBox(height: Spacing.md),
             _buildInput(
