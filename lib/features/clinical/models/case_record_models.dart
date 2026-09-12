@@ -953,56 +953,133 @@ class MentalGenerals {
     'otherCharacteristicMentalSymptoms': otherCharacteristicMentalSymptoms,
   };
 
-  factory MentalGenerals.fromJson(Map<String, dynamic> json) => MentalGenerals(
-    generalMentalState: json['generalMentalState'] as String? ?? '',
-    disposition: json['disposition'] as String? ?? '',
-    irritability: json['irritability'] as String? ?? '',
-    anger: json['anger'] as String? ?? '',
-    anxiety: json['anxiety'] as String? ?? '',
-    fears: json['fears'] as String? ?? '',
-    specificFearsPhobias: json['specificFearsPhobias'] as String? ?? '',
-    sadnessGrief: json['sadnessGrief'] as String? ?? '',
-    depression: json['depression'] as String? ?? '',
-    jealousy: json['jealousy'] as String? ?? '',
-    suspicion: json['suspicion'] as String? ?? '',
-    companyDesireAversion:
+  factory MentalGenerals.fromJson(Map<String, dynamic> json) {
+    final rawGeneral = json['generalMentalState'] as String? ?? '';
+    final disposition = json['disposition'] as String? ?? '';
+    final irritability = json['irritability'] as String? ?? '';
+    final anger = json['anger'] as String? ?? '';
+    final anxiety = json['anxiety'] as String? ?? '';
+    final fears = json['fears'] as String? ?? '';
+    final specificFearsPhobias = json['specificFearsPhobias'] as String? ?? '';
+    final sadnessGrief = json['sadnessGrief'] as String? ?? '';
+    final depression = json['depression'] as String? ?? '';
+    final jealousy = json['jealousy'] as String? ?? '';
+    final suspicion = json['suspicion'] as String? ?? '';
+    final companyDesireAversion =
         json['companyDesireAversion'] as String? ??
         json['companySolitude'] as String? ??
-        '',
-    desireForSolitude: json['desireForSolitude'] as String? ?? '',
-    desireForAttentionConsolation:
+        '';
+    final desireForSolitude = json['desireForSolitude'] as String? ?? '';
+    final desireForAttentionConsolation =
         json['desireForAttentionConsolation'] as String? ??
         json['consolationReaction'] as String? ??
         json['attentionConsolation'] as String? ??
-        '',
-    talkativenessQuietness: json['talkativenessQuietness'] as String? ?? '',
-    confidenceSelfEsteem: json['confidenceSelfEsteem'] as String? ?? '',
-    willDetermination: json['willDetermination'] as String? ?? '',
-    indecision: json['indecision'] as String? ?? '',
-    memory: json['memory'] as String? ?? '',
-    concentration: json['concentration'] as String? ?? '',
-    workStudyResponse: json['workStudyResponse'] as String? ?? '',
-    restlessness: json['restlessness'] as String? ?? '',
-    responseToStress:
+        '';
+    final talkativenessQuietness =
+        json['talkativenessQuietness'] as String? ?? '';
+    final confidenceSelfEsteem = json['confidenceSelfEsteem'] as String? ?? '';
+    final willDetermination = json['willDetermination'] as String? ?? '';
+    final indecision = json['indecision'] as String? ?? '';
+    final memory = json['memory'] as String? ?? '';
+    final concentration = json['concentration'] as String? ?? '';
+    final workStudyResponse = json['workStudyResponse'] as String? ?? '';
+    final restlessness = json['restlessness'] as String? ?? '';
+    final responseToStress =
         json['responseToStress'] as String? ??
         json['stressResponse'] as String? ??
-        '',
-    responseToContradictionOpposition:
-        json['responseToContradictionOpposition'] as String? ?? '',
-    responseToReprimand: json['responseToReprimand'] as String? ?? '',
-    compulsionsObsessions: json['compulsionsObsessions'] as String? ?? '',
-    otherCharacteristicMentalSymptoms:
-        json['otherCharacteristicMentalSymptoms'] as String? ?? '',
-  );
+        '';
+    final responseToContradictionOpposition =
+        json['responseToContradictionOpposition'] as String? ?? '';
+    final responseToReprimand = json['responseToReprimand'] as String? ?? '';
+    final compulsionsObsessions =
+        json['compulsionsObsessions'] as String? ?? '';
+    final otherCharacteristicMentalSymptoms =
+        json['otherCharacteristicMentalSymptoms'] as String? ?? '';
+
+    String generalMentalState = rawGeneral;
+    if (generalMentalState.isEmpty) {
+      final legacyEntries = <String>[];
+      void addIfNotEmpty(String label, String value) {
+        if (value.isNotEmpty) {
+          legacyEntries.add('$label: $value');
+        }
+      }
+
+      addIfNotEmpty('Disposition', disposition);
+      addIfNotEmpty('Anxiety', anxiety);
+      addIfNotEmpty('Fears', fears);
+      addIfNotEmpty('Specific Fears & Phobias', specificFearsPhobias);
+      addIfNotEmpty('Irritability', irritability);
+      addIfNotEmpty('Anger & Temper', anger);
+      addIfNotEmpty('Sadness & Grief', sadnessGrief);
+      addIfNotEmpty('Depression', depression);
+      addIfNotEmpty('Jealousy', jealousy);
+      addIfNotEmpty('Suspicion', suspicion);
+      addIfNotEmpty('Company (Desire/Aversion)', companyDesireAversion);
+      addIfNotEmpty('Desire for Solitude', desireForSolitude);
+      addIfNotEmpty('Consolation Response', desireForAttentionConsolation);
+      addIfNotEmpty('Talkativeness / Quietness', talkativenessQuietness);
+      addIfNotEmpty('Confidence / Self-Esteem', confidenceSelfEsteem);
+      addIfNotEmpty('Will & Determination', willDetermination);
+      addIfNotEmpty('Indecision & Doubt', indecision);
+      addIfNotEmpty('Memory', memory);
+      addIfNotEmpty('Concentration & Focus', concentration);
+      addIfNotEmpty('Work / Study Response', workStudyResponse);
+      addIfNotEmpty('Restlessness', restlessness);
+      addIfNotEmpty('Stress Handling', responseToStress);
+      addIfNotEmpty(
+        'Reaction to Contradiction',
+        responseToContradictionOpposition,
+      );
+      addIfNotEmpty('Reaction to Reprimand', responseToReprimand);
+      addIfNotEmpty('Obsessions / Compulsions', compulsionsObsessions);
+      addIfNotEmpty('Other Mentals', otherCharacteristicMentalSymptoms);
+
+      if (legacyEntries.isNotEmpty) {
+        generalMentalState = legacyEntries.join(', ');
+      }
+    }
+
+    return MentalGenerals(
+      generalMentalState: generalMentalState,
+      disposition: disposition,
+      irritability: irritability,
+      anger: anger,
+      anxiety: anxiety,
+      fears: fears,
+      specificFearsPhobias: specificFearsPhobias,
+      sadnessGrief: sadnessGrief,
+      depression: depression,
+      jealousy: jealousy,
+      suspicion: suspicion,
+      companyDesireAversion: companyDesireAversion,
+      desireForSolitude: desireForSolitude,
+      desireForAttentionConsolation: desireForAttentionConsolation,
+      talkativenessQuietness: talkativenessQuietness,
+      confidenceSelfEsteem: confidenceSelfEsteem,
+      willDetermination: willDetermination,
+      indecision: indecision,
+      memory: memory,
+      concentration: concentration,
+      workStudyResponse: workStudyResponse,
+      restlessness: restlessness,
+      responseToStress: responseToStress,
+      responseToContradictionOpposition: responseToContradictionOpposition,
+      responseToReprimand: responseToReprimand,
+      compulsionsObsessions: compulsionsObsessions,
+      otherCharacteristicMentalSymptoms: otherCharacteristicMentalSymptoms,
+    );
+  }
 
   factory MentalGenerals.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const MentalGenerals();
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>)
+      if (decoded is Map<String, dynamic>) {
         return MentalGenerals.fromJson(decoded);
+      }
     } catch (_) {}
-    return MentalGenerals(disposition: raw);
+    return MentalGenerals(generalMentalState: raw);
   }
 }
 
