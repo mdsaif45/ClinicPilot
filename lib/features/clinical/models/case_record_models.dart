@@ -1599,15 +1599,19 @@ class ClinicalAssessmentDetails {
     'clinicalRemarks': clinicalRemarks,
   };
 
-  factory ClinicalAssessmentDetails.fromJson(Map<String, dynamic> json) =>
-      ClinicalAssessmentDetails(
-        provisionalDiagnosis: json['provisionalDiagnosis'] as String? ?? '',
-        finalWorkingDiagnosis: json['finalWorkingDiagnosis'] as String? ?? '',
-        differentialDiagnosis: json['differentialDiagnosis'] as String? ?? '',
-        comorbidities: json['comorbidities'] as String? ?? '',
-        redFlagsReferrals: json['redFlagsReferrals'] as String? ?? '',
-        clinicalRemarks: json['clinicalRemarks'] as String? ?? '',
-      );
+  factory ClinicalAssessmentDetails.fromJson(Map<String, dynamic> json) {
+    final rawProv = json['provisionalDiagnosis'] as String? ?? '';
+    final rawFinal = json['finalWorkingDiagnosis'] as String? ?? '';
+    final diag = rawProv.isNotEmpty ? rawProv : rawFinal;
+    return ClinicalAssessmentDetails(
+      provisionalDiagnosis: diag,
+      finalWorkingDiagnosis: rawFinal.isNotEmpty ? rawFinal : diag,
+      differentialDiagnosis: json['differentialDiagnosis'] as String? ?? '',
+      comorbidities: json['comorbidities'] as String? ?? '',
+      redFlagsReferrals: json['redFlagsReferrals'] as String? ?? '',
+      clinicalRemarks: json['clinicalRemarks'] as String? ?? '',
+    );
+  }
 
   factory ClinicalAssessmentDetails.fromString(String? raw) {
     if (raw == null || raw.isEmpty) return const ClinicalAssessmentDetails();
@@ -1877,30 +1881,61 @@ class FollowUpDetails {
     'followUpRemarks': followUpRemarks,
   };
 
-  factory FollowUpDetails.fromJson(Map<String, dynamic> json) =>
-      FollowUpDetails(
-        followUpDate: json['followUpDate'] as String? ?? '',
-        intervalSincePreviousVisit:
-            json['intervalSincePreviousVisit'] as String? ?? '',
-        overallResponse: json['overallResponse'] as String? ?? '',
-        chiefComplaintChanges: json['chiefComplaintChanges'] as String? ?? '',
-        newSymptoms: json['newSymptoms'] as String? ?? '',
-        aggravation: json['aggravation'] as String? ?? '',
-        improvement: json['improvement'] as String? ?? '',
-        generalSymptomsChange: json['generalSymptomsChange'] as String? ?? '',
-        mentalSymptomsChange: json['mentalSymptomsChange'] as String? ?? '',
-        sleepChange: json['sleepChange'] as String? ?? '',
-        appetiteThirstChange: json['appetiteThirstChange'] as String? ?? '',
-        stoolUrineChange: json['stoolUrineChange'] as String? ?? '',
-        perspirationChange: json['perspirationChange'] as String? ?? '',
-        energyChange: json['energyChange'] as String? ?? '',
-        adverseNewSymptoms: json['adverseNewSymptoms'] as String? ?? '',
-        followUpPrescription: json['followUpPrescription'] as String? ?? '',
-        potency: json['potency'] as String? ?? '',
-        doseRepetition: json['doseRepetition'] as String? ?? '',
-        nextFollowUp: json['nextFollowUp'] as String? ?? '',
-        followUpRemarks: json['followUpRemarks'] as String? ?? '',
-      );
+  factory FollowUpDetails.fromJson(Map<String, dynamic> json) {
+    final rawGeneral = json['generalSymptomsChange'] as String? ?? '';
+    final sleepChange = json['sleepChange'] as String? ?? '';
+    final appetiteThirstChange = json['appetiteThirstChange'] as String? ?? '';
+    final stoolUrineChange = json['stoolUrineChange'] as String? ?? '';
+    final perspirationChange = json['perspirationChange'] as String? ?? '';
+    final energyChange = json['energyChange'] as String? ?? '';
+
+    String generalSymptomsChange = rawGeneral;
+    if (generalSymptomsChange.isEmpty) {
+      final legacy = <String>[];
+      if (sleepChange.isNotEmpty) {
+        legacy.add('Sleep: $sleepChange');
+      }
+      if (appetiteThirstChange.isNotEmpty) {
+        legacy.add('Appetite/Thirst: $appetiteThirstChange');
+      }
+      if (stoolUrineChange.isNotEmpty) {
+        legacy.add('Bowels/Urine: $stoolUrineChange');
+      }
+      if (perspirationChange.isNotEmpty) {
+        legacy.add('Sweat: $perspirationChange');
+      }
+      if (energyChange.isNotEmpty) {
+        legacy.add('Energy: $energyChange');
+      }
+      if (legacy.isNotEmpty) {
+        generalSymptomsChange = legacy.join(', ');
+      }
+    }
+
+    return FollowUpDetails(
+      followUpDate: json['followUpDate'] as String? ?? '',
+      intervalSincePreviousVisit:
+          json['intervalSincePreviousVisit'] as String? ?? '',
+      overallResponse: json['overallResponse'] as String? ?? '',
+      chiefComplaintChanges: json['chiefComplaintChanges'] as String? ?? '',
+      newSymptoms: json['newSymptoms'] as String? ?? '',
+      aggravation: json['aggravation'] as String? ?? '',
+      improvement: json['improvement'] as String? ?? '',
+      generalSymptomsChange: generalSymptomsChange,
+      mentalSymptomsChange: json['mentalSymptomsChange'] as String? ?? '',
+      sleepChange: sleepChange,
+      appetiteThirstChange: appetiteThirstChange,
+      stoolUrineChange: stoolUrineChange,
+      perspirationChange: perspirationChange,
+      energyChange: energyChange,
+      adverseNewSymptoms: json['adverseNewSymptoms'] as String? ?? '',
+      followUpPrescription: json['followUpPrescription'] as String? ?? '',
+      potency: json['potency'] as String? ?? '',
+      doseRepetition: json['doseRepetition'] as String? ?? '',
+      nextFollowUp: json['nextFollowUp'] as String? ?? '',
+      followUpRemarks: json['followUpRemarks'] as String? ?? '',
+    );
+  }
 }
 
 // 18. OUTCOME
