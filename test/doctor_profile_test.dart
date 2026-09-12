@@ -1,6 +1,7 @@
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
+import 'package:clinic_pilot/core/widgets/picker_field.dart';
 import 'package:clinic_pilot/features/onboarding/providers/onboarding_provider.dart';
 import 'package:clinic_pilot/features/settings/presentation/doctor_profile_screen.dart';
 import 'package:clinic_pilot/features/settings/presentation/settings_screen.dart';
@@ -199,6 +200,10 @@ void main() {
     testWidgets('renders doctor profile details and opens edit dialog', (
       t,
     ) async {
+      t.view.physicalSize = const Size(1200, 1600);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.resetPhysicalSize);
+
       final container = ProviderContainer(
         overrides: [databaseProvider.overrideWithValue(db)],
       );
@@ -239,6 +244,32 @@ void main() {
 
       expect(find.text('Edit Doctor Profile'), findsOneWidget);
       expect(find.text('Save Profile'), findsOneWidget);
+
+      // Verify PickerField is rendered for Practice Specialty
+      final specialtyPicker = find.widgetWithText(
+        PickerField<ClinicalSpecialty>,
+        'Practice Specialty',
+      );
+      expect(specialtyPicker, findsOneWidget);
+
+      // Open bottom sheet
+      await t.tap(specialtyPicker);
+      await t.pumpAndSettle();
+
+      // Tap Dentistry option in bottom sheet
+      expect(find.text('Dentistry'), findsOneWidget);
+      await t.tap(find.text('Dentistry'));
+      await t.pumpAndSettle();
+
+      // Save profile
+      await t.tap(find.text('Save Profile'));
+      await t.pumpAndSettle();
+
+      // Verify specialty updated on the screen
+      expect(
+        find.text('Dentistry • BDS / MDS / Dental Surgery'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('SettingsScreen renders doctor profile card header', (t) async {
