@@ -134,6 +134,14 @@ class DoctorProfileScreen extends ConsumerWidget {
             title: 'Credentials & Practice',
             children: [
               AppListTile(
+                icon: profile.specialty.icon,
+                title: 'Practice Specialty',
+                subtitle:
+                    '${profile.specialty.label} • ${profile.specialty.subtitle}',
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _openEditDialog(context, profile),
+              ),
+              AppListTile(
                 icon: Icons.school_outlined,
                 title: 'Qualifications / Degrees',
                 subtitle:
@@ -204,6 +212,7 @@ class _EditDoctorProfileDialogState
   late TextEditingController _phoneController;
   late TextEditingController _qualificationController;
   late TextEditingController _regNumberController;
+  late ClinicalSpecialty _selectedSpecialty;
 
   bool _saving = false;
 
@@ -224,6 +233,7 @@ class _EditDoctorProfileDialogState
     _regNumberController = TextEditingController(
       text: widget.profile.regNumber,
     );
+    _selectedSpecialty = widget.profile.specialty;
   }
 
   @override
@@ -253,6 +263,7 @@ class _EditDoctorProfileDialogState
             phone: _phoneController.text.trim(),
             qualification: _qualificationController.text.trim(),
             regNumber: _regNumberController.text.trim(),
+            specialty: _selectedSpecialty,
           );
 
       if (mounted) {
@@ -359,6 +370,40 @@ class _EditDoctorProfileDialogState
               controller: _regNumberController,
               label: 'Medical Registration No.',
               prefixIcon: Icons.badge_outlined,
+            ),
+            const SizedBox(height: Spacing.md),
+            DropdownButtonFormField<ClinicalSpecialty>(
+              value: _selectedSpecialty,
+              decoration: InputDecoration(
+                labelText: 'Practice Specialty',
+                prefixIcon: Icon(_selectedSpecialty.icon),
+                border: OutlineInputBorder(borderRadius: Radii.smAll),
+              ),
+              isExpanded: true,
+              items:
+                  ClinicalSpecialty.values.map((s) {
+                    return DropdownMenuItem<ClinicalSpecialty>(
+                      value: s,
+                      child: Row(
+                        children: [
+                          Icon(s.icon, size: 20),
+                          const SizedBox(width: Spacing.sm),
+                          Expanded(
+                            child: Text(
+                              '${s.label} (${s.subtitle})',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => _selectedSpecialty = val);
+                }
+              },
             ),
           ],
         ),

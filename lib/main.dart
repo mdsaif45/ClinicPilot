@@ -1,4 +1,5 @@
 import 'dart:ui' show PointerDeviceKind;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -138,7 +139,7 @@ class _ClinicPilotAppState extends ConsumerState<ClinicPilotApp>
               }
             },
           },
-          child: Focus(autofocus: true, child: appChild),
+          child: Focus(autofocus: !kIsWeb, child: appChild),
         );
       },
     );
