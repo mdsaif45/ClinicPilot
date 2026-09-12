@@ -9,6 +9,7 @@ import '../../../core/widgets/app_form_dialog.dart';
 import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/picker_field.dart';
 import '../../clinics/providers/clinic_provider.dart';
 import '../providers/doctor_profile_provider.dart';
 
@@ -372,37 +373,21 @@ class _EditDoctorProfileDialogState
               prefixIcon: Icons.badge_outlined,
             ),
             const SizedBox(height: Spacing.md),
-            DropdownButtonFormField<ClinicalSpecialty>(
+            PickerField<ClinicalSpecialty>(
+              label: 'Practice Specialty',
+              prefixIcon: _selectedSpecialty.icon,
               value: _selectedSpecialty,
-              decoration: InputDecoration(
-                labelText: 'Practice Specialty',
-                prefixIcon: Icon(_selectedSpecialty.icon),
-                border: OutlineInputBorder(borderRadius: Radii.smAll),
-              ),
-              isExpanded: true,
-              items:
+              options:
                   ClinicalSpecialty.values.map((s) {
-                    return DropdownMenuItem<ClinicalSpecialty>(
+                    return PickerOption<ClinicalSpecialty>(
                       value: s,
-                      child: Row(
-                        children: [
-                          Icon(s.icon, size: 20),
-                          const SizedBox(width: Spacing.sm),
-                          Expanded(
-                            child: Text(
-                              '${s.label} (${s.subtitle})',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
+                      label: s.label,
+                      subtitle: s.subtitle,
+                      icon: s.icon,
                     );
                   }).toList(),
               onChanged: (val) {
-                if (val != null) {
-                  setState(() => _selectedSpecialty = val);
-                }
+                setState(() => _selectedSpecialty = val);
               },
             ),
           ],
