@@ -1,6 +1,7 @@
 import 'package:clinic_pilot/core/database/app_database.dart';
 import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
+import 'package:clinic_pilot/core/widgets/app_list_tile.dart';
 import 'package:clinic_pilot/core/widgets/picker_field.dart';
 import 'package:clinic_pilot/features/onboarding/providers/onboarding_provider.dart';
 import 'package:clinic_pilot/features/settings/presentation/doctor_profile_screen.dart';
@@ -194,6 +195,41 @@ void main() {
       expect(updated.specialty, ClinicalSpecialty.generalPractice);
       expect(updated.isGeneralPractice, isTrue);
     });
+
+    test('defaults enableSoapNotes to true and allows toggling', () async {
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+
+      // Verify default is true
+      final initialProfile = await container.read(
+        doctorProfileStreamProvider.future,
+      );
+      expect(initialProfile.enableSoapNotes, isTrue);
+
+      final notifier = container.read(doctorProfileNotifierProvider.notifier);
+
+      // Toggle to false
+      await notifier.setEnableSoapNotes(false);
+      final disabledProfile = await container.read(
+        doctorProfileStreamProvider.future,
+      );
+      expect(disabledProfile.enableSoapNotes, isFalse);
+
+      // Toggle back to true
+      await notifier.setEnableSoapNotes(true);
+      final enabledProfile = await container.read(
+        doctorProfileStreamProvider.future,
+      );
+      expect(enabledProfile.enableSoapNotes, isTrue);
+
+      // Update via updateProfile
+      await notifier.updateProfile(enableSoapNotes: false);
+      final updatedProfile = await container.read(
+        doctorProfileStreamProvider.future,
+      );
+      expect(updatedProfile.enableSoapNotes, isFalse);
+    });
   });
 
   group('DoctorProfileScreen Widget Tests', () {
@@ -299,6 +335,107 @@ void main() {
 
       expect(find.text('Dr. Alice Smith'), findsOneWidget);
       expect(find.text('BHMS, MD'), findsOneWidget);
+    });
+
+    testWidgets('DoctorProfileScreen displays and toggles SOAP Notes switch', (
+      t,
+    ) async {
+      t.view.physicalSize = const Size(1200, 1600);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.resetPhysicalSize);
+
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+
+      await container
+          .read(doctorProfileNotifierProvider.notifier)
+          .updateProfile(name: 'Dr. Test');
+
+      await t.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const DoctorProfileScreen(),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+
+      expect(find.text('SOAP Notes & Quick Vitals'), findsOneWidget);
+      expect(
+        find.text('Enabled for routine follow-ups & vitals'),
+        findsOneWidget,
+      );
+
+      final switchFinder = find.byType(Switch);
+      expect(switchFinder, findsOneWidget);
+
+      // Toggle off
+      await t.tap(switchFinder);
+      await t.pumpAndSettle();
+
+      expect(
+        find.text('Disabled (Classical case taking only)'),
+        findsOneWidget,
+      );
+
+      final profile = await container.read(doctorProfileStreamProvider.future);
+      expect(profile.enableSoapNotes, isFalse);
+    });
+
+    testWidgets('SettingsScreen displays and toggles SOAP Notes switch', (
+      t,
+    ) async {
+      t.view.physicalSize = const Size(1200, 1600);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.resetPhysicalSize);
+
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+
+      await t.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+
+      expect(find.text('SOAP Notes & Quick Vitals'), findsOneWidget);
+      expect(
+        find.text('Enabled for routine follow-ups & vitals'),
+        findsOneWidget,
+      );
+
+      final switchFinder = find.widgetWithText(
+        AppListTile,
+        'SOAP Notes & Quick Vitals',
+      );
+      expect(switchFinder, findsOneWidget);
+
+      final soapSwitch = find.descendant(
+        of: switchFinder,
+        matching: find.byType(Switch),
+      );
+      expect(soapSwitch, findsOneWidget);
+
+      // Toggle off
+      await t.tap(soapSwitch);
+      await t.pumpAndSettle();
+
+      expect(
+        find.text('Disabled (Classical case taking only)'),
+        findsOneWidget,
+      );
+
+      final profile = await container.read(doctorProfileStreamProvider.future);
+      expect(profile.enableSoapNotes, isFalse);
     });
   });
 }

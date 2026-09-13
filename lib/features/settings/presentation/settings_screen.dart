@@ -47,6 +47,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final clinics = ref.watch(clinicsStreamProvider).value ?? [];
+    final doctorProfile =
+        ref.watch(doctorProfileStreamProvider).value ?? const DoctorProfile();
 
     return Scaffold(
       appBar: AppBar(
@@ -92,6 +94,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         builder: (_) => const LetterheadBrandingScreen(),
                       ),
                     ),
+              ),
+              AppListTile(
+                icon: Icons.speed,
+                title: 'SOAP Notes & Quick Vitals',
+                subtitle:
+                    doctorProfile.enableSoapNotes
+                        ? 'Enabled for routine follow-ups & vitals'
+                        : 'Disabled (Classical case taking only)',
+                trailing: Switch.adaptive(
+                  value: doctorProfile.enableSoapNotes,
+                  onChanged: (val) {
+                    ref
+                        .read(doctorProfileNotifierProvider.notifier)
+                        .setEnableSoapNotes(val);
+                  },
+                ),
+                onTap: () {
+                  ref
+                      .read(doctorProfileNotifierProvider.notifier)
+                      .setEnableSoapNotes(!doctorProfile.enableSoapNotes);
+                },
               ),
             ],
           ),

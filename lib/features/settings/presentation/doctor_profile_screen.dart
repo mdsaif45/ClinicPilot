@@ -171,7 +171,35 @@ class DoctorProfileScreen extends ConsumerWidget {
             ],
           ),
 
-          // 4. Data & Cloud Sync Status
+          // 4. Clinical Preferences
+          SettingsGroup(
+            title: 'Clinical Consultation Preferences',
+            children: [
+              AppListTile(
+                icon: Icons.speed,
+                title: 'SOAP Notes & Quick Vitals',
+                subtitle:
+                    profile.enableSoapNotes
+                        ? 'Enabled for routine follow-ups & vitals'
+                        : 'Disabled (Classical case taking only)',
+                trailing: Switch.adaptive(
+                  value: profile.enableSoapNotes,
+                  onChanged: (val) {
+                    ref
+                        .read(doctorProfileNotifierProvider.notifier)
+                        .setEnableSoapNotes(val);
+                  },
+                ),
+                onTap: () {
+                  ref
+                      .read(doctorProfileNotifierProvider.notifier)
+                      .setEnableSoapNotes(!profile.enableSoapNotes);
+                },
+              ),
+            ],
+          ),
+
+          // 5. Data & Cloud Sync Status
           SettingsGroup(
             title: 'Data & Sync Status',
             children: [

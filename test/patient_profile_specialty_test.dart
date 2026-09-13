@@ -67,10 +67,12 @@ void main() {
   Widget createWidget({
     required ClinicalSpecialty specialty,
     MasterCaseRecordData? record,
+    bool enableSoapNotes = true,
   }) {
     final profile = DoctorProfile(
       name: 'Dr. Test Doctor',
       specialty: specialty,
+      enableSoapNotes: enableSoapNotes,
       qualification:
           specialty == ClinicalSpecialty.homeopathy
               ? 'BHMS, MD (Hom.)'
@@ -265,5 +267,195 @@ void main() {
       expect(find.text('Dental'), findsOneWidget);
       expect(find.text('View Full Case Sheet'), findsOneWidget);
     });
+
+    testWidgets(
+      'Homeopathy doctor with SOAP disabled: Case Record empty state prunes SOAP Note',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          createWidget(
+            specialty: ClinicalSpecialty.homeopathy,
+            record: null,
+            enableSoapNotes: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Case Record'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Start Clinical Case Taking'), findsOneWidget);
+        expect(find.text('Quick SOAP Note & Vitals'), findsNothing);
+        expect(find.text('Dental Odontogram & Chart'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Homeopathy doctor with SOAP disabled: Case Record populated state prunes SOAP Note and expands Full Case Sheet',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          createWidget(
+            specialty: ClinicalSpecialty.homeopathy,
+            record: testCaseRecord,
+            enableSoapNotes: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Case Record'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('View Full Case Sheet'), findsOneWidget);
+        expect(find.text('SOAP Note'), findsNothing);
+        expect(find.text('Dental'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Dental doctor with SOAP disabled: Case Record empty state prunes SOAP Note',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          createWidget(
+            specialty: ClinicalSpecialty.dental,
+            record: null,
+            enableSoapNotes: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Case Record'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Dental Odontogram & Chart'), findsOneWidget);
+        expect(find.text('Quick SOAP Note & Vitals'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Dental doctor with SOAP disabled: Case Record populated state prunes SOAP Note',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          createWidget(
+            specialty: ClinicalSpecialty.dental,
+            record: testCaseRecord,
+            enableSoapNotes: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Case Record'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.widgetWithText(FilledButton, 'Dental Chart'),
+          findsOneWidget,
+        );
+        expect(find.text('SOAP Note'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'General Practice doctor with SOAP disabled: falls back FAB to Case Taking and prunes SOAP Note',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          createWidget(
+            specialty: ClinicalSpecialty.generalPractice,
+            record: null,
+            enableSoapNotes: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Switch to Case Record tab
+        await tester.tap(find.byTooltip('Case Record'));
+        await tester.pumpAndSettle();
+
+        // Check FAB on tab 5
+        expect(
+          find.widgetWithText(FloatingActionButton, 'Case Taking'),
+          findsOneWidget,
+        );
+        expect(
+          find.widgetWithText(FloatingActionButton, 'Clinical Note'),
+          findsNothing,
+        );
+
+        expect(find.text('Start Clinical Case Taking'), findsOneWidget);
+        expect(find.text('Quick SOAP Note & Vitals'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'General Practice doctor with SOAP disabled: populated state shows View Case Sheet without SOAP',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          createWidget(
+            specialty: ClinicalSpecialty.generalPractice,
+            record: testCaseRecord,
+            enableSoapNotes: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Case Record'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('View Case Sheet'), findsOneWidget);
+        expect(find.text('SOAP Note'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Clinical entry bottom sheet prunes Quick SOAP Note option when enableSoapNotes is false',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          createWidget(
+            specialty: ClinicalSpecialty.homeopathy,
+            record: null,
+            enableSoapNotes: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Switch to Case Record tab where FAB is available
+        await tester.tap(find.byTooltip('Case Record'));
+        await tester.pumpAndSettle();
+
+        // Tap FAB on Case Record tab to open bottom sheet
+        await tester.tap(find.byType(FloatingActionButton));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Clinical Consultation'), findsOneWidget);
+        expect(find.text('Comprehensive Case Sheet'), findsOneWidget);
+        expect(find.text('Quick SOAP Note & Vitals'), findsNothing);
+      },
+    );
   });
 }
