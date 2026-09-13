@@ -749,15 +749,14 @@ void main() {
         expect(find.text('Time Modality'), findsNothing);
         expect(find.text('Periodicity'), findsOneWidget);
         expect(find.text('Concomitants'), findsOneWidget);
-        expect(find.text('Associated Symptoms'), findsOneWidget);
+        expect(find.text('Associated Symptoms'), findsNothing);
         expect(find.text('Severity'), findsOneWidget);
+        expect(find.byIcon(Icons.hub_outlined), findsOneWidget);
 
-        // Verify Severity is rendered at the bottom of the complaint card (after Associated Symptoms)
+        // Verify Severity is rendered at the bottom of the complaint card (after Concomitants)
         expect(
           tester.getBottomLeft(find.text('Severity')).dy,
-          greaterThan(
-            tester.getBottomLeft(find.text('Associated Symptoms')).dy,
-          ),
+          greaterThan(tester.getBottomLeft(find.text('Concomitants')).dy),
         );
 
         // 2. Section 05 - Past Medical History structured table and dynamic add/remove
