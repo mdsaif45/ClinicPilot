@@ -13,6 +13,7 @@ const kDoctorPhoneKey = 'doctor_phone';
 const kDoctorQualificationKey = 'doctor_qualification';
 const kDoctorRegNumberKey = 'doctor_reg_number';
 const kDoctorSpecialtyKey = 'doctor_specialty';
+const kDoctorEnableSoapKey = 'doctor_enable_soap';
 
 enum ClinicalSpecialty {
   homeopathy(
@@ -106,6 +107,7 @@ class DoctorProfile {
   final String qualification;
   final String regNumber;
   final ClinicalSpecialty specialty;
+  final bool enableSoapNotes;
 
   const DoctorProfile({
     this.firstName = '',
@@ -116,6 +118,7 @@ class DoctorProfile {
     this.qualification = '',
     this.regNumber = '',
     this.specialty = ClinicalSpecialty.multiSpecialty,
+    this.enableSoapNotes = true,
   });
 
   bool get isHomeopathy => specialty == ClinicalSpecialty.homeopathy;
@@ -171,6 +174,7 @@ class DoctorProfile {
     String? qualification,
     String? regNumber,
     ClinicalSpecialty? specialty,
+    bool? enableSoapNotes,
   }) {
     return DoctorProfile(
       firstName: firstName ?? this.firstName,
@@ -181,6 +185,7 @@ class DoctorProfile {
       qualification: qualification ?? this.qualification,
       regNumber: regNumber ?? this.regNumber,
       specialty: specialty ?? this.specialty,
+      enableSoapNotes: enableSoapNotes ?? this.enableSoapNotes,
     );
   }
 }
@@ -197,6 +202,7 @@ final doctorProfileStreamProvider = StreamProvider<DoctorProfile>((ref) {
       kDoctorQualificationKey,
       kDoctorRegNumberKey,
       kDoctorSpecialtyKey,
+      kDoctorEnableSoapKey,
     ]),
   )).watch().map((rows) {
     String firstName = '';
@@ -207,6 +213,7 @@ final doctorProfileStreamProvider = StreamProvider<DoctorProfile>((ref) {
     String qualification = '';
     String regNumber = '';
     String rawSpecialty = '';
+    bool enableSoapNotes = true;
 
     for (final row in rows) {
       if (row.key == kDoctorFirstNameKey) firstName = row.value;
@@ -217,6 +224,9 @@ final doctorProfileStreamProvider = StreamProvider<DoctorProfile>((ref) {
       if (row.key == kDoctorQualificationKey) qualification = row.value;
       if (row.key == kDoctorRegNumberKey) regNumber = row.value;
       if (row.key == kDoctorSpecialtyKey) rawSpecialty = row.value;
+      if (row.key == kDoctorEnableSoapKey) {
+        enableSoapNotes = row.value.toLowerCase() != 'false';
+      }
     }
 
     // Smart fallback if firstName / lastName were not set individually
@@ -259,6 +269,7 @@ final doctorProfileStreamProvider = StreamProvider<DoctorProfile>((ref) {
       qualification: qualification,
       regNumber: regNumber,
       specialty: specialty,
+      enableSoapNotes: enableSoapNotes,
     );
   });
 });
@@ -279,6 +290,7 @@ class DoctorProfileNotifier extends StateNotifier<AsyncValue<void>> {
     String qualification = '',
     String regNumber = '',
     ClinicalSpecialty? specialty,
+    bool? enableSoapNotes,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -306,9 +318,27 @@ class DoctorProfileNotifier extends StateNotifier<AsyncValue<void>> {
         if (specialty != null) {
           await _saveSetting(kDoctorSpecialtyKey, specialty.id);
         }
+        if (enableSoapNotes != null) {
+          await _saveSetting(
+            kDoctorEnableSoapKey,
+            enableSoapNotes ? 'true' : 'false',
+          );
+        }
       });
 
       _ref.invalidate(doctorNameProvider);
+      _ref.invalidate(doctorProfileStreamProvider);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  Future<void> setEnableSoapNotes(bool enabled) async {
+    state = const AsyncValue.loading();
+    try {
+      await _saveSetting(kDoctorEnableSoapKey, enabled ? 'true' : 'false');
       _ref.invalidate(doctorProfileStreamProvider);
       state = const AsyncValue.data(null);
     } catch (e, st) {
