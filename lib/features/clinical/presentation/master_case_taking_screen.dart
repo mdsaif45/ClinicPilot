@@ -4156,26 +4156,8 @@ class _MasterCaseTakingScreenState
           ),
           const SizedBox(height: Spacing.md),
 
-          // 8. Concomitant: Concomitants & Associated Symptoms
-          Row(
-            children: [
-              Expanded(
-                child: _buildInput(
-                  entry.concomitant,
-                  'Concomitants',
-                  Icons.link,
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: _buildInput(
-                  entry.associatedSymptoms,
-                  'Associated Symptoms',
-                  Icons.summarize_outlined,
-                ),
-              ),
-            ],
-          ),
+          // 8. Concomitants
+          _buildInput(entry.concomitant, 'Concomitants', Icons.hub_outlined),
           const SizedBox(height: Spacing.md),
 
           // 9. Severity (concluding assessment rating)

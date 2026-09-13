@@ -367,7 +367,7 @@ class _AddEditComplaintDialogState
                   child: CustomTextField(
                     controller: _concomitantsController,
                     label: 'Concomitants',
-                    prefixIcon: Icons.link_outlined,
+                    prefixIcon: Icons.hub_outlined,
                   ),
                 ),
                 const SizedBox(width: Spacing.md),
