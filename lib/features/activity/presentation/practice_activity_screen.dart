@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/services/app_haptics.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/sliding_segmented_tabs.dart';
 import '../providers/practice_activity_provider.dart';
 import 'widgets/activity_journal_feed.dart';
 import 'widgets/hourly_rush_chart.dart';
@@ -544,117 +545,14 @@ class _ActivityTimeRangeTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    final selectedIndex = selectedRange.index; // 0: Day, 1: Week, 2: Month
-    final alignX = selectedIndex == 0 ? -1.0 : (selectedIndex == 1 ? 0.0 : 1.0);
-
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.35),
-        ),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final tabWidth = constraints.maxWidth / 3.0;
-
-          return Stack(
-            children: [
-              // Smooth Sliding Floating Pill Background
-              AnimatedAlign(
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeOutCubic,
-                alignment: Alignment(alignX, 0),
-                child: Container(
-                  width: tabWidth,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: scheme.surface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: scheme.outlineVariant.withValues(alpha: 0.25),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: scheme.shadow.withValues(alpha: 0.1),
-                        blurRadius: 6,
-                        offset: const Offset(0, 1.5),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // 3 Interactive Tabs
-              Row(
-                children: [
-                  _buildTab(
-                    context,
-                    scheme,
-                    theme,
-                    'Day',
-                    ActivityTimeRange.day,
-                  ),
-                  _buildTab(
-                    context,
-                    scheme,
-                    theme,
-                    'Week',
-                    ActivityTimeRange.week,
-                  ),
-                  _buildTab(
-                    context,
-                    scheme,
-                    theme,
-                    'Month',
-                    ActivityTimeRange.month,
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTab(
-    BuildContext context,
-    ColorScheme scheme,
-    ThemeData theme,
-    String label,
-    ActivityTimeRange range,
-  ) {
-    final isSelected = selectedRange == range;
-
-    return Expanded(
-      child: InkWell(
-        onTap: () {
-          AppHaptics.selection();
-          onRangeChanged(range);
-        },
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-        child: Center(
-          child: AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 200),
-            style: (theme.textTheme.labelMedium ?? const TextStyle()).copyWith(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? scheme.onSurface : scheme.onSurfaceVariant,
-            ),
-            child: Text(label),
-          ),
-        ),
-      ),
+    return SlidingSegmentedTabs<ActivityTimeRange>(
+      selectedValue: selectedRange,
+      onChanged: onRangeChanged,
+      items: const [
+        SlidingTabItem(value: ActivityTimeRange.day, label: 'Day'),
+        SlidingTabItem(value: ActivityTimeRange.week, label: 'Week'),
+        SlidingTabItem(value: ActivityTimeRange.month, label: 'Month'),
+      ],
     );
   }
 }

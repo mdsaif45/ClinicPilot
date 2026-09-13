@@ -10,6 +10,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/custom_badge.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/sliding_segmented_tabs.dart';
 import '../../visits/providers/visit_provider.dart';
 import '../models/case_record_models.dart';
 import '../providers/case_record_provider.dart';
@@ -162,45 +163,23 @@ class _ClinicalCaseSheetScreenState
                   vertical: Spacing.xs,
                 ),
                 color: scheme.surface,
-                child: Container(
-                  height: 40,
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHighest.withValues(
-                      alpha: 0.5,
+                child: SlidingSegmentedTabs<int>(
+                  selectedValue: _selectedTab,
+                  onChanged: (newTab) {
+                    setState(() => _selectedTab = newTab);
+                  },
+                  items: const [
+                    SlidingTabItem(
+                      value: 0,
+                      icon: Icons.assignment_outlined,
+                      label: 'Master Baseline Record',
                     ),
-                    borderRadius: Radii.lgAll,
-                    border: Border.all(
-                      color: scheme.outlineVariant.withValues(alpha: 0.4),
+                    SlidingTabItem(
+                      value: 1,
+                      icon: Icons.timeline_outlined,
+                      label: 'Follow-Up Visits History',
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _SubTabButton(
-                          isSelected: _selectedTab == 0,
-                          icon: Icons.assignment_outlined,
-                          label: 'Master Baseline Record',
-                          onTap: () {
-                            AppHaptics.selection();
-                            setState(() => _selectedTab = 0);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: _SubTabButton(
-                          isSelected: _selectedTab == 1,
-                          icon: Icons.timeline_outlined,
-                          label: 'Follow-Up Visits History',
-                          onTap: () {
-                            AppHaptics.selection();
-                            setState(() => _selectedTab = 1);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
               Expanded(
@@ -2386,88 +2365,6 @@ class _VisitSummaryCard extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _SubTabButton extends StatelessWidget {
-  final bool isSelected;
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _SubTabButton({
-    required this.isSelected,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Material(
-      color: scheme.surface.withValues(alpha: 0),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: Radii.mdAll,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeInOut,
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(
-            horizontal: Spacing.sm,
-            vertical: Spacing.xs,
-          ),
-          decoration: BoxDecoration(
-            color:
-                isSelected
-                    ? scheme.surface
-                    : scheme.surface.withValues(alpha: 0),
-            borderRadius: Radii.mdAll,
-            border:
-                isSelected
-                    ? Border.all(color: scheme.primary.withValues(alpha: 0.25))
-                    : null,
-            boxShadow:
-                isSelected
-                    ? [
-                      BoxShadow(
-                        color: scheme.shadow.withValues(alpha: 0.06),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                    ]
-                    : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: Spacing.xs),
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color:
-                        isSelected ? scheme.primary : scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

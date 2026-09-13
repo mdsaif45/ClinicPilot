@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:clinic_pilot/core/database/app_database.dart';
+import 'package:clinic_pilot/core/widgets/sliding_segmented_tabs.dart';
 import 'package:clinic_pilot/features/clinics/providers/clinic_provider.dart';
 import 'package:clinic_pilot/features/clinical/models/case_record_models.dart';
 import 'package:clinic_pilot/features/clinical/presentation/clinical_case_sheet_screen.dart';
@@ -265,6 +266,29 @@ void main() {
       // Other unrelated sections are filtered out
       expect(find.text('Baseline Prescription Plan'), findsNothing);
     });
+
+    testWidgets(
+      'switches between Master Baseline Record and Follow-Up Visits History via SlidingSegmentedTabs',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest(record: testCaseRecord));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Master Baseline Record'), findsOneWidget);
+        expect(find.text('Follow-Up Visits History'), findsOneWidget);
+        expect(find.byType(SlidingSegmentedTabs<int>), findsOneWidget);
+
+        // Initially in Master Baseline Record tab
+        expect(find.text('Chief Complaints'), findsOneWidget);
+
+        // Tap Follow-Up Visits History
+        await tester.tap(find.text('Follow-Up Visits History'));
+        await tester.pumpAndSettle();
+
+        // Baseline content is replaced by Follow-up History view
+        expect(find.text('Chief Complaints'), findsNothing);
+        expect(find.text('No Follow-Up Visits Logged Yet'), findsOneWidget);
+      },
+    );
 
     testWidgets('displays empty state when no case record exists', (
       tester,
