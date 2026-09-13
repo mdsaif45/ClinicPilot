@@ -741,16 +741,24 @@ void main() {
         expect(find.text('Onset'), findsOneWidget);
         expect(find.text('Duration'), findsOneWidget);
         expect(find.text('Causation / Origin'), findsOneWidget);
-        expect(find.text('Severity'), findsOneWidget);
         expect(find.text('Location'), findsOneWidget);
         expect(find.text('Radiation / Extension'), findsOneWidget);
         expect(find.text('Sensation / Character'), findsOneWidget);
         expect(find.text('Aggravation (< Modality)'), findsOneWidget);
         expect(find.text('Amelioration (> Modality)'), findsOneWidget);
-        expect(find.text('Time Modality'), findsOneWidget);
+        expect(find.text('Time Modality'), findsNothing);
         expect(find.text('Periodicity'), findsOneWidget);
         expect(find.text('Concomitants'), findsOneWidget);
         expect(find.text('Associated Symptoms'), findsOneWidget);
+        expect(find.text('Severity'), findsOneWidget);
+
+        // Verify Severity is rendered at the bottom of the complaint card (after Associated Symptoms)
+        expect(
+          tester.getBottomLeft(find.text('Severity')).dy,
+          greaterThan(
+            tester.getBottomLeft(find.text('Associated Symptoms')).dy,
+          ),
+        );
 
         // 2. Section 05 - Past Medical History structured table and dynamic add/remove
         expect(find.text('Past Medical History'), findsOneWidget);

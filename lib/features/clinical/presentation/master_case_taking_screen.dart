@@ -4088,36 +4088,11 @@ class _MasterCaseTakingScreenState
           ),
           const SizedBox(height: Spacing.md),
 
-          // 3. Causation: Causation / Origin & Severity
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _buildInput(
-                  entry.causation,
-                  'Causation / Origin',
-                  Icons.psychology_outlined,
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: PickerField<String>(
-                  label: 'Severity',
-                  prefixIcon: Icons.speed,
-                  value: entry.severity,
-                  options: const [
-                    PickerOption(value: 'Mild', label: 'Mild (1 - 3)'),
-                    PickerOption(value: 'Moderate', label: 'Moderate (4 - 6)'),
-                    PickerOption(value: 'Severe', label: 'Severe (7 - 9)'),
-                    PickerOption(
-                      value: 'Intolerable',
-                      label: 'Intolerable (10/10)',
-                    ),
-                  ],
-                  onChanged: (v) => setState(() => entry.severity = v),
-                ),
-              ),
-            ],
+          // 3. Causation: Causation / Origin
+          _buildInput(
+            entry.causation,
+            'Causation / Origin',
+            Icons.psychology_outlined,
           ),
           const SizedBox(height: Spacing.md),
 
@@ -4151,7 +4126,7 @@ class _MasterCaseTakingScreenState
           ),
           const SizedBox(height: Spacing.md),
 
-          // 6. Modality: Aggravation & Amelioration, Time & Periodicity
+          // 6. Modality: Aggravation & Amelioration
           Row(
             children: [
               Expanded(
@@ -4172,28 +4147,16 @@ class _MasterCaseTakingScreenState
             ],
           ),
           const SizedBox(height: Spacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: _buildInput(
-                  entry.time,
-                  'Time Modality',
-                  Icons.alarm_outlined,
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: _buildInput(
-                  entry.periodicity,
-                  'Periodicity',
-                  Icons.event_repeat_outlined,
-                ),
-              ),
-            ],
+
+          // 7. Periodicity
+          _buildInput(
+            entry.periodicity,
+            'Periodicity',
+            Icons.event_repeat_outlined,
           ),
           const SizedBox(height: Spacing.md),
 
-          // 7. Concomitant: Concomitants & Associated Symptoms
+          // 8. Concomitant: Concomitants & Associated Symptoms
           Row(
             children: [
               Expanded(
@@ -4212,6 +4175,21 @@ class _MasterCaseTakingScreenState
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: Spacing.md),
+
+          // 9. Severity (concluding assessment rating)
+          PickerField<String>(
+            label: 'Severity',
+            prefixIcon: Icons.speed,
+            value: entry.severity,
+            options: const [
+              PickerOption(value: 'Mild', label: 'Mild (1 - 3)'),
+              PickerOption(value: 'Moderate', label: 'Moderate (4 - 6)'),
+              PickerOption(value: 'Severe', label: 'Severe (7 - 9)'),
+              PickerOption(value: 'Intolerable', label: 'Intolerable (10/10)'),
+            ],
+            onChanged: (v) => setState(() => entry.severity = v),
           ),
         ],
       ),
