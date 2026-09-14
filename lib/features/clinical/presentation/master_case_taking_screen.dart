@@ -109,9 +109,9 @@ class _MasterCaseTakingScreenState
 
   static const List<List<int>> _stageSectionIndices = [
     [0, 1, 2, 3, 4, 5, 6], // Phase 1: History (01 - 07)
-    [7, 8, 9], // Phase 2: Generals & Mind (08 - 10)
-    [10, 11, 12, 13], // Phase 3: Analysis & Exam (11 - 14)
-    [14, 15, 16, 17, 18], // Phase 4: Prescription & Plan (15 - 19)
+    [7, 8], // Phase 2: Generals (08 - 09)
+    [9, 10, 11, 12], // Phase 3: Analysis & Exam (10 - 13)
+    [13, 14, 15, 16, 17], // Phase 4: Prescription & Plan (14 - 18)
   ];
 
   static const List<_StageConfig> _stages = [
@@ -123,7 +123,7 @@ class _MasterCaseTakingScreenState
     _StageConfig(
       title: 'Generals',
       icon: Icons.psychology_outlined,
-      badgeCount: 3,
+      badgeCount: 2,
     ),
     _StageConfig(
       title: 'Analysis',
@@ -158,8 +158,7 @@ class _MasterCaseTakingScreenState
     'Family History',
     'Developmental',
     'Physical Generals',
-    'Mental Generals',
-    'Lifestyle',
+    'Mental General',
     'Vitals & Exam',
     'Miasmatic Analysis',
     'Case Totality',
@@ -258,6 +257,8 @@ class _MasterCaseTakingScreenState
   final _pgSkinHairNailsController = TextEditingController();
   final _pgGeneralDischargesController = TextEditingController();
   final _pgOtherPhysicalGeneralsController = TextEditingController();
+  final _pgAddictionController = TextEditingController();
+  final _pgDietController = TextEditingController();
 
   // 9. Mental & Emotional Generals (27 fields)
   final _mgGeneralMentalEmotionalStateController = TextEditingController();
@@ -573,6 +574,8 @@ class _MasterCaseTakingScreenState
       _pgSkinHairNailsController,
       _pgGeneralDischargesController,
       _pgOtherPhysicalGeneralsController,
+      _pgAddictionController,
+      _pgDietController,
       _mgGeneralMentalEmotionalStateController,
       _mgDispositionController,
       _mgIrritabilityController,
@@ -730,12 +733,12 @@ class _MasterCaseTakingScreenState
     if (widget.initialSectionIndex != null) {
       _selectedStage = _getStageForSection(widget.initialSectionIndex!);
       _collapsedSections = {
-        for (int i = 0; i < 19; i++)
+        for (int i = 0; i < _sectionTitles.length; i++)
           if (i != widget.initialSectionIndex) i,
       };
     } else {
       _selectedStage = 0;
-      _collapsedSections = {for (int i = 1; i < 19; i++) i};
+      _collapsedSections = {for (int i = 1; i < _sectionTitles.length; i++) i};
     }
     _sectionKeys = List.generate(_sectionTitles.length, (_) => GlobalKey());
     _isPopulating = true;
@@ -866,6 +869,8 @@ class _MasterCaseTakingScreenState
     _pgSkinHairNailsController.dispose();
     _pgGeneralDischargesController.dispose();
     _pgOtherPhysicalGeneralsController.dispose();
+    _pgAddictionController.dispose();
+    _pgDietController.dispose();
 
     _mgGeneralMentalEmotionalStateController.dispose();
     _mgDispositionController.dispose();
@@ -1213,6 +1218,16 @@ class _MasterCaseTakingScreenState
         record.physicalGenerals.generalDischarges;
     _pgOtherPhysicalGeneralsController.text =
         record.physicalGenerals.otherPhysicalGenerals;
+    _pgAddictionController.text =
+        record.physicalGenerals.addiction.isNotEmpty
+            ? record.physicalGenerals.addiction
+            : record.lifestyleHabits.otherSubstanceUse.isNotEmpty
+            ? record.lifestyleHabits.otherSubstanceUse
+            : record.lifestyleHabits.otherHabits;
+    _pgDietController.text =
+        record.physicalGenerals.diet.isNotEmpty
+            ? record.physicalGenerals.diet
+            : record.lifestyleHabits.diet;
 
     // 9. Mental Generals
     _mgGeneralMentalEmotionalStateController.text =
@@ -1690,6 +1705,8 @@ class _MasterCaseTakingScreenState
         skinHairNails: _pgSkinHairNailsController.text.trim(),
         generalDischarges: _pgGeneralDischargesController.text.trim(),
         otherPhysicalGenerals: _pgOtherPhysicalGeneralsController.text.trim(),
+        addiction: _pgAddictionController.text.trim(),
+        diet: _pgDietController.text.trim(),
       ),
       mentalGenerals: MentalGenerals(
         generalMentalState:
@@ -1725,12 +1742,18 @@ class _MasterCaseTakingScreenState
             _mgOtherCharacteristicMentalSymptomsController.text.trim(),
       ),
       lifestyleHabits: LifestyleHistoryDetails(
-        diet: _plDietController.text.trim(),
+        diet:
+            _pgDietController.text.trim().isNotEmpty
+                ? _pgDietController.text.trim()
+                : _plDietController.text.trim(),
         mealPattern: _plMealPatternController.text.trim(),
         teaCoffee: _plTeaCoffeeController.text.trim(),
         tobacco: _plTobaccoController.text.trim(),
         alcohol: _plAlcoholController.text.trim(),
-        otherSubstanceUse: _plOtherSubstanceUseController.text.trim(),
+        otherSubstanceUse:
+            _pgAddictionController.text.trim().isNotEmpty
+                ? _pgAddictionController.text.trim()
+                : _plOtherSubstanceUseController.text.trim(),
         physicalActivity: _plPhysicalActivityController.text.trim(),
         occupationWorkPattern: _plOccupationWorkPatternController.text.trim(),
         sedentaryBehaviour: _plSedentaryBehaviourController.text.trim(),
@@ -2584,6 +2607,24 @@ class _MasterCaseTakingScreenState
             ),
             const SizedBox(height: Spacing.md),
             _buildInput(
+              _pgAddictionController,
+              'Addiction',
+              Icons.smoking_rooms_outlined,
+              1,
+              1,
+              'Tobacco, smoking, alcohol, substance use, tea/coffee habits...',
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(
+              _pgDietController,
+              'Diet',
+              Icons.restaurant_outlined,
+              4,
+              2,
+              'Dietary habits, vegetarian/non-vegetarian, meal patterns, food sensitivities...',
+            ),
+            const SizedBox(height: Spacing.md),
+            _buildInput(
               _pgStoolController,
               'Stool',
               Icons.airline_seat_legroom_reduced,
@@ -2779,12 +2820,12 @@ class _MasterCaseTakingScreenState
         return _buildSectionCard(
           index: 8,
           sectionNum: '09',
-          title: 'Mental & Emotional Generals',
+          title: 'Mental General',
           icon: Icons.psychology_outlined,
           children: [
             _buildInput(
               _mgGeneralMentalEmotionalStateController,
-              'General Mental & Emotional State',
+              'General Mental State',
               Icons.psychology,
               8,
               5,
@@ -2797,143 +2838,6 @@ class _MasterCaseTakingScreenState
         return _buildSectionCard(
           index: 9,
           sectionNum: '10',
-          title: 'Lifestyle, Habits & Environment',
-          icon: Icons.local_cafe_outlined,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _plDietController,
-                    'Dietary Preference',
-                    Icons.restaurant,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _plMealPatternController,
-                    'Meal Timings & Habits',
-                    Icons.schedule,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(_plTeaCoffeeController, 'Tea / Coffee', Icons.coffee),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _plTobaccoController,
-                    'Tobacco / Smoking',
-                    Icons.smoking_rooms,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _plAlcoholController,
-                    'Alcohol Intake',
-                    Icons.local_bar,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _plOtherSubstanceUseController,
-                    'Other Substance Use',
-                    Icons.medication,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _plPhysicalActivityController,
-                    'Physical Activity',
-                    Icons.directions_walk,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _plOccupationWorkPatternController,
-                    'Work Pattern & Shifts',
-                    Icons.work_history,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _plSedentaryBehaviourController,
-                    'Sedentary Behaviour',
-                    Icons.chair,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _plSleepRoutineController,
-                    'Sleep Routine',
-                    Icons.bedtime,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _plPersonalHygieneController,
-                    'Personal Hygiene',
-                    Icons.clean_hands,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _plSocialHistoryController,
-                    'Social & Living History',
-                    Icons.people_outline,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _plFinancialOccupationalStressorsController,
-                    'Financial / Work Stressors',
-                    Icons.attach_money,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _plOtherHabitsController,
-              'Other Habits & Environment',
-              Icons.more_horiz,
-            ),
-          ],
-        );
-
-      case 10:
-        return _buildSectionCard(
-          index: 10,
-          sectionNum: '11',
           title: 'Clinical Examination & Vitals',
           icon: Icons.monitor_heart_outlined,
           children: [
@@ -3175,10 +3079,10 @@ class _MasterCaseTakingScreenState
           ],
         );
 
-      case 11:
+      case 10:
         return _buildSectionCard(
-          index: 11,
-          sectionNum: '12',
+          index: 10,
+          sectionNum: '11',
           title: 'Miasmatic Analysis',
           icon: Icons.bubble_chart_outlined,
           children: [
@@ -3298,10 +3202,10 @@ class _MasterCaseTakingScreenState
           ],
         );
 
-      case 12:
+      case 11:
         return _buildSectionCard(
-          index: 12,
-          sectionNum: '13',
+          index: 11,
+          sectionNum: '12',
           title: 'Case Totality & Repertorisation',
           icon: Icons.menu_book_outlined,
           children: [
@@ -3433,10 +3337,10 @@ class _MasterCaseTakingScreenState
           ],
         );
 
-      case 13:
+      case 12:
         return _buildSectionCard(
-          index: 13,
-          sectionNum: '14',
+          index: 12,
+          sectionNum: '13',
           title: 'Clinical Assessment & Diagnosis',
           icon: Icons.fact_check_outlined,
           children: [
@@ -3475,10 +3379,10 @@ class _MasterCaseTakingScreenState
           ],
         );
 
-      case 14:
+      case 13:
         return _buildSectionCard(
-          index: 14,
-          sectionNum: '15',
+          index: 13,
+          sectionNum: '14',
           title: 'Baseline Prescription & Management',
           icon: Icons.medication_outlined,
           children: [
@@ -3567,10 +3471,10 @@ class _MasterCaseTakingScreenState
           ],
         );
 
-      case 15:
+      case 14:
         return _buildSectionCard(
-          index: 15,
-          sectionNum: '16',
+          index: 14,
+          sectionNum: '15',
           title: 'Investigations & Laboratory Findings',
           icon: Icons.biotech_outlined,
           children: [
@@ -3674,10 +3578,10 @@ class _MasterCaseTakingScreenState
           ],
         );
 
-      case 16:
+      case 15:
         return _buildSectionCard(
-          index: 16,
-          sectionNum: '17',
+          index: 15,
+          sectionNum: '16',
           title: 'Follow-Up Details',
           icon: Icons.update_outlined,
           children: [
@@ -3812,10 +3716,10 @@ class _MasterCaseTakingScreenState
           ],
         );
 
-      case 17:
+      case 16:
         return _buildSectionCard(
-          index: 17,
-          sectionNum: '18',
+          index: 16,
+          sectionNum: '17',
           title: 'Outcome & Treatment Closure',
           icon: Icons.task_alt_outlined,
           children: [
@@ -3909,10 +3813,10 @@ class _MasterCaseTakingScreenState
           ],
         );
 
-      case 18:
+      case 17:
         return _buildSectionCard(
-          index: 18,
-          sectionNum: '19',
+          index: 17,
+          sectionNum: '18',
           title: 'Documentation & Archival Details',
           icon: Icons.inventory_outlined,
           children: [

@@ -650,6 +650,8 @@ class PhysicalGenerals {
   final String skinHairNails;
   final String generalDischarges;
   final String otherPhysicalGenerals;
+  final String addiction;
+  final String diet;
 
   const PhysicalGenerals({
     this.thermal = 'Ambithermal',
@@ -693,6 +695,8 @@ class PhysicalGenerals {
     this.skinHairNails = '',
     this.generalDischarges = '',
     this.otherPhysicalGenerals = '',
+    this.addiction = '',
+    this.diet = '',
   });
 
   String get thirstFrequencyTiming => '$thirstFrequency $thirstTiming'.trim();
@@ -748,6 +752,8 @@ class PhysicalGenerals {
     'skinHairNails': skinHairNails,
     'generalDischarges': generalDischarges,
     'otherPhysicalGenerals': otherPhysicalGenerals,
+    'addiction': addiction,
+    'diet': diet,
   };
 
   factory PhysicalGenerals.fromJson(Map<String, dynamic> json) {
@@ -833,6 +839,12 @@ class PhysicalGenerals {
       skinHairNails: json['skinHairNails'] as String? ?? '',
       generalDischarges: json['generalDischarges'] as String? ?? '',
       otherPhysicalGenerals: json['otherPhysicalGenerals'] as String? ?? '',
+      addiction:
+          json['addiction'] as String? ??
+          json['addication'] as String? ??
+          json['addications'] as String? ??
+          '',
+      diet: json['diet'] as String? ?? '',
     );
   }
 

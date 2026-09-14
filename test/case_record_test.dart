@@ -46,6 +46,8 @@ void main() {
           urine: 'Clear, profuse, nocturnal frequency',
           perspiration: 'Profuse, offensive on exertion',
           sleep: 'Disturbed due to flatulence',
+          addiction: 'Occasional tobacco chewing, 2 cups tea',
+          diet: 'Vegetarian, avoids onions, spicy food sensitivity',
         );
 
         final pJson = physical.toJson();
@@ -58,10 +60,26 @@ void main() {
         );
         expect(pParsed.cravings, contains('Sweets'));
         expect(
+          pParsed.addiction,
+          equals('Occasional tobacco chewing, 2 cups tea'),
+        );
+        expect(
+          pParsed.diet,
+          equals('Vegetarian, avoids onions, spicy food sensitivity'),
+        );
+        expect(
           pParsed.stool,
           equals('Soft, offensive, twice daily with urgent waking'),
         );
         expect(pParsed.urine, equals('Clear, profuse, nocturnal frequency'));
+
+        // Test typo fallback in fromJson
+        final typoParsed = PhysicalGenerals.fromJson({
+          'addication': 'Smoking 5 cigarettes a day',
+          'diet': 'Mixed non-veg',
+        });
+        expect(typoParsed.addiction, equals('Smoking 5 cigarettes a day'));
+        expect(typoParsed.diet, equals('Mixed non-veg'));
 
         const miasm = MiasmaticAnalysis(
           dominantMiasm: 'Sycotic',
@@ -349,7 +367,8 @@ void main() {
         await tester.tap(find.text('Generals'));
         await tester.pumpAndSettle();
         expect(find.text('Physical Generals'), findsOneWidget);
-        expect(find.text('Mental & Emotional Generals'), findsOneWidget);
+        expect(find.text('Mental General'), findsOneWidget);
+        expect(find.text('Lifestyle, Habits & Environment'), findsNothing);
 
         // Tap Analysis stage tab
         await tester.tap(find.text('Analysis'));
@@ -886,6 +905,8 @@ void main() {
         expect(find.text('Appetite'), findsOneWidget);
         expect(find.text('Thirst'), findsOneWidget);
         expect(find.text('Cravings, Desires & Aversions'), findsOneWidget);
+        expect(find.text('Addiction'), findsOneWidget);
+        expect(find.text('Diet'), findsOneWidget);
         expect(find.text('Stool'), findsOneWidget);
         expect(find.text('Urine'), findsOneWidget);
 
@@ -910,7 +931,7 @@ void main() {
     );
 
     testWidgets(
-      'MasterCaseTakingScreen: Section 09 Mental & Emotional Generals renders single observation field and prunes 26 granular fields',
+      'MasterCaseTakingScreen: Section 09 Mental General renders single observation field and prunes 26 granular fields',
       (tester) async {
         tester.view.physicalSize = const Size(1200, 5000);
         tester.view.devicePixelRatio = 1.0;
@@ -958,13 +979,13 @@ void main() {
         await tester.tap(find.text('Generals'));
         await tester.pumpAndSettle();
 
-        // Expand Section 09: Mental & Emotional Generals
-        expect(find.text('Mental & Emotional Generals'), findsOneWidget);
-        await tester.tap(find.text('Mental & Emotional Generals'));
+        // Expand Section 09: Mental General
+        expect(find.text('Mental General'), findsOneWidget);
+        await tester.tap(find.text('Mental General'));
         await tester.pumpAndSettle();
 
         // Single comprehensive observation notes field is present
-        expect(find.text('General Mental & Emotional State'), findsOneWidget);
+        expect(find.text('General Mental State'), findsOneWidget);
 
         // 26 granular subfields are pruned from UI
         expect(find.text('Disposition / Nature'), findsNothing);

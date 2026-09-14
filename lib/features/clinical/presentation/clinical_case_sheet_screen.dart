@@ -45,8 +45,7 @@ class _ClinicalCaseSheetScreenState
     'Family',
     'Developmental',
     'Physical Generals',
-    'Mental Generals',
-    'Lifestyle',
+    'Mental General',
     'Vitals & Exam',
     'Miasm & Totality',
     'Diagnosis',
@@ -237,18 +236,14 @@ class _ClinicalCaseSheetScreenState
                                       record,
                                     ),
 
-                                  // 7. Mental Generals
-                                  if (_isSectionVisible('Mental Generals'))
+                                  // 7. Mental General
+                                  if (_isSectionVisible('Mental General'))
                                     _buildMentalGeneralsSection(
                                       context,
                                       record,
                                     ),
 
-                                  // 8. Lifestyle & Habits
-                                  if (_isSectionVisible('Lifestyle'))
-                                    _buildLifestyleSection(context, record),
-
-                                  // 9. Clinical Examination & Vitals
+                                  // 8. Clinical Examination & Vitals
                                   if (_isSectionVisible('Vitals & Exam'))
                                     _buildClinicalExamSection(context, record),
 
@@ -1306,7 +1301,12 @@ class _ClinicalCaseSheetScreenState
         pg.dreams.isNotEmpty ||
         pg.perspiration.isNotEmpty ||
         pg.stool.isNotEmpty ||
-        pg.urine.isNotEmpty;
+        pg.urine.isNotEmpty ||
+        pg.diet.isNotEmpty ||
+        record.lifestyleHabits.diet.isNotEmpty ||
+        pg.addiction.isNotEmpty ||
+        record.lifestyleHabits.otherSubstanceUse.isNotEmpty ||
+        record.lifestyleHabits.otherHabits.isNotEmpty;
 
     if (!hasData) return const SizedBox.shrink();
 
@@ -1323,6 +1323,23 @@ class _ClinicalCaseSheetScreenState
           ),
         _ClinicalRow(label: 'Appetite', value: pg.appetite),
         _ClinicalRow(label: 'Thirst', value: pg.thirst),
+        if (pg.diet.isNotEmpty || record.lifestyleHabits.diet.isNotEmpty)
+          _ClinicalRow(
+            label: 'Diet',
+            value: pg.diet.isNotEmpty ? pg.diet : record.lifestyleHabits.diet,
+          ),
+        if (pg.addiction.isNotEmpty ||
+            record.lifestyleHabits.otherSubstanceUse.isNotEmpty ||
+            record.lifestyleHabits.otherHabits.isNotEmpty)
+          _ClinicalRow(
+            label: 'Addiction',
+            value:
+                pg.addiction.isNotEmpty
+                    ? pg.addiction
+                    : record.lifestyleHabits.otherSubstanceUse.isNotEmpty
+                    ? record.lifestyleHabits.otherSubstanceUse
+                    : record.lifestyleHabits.otherHabits,
+          ),
         _ClinicalRow(label: 'Food Cravings & Desires', value: pg.cravings),
         if (pg.aversions.isNotEmpty)
           _ClinicalRow(
@@ -1341,7 +1358,7 @@ class _ClinicalCaseSheetScreenState
     );
   }
 
-  // --- 6. Mental Generals ---
+  // --- 6. Mental General ---
   Widget _buildMentalGeneralsSection(
     BuildContext context,
     MasterCaseRecordData record,
@@ -1359,7 +1376,7 @@ class _ClinicalCaseSheetScreenState
     if (!hasData) return const SizedBox.shrink();
 
     return _SectionCard(
-      title: 'Mental Generals & Emotional Disposition',
+      title: 'Mental General',
       icon: Icons.psychology_outlined,
       onEdit: () => _openEditor(context, sectionIndex: 8),
       children: [
@@ -1385,45 +1402,7 @@ class _ClinicalCaseSheetScreenState
     );
   }
 
-  // --- 7. Lifestyle ---
-  Widget _buildLifestyleSection(
-    BuildContext context,
-    MasterCaseRecordData record,
-  ) {
-    final l = record.lifestyleHabits;
-    final hasData =
-        l.diet.isNotEmpty ||
-        l.physicalActivity.isNotEmpty ||
-        l.occupationWorkPattern.isNotEmpty ||
-        l.financialOccupationalStressors.isNotEmpty ||
-        l.otherHabits.isNotEmpty;
-
-    if (!hasData) return const SizedBox.shrink();
-
-    return _SectionCard(
-      title: 'Lifestyle, Diet & Occupation',
-      icon: Icons.nature_people_outlined,
-      onEdit: () => _openEditor(context, sectionIndex: 9),
-      children: [
-        _ClinicalRow(label: 'Dietary Habits', value: l.diet),
-        _ClinicalRow(
-          label: 'Physical Activity & Exercise',
-          value: l.physicalActivity,
-        ),
-        _ClinicalRow(
-          label: 'Occupational Routine',
-          value: l.occupationWorkPattern,
-        ),
-        _ClinicalRow(
-          label: 'Key Life Stress Factors',
-          value: l.financialOccupationalStressors,
-        ),
-        _ClinicalRow(label: 'Habits & Substances', value: l.otherHabits),
-      ],
-    );
-  }
-
-  // --- 8. Clinical Exam & Vitals ---
+  // --- 7. Clinical Exam & Vitals ---
   Widget _buildClinicalExamSection(
     BuildContext context,
     MasterCaseRecordData record,
@@ -1446,7 +1425,7 @@ class _ClinicalCaseSheetScreenState
     return _SectionCard(
       title: 'Clinical Examination & Physical Vitals',
       icon: Icons.monitor_heart_outlined,
-      onEdit: () => _openEditor(context, sectionIndex: 10),
+      onEdit: () => _openEditor(context, sectionIndex: 9),
       children: [
         if (ce.bloodPressure.isNotEmpty ||
             ce.pulse.isNotEmpty ||
@@ -1527,7 +1506,7 @@ class _ClinicalCaseSheetScreenState
     return _SectionCard(
       title: 'Miasmatic Analysis & Case Totality',
       icon: Icons.balance_outlined,
-      onEdit: () => _openEditor(context, sectionIndex: 11),
+      onEdit: () => _openEditor(context, sectionIndex: 10),
       children: [
         _ClinicalRow(label: 'Dominant Miasm', value: m.dominantMiasm),
         _ClinicalRow(
@@ -1576,7 +1555,7 @@ class _ClinicalCaseSheetScreenState
     return _SectionCard(
       title: 'Diagnosis & Clinical Assessment',
       icon: Icons.fact_check_outlined,
-      onEdit: () => _openEditor(context, sectionIndex: 13),
+      onEdit: () => _openEditor(context, sectionIndex: 12),
       children: [
         _ClinicalRow(
           label: 'Diagnosis',
@@ -1622,7 +1601,7 @@ class _ClinicalCaseSheetScreenState
     return _SectionCard(
       title: 'Baseline Prescription Plan',
       icon: Icons.local_pharmacy_outlined,
-      onEdit: () => _openEditor(context, sectionIndex: 14),
+      onEdit: () => _openEditor(context, sectionIndex: 13),
       children: [
         // Prescription Hero Card
         Container(
@@ -1700,7 +1679,7 @@ class _ClinicalCaseSheetScreenState
     return _SectionCard(
       title: 'Diagnostic Investigations & Lab Tests',
       icon: Icons.biotech_outlined,
-      onEdit: () => _openEditor(context, sectionIndex: 15),
+      onEdit: () => _openEditor(context, sectionIndex: 14),
       children: [
         _ClinicalRow(
           label: 'Test Advised / Performed',
@@ -1749,7 +1728,7 @@ class _ClinicalCaseSheetScreenState
     return _SectionCard(
       title: 'Treatment Outcome & Follow-Up',
       icon: Icons.insights_outlined,
-      onEdit: () => _openEditor(context, sectionIndex: 16),
+      onEdit: () => _openEditor(context, sectionIndex: 15),
       children: [
         _ClinicalRow(
           label: 'Current Clinical Status',
