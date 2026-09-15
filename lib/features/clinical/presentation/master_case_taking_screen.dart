@@ -239,9 +239,11 @@ class _MasterCaseTakingScreenState
   final _pgUrineQuantityController = TextEditingController();
   final _pgUrineColourOdourController = TextEditingController();
   final _pgUrinarySymptomsController = TextEditingController();
+  final _pgPerspirationController = TextEditingController();
   final _pgPerspirationQuantityController = TextEditingController();
   final _pgPerspirationOdourController = TextEditingController();
   final _pgPerspirationTimingDistributionController = TextEditingController();
+  final _pgSleepController = TextEditingController();
   final _pgSleepQuantityController = TextEditingController();
   final _pgSleepQualityController = TextEditingController();
   final _pgSleepPositionController = TextEditingController();
@@ -556,9 +558,11 @@ class _MasterCaseTakingScreenState
       _pgUrineQuantityController,
       _pgUrineColourOdourController,
       _pgUrinarySymptomsController,
+      _pgPerspirationController,
       _pgPerspirationQuantityController,
       _pgPerspirationOdourController,
       _pgPerspirationTimingDistributionController,
+      _pgSleepController,
       _pgSleepQuantityController,
       _pgSleepQualityController,
       _pgSleepPositionController,
@@ -851,9 +855,11 @@ class _MasterCaseTakingScreenState
     _pgUrineQuantityController.dispose();
     _pgUrineColourOdourController.dispose();
     _pgUrinarySymptomsController.dispose();
+    _pgPerspirationController.dispose();
     _pgPerspirationQuantityController.dispose();
     _pgPerspirationOdourController.dispose();
     _pgPerspirationTimingDistributionController.dispose();
+    _pgSleepController.dispose();
     _pgSleepQuantityController.dispose();
     _pgSleepQualityController.dispose();
     _pgSleepPositionController.dispose();
@@ -1188,16 +1194,33 @@ class _MasterCaseTakingScreenState
     _pgUrineColourOdourController.text =
         record.physicalGenerals.urineColourOdour;
     _pgUrinarySymptomsController.text = record.physicalGenerals.urinarySymptoms;
-    _pgPerspirationQuantityController.text =
-        record.physicalGenerals.perspiration;
+    final persVal =
+        record.physicalGenerals.perspiration.isNotEmpty
+            ? record.physicalGenerals.perspiration
+            : [
+              record.physicalGenerals.perspirationOdour,
+              record.physicalGenerals.perspirationTimingDistribution,
+            ].where((s) => s.isNotEmpty).join(', ');
+    _pgPerspirationController.text = persVal;
+    _pgPerspirationQuantityController.text = persVal;
     _pgPerspirationOdourController.text =
         record.physicalGenerals.perspirationOdour;
     _pgPerspirationTimingDistributionController.text =
         record.physicalGenerals.perspirationTimingDistribution;
-    _pgSleepQuantityController.text =
-        record.physicalGenerals.sleepQuantity.isNotEmpty
+
+    final sleepVal =
+        record.physicalGenerals.sleep.isNotEmpty
+            ? record.physicalGenerals.sleep
+            : record.physicalGenerals.sleepQuantity.isNotEmpty
             ? record.physicalGenerals.sleepQuantity
-            : record.physicalGenerals.sleep;
+            : [
+              record.physicalGenerals.sleepQuality,
+              record.physicalGenerals.sleepPosition,
+              record.physicalGenerals.sleepOnset,
+              record.physicalGenerals.sleepDisturbances,
+            ].where((s) => s.isNotEmpty).join(', ');
+    _pgSleepController.text = sleepVal;
+    _pgSleepQuantityController.text = sleepVal;
     _pgSleepQualityController.text = record.physicalGenerals.sleepQuality;
     _pgSleepPositionController.text = record.physicalGenerals.sleepPosition;
     _pgSleepOnsetController.text = record.physicalGenerals.sleepOnset;
@@ -1684,12 +1707,21 @@ class _MasterCaseTakingScreenState
         urineQuantity: _pgUrineQuantityController.text.trim(),
         urineColourOdour: _pgUrineColourOdourController.text.trim(),
         urinarySymptoms: _pgUrinarySymptomsController.text.trim(),
-        perspiration: _pgPerspirationQuantityController.text.trim(),
+        perspiration:
+            _pgPerspirationController.text.trim().isNotEmpty
+                ? _pgPerspirationController.text.trim()
+                : _pgPerspirationQuantityController.text.trim(),
         perspirationOdour: _pgPerspirationOdourController.text.trim(),
         perspirationTimingDistribution:
             _pgPerspirationTimingDistributionController.text.trim(),
-        sleep: _pgSleepQuantityController.text.trim(),
-        sleepQuantity: _pgSleepQuantityController.text.trim(),
+        sleep:
+            _pgSleepController.text.trim().isNotEmpty
+                ? _pgSleepController.text.trim()
+                : _pgSleepQuantityController.text.trim(),
+        sleepQuantity:
+            _pgSleepController.text.trim().isNotEmpty
+                ? _pgSleepController.text.trim()
+                : _pgSleepQuantityController.text.trim(),
         sleepQuality: _pgSleepQualityController.text.trim(),
         sleepPosition: _pgSleepPositionController.text.trim(),
         sleepOnset: _pgSleepOnsetController.text.trim(),
@@ -2565,15 +2597,6 @@ class _MasterCaseTakingScreenState
               onChanged: (v) => setState(() => _pgHotChillyController.text = v),
             ),
             const SizedBox(height: Spacing.md),
-            _buildInput(
-              _pgSensitivityToTemperatureController,
-              'Temperature Sensitivities & Weather Notes',
-              Icons.thermostat_outlined,
-              4,
-              2,
-              'Reactions to heat, cold, weather changes, seasons, sun, drafts, open air, humidity...',
-            ),
-            const SizedBox(height: Spacing.md),
             Row(
               children: [
                 Expanded(
@@ -2642,76 +2665,22 @@ class _MasterCaseTakingScreenState
               'Observations on urination, frequency, quantity, stream, colour, odour, burning, urging, sediment, involuntary loss...',
             ),
             const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgPerspirationQuantityController,
-                    'Perspiration Quantity',
-                    Icons.dew_point,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgPerspirationOdourController,
-                    'Perspiration Odour',
-                    Icons.air,
-                  ),
-                ),
-              ],
+            _buildInput(
+              _pgPerspirationController,
+              'Perspiration',
+              Icons.dew_point,
+              4,
+              2,
+              'Quantity, odour, timing, distribution, staining, modalities...',
             ),
             const SizedBox(height: Spacing.md),
             _buildInput(
-              _pgPerspirationTimingDistributionController,
-              'Perspiration Timing & Distribution',
-              Icons.map_outlined,
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgSleepQuantityController,
-                    'Sleep Hours',
-                    Icons.bedtime,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgSleepQualityController,
-                    'Sleep Quality',
-                    Icons.hotel,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            _buildInput(
-              _pgSleepPositionController,
-              'Sleep Position',
-              Icons.airline_seat_flat,
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgSleepOnsetController,
-                    'Sleep Onset',
-                    Icons.nights_stay,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgSleepDisturbancesController,
-                    'Sleep Disturbances',
-                    Icons.alarm_off,
-                  ),
-                ),
-              ],
+              _pgSleepController,
+              'Sleep',
+              Icons.bedtime,
+              4,
+              2,
+              'Sleep duration, quality, position, onset, disturbances, waking symptoms...',
             ),
             const SizedBox(height: Spacing.md),
             Row(
@@ -2734,84 +2703,31 @@ class _MasterCaseTakingScreenState
               ],
             ),
             const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgEnergyVitalityController,
-                    'Energy & Vitality',
-                    Icons.bolt,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgFatigueController,
-                    'Fatigue Modalities',
-                    Icons.battery_alert,
-                  ),
-                ),
-              ],
+            _buildInput(
+              _pgSexualHistoryController,
+              'Sexual History',
+              Icons.favorite_outline,
+              1,
+              1,
+              'Desire, function, aggravations or complaints related to coitus...',
             ),
             const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgSexualHistoryController,
-                    'Sexual History',
-                    Icons.favorite_outline,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgMenstrualHistoryController,
-                    'Menstrual History',
-                    Icons.calendar_month,
-                  ),
-                ),
-              ],
+            _buildInput(
+              _pgMenstrualHistoryController,
+              'Menstrual History',
+              Icons.calendar_month,
+              4,
+              2,
+              'Menarche, cycle regularity, duration, quantity, colour, odour, clots, dysmenorrhoea, concomitants, menopause...',
             ),
             const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgObstetricHistoryController,
-                    'Obstetric History',
-                    Icons.child_care,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgSkinHairNailsController,
-                    'Skin, Hair & Nails',
-                    Icons.face,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInput(
-                    _pgGeneralDischargesController,
-                    'General Discharges',
-                    Icons.waterfall_chart,
-                  ),
-                ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: _buildInput(
-                    _pgOtherPhysicalGeneralsController,
-                    'Other Physical Generals',
-                    Icons.more_horiz,
-                  ),
-                ),
-              ],
+            _buildInput(
+              _pgObstetricHistoryController,
+              'Obstetric History',
+              Icons.child_care,
+              4,
+              2,
+              'Gravida, para, abortions/miscarriages, pregnancy & delivery history, puerperium, lactation...',
             ),
           ],
         );
