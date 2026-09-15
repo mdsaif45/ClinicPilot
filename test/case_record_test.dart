@@ -778,6 +778,41 @@ void main() {
           greaterThan(tester.getBottomLeft(find.text('Concomitants')).dy),
         );
 
+        // Test Complaint Delete confirmation popup
+        expect(find.text('Add Another Chief Complaint'), findsOneWidget);
+        await tester.tap(find.text('Add Another Chief Complaint'));
+        await tester.pumpAndSettle();
+        expect(find.text('Complaint #2'), findsOneWidget);
+
+        // Tap delete icon on Complaint #2
+        final complaintDeleteBtns = find.byTooltip('Remove this complaint');
+        expect(complaintDeleteBtns, findsWidgets);
+        await tester.tap(complaintDeleteBtns.last);
+        await tester.pumpAndSettle();
+
+        // Warning dialog appears
+        expect(find.text('Delete Complaint?'), findsOneWidget);
+        expect(
+          find.text(
+            'Are you sure you want to delete this complaint? Any entered details will be removed.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Cancel'), findsOneWidget);
+        expect(find.text('Delete'), findsOneWidget);
+
+        // Cancel dialog
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        expect(find.text('Complaint #2'), findsOneWidget);
+
+        // Tap delete again and confirm
+        await tester.tap(complaintDeleteBtns.last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Delete'));
+        await tester.pumpAndSettle();
+        expect(find.text('Complaint #2'), findsNothing);
+
         // 2. Section 05 - Past Medical History structured table and dynamic add/remove
         expect(find.text('Past Medical History'), findsOneWidget);
         await tester.tap(find.text('Past Medical History'));
@@ -907,7 +942,8 @@ void main() {
         expect(find.text('Urine'), findsOneWidget);
         expect(find.text('Perspiration'), findsOneWidget);
         expect(find.text('Sleep'), findsOneWidget);
-        expect(find.text('Dreams (General)'), findsOneWidget);
+        expect(find.text('Dreams'), findsOneWidget);
+        expect(find.text('Dreams (General)'), findsNothing);
         expect(find.text('Recurrent / Peculiar Dreams'), findsOneWidget);
         expect(find.text('Sexual History'), findsOneWidget);
         expect(find.text('Menstrual History'), findsOneWidget);
