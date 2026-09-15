@@ -1530,6 +1530,21 @@ class _MasterCaseTakingScreenState
     AppHaptics.light();
   }
 
+  Future<void> _confirmRemoveComplaint(int index) async {
+    if (_complaints.length <= 1) return;
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      title: 'Delete Complaint?',
+      message:
+          'Are you sure you want to delete this complaint? Any entered details will be removed.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    );
+    if (confirmed == true && mounted) {
+      _removeComplaintBlock(index);
+    }
+  }
+
   void _removeComplaintBlock(int index) {
     if (_complaints.length <= 1) return;
     setState(() {
@@ -2688,7 +2703,7 @@ class _MasterCaseTakingScreenState
                 Expanded(
                   child: _buildInput(
                     _pgDreamsGeneralController,
-                    'Dreams (General)',
+                    'Dreams',
                     Icons.cloud_outlined,
                   ),
                 ),
@@ -3877,7 +3892,7 @@ class _MasterCaseTakingScreenState
                   icon: const Icon(Icons.delete_outline, size: 20),
                   color: theme.colorScheme.error,
                   tooltip: 'Remove this complaint',
-                  onPressed: () => _removeComplaintBlock(index),
+                  onPressed: () => _confirmRemoveComplaint(index),
                 ),
             ],
           ),
