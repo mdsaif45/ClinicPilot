@@ -121,14 +121,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/settings',
-                builder: (context, state) => const SettingsScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'profile',
-                    builder: (context, state) => const DoctorProfileScreen(),
-                  ),
-                ],
+                path: '/inventory',
+                builder: (context, state) => const InventoryScreen(),
               ),
             ],
           ),
@@ -186,8 +180,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RecallScreen(),
       ),
       GoRoute(
-        path: '/inventory',
-        builder: (context, state) => const InventoryScreen(),
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'profile',
+            builder: (context, state) => const DoctorProfileScreen(),
+          ),
+        ],
       ),
     ],
   );
@@ -274,12 +274,7 @@ const _destinations = [
     Icons.insights_outlined,
     'Growth',
   ),
-  _NavDestination(
-    4,
-    Icons.settings_outlined,
-    Icons.settings_outlined,
-    'Settings',
-  ),
+  _NavDestination(4, Icons.medication_outlined, Icons.medication, 'Inventory'),
 ];
 
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
@@ -386,6 +381,35 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
       );
     }
 
+    Widget buildSettingsIcon() {
+      return IconButton(
+        icon: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.settings_outlined, size: 24),
+            if (updateWaiting)
+              Positioned(
+                right: 1,
+                top: 1,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: scheme.tertiary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        tooltip: 'Settings',
+        onPressed: () {
+          AppHaptics.selection();
+          context.push('/settings');
+        },
+      );
+    }
+
     if (isTablet) {
       return Scaffold(
         body: SafeArea(
@@ -396,7 +420,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                 selectedIndex: navigationShell.currentIndex.clamp(0, 4),
                 labelType: NavigationRailLabelType.all,
                 onDestinationSelected: (index) {
-                  final alwaysReset = index == _growthIndex || index == 4;
+                  final alwaysReset = index == _growthIndex;
                   navigationShell.goBranch(
                     index,
                     initialLocation:
@@ -406,24 +430,11 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                 destinations: [
                   for (final d in _destinations)
                     NavigationRailDestination(
-                      icon:
-                          d.index == 4 && updateWaiting
-                              ? Badge(
-                                smallSize: 8,
-                                backgroundColor: scheme.tertiary,
-                                child: AnimatedNavIcon(
-                                  icon: d.icon,
-                                  selectedIcon: d.selectedIcon,
-                                  selected:
-                                      navigationShell.currentIndex == d.index,
-                                ),
-                              )
-                              : AnimatedNavIcon(
-                                icon: d.icon,
-                                selectedIcon: d.selectedIcon,
-                                selected:
-                                    navigationShell.currentIndex == d.index,
-                              ),
+                      icon: AnimatedNavIcon(
+                        icon: d.icon,
+                        selectedIcon: d.selectedIcon,
+                        selected: navigationShell.currentIndex == d.index,
+                      ),
                       label: Text(d.label),
                     ),
                 ],
@@ -445,7 +456,14 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const ClinicSwitcher(),
-                            buildNotificationIcon(),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                buildNotificationIcon(),
+                                const SizedBox(width: Spacing.xs),
+                                buildSettingsIcon(),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -470,9 +488,10 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
                 titleSpacing: Spacing.sm,
                 title: const ClinicSwitcher(),
                 actions: [
+                  buildNotificationIcon(),
                   Padding(
-                    padding: const EdgeInsets.only(right: Spacing.sm),
-                    child: buildNotificationIcon(),
+                    padding: const EdgeInsets.only(right: Spacing.xs),
+                    child: buildSettingsIcon(),
                   ),
                 ],
               )
@@ -481,10 +500,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
       bottomNavigationBar: FloatingBottomNavBar(
         selectedIndex: navigationShell.currentIndex.clamp(0, 4),
         onDestinationSelected: (index) {
-          // Growth is a menu of sub-screens. A shell branch normally restores
-          // whichever sub-route was last open, which would mean that once a
-          // section had been visited the tab could never return to its menu.
-          final alwaysReset = index == _growthIndex || index == 4;
+          final alwaysReset = index == _growthIndex;
           navigationShell.goBranch(
             index,
             initialLocation:
@@ -497,17 +513,6 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
               icon: d.icon,
               selectedIcon: d.selectedIcon,
               label: d.label,
-              badge:
-                  d.index == 4 && updateWaiting
-                      ? Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: scheme.tertiary,
-                          shape: BoxShape.circle,
-                        ),
-                      )
-                      : null,
             ),
         ],
       ),

@@ -1045,7 +1045,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Single comprehensive observation notes field is present
-        expect(find.text('General Mental State'), findsOneWidget);
+        expect(find.text('Disposition & Mind'), findsOneWidget);
+        expect(find.text('General Mental State'), findsNothing);
 
         // 26 granular subfields are pruned from UI
         expect(find.text('Disposition / Nature'), findsNothing);

@@ -2756,7 +2756,7 @@ class _MasterCaseTakingScreenState
           children: [
             _buildInput(
               _mgGeneralMentalEmotionalStateController,
-              'General Mental State',
+              'Disposition & Mind',
               Icons.psychology,
               8,
               5,
