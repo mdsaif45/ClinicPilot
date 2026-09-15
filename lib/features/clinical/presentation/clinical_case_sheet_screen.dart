@@ -1386,10 +1386,7 @@ class _ClinicalCaseSheetScreenState
       icon: Icons.psychology_outlined,
       onEdit: () => _openEditor(context, sectionIndex: 8),
       children: [
-        _ClinicalRow(
-          label: 'General Mental State',
-          value: mg.generalMentalState,
-        ),
+        _ClinicalRow(label: 'Disposition & Mind', value: mg.generalMentalState),
         _ClinicalRow(label: 'Disposition & Temperament', value: mg.disposition),
         _ClinicalRow(
           label: 'Anxiety & Phobias / Fears',
