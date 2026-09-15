@@ -105,6 +105,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: '/inventory',
+                builder: (context, state) => const InventoryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: '/finances',
                 builder: (context, state) => const FinancesScreen(),
               ),
@@ -115,14 +123,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/growth',
                 builder: (context, state) => const GrowthHubScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/inventory',
-                builder: (context, state) => const InventoryScreen(),
               ),
             ],
           ),
@@ -262,19 +262,19 @@ const _destinations = [
     Icons.people_alt_outlined,
     'Patients',
   ),
+  _NavDestination(2, Icons.medication_outlined, Icons.medication, 'Inventory'),
   _NavDestination(
-    2,
+    3,
     Icons.account_balance_wallet_outlined,
     Icons.account_balance_wallet_outlined,
     'Finances',
   ),
   _NavDestination(
-    3,
+    4,
     Icons.insights_outlined,
     Icons.insights_outlined,
     'Growth',
   ),
-  _NavDestination(4, Icons.medication_outlined, Icons.medication, 'Inventory'),
 ];
 
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
@@ -314,7 +314,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
   /// repeated that and cost a row of vertical space. Dashboard keeps one
   /// because the active clinic scopes its figures.
   static const _dashboardIndex = 0;
-  static const _growthIndex = 3;
+  static const _growthIndex = 4;
 
   @override
   Widget build(BuildContext context) {

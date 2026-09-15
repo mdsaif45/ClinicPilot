@@ -18,7 +18,6 @@ import '../../settings/providers/doctor_profile_provider.dart';
 import '../providers/dashboard_provider.dart';
 import 'widgets/daily_insight_card.dart';
 import 'widgets/goal_tracker_card.dart';
-import 'widgets/medicine_inventory_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -152,11 +151,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ],
                   ),
 
-                  // 7. Medicine Inventory
-                  const SectionHeader(title: 'Medicine Inventory'),
-                  const MedicineInventoryCard(),
-
-                  // 8. Quick Actions at bottom
+                  // 7. Quick Actions at bottom
                   const SectionHeader(title: 'Quick Actions'),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
