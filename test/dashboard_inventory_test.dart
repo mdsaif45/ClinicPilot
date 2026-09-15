@@ -139,7 +139,7 @@ void main() {
   );
 
   testWidgets(
-    'DashboardScreen renders Medicine Inventory section and Quick Action',
+    'DashboardScreen renders Quick Actions and no longer renders redundant Medicine Inventory card',
     (tester) async {
       tester.view.physicalSize = const Size(1200, 2400);
       tester.view.devicePixelRatio = 1.0;
@@ -180,11 +180,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify Medicine Inventory SectionHeader & Card
-      expect(
-        find.text('Medicine Inventory'),
-        findsNWidgets(2),
-      ); // Section header + card title
+      // Verify Medicine Inventory SectionHeader & Card are removed from Dashboard
+      expect(find.text('Medicine Inventory'), findsNothing);
       // Verify Quick Action buttons
       expect(find.text('Add Patient'), findsOneWidget);
       expect(find.text('Create Memo'), findsOneWidget);
