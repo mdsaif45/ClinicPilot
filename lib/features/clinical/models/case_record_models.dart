@@ -795,6 +795,38 @@ class PhysicalGenerals {
       }
     }
 
+    final rawPerspiration = json['perspiration'] as String? ?? '';
+    final persOdour = json['perspirationOdour'] as String? ?? '';
+    final persTiming = json['perspirationTimingDistribution'] as String? ?? '';
+    String persVal = rawPerspiration;
+    if (persVal.isEmpty) {
+      final parts = [persOdour, persTiming].where((s) => s.isNotEmpty).toList();
+      if (parts.isNotEmpty) {
+        persVal = parts.join(', ');
+      }
+    }
+
+    final rawSleep = json['sleep'] as String? ?? '';
+    final sleepQty = json['sleepQuantity'] as String? ?? '';
+    final sleepQual = json['sleepQuality'] as String? ?? '';
+    final sleepPos = json['sleepPosition'] as String? ?? '';
+    final sleepOn = json['sleepOnset'] as String? ?? '';
+    final sleepDist = json['sleepDisturbances'] as String? ?? '';
+    String sleepVal = rawSleep;
+    if (sleepVal.isEmpty) {
+      final parts =
+          [
+            sleepQty,
+            sleepQual,
+            sleepPos,
+            sleepOn,
+            sleepDist,
+          ].where((s) => s.isNotEmpty).toList();
+      if (parts.isNotEmpty) {
+        sleepVal = parts.join(', ');
+      }
+    }
+
     return PhysicalGenerals(
       thermal: json['thermal'] as String? ?? 'Ambithermal',
       hotChilly: json['hotChilly'] as String? ?? 'Ambithermal',
@@ -819,16 +851,15 @@ class PhysicalGenerals {
       urineQuantity: urineQty,
       urineColourOdour: urineCol,
       urinarySymptoms: urineSym,
-      perspiration: json['perspiration'] as String? ?? '',
-      perspirationOdour: json['perspirationOdour'] as String? ?? '',
-      perspirationTimingDistribution:
-          json['perspirationTimingDistribution'] as String? ?? '',
-      sleep: json['sleep'] as String? ?? '',
-      sleepQuantity: json['sleepQuantity'] as String? ?? '',
-      sleepQuality: json['sleepQuality'] as String? ?? '',
-      sleepPosition: json['sleepPosition'] as String? ?? '',
-      sleepOnset: json['sleepOnset'] as String? ?? '',
-      sleepDisturbances: json['sleepDisturbances'] as String? ?? '',
+      perspiration: persVal,
+      perspirationOdour: persOdour,
+      perspirationTimingDistribution: persTiming,
+      sleep: sleepVal,
+      sleepQuantity: sleepQty.isNotEmpty ? sleepQty : sleepVal,
+      sleepQuality: sleepQual,
+      sleepPosition: sleepPos,
+      sleepOnset: sleepOn,
+      sleepDisturbances: sleepDist,
       dreams: json['dreams'] as String? ?? '',
       dreamsRecurrentPeculiar: json['dreamsRecurrentPeculiar'] as String? ?? '',
       energyVitality: json['energyVitality'] as String? ?? '',

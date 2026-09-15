@@ -1306,7 +1306,10 @@ class _ClinicalCaseSheetScreenState
         record.lifestyleHabits.diet.isNotEmpty ||
         pg.addiction.isNotEmpty ||
         record.lifestyleHabits.otherSubstanceUse.isNotEmpty ||
-        record.lifestyleHabits.otherHabits.isNotEmpty;
+        record.lifestyleHabits.otherHabits.isNotEmpty ||
+        pg.sexualHistory.isNotEmpty ||
+        pg.menstrualHistory.isNotEmpty ||
+        pg.obstetricHistory.isNotEmpty;
 
     if (!hasData) return const SizedBox.shrink();
 
@@ -1348,12 +1351,15 @@ class _ClinicalCaseSheetScreenState
           ),
         _ClinicalRow(label: 'Bowel / Stool Observations', value: pg.stool),
         _ClinicalRow(label: 'Urine Observations', value: pg.urine),
-        _ClinicalRow(label: 'Sleep Quality & Pattern', value: pg.sleep),
+        _ClinicalRow(label: 'Perspiration', value: pg.perspiration),
+        _ClinicalRow(label: 'Sleep', value: pg.sleep),
         _ClinicalRow(label: 'Dreams & Subconscious', value: pg.dreams),
-        _ClinicalRow(
-          label: 'Perspiration & Distribution',
-          value: pg.perspiration,
-        ),
+        if (pg.sexualHistory.isNotEmpty)
+          _ClinicalRow(label: 'Sexual History', value: pg.sexualHistory),
+        if (pg.menstrualHistory.isNotEmpty)
+          _ClinicalRow(label: 'Menstrual History', value: pg.menstrualHistory),
+        if (pg.obstetricHistory.isNotEmpty)
+          _ClinicalRow(label: 'Obstetric History', value: pg.obstetricHistory),
       ],
     );
   }

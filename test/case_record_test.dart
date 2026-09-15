@@ -898,10 +898,6 @@ void main() {
 
         // Core and simplified fields are present
         expect(find.text('Thermal State'), findsOneWidget);
-        expect(
-          find.text('Temperature Sensitivities & Weather Notes'),
-          findsOneWidget,
-        );
         expect(find.text('Appetite'), findsOneWidget);
         expect(find.text('Thirst'), findsOneWidget);
         expect(find.text('Cravings, Desires & Aversions'), findsOneWidget);
@@ -909,6 +905,24 @@ void main() {
         expect(find.text('Diet'), findsOneWidget);
         expect(find.text('Stool'), findsOneWidget);
         expect(find.text('Urine'), findsOneWidget);
+        expect(find.text('Perspiration'), findsOneWidget);
+        expect(find.text('Sleep'), findsOneWidget);
+        expect(find.text('Dreams (General)'), findsOneWidget);
+        expect(find.text('Recurrent / Peculiar Dreams'), findsOneWidget);
+        expect(find.text('Sexual History'), findsOneWidget);
+        expect(find.text('Menstrual History'), findsOneWidget);
+        expect(find.text('Obstetric History'), findsOneWidget);
+
+        // Removed fields are absent
+        expect(
+          find.text('Temperature Sensitivities & Weather Notes'),
+          findsNothing,
+        );
+        expect(find.text('Energy & Vitality'), findsNothing);
+        expect(find.text('Fatigue Modalities'), findsNothing);
+        expect(find.text('General Discharges'), findsNothing);
+        expect(find.text('Skin, Hair & Nails'), findsNothing);
+        expect(find.text('Other Physical Generals'), findsNothing);
 
         // Granular struck-through fields are pruned
         expect(find.text('Weather / Season Preference'), findsNothing);
@@ -927,6 +941,16 @@ void main() {
         expect(find.text('Urine Quantity'), findsNothing);
         expect(find.text('Urine Colour / Odour'), findsNothing);
         expect(find.text('Urinary Symptoms'), findsNothing);
+
+        // Granular Perspiration & Sleep subfields are combined/pruned
+        expect(find.text('Perspiration Quantity'), findsNothing);
+        expect(find.text('Perspiration Odour'), findsNothing);
+        expect(find.text('Perspiration Timing & Distribution'), findsNothing);
+        expect(find.text('Sleep Hours'), findsNothing);
+        expect(find.text('Sleep Quality'), findsNothing);
+        expect(find.text('Sleep Position'), findsNothing);
+        expect(find.text('Sleep Onset'), findsNothing);
+        expect(find.text('Sleep Disturbances'), findsNothing);
       },
     );
 
@@ -1199,6 +1223,31 @@ void main() {
         expect(find.text('Bowels & Urine Change'), findsNothing);
         expect(find.text('Perspiration Change'), findsNothing);
         expect(find.text('Energy Change'), findsNothing);
+      },
+    );
+
+    test(
+      'PhysicalGenerals.fromJson synthesizes legacy sleep and perspiration fields when combined fields are empty',
+      () {
+        final pg = PhysicalGenerals.fromJson({
+          'perspirationOdour': 'Offensive',
+          'perspirationTimingDistribution': 'Night, chest and neck',
+          'sleepQuantity': '6 hours',
+          'sleepQuality': 'Restless',
+          'sleepPosition': 'On abdomen',
+          'sleepOnset': 'Delayed by 2 hours',
+          'sleepDisturbances': 'Wakes at 3 AM with palpitation',
+          'addication': 'Smoking 5/day',
+          'diet': 'Vegetarian',
+        });
+
+        expect(pg.perspiration, 'Offensive, Night, chest and neck');
+        expect(
+          pg.sleep,
+          '6 hours, Restless, On abdomen, Delayed by 2 hours, Wakes at 3 AM with palpitation',
+        );
+        expect(pg.addiction, 'Smoking 5/day');
+        expect(pg.diet, 'Vegetarian');
       },
     );
   });
