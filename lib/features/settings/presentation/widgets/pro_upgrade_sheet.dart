@@ -384,6 +384,12 @@ class _ProUpgradeSheetState extends ConsumerState<ProUpgradeSheet> {
             ),
             _buildCheckItem(
               theme,
+              Icons.local_hospital_outlined,
+              'Multi-Clinic Practice',
+              'Manage 2+ clinics with independent rosters and side-by-side comparison.',
+            ),
+            _buildCheckItem(
+              theme,
               Icons.print_outlined,
               'Branded PDF Letterheads',
               'Add your clinic logo, digital signature & credentials to printed Rx.',
@@ -396,9 +402,126 @@ class _ProUpgradeSheetState extends ConsumerState<ProUpgradeSheet> {
             ),
             _buildCheckItem(
               theme,
+              Icons.grid_on_outlined,
+              'Bulk Excel (XLSX) Export',
+              'Export comprehensive audit-ready spreadsheets for tax and practice analysis.',
+            ),
+            _buildCheckItem(
+              theme,
               Icons.block_outlined,
               '100% Ad-Free Forever',
               'Zero banner ads, zero popups, zero marketing spyware.',
+            ),
+
+            const SizedBox(height: Spacing.sm),
+
+            // Free vs Pro Comparison Expander
+            Theme(
+              data: theme.copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: const EdgeInsets.only(bottom: Spacing.sm),
+                leading: Icon(
+                  Icons.compare_arrows_rounded,
+                  size: 20,
+                  color: scheme.primary,
+                ),
+                title: Text(
+                  'Compare Free vs. Pro Plans',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
+                  ),
+                ),
+                children: [
+                  _buildComparisonHeader(theme, scheme),
+                  const Divider(height: 1),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Unlimited Patients & Cases',
+                    free: true,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    '17-Section Homeopathic Engine',
+                    free: true,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Medicine Inventory & Alerts',
+                    free: true,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Cash Memos & Thermal Print',
+                    free: true,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Encrypted Local Backups',
+                    free: true,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Primary Clinic (1 Location)',
+                    free: true,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Multi-Clinic (2+ Locations)',
+                    free: false,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Clinic Comparison Analytics',
+                    free: false,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Custom Rx Logo & Signature',
+                    free: false,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Automated Daily Cloud Sync',
+                    free: false,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Yearly Tax & P&L Intelligence',
+                    free: false,
+                    pro: true,
+                  ),
+                  _buildComparisonRow(
+                    theme,
+                    scheme,
+                    'Audit-Ready Excel (.xlsx)',
+                    free: false,
+                    pro: true,
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: Spacing.md),
@@ -558,6 +681,110 @@ class _ProUpgradeSheetState extends ConsumerState<ProUpgradeSheet> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildComparisonHeader(ThemeData theme, ColorScheme scheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.sm,
+        vertical: Spacing.xs,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Feature / Capability',
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 48,
+            child: Center(
+              child: Text(
+                'Free',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 48,
+            child: Center(
+              child: Text(
+                'Pro',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: scheme.primary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildComparisonRow(
+    ThemeData theme,
+    ColorScheme scheme,
+    String title, {
+    required bool free,
+    required bool pro,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurface,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 48,
+            child: Center(
+              child:
+                  free
+                      ? Icon(
+                        Icons.check_circle_outline,
+                        size: 16,
+                        color: scheme.primary,
+                      )
+                      : Icon(
+                        Icons.remove,
+                        size: 16,
+                        color: scheme.outlineVariant,
+                      ),
+            ),
+          ),
+          SizedBox(
+            width: 48,
+            child: Center(
+              child:
+                  pro
+                      ? Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: scheme.primary,
+                      )
+                      : Icon(
+                        Icons.remove,
+                        size: 16,
+                        color: scheme.outlineVariant,
+                      ),
             ),
           ),
         ],

@@ -40,7 +40,13 @@ enum AppFeature {
   taxAnalytics,
 
   /// Multi-clinic comparative analytics and retention benchmarking.
-  multiClinicComparison;
+  multiClinicComparison,
+
+  /// Multi-clinic practice management (managing 2 or more clinic locations).
+  multiClinicManagement,
+
+  /// Bulk Excel / XLSX export of practice records (CSV and PDF remain free).
+  bulkExportXlsx;
 
   String get displayName {
     switch (this) {
@@ -52,6 +58,10 @@ enum AppFeature {
         return 'Practice Tax & P&L Analytics';
       case AppFeature.multiClinicComparison:
         return 'Multi-Clinic Benchmarking';
+      case AppFeature.multiClinicManagement:
+        return 'Multi-Clinic Management';
+      case AppFeature.bulkExportXlsx:
+        return 'Bulk Excel (XLSX) Export';
     }
   }
 
@@ -65,6 +75,10 @@ enum AppFeature {
         return 'Detailed yearly tax breakdowns, expense categories, and net profit intelligence.';
       case AppFeature.multiClinicComparison:
         return 'Compare revenue, footfall, and patient retention across all your practice branches.';
+      case AppFeature.multiClinicManagement:
+        return 'Add and manage 2 or more clinics with independent rosters and accounting.';
+      case AppFeature.bulkExportXlsx:
+        return 'Export comprehensive audit-ready spreadsheets for tax and practice analysis.';
     }
   }
 }

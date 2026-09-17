@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:clinic_pilot/core/services/list_export_service.dart';
@@ -141,8 +142,10 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ExportOptionsSheet(hasPatientData: true)),
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(body: ExportOptionsSheet(hasPatientData: true)),
+          ),
         ),
       );
 
@@ -163,8 +166,10 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ExportOptionsSheet(hasPatientData: false)),
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(body: ExportOptionsSheet(hasPatientData: false)),
+          ),
         ),
       );
 
@@ -184,19 +189,21 @@ void main() {
       ExportOptions? result;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder:
-                  (ctx) => ElevatedButton(
-                    onPressed: () async {
-                      result = await pickExportOptions(
-                        ctx,
-                        hasPatientData: true,
-                      );
-                    },
-                    child: const Text('Open Sheet'),
-                  ),
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder:
+                    (ctx) => ElevatedButton(
+                      onPressed: () async {
+                        result = await pickExportOptions(
+                          ctx,
+                          hasPatientData: true,
+                        );
+                      },
+                      child: const Text('Open Sheet'),
+                    ),
+              ),
             ),
           ),
         ),
@@ -270,17 +277,19 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            appBar: AppBar(
-              actions: [
-                ExportAction<_SamplePatient>(
-                  screenSlug: 'patients',
-                  title: 'Patients',
-                  rows: rows,
-                  columns: columns,
-                ),
-              ],
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              appBar: AppBar(
+                actions: [
+                  ExportAction<_SamplePatient>(
+                    screenSlug: 'patients',
+                    title: 'Patients',
+                    rows: rows,
+                    columns: columns,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

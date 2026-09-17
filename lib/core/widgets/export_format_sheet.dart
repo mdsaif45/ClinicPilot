@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/settings/presentation/widgets/pro_upgrade_sheet.dart';
 import '../design/tokens.dart';
+import '../entitlement/entitlement_model.dart';
+import '../entitlement/entitlement_provider.dart';
 
 /// The file formats a per-list export can be saved as.
 enum ExportFormat {
@@ -40,17 +44,17 @@ class ExportOptions {
 
 /// Modal bottom sheet for configuring export format, optional password encryption,
 /// and privacy guard (de-identification) options.
-class ExportOptionsSheet extends StatefulWidget {
+class ExportOptionsSheet extends ConsumerStatefulWidget {
   final bool hasPatientData;
 
   const ExportOptionsSheet({super.key, this.hasPatientData = true});
 
   @override
-  State<ExportOptionsSheet> createState() => _ExportOptionsSheetState();
+  ConsumerState<ExportOptionsSheet> createState() => _ExportOptionsSheetState();
 }
 
-class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
-  ExportFormat _selectedFormat = ExportFormat.xlsx;
+class _ExportOptionsSheetState extends ConsumerState<ExportOptionsSheet> {
+  ExportFormat? _selectedFormat;
   bool _isPasswordProtected = false;
   bool _redactSensitiveData = false;
   bool _obscurePassword = true;
@@ -64,6 +68,18 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
   }
 
   void _onExport() {
+    final isXlsxUnlocked = ref.read(
+      featureUnlockedProvider(AppFeature.bulkExportXlsx),
+    );
+    final effectiveFormat =
+        _selectedFormat ??
+        (isXlsxUnlocked ? ExportFormat.xlsx : ExportFormat.csv);
+
+    if (effectiveFormat == ExportFormat.xlsx && !isXlsxUnlocked) {
+      ProUpgradeSheet.show(context);
+      return;
+    }
+
     if (_isPasswordProtected) {
       final pwd = _passwordController.text.trim();
       if (pwd.isEmpty) {
@@ -82,7 +98,7 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
 
     Navigator.of(context).pop(
       ExportOptions(
-        format: _selectedFormat,
+        format: effectiveFormat,
         isPasswordProtected: _isPasswordProtected,
         password: _isPasswordProtected ? _passwordController.text.trim() : null,
         redactSensitiveData: _redactSensitiveData,
@@ -92,6 +108,12 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isXlsxUnlocked = ref.watch(
+      featureUnlockedProvider(AppFeature.bulkExportXlsx),
+    );
+    final effectiveFormat =
+        _selectedFormat ??
+        (isXlsxUnlocked ? ExportFormat.xlsx : ExportFormat.csv);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
@@ -191,8 +213,14 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: InkWell(
-                            onTap:
-                                () => setState(() => _selectedFormat = format),
+                            onTap: () {
+                              if (format == ExportFormat.xlsx &&
+                                  !isXlsxUnlocked) {
+                                ProUpgradeSheet.show(context);
+                                return;
+                              }
+                              setState(() => _selectedFormat = format);
+                            },
                             borderRadius: BorderRadius.circular(Radii.md),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -201,18 +229,18 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
                               ),
                               decoration: BoxDecoration(
                                 color:
-                                    _selectedFormat == format
+                                    effectiveFormat == format
                                         ? scheme.primaryContainer
                                         : scheme.surfaceContainerLow,
                                 borderRadius: BorderRadius.circular(Radii.md),
                                 border: Border.all(
                                   color:
-                                      _selectedFormat == format
+                                      effectiveFormat == format
                                           ? scheme.primary
                                           : scheme.outlineVariant.withValues(
                                             alpha: 0.4,
                                           ),
-                                  width: _selectedFormat == format ? 1.5 : 1.0,
+                                  width: effectiveFormat == format ? 1.5 : 1.0,
                                 ),
                               ),
                               child: Column(
@@ -221,20 +249,39 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
                                     format.icon,
                                     size: 22,
                                     color:
-                                        _selectedFormat == format
+                                        effectiveFormat == format
                                             ? scheme.onPrimaryContainer
                                             : scheme.onSurfaceVariant,
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    format.name.toUpperCase(),
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color:
-                                          _selectedFormat == format
-                                              ? scheme.onPrimaryContainer
-                                              : scheme.onSurface,
-                                    ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        format.name.toUpperCase(),
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color:
+                                                  effectiveFormat == format
+                                                      ? scheme
+                                                          .onPrimaryContainer
+                                                      : scheme.onSurface,
+                                            ),
+                                      ),
+                                      if (format == ExportFormat.xlsx &&
+                                          !isXlsxUnlocked) ...[
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          'PRO',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: scheme.tertiary,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ],
                               ),
@@ -244,6 +291,16 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
                       ),
                   ],
                 ),
+                if (!isXlsxUnlocked) ...[
+                  const SizedBox(height: Spacing.xs),
+                  Text(
+                    'CSV and PDF exports are 100% Free. Excel (XLSX) audit spreadsheets require Pro.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: Spacing.md),
 
                 const Divider(),
