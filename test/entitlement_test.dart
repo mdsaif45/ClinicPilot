@@ -36,6 +36,11 @@ void main() {
           state.isFeatureUnlocked(AppFeature.customLetterheadBranding),
           isFalse,
         );
+        expect(
+          state.isFeatureUnlocked(AppFeature.multiClinicManagement),
+          isFalse,
+        );
+        expect(state.isFeatureUnlocked(AppFeature.bulkExportXlsx), isFalse);
       },
     );
 
@@ -56,6 +61,11 @@ void main() {
         state.isFeatureUnlocked(AppFeature.customLetterheadBranding),
         isTrue,
       );
+      expect(
+        state.isFeatureUnlocked(AppFeature.multiClinicManagement),
+        isTrue,
+      );
+      expect(state.isFeatureUnlocked(AppFeature.bulkExportXlsx), isTrue);
     });
 
     test('expired Pro Trial falls back gracefully without Pro privileges', () {
@@ -70,6 +80,11 @@ void main() {
       expect(state.daysRemainingInTrial, 0);
       expect(state.badgeLabel, 'FREE');
       expect(state.isFeatureUnlocked(AppFeature.cloudAutoSync), isFalse);
+      expect(
+        state.isFeatureUnlocked(AppFeature.multiClinicManagement),
+        isFalse,
+      );
+      expect(state.isFeatureUnlocked(AppFeature.bulkExportXlsx), isFalse);
     });
 
     test('active Pro tier has full access and PRO badge', () {
@@ -85,6 +100,11 @@ void main() {
       expect(state.isFeatureUnlocked(AppFeature.cloudAutoSync), isTrue);
       expect(state.isFeatureUnlocked(AppFeature.taxAnalytics), isTrue);
       expect(state.isFeatureUnlocked(AppFeature.multiClinicComparison), isTrue);
+      expect(
+        state.isFeatureUnlocked(AppFeature.multiClinicManagement),
+        isTrue,
+      );
+      expect(state.isFeatureUnlocked(AppFeature.bulkExportXlsx), isTrue);
     });
   });
 

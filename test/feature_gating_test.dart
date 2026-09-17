@@ -1,17 +1,34 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:clinic_pilot/core/database/app_database.dart';
+import 'package:clinic_pilot/core/database/database_provider.dart';
 import 'package:clinic_pilot/core/entitlement/entitlement_dev_override.dart';
 import 'package:clinic_pilot/core/entitlement/entitlement_model.dart';
 import 'package:clinic_pilot/core/entitlement/entitlement_provider.dart';
 import 'package:clinic_pilot/core/theme/app_theme.dart';
+import 'package:clinic_pilot/core/widgets/export_format_sheet.dart';
 import 'package:clinic_pilot/core/widgets/feature_lock.dart';
+import 'package:clinic_pilot/features/clinics/presentation/add_edit_clinic_dialog.dart';
+import 'package:clinic_pilot/features/clinics/presentation/clinics_screen.dart';
+import 'package:clinic_pilot/features/clinics/providers/clinic_provider.dart';
 import 'package:clinic_pilot/features/growth/presentation/clinic_comparison_screen.dart';
 import 'package:clinic_pilot/features/growth/presentation/profit_summary_screen.dart';
 import 'package:clinic_pilot/features/growth/providers/clinic_comparison_provider.dart';
 import 'package:clinic_pilot/features/growth/providers/profit_provider.dart';
 import 'package:clinic_pilot/features/settings/presentation/widgets/pro_upgrade_sheet.dart';
+
+class _FakeActiveClinicIdNotifier extends ActiveClinicIdNotifier {
+  _FakeActiveClinicIdNotifier(super.db) {
+    state = 'c1';
+  }
+  @override
+  Future<void> setClinicId(String newId) async {
+    state = newId;
+  }
+}
 
 /// Overrides [entitlementStreamProvider] with a fixed state and short-circuits
 /// the data providers behind each gated screen, so these tests exercise only
@@ -39,11 +56,12 @@ List<Override> _overridesFor(EntitlementState state) => [
 Future<void> _pump(
   WidgetTester tester,
   Widget child,
-  EntitlementState state,
-) async {
+  EntitlementState state, {
+  List<Override> extraOverrides = const [],
+}) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: _overridesFor(state),
+      overrides: [..._overridesFor(state), ...extraOverrides],
       child: MaterialApp(theme: AppTheme.lightTheme, home: child),
     ),
   );
@@ -213,5 +231,142 @@ void main() {
 
       expect(find.byType(FeatureLockedView), findsOneWidget);
     });
+  });
+
+  group('Multi-Clinic Practice — multiClinicManagement gate', () {
+    late AppDatabase db;
+
+    setUp(() {
+      db = AppDatabase(NativeDatabase.memory());
+    });
+
+    tearDown(() async {
+      await db.close();
+    });
+
+    final dummyClinic = Clinic(
+      id: 'c1',
+      name: 'Downtown Clinic',
+      address: 'Main Road',
+      phone: '9876543210',
+      monthlyRent: 10000,
+      defaultConsultationFee: 500,
+      openDays: '1,2,3,4,5,6',
+      colorHex: '#0F5132',
+      isActive: true,
+      isDeleted: false,
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    testWidgets(
+      'free tier with 1 clinic shows Pro banner and locks adding second clinic',
+      (tester) async {
+        await _pump(
+          tester,
+          const ClinicsScreen(),
+          const EntitlementState(),
+          extraOverrides: [
+            databaseProvider.overrideWithValue(db),
+            clinicsStreamProvider.overrideWith(
+              (ref) => Stream.value([dummyClinic]),
+            ),
+            activeClinicIdProvider.overrideWith(
+              (ref) => _FakeActiveClinicIdNotifier(db),
+            ),
+          ],
+        );
+
+        // Pro banner shown on Free tier
+        expect(find.text('Multi-Clinic Practice'), findsOneWidget);
+        expect(find.text('Downtown Clinic'), findsOneWidget);
+
+        // Tap "+ Add Clinic" FAB
+        await tester.tap(find.byType(FloatingActionButton));
+        await tester.pumpAndSettle();
+
+        // Should show Pro upgrade sheet instead of dialog
+        expect(find.byType(ProUpgradeSheet), findsOneWidget);
+        expect(find.byType(AddEditClinicDialog), findsNothing);
+      },
+    );
+
+    testWidgets('pro tier allows adding multiple clinics and hides banner', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        const ClinicsScreen(),
+        EntitlementState(
+          tier: SubscriptionTier.proActive,
+          subscriptionExpiryDate: DateTime.now().add(const Duration(days: 30)),
+        ),
+        extraOverrides: [
+          databaseProvider.overrideWithValue(db),
+          clinicsStreamProvider.overrideWith(
+            (ref) => Stream.value([dummyClinic]),
+          ),
+          activeClinicIdProvider.overrideWith(
+            (ref) => _FakeActiveClinicIdNotifier(db),
+          ),
+        ],
+      );
+
+      // Pro banner is hidden when unlocked
+      expect(find.text('Multi-Clinic Practice'), findsNothing);
+
+      // Tap "+ Add Clinic" FAB
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      // Should open AddEditClinicDialog
+      expect(find.byType(AddEditClinicDialog), findsOneWidget);
+      expect(find.byType(ProUpgradeSheet), findsNothing);
+    });
+  });
+
+  group('Bulk Export — bulkExportXlsx gate', () {
+    testWidgets('free tier tapping Excel (XLSX) opens upgrade sheet', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        const Scaffold(body: ExportOptionsSheet()),
+        const EntitlementState(),
+      );
+
+      expect(find.text('Choose Format'), findsOneWidget);
+      expect(find.text('XLSX'), findsOneWidget);
+      expect(find.text('PRO'), findsOneWidget);
+
+      // Tap Excel (XLSX) option
+      await tester.tap(find.text('XLSX'));
+      await tester.pumpAndSettle();
+
+      // Pro upgrade sheet opens
+      expect(find.byType(ProUpgradeSheet), findsOneWidget);
+    });
+
+    testWidgets(
+      'pro tier allows selecting Excel (XLSX) without opening upgrade sheet',
+      (tester) async {
+        await _pump(
+          tester,
+          const Scaffold(body: ExportOptionsSheet()),
+          EntitlementState(
+            tier: SubscriptionTier.proActive,
+            subscriptionExpiryDate: DateTime.now().add(
+              const Duration(days: 30),
+            ),
+          ),
+        );
+
+        // Tap Excel (XLSX) option
+        await tester.tap(find.text('XLSX'));
+        await tester.pumpAndSettle();
+
+        // Does not open upgrade sheet
+        expect(find.byType(ProUpgradeSheet), findsNothing);
+      },
+    );
   });
 }
