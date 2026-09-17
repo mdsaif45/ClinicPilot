@@ -61,10 +61,7 @@ void main() {
         state.isFeatureUnlocked(AppFeature.customLetterheadBranding),
         isTrue,
       );
-      expect(
-        state.isFeatureUnlocked(AppFeature.multiClinicManagement),
-        isTrue,
-      );
+      expect(state.isFeatureUnlocked(AppFeature.multiClinicManagement), isTrue);
       expect(state.isFeatureUnlocked(AppFeature.bulkExportXlsx), isTrue);
     });
 
@@ -100,10 +97,7 @@ void main() {
       expect(state.isFeatureUnlocked(AppFeature.cloudAutoSync), isTrue);
       expect(state.isFeatureUnlocked(AppFeature.taxAnalytics), isTrue);
       expect(state.isFeatureUnlocked(AppFeature.multiClinicComparison), isTrue);
-      expect(
-        state.isFeatureUnlocked(AppFeature.multiClinicManagement),
-        isTrue,
-      );
+      expect(state.isFeatureUnlocked(AppFeature.multiClinicManagement), isTrue);
       expect(state.isFeatureUnlocked(AppFeature.bulkExportXlsx), isTrue);
     });
   });

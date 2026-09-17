@@ -742,10 +742,7 @@ class _ProUpgradeSheetState extends ConsumerState<ProUpgradeSheet> {
     required bool pro,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Spacing.sm,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: 6),
       child: Row(
         children: [
           Expanded(
@@ -759,33 +756,35 @@ class _ProUpgradeSheetState extends ConsumerState<ProUpgradeSheet> {
           SizedBox(
             width: 48,
             child: Center(
-              child: free
-                  ? Icon(
-                      Icons.check_circle_outline,
-                      size: 16,
-                      color: scheme.primary,
-                    )
-                  : Icon(
-                      Icons.remove,
-                      size: 16,
-                      color: scheme.outlineVariant,
-                    ),
+              child:
+                  free
+                      ? Icon(
+                        Icons.check_circle_outline,
+                        size: 16,
+                        color: scheme.primary,
+                      )
+                      : Icon(
+                        Icons.remove,
+                        size: 16,
+                        color: scheme.outlineVariant,
+                      ),
             ),
           ),
           SizedBox(
             width: 48,
             child: Center(
-              child: pro
-                  ? Icon(
-                      Icons.check_circle,
-                      size: 16,
-                      color: scheme.primary,
-                    )
-                  : Icon(
-                      Icons.remove,
-                      size: 16,
-                      color: scheme.outlineVariant,
-                    ),
+              child:
+                  pro
+                      ? Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: scheme.primary,
+                      )
+                      : Icon(
+                        Icons.remove,
+                        size: 16,
+                        color: scheme.outlineVariant,
+                      ),
             ),
           ),
         ],
