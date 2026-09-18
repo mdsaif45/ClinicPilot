@@ -87,6 +87,32 @@ class EntitlementController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Cancel subscription and revert cleanly to Free tier.
+  Future<void> cancelSubscription() async {
+    state = const AsyncValue.loading();
+    try {
+      final db = _ref.read(databaseProvider);
+      final service = _ref.read(entitlementServiceProvider);
+      await service.cancelSubscription(db);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Change active subscription billing plan (e.g. Annual <-> Monthly).
+  Future<void> changePlan(String newPlan) async {
+    state = const AsyncValue.loading();
+    try {
+      final db = _ref.read(databaseProvider);
+      final service = _ref.read(entitlementServiceProvider);
+      await service.changePlan(db, newPlan: newPlan);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
   /// Reset to free tier (useful for testing or debugging).
   Future<void> resetForTesting() async {
     state = const AsyncValue.loading();

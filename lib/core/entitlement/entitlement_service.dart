@@ -118,26 +118,33 @@ class EntitlementService {
             ),
             mode: drift.InsertMode.insertOrReplace,
           );
-      await db
-          .into(db.settings)
-          .insert(
-            SettingsCompanion.insert(
-              key: kSubscriptionTierKey,
-              value: SubscriptionTier.proTrial.name,
-              updatedAt: drift.Value(now),
-            ),
-            mode: drift.InsertMode.insertOrReplace,
-          );
-      await db
-          .into(db.settings)
-          .insert(
-            SettingsCompanion.insert(
-              key: kSubscriptionPlanKey,
-              value: 'beta_30day_trial',
-              updatedAt: drift.Value(now),
-            ),
-            mode: drift.InsertMode.insertOrReplace,
-          );
+      final existingTier =
+          await (db.select(db.settings)..where(
+            (t) => t.key.equals(kSubscriptionTierKey),
+          )).getSingleOrNull();
+
+      if (existingTier == null) {
+        await db
+            .into(db.settings)
+            .insert(
+              SettingsCompanion.insert(
+                key: kSubscriptionTierKey,
+                value: SubscriptionTier.proTrial.name,
+                updatedAt: drift.Value(now),
+              ),
+              mode: drift.InsertMode.insertOrReplace,
+            );
+        await db
+            .into(db.settings)
+            .insert(
+              SettingsCompanion.insert(
+                key: kSubscriptionPlanKey,
+                value: 'beta_30day_trial',
+                updatedAt: drift.Value(now),
+              ),
+              mode: drift.InsertMode.insertOrReplace,
+            );
+      }
     }
   }
 
@@ -221,6 +228,59 @@ class EntitlementService {
           SettingsCompanion.insert(
             key: kSubscriptionPlanKey,
             value: plan,
+            updatedAt: drift.Value(now),
+          ),
+          mode: drift.InsertMode.insertOrReplace,
+        );
+    await db
+        .into(db.settings)
+        .insert(
+          SettingsCompanion.insert(
+            key: kSubscriptionExpiryKey,
+            value: expiry.toIso8601String(),
+            updatedAt: drift.Value(now),
+          ),
+          mode: drift.InsertMode.insertOrReplace,
+        );
+  }
+
+  /// Cancel active subscription or trial and revert to Free tier.
+  /// Upholds Doctor Data Guarantee: does not touch trial history or clinical data.
+  Future<void> cancelSubscription(AppDatabase db) async {
+    final now = DateTime.now();
+    await (db.delete(db.settings)..where(
+      (t) => t.key.isIn([
+        kSubscriptionTierKey,
+        kSubscriptionExpiryKey,
+        kSubscriptionPlanKey,
+        kRedeemedCodeKey,
+      ]),
+    )).go();
+
+    await db
+        .into(db.settings)
+        .insert(
+          SettingsCompanion.insert(
+            key: kSubscriptionTierKey,
+            value: SubscriptionTier.free.name,
+            updatedAt: drift.Value(now),
+          ),
+          mode: drift.InsertMode.insertOrReplace,
+        );
+  }
+
+  /// Change active subscription billing plan (e.g. Annual <-> Monthly).
+  Future<void> changePlan(AppDatabase db, {required String newPlan}) async {
+    final now = DateTime.now();
+    final durationMonths = newPlan == 'annual_pro' ? 12 : 1;
+    final expiry = now.add(Duration(days: durationMonths * 30));
+
+    await db
+        .into(db.settings)
+        .insert(
+          SettingsCompanion.insert(
+            key: kSubscriptionPlanKey,
+            value: newPlan,
             updatedAt: drift.Value(now),
           ),
           mode: drift.InsertMode.insertOrReplace,

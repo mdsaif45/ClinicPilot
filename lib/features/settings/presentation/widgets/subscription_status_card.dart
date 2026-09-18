@@ -79,7 +79,7 @@ class SubscriptionStatusCard extends ConsumerWidget {
                     const SizedBox(height: 2),
                     Text(
                       isProActive
-                          ? 'All automated features unlocked'
+                          ? '${entitlement.formattedPlanName} • Tap to manage'
                           : (isTrial
                               ? '${entitlement.daysRemainingInTrial} days remaining • All Pro perks unlocked'
                               : 'Core clinical records free forever'),
