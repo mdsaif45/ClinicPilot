@@ -153,6 +153,74 @@ class EntitlementState {
     return 'FREE';
   }
 
+  /// Human-readable title for the active or current plan.
+  String get formattedPlanName {
+    if (tier == SubscriptionTier.free) return 'Free Plan';
+    if (isTrial) return 'Pro Beta Trial';
+    switch (planName) {
+      case 'annual_pro':
+        return 'Annual Pro Plan';
+      case 'monthly_pro':
+        return 'Monthly Pro Plan';
+      case 'annual_promo':
+        return 'Annual Partner License';
+      case 'lifetime':
+        return 'Enterprise Lifetime License';
+      case 'annual_voucher':
+        return 'Annual Prepaid Voucher';
+      case 'ayush_scholarship':
+        return 'AYUSH Professional Grant';
+      case 'qa_testing':
+        return 'Professional QA License';
+      default:
+        return 'ClinicPilot Pro';
+    }
+  }
+
+  /// Human-readable billing frequency or pricing descriptor.
+  String get formattedBillingCycle {
+    if (tier == SubscriptionTier.free) return 'Free Forever';
+    if (isTrial) return '30-Day Evaluation';
+    if (planName == 'monthly_pro') return '₹199 / month';
+    if (planName == 'annual_pro') return '₹1,999 / year';
+    if (planName == 'lifetime') return 'One-Time License';
+    if (redeemedCode != null) return 'Partner Voucher';
+    return '₹1,999 / year';
+  }
+
+  /// Human-readable expiry or renewal description.
+  String get formattedExpiryDescription {
+    if (planName == 'lifetime') return 'Indefinite (Lifetime License)';
+    if (subscriptionExpiryDate == null) {
+      if (tier == SubscriptionTier.free) return 'No expiration (Free Forever)';
+      return 'Active';
+    }
+    final date = subscriptionExpiryDate!;
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final formatted = '${date.day} ${months[date.month - 1]} ${date.year}';
+    final diff = date.difference(DateTime.now()).inDays;
+    if (diff > 0) {
+      return '$formatted ($diff days remaining)';
+    } else if (diff == 0) {
+      return '$formatted (Renews today)';
+    } else {
+      return '$formatted (Expired)';
+    }
+  }
+
   /// Check whether a specific feature is unlocked for this entitlement state.
   bool isFeatureUnlocked(AppFeature feature) {
     // Pro users get everything unlocked.

@@ -100,6 +100,43 @@ void main() {
       expect(state.isFeatureUnlocked(AppFeature.multiClinicManagement), isTrue);
       expect(state.isFeatureUnlocked(AppFeature.bulkExportXlsx), isTrue);
     });
+
+    test('formatted getters return clean presentation descriptors', () {
+      const freeState = EntitlementState();
+      expect(freeState.formattedPlanName, 'Free Plan');
+      expect(freeState.formattedBillingCycle, 'Free Forever');
+      expect(
+        freeState.formattedExpiryDescription,
+        'No expiration (Free Forever)',
+      );
+
+      final annualPro = EntitlementState(
+        tier: SubscriptionTier.proActive,
+        planName: 'annual_pro',
+        subscriptionExpiryDate: DateTime.now().add(const Duration(days: 300)),
+      );
+      expect(annualPro.formattedPlanName, 'Annual Pro Plan');
+      expect(annualPro.formattedBillingCycle, '₹1,999 / year');
+      expect(annualPro.formattedExpiryDescription, contains('days remaining'));
+
+      const monthlyPro = EntitlementState(
+        tier: SubscriptionTier.proActive,
+        planName: 'monthly_pro',
+      );
+      expect(monthlyPro.formattedPlanName, 'Monthly Pro Plan');
+      expect(monthlyPro.formattedBillingCycle, '₹199 / month');
+
+      const lifetime = EntitlementState(
+        tier: SubscriptionTier.proActive,
+        planName: 'lifetime',
+      );
+      expect(lifetime.formattedPlanName, 'Enterprise Lifetime License');
+      expect(lifetime.formattedBillingCycle, 'One-Time License');
+      expect(
+        lifetime.formattedExpiryDescription,
+        'Indefinite (Lifetime License)',
+      );
+    });
   });
 
   group('EntitlementService & Database Tests', () {
@@ -179,6 +216,39 @@ void main() {
         expect(state.isPro, isFalse);
       },
     );
+
+    test(
+      'cancels subscription gracefully back to Free tier preserving trial record',
+      () async {
+        await service.initializeTrialIfNeeded(db);
+        await service.activateSubscription(db, plan: 'annual_pro');
+
+        var state = await service.getEntitlementState(db);
+        expect(state.tier, SubscriptionTier.proActive);
+        expect(state.isPro, isTrue);
+
+        await service.cancelSubscription(db);
+        state = await service.getEntitlementState(db);
+        expect(state.tier, SubscriptionTier.free);
+        expect(state.isPro, isFalse);
+        expect(state.trialStartDate, isNotNull); // Initial trial preserved
+      },
+    );
+
+    test('changes billing plan between annual and monthly cleanly', () async {
+      await service.activateSubscription(
+        db,
+        plan: 'monthly_pro',
+        durationMonths: 1,
+      );
+      var state = await service.getEntitlementState(db);
+      expect(state.planName, 'monthly_pro');
+
+      await service.changePlan(db, newPlan: 'annual_pro');
+      state = await service.getEntitlementState(db);
+      expect(state.planName, 'annual_pro');
+      expect(state.subscriptionExpiryDate, isNotNull);
+    });
   });
 
   group('Entitlement Widget Tests', () {
@@ -260,6 +330,87 @@ void main() {
           find.text('Have a Beta Voucher or Access Code?'),
           findsOneWidget,
         );
+      },
+    );
+
+    testWidgets(
+      'ProUpgradeSheet renders Enterprise Subscription Management when doctor is Active Pro',
+      (tester) async {
+        tester.view.devicePixelRatio = 1.0;
+        tester.view.physicalSize = const Size(800, 1400);
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        const service = EntitlementService();
+        await service.activateSubscription(
+          db,
+          plan: 'annual_pro',
+          durationMonths: 12,
+        );
+
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: Scaffold(
+                body: Builder(
+                  builder:
+                      (context) => ElevatedButton(
+                        onPressed: () => ProUpgradeSheet.show(context),
+                        child: const Text('Open Sheet'),
+                      ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Open Sheet'));
+        await tester.pumpAndSettle();
+
+        // Enterprise Management View expectations
+        expect(find.text('Subscription & License'), findsOneWidget);
+        expect(find.text('ACTIVE'), findsOneWidget);
+        expect(find.text('Annual Pro Plan'), findsOneWidget);
+        expect(find.text('Status: Active • Auto-renewing'), findsOneWidget);
+        expect(find.text('Active Enterprise Entitlements:'), findsOneWidget);
+        expect(find.text('Doctor Data Guarantee'), findsOneWidget);
+        expect(find.text('Manage Plan & Billing:'), findsOneWidget);
+        expect(find.text('View Tax Receipt / Invoice'), findsOneWidget);
+        expect(find.text('Cancel Subscription'), findsOneWidget);
+
+        // Crucial check: Upgrade sales pitch cards should NOT appear
+        expect(find.text('SAVE 17%'), findsNothing);
+        expect(find.text('Continue with Free Plan'), findsNothing);
+
+        // Open Tax Receipt Dialog
+        await tester.tap(find.text('View Tax Receipt / Invoice'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Practice Tax Receipt'), findsOneWidget);
+        expect(find.text('PAID'), findsOneWidget);
+        expect(find.text('Close'), findsOneWidget);
+
+        await tester.tap(find.text('Close'));
+        await tester.pumpAndSettle();
+
+        // Open Cancel Dialog
+        await tester.tap(find.text('Cancel Subscription'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Cancel Subscription?'), findsOneWidget);
+        expect(find.text('Keep My Subscription'), findsOneWidget);
+        expect(find.text('Confirm Cancellation'), findsOneWidget);
+
+        await tester.tap(find.text('Keep My Subscription'));
+        await tester.pumpAndSettle();
       },
     );
   });
