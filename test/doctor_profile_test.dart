@@ -306,6 +306,9 @@ void main() {
         find.text('Dentistry • BDS / MDS / Dental Surgery'),
         findsOneWidget,
       );
+      // Verify specialty badge with icon is displayed in the hero identity card
+      expect(find.text('Dentistry'), findsOneWidget);
+      expect(find.byIcon(Icons.grid_view_rounded), findsWidgets);
     });
 
     testWidgets('SettingsScreen renders doctor profile card header', (t) async {
@@ -334,8 +337,40 @@ void main() {
       await t.pumpAndSettle();
 
       expect(find.text('Dr. Alice Smith'), findsOneWidget);
-      expect(find.text('BHMS, MD'), findsOneWidget);
+      expect(find.text('Homeopathy • BHMS, MD'), findsOneWidget);
     });
+
+    testWidgets(
+      'SettingsScreen renders doctor practice specialty in card header when set',
+      (t) async {
+        final container = ProviderContainer(
+          overrides: [databaseProvider.overrideWithValue(db)],
+        );
+
+        await container
+            .read(doctorProfileNotifierProvider.notifier)
+            .updateProfile(
+              name: 'Dr. MD Zaid',
+              qualification: 'BHMS, MD (Hom.)',
+              specialty: ClinicalSpecialty.homeopathy,
+            );
+
+        await t.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: const SettingsScreen(),
+            ),
+          ),
+        );
+
+        await t.pumpAndSettle();
+
+        expect(find.text('Dr. MD Zaid'), findsOneWidget);
+        expect(find.text('Homeopathy • BHMS, MD (Hom.)'), findsOneWidget);
+      },
+    );
 
     testWidgets('DoctorProfileScreen displays and toggles SOAP Notes switch', (
       t,

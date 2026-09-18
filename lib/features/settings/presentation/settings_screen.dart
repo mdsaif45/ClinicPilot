@@ -233,8 +233,12 @@ class _DoctorProfileHeader extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Text(
                   profile.qualification.isNotEmpty
-                      ? profile.qualification
-                      : 'Tap to view credentials & contact info',
+                      ? (profile.specialty != ClinicalSpecialty.multiSpecialty
+                          ? '${profile.specialty.label} • ${profile.qualification}'
+                          : profile.qualification)
+                      : (profile.specialty != ClinicalSpecialty.multiSpecialty
+                          ? profile.specialty.label
+                          : 'Tap to view credentials & contact info'),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),

@@ -99,13 +99,25 @@ class DoctorProfileScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                   ],
-                  if (profile.regNumber.isNotEmpty) ...[
-                    const SizedBox(height: Spacing.sm),
-                    CustomBadge(
-                      label: 'Reg: ${profile.regNumber}',
-                      color: scheme.secondary,
-                    ),
-                  ],
+                  const SizedBox(height: Spacing.sm),
+                  Wrap(
+                    spacing: Spacing.xs,
+                    runSpacing: Spacing.xs,
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      CustomBadge(
+                        label: profile.specialty.label,
+                        icon: profile.specialty.icon,
+                        color: scheme.primary,
+                      ),
+                      if (profile.regNumber.isNotEmpty)
+                        CustomBadge(
+                          label: 'Reg: ${profile.regNumber}',
+                          color: scheme.secondary,
+                        ),
+                    ],
+                  ),
                 ],
               ),
             ),
