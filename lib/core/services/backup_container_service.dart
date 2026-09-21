@@ -102,7 +102,7 @@ class BackupCorruptedException implements Exception {
 class BackupContainerService {
   final AppDatabase _db;
   static const int currentFormatVersion = 2;
-  static const String currentAppVersion = '0.8.8';
+  static const String currentAppVersion = '0.8.9';
   static const int currentSchemaVersion = 16;
 
   const BackupContainerService(this._db);
